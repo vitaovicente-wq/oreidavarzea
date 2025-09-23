@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>O Rei da Várzea — Protótipo</title>
+<style>
+  :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+  body{margin:0;background:#f5f7fb;color:#111}
+  header{background:#0b6bd6;color:#fff;padding:14px 18px}
+  .container{max-width:1100px;margin:18px auto;padding:10px}
+  .card{background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);padding:16px;margin-bottom:16px;}
+  label{display:block;margin-top:8px}
+  input[type=text], select{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px}
+  button{background:#0b6bd6;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
+  button[disabled]{opacity:0.5;cursor:default}
+  .row{display:flex;gap:12px}
+  .col{flex:1}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+  th{background:#fafafa;position:sticky;top:0}
+  .square-checkbox{width:18px;height:18px;border:2px solid #444;display:inline-block;vertical-align:middle;margin-right:6px;position:relative}
+  .square-checkbox.checked{background:#0b6bd6;color:#fff}
+  .inline-muted{color:#666;font-size:13px}
+  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .pitch{width:100%;height:420px;background:linear-gradient(#73c26b,#5eb95e);border-radius:12px;padding:12px;box-sizing:border-box;position:relative}
+  .position-slot{width:90px;height:40px;border-radius:6px;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;cursor:pointer;margin:6px}
+  .bench{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto;padding:8px;border:1px dashed #ccc;border-radius:8px}
+  .player-card{padding:8px;border-radius:8px;background:#fff;border:1px solid #eee;margin-bottom:6px;cursor:grab;display:flex;justify-content:space-between;align-items:center}
+  .muted{color:#666;font-size:13px}
+  .flex{display:flex;gap:8px;align-items:center}
+  .center{display:flex;justify-content:center;align-items:center}
+  @media(min-width:900px){ .row-lg{display:flex;gap:12px} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>O Rei da Várzea — Protótipo</h1>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- TELA 1 -->
+  <div id="tela1" class="card">
+    <h2>Tela 1 — Cadastro</h2>
+    <label>Nome do seu time
+      <input id="teamName" type="text" placeholder="Ex: Os Meninos da Rua" />
+    </label>
+    <label>Seu nome
+      <input id="userName" type="text" placeholder="Seu nome" />
+    </label>
+    <label>Cidade
+      <input id="cityName" type="text" placeholder="Cidade" />
+    </label>
+    <div style="margin-top:12px" class="controls">
+      <button id="btnToTela2" disabled>Contratar jogadores</button>
+      <div class="inline-muted">Preencha todos os campos para habilitar.</div>
+    </div>
+  </div>
+
+  <!-- TELA 2 -->
+  <div id="tela2" class="card" style="display:none">
+    <h2>Tela 2 — Mercado de Jogadores</h2>
+    <div class="row">
+      <div class="col">
+        <div class="card">
+          <div class="row" style="align-items:center">
+            <div>
+              <strong>Dinheiro em caixa:</strong>
+              <div id="cashDisplay" style="font-size:18px">R$ 5.000</div>
+              <div class="muted">Elenco <span id="selectedCount">0</span>/22</div>
+            </div>
+            <div style="margin-left:auto" class="controls">
+              <button id="btnEscalar" disabled>Escalar time</button>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:10px;overflow:auto;max-height:520px">
+          <table id="playersTable">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Posição</th>
+                <th>Pé</th>
+                <th>Idade</th>
+                <th>Salário</th>
+                <th>Contratar</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TELA 3 -->
+  <div id="tela3" class="card" style="display:none">
+    <h2>Tela 3 — Escalação</h2>
+    <div class="row-lg">
+      <div style="flex:1">
+        <div class="card">
+          <h3>Escalação (arraste do banco para a posição)</h3>
+          <div class="pitch" id="pitch">
+            <!-- positional layout (11 positions simple layout) -->
+            <div style="display:flex;flex-wrap:wrap;justify-content:center">
+              <div class="position-slot" data-pos="GK" ondrop="dropHandler(event)" ondragover="allowDrop(event)" id="slot-GK">GK</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:12px">
+              <div class="position-slot" data-pos="LB" ondrop="dropHandler(event)" ondragover="allowDrop(event)" id="slot-LB">LB</div>
+              <div class="position-slot" data-pos="CB1" ondrop="dropHandler(event)" ondragover="allowDrop(event)" id="slot-CB1">CB</div>
+              <div class="position-slot" data-pos="CB2" ondrop="dropHandler(event)" ondragover="allowDrop(event)" id="slot-CB2">CB</div>
+              <div class="position-slot" data-pos="RB" ondrop="dropHandler(event)" ondragover="allowDrop(event)" id="slot-RB">RB</div>
+            </div>
+            <div style="display:flex;justify-content:space-around;margin-top:12px">
+              <div class="position-slot" data-pos="DM" ondrop="dropHandler(event)" ondragover="allowDrop(event)" id="slot-DM">VOL</div>
+              <div class="position-slot" data-pos="CM1" ondrop="dropHandler(event)" ondragover="allowDrop(event)" id="slot-CM1">MEI</div>
+              <div class="position-slot" data-pos="CM2" ondrop="dropHandler(event)" ondragover="allowDrop(event)" id="slot-CM2">MEI</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:12px">
+              <div class="position-slot" data-pos="LW" ondrop="dropHandler(event)" ondragover="allowDrop(event)" id="slot-LW">AE</div>
+              <div class="position-slot" data-pos="ST" ondrop="dropHandler(event)" ondragover="allowDrop(event)" id="slot-ST">ATA</div>
+              <div class="position-slot" data-pos="RW" ondrop="dropHandler(event)" ondragover="allowDrop(event)" id="slot-RW">AD</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="width:320px">
+        <div class="card">
+          <h3>Banco / Jogadores contratados</h3>
+          <div class="bench" id="bench">
+            <!-- dynamically filled with hired players (max 22) -->
+          </div>
+          <div style="margin-top:10px" class="controls">
+            <button id="btnBackToMarket">Voltar ao Mercado</button>
+            <div class="muted" style="margin-left:auto">Arraste para escalar. Clique para desassociar.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/*
+  Implementação das 3 telas:
+  - Tela1: valida campos -> Habilita Contratar jogadores
+  - Tela2: gera 42 jogadores (distribuição de posições e pé), mostra tabela, seleção com limite 22 e diminuição do caixa (R$5000 inicial)
+  - Tela3: mostra banco com contratados e permite drag&drop para 11 posições
+*/
+
+// --- Config inicial com base no protótipo (Dinheiro em caixa 5 mil reais). Referência: protótipo. :contentReference[oaicite:1]{index=1}
+let CASH = 5000;
+const MAX_PLAYERS = 22;
+const TOTAL_MARKET = 42;
+
+// Elementos
+const teamName = document.getElementById('teamName');
+const userName = document.getElementById('userName');
+const cityName = document.getElementById('cityName');
+const btnToTela2 = document.getElementById('btnToTela2');
+
+const tela1 = document.getElementById('tela1');
+const tela2 = document.getElementById('tela2');
+const tela3 = document.getElementById('tela3');
+
+const cashDisplay = document.getElementById('cashDisplay');
+const selectedCountEl = document.getElementById('selectedCount');
+const playersTbody = document.querySelector('#playersTable tbody');
+const btnEscalar = document.getElementById('btnEscalar');
+
+const bench = document.getElementById('bench');
+
+const btnBackToMarket = document.getElementById('btnBackToMarket');
+
+let players = [];     // todos do mercado
+let hired = [];       // contratados (max 22)
+let selectedCount = 0;
+
+function formatReal(n){ return 'R$ ' + n.toLocaleString('pt-BR'); }
+function updateCash(){ cashDisplay.textContent = formatReal(CASH); }
+function updateSelectedCount(){ selectedCountEl.textContent = selectedCount; }
+
+// Habilitar botão Tela1 quando todos preenchidos
+function validateTela1(){
+  btnToTela2.disabled = !(teamName.value.trim() && userName.value.trim() && cityName.value.trim());
+}
+teamName.addEventListener('input', validateTela1);
+userName.addEventListener('input', validateTela1);
+cityName.addEventListener('input', validateTela1);
+
+btnToTela2.addEventListener('click', ()=> {
+  tela1.style.display = 'none';
+  tela2.style.display = 'block';
+  // preenche título se necessário (poderia usar valores)
+});
+
+// --- Gerador de nomes e distribuição ---
+// Lista de sobrenomes e apelidos estilo anos 90 (fictícios)
+const firsts = [
+ "Marrentinho","Juscelino","Ronaldinho","Berg","Tico","Zeca","GarrinchaJr",
+ "Xandão","Pedrinho","Claudinho","Sandro","Marollo","Ricardão","RonaldoDoBairro",
+ "Toninho","Juca","Beto","Paulozinho","Nininho","Cabeludo","Juninho","Neto",
+ "Biro-Biro","Casemirozinho","Liminha","Giba","Fabão","Fredinho","Rubi","Magrão",
+ "Marcelinho","Cascavel","ZéMoleque","Dado","Cabeça","Guga","Fumaça","Papagaio",
+ "Zezinho","Dinho","Pintinho","Gerson","Carlinhos","Tatu","Foguinho"
+];
+const lastParts = ["Carioca","Paranaense","Paulista","Baiano","Gaucho","Mineiro","Nordestino","Pernambucano","Capixaba","Catarinense"];
+
+// Proporções para 42 jogadores:
+const distribution = {
+  GK: 4,        // goleiros
+  ZAG: 8,       // zagueiros
+  LAT: 8,       // laterais (somando com zagueiro dá defensores)
+  VOL: 6,       // volantes
+  MEI: 8,       // meias
+  ATA: 8        // atacantes (inclui "atacante" e "meia-atacante")
+};
+// soma = 42
+// pé: probabilidade Ambidestro 10%, direito 60%, esquerdo 30%
+function pickFoot(){
+  const r = Math.random()*100;
+  if(r < 10) return 'Ambidestro';
+  if(r < 70) return 'Direito';
+  return 'Esquerdo';
+}
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+// Gera array de jogadores respeitando as proporções
+function generatePlayers(){
+  players = [];
+  // create position buckets
+  const buckets = [];
+  Object.keys(distribution).forEach(k => {
+    for(let i=0;i<distribution[k];i++) buckets.push(k);
+  });
+  // if rounding errors, fill with midfielders
+  while(buckets.length < TOTAL_MARKET) buckets.push('MEI');
+
+  for(let i=0;i<TOTAL_MARKET;i++){
+    const posKey = buckets[i];
+    let posLabel = '';
+    // map key para label mais legível
+    switch(posKey){
+      case 'GK': posLabel='Goleiro'; break;
+      case 'ZAG': posLabel='Zagueiro'; break;
+      case 'LAT': posLabel='Lateral'; break;
+      case 'VOL': posLabel='Volante'; break;
+      case 'MEI': posLabel='Meia'; break;
+      case 'ATA': posLabel='Atacante'; break;
+      default: posLabel='Meia/Atacante';
+    }
+    const fname = firsts[i % firsts.length] + ' ' + lastParts[i % lastParts.length];
+    const age = randInt(16,45);
+    const salary = Math.round(randInt(100,900)/50)*50; // round to nearest 50 for estética
+    const foot = pickFoot();
+    players.push({
+      id: 'p'+i,
+      name: fname,
+      pos: posLabel,
+      foot,
+      age,
+      salary,
+    });
+  }
+}
+
+// Render table
+function renderMarket(){
+  playersTbody.innerHTML = '';
+  players.forEach(p=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${p.name}</strong><div class="muted">${p.pos}</div></td>
+      <td>${p.pos}</td>
+      <td>${p.foot}</td>
+      <td>${p.age}</td>
+      <td>${formatReal(p.salary)}</td>
+      <td style="width:120px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" data-id="${p.id}" style="width:18px;height:18px;appearance:none;border:2px solid #444;border-radius:3px" />
+        <span class="muted">Contratar</span>
+      </label></td>
+    `;
+    playersTbody.appendChild(tr);
+  });
+
+  // attach listeners to checkboxes
+  document.querySelectorAll('#playersTable input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change', (ev)=>{
+      const id = cb.dataset.id;
+      const ply = players.find(x=>x.id===id);
+      if(cb.checked){
+        // check limits: max players and money
+        if(selectedCount >= MAX_PLAYERS){
+          alert('Você já selecionou 22 jogadores (limite).');
+          cb.checked = false; return;
+        }
+        if(CASH - ply.salary < 0){
+          alert('Saldo insuficiente para contratar este jogador.');
+          cb.checked = false; return;
+        }
+        // contratar
+        CASH -= ply.salary;
+        hired.push(ply);
+        selectedCount++;
+      } else {
+        // descontratar
+        CASH += ply.salary;
+        hired = hired.filter(x=>x.id!==id);
+        selectedCount--;
+      }
+      updateCash();
+      updateSelectedCount();
+      // enable escalar quando 22 contratados
+      btnEscalar.disabled = !(selectedCount === MAX_PLAYERS);
+      // disable other checkboxes if insufficient funds or reached limit
+      refreshCheckboxAvailability();
+    });
+  });
+  refreshCheckboxAvailability();
+}
+
+function refreshCheckboxAvailability(){
+  // If already 22 selected, disable unchecked checkboxes
+  const allCbs = Array.from(document.querySelectorAll('#playersTable input[type=checkbox]'));
+  if(selectedCount >= MAX_PLAYERS){
+    allCbs.forEach(cb=>{
+      if(!cb.checked) cb.disabled = true;
+    });
+    return;
+  }
+  // otherwise enable those that user can afford, disable those unaffordable
+  allCbs.forEach(cb=>{
+    const id = cb.dataset.id;
+    const ply = players.find(x=>x.id===id);
+    cb.disabled = false;
+    if(!cb.checked && CASH - ply.salary < 0) cb.disabled = true;
+  });
+}
+
+// Botão Escalar
+btnEscalar.addEventListener('click', ()=>{
+  if(selectedCount !== MAX_PLAYERS){
+    alert('Você precisa contratar 22 jogadores para escalar o time.');
+    return;
+  }
+  // show tela3
+  tela2.style.display = 'none';
+  tela3.style.display = 'block';
+  populateBench();
+});
+
+// Back to market
+btnBackToMarket.addEventListener('click', ()=>{
+  tela3.style.display = 'none';
+  tela2.style.display = 'block';
+});
+
+// Preenche banco com contratados
+function populateBench(){
+  bench.innerHTML = '';
+  // hired array may have players in random order
+  hired.forEach(p=>{
+    const div = document.createElement('div');
+    div.className = 'player-card';
+    div.id = 'bench-'+p.id;
+    div.draggable = true;
+    div.dataset.pid = p.id;
+    div.innerHTML = `<div><strong>${p.name}</strong><div class="muted">${p.pos} • ${p.foot} • ${p.age} anos</div></div>
+                     <div class="muted">${formatReal(p.salary)}</div>`;
+    // drag handlers
+    div.addEventListener('dragstart', dragStart);
+    bench.appendChild(div);
+    // click to remove from slot if assigned currently (allows user to click to unassign)
+    div.addEventListener('click', ()=>{
+      // if player assigned to slot, remove from slot (find slot that contains this pid)
+      const occupied = document.querySelectorAll('[data-assigned]');
+      occupied.forEach(slot=>{
+        if(slot.dataset.assigned === p.id){
+          // clear
+          slot.textContent = slot.dataset.pos || '';
+          delete slot.dataset.assigned;
+        }
+      });
+    });
+  });
+}
+
+// Drag & Drop handlers
+function allowDrop(ev){ ev.preventDefault(); }
+function dragStart(ev){
+  ev.dataTransfer.setData("text/plain", ev.target.dataset.pid);
+}
+function dropHandler(ev){
+  ev.preventDefault();
+  const pid = ev.dataTransfer.getData("text/plain");
+  const slot = ev.currentTarget;
+  // If slot already has assigned player, swap back to bench (simple behavior: swap)
+  if(slot.dataset.assigned){
+    // move existing assigned back to bench visually
+    const prevId = slot.dataset.assigned;
+    // if bench already contains it, nothing to do (we keep bench list static)
+  }
+  // assign
+  slot.dataset.assigned = pid;
+  const p = hired.find(x=>x.id===pid);
+  slot.textContent = p ? p.name : '---';
+}
+
+// Inicialização
+generatePlayers();
+renderMarket();
+updateCash();
+updateSelectedCount();
+
+// Expor algumas funções no global para ondrop inline (utilidade)
+window.allowDrop = allowDrop;
+window.dropHandler = dropHandler;
+
+</script>
+</body>
+</html>
