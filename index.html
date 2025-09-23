@@ -41,6 +41,7 @@
 
 <div class="container">
 
+  <!-- Tela 1 -->
   <div id="tela1" class="card">
     <h2>Tela 1 — Cadastro</h2>
     <label>Nome do seu time
@@ -58,6 +59,7 @@
     </div>
   </div>
 
+  <!-- Tela 2 -->
   <div id="tela2" class="card" style="display:none">
     <h2>Tela 2 — Mercado de Jogadores</h2>
     <div class="row">
@@ -93,6 +95,7 @@
     </div>
   </div>
 
+  <!-- Tela 3 -->
   <div id="tela3" class="card" style="display:none">
     <h2>Tela 3 — Escalação</h2>
     <div class="row-lg">
@@ -121,18 +124,39 @@
             </div>
           </div>
         </div>
+        <div style="margin-top:10px" class="controls">
+          <button id="btnPlayMatch" disabled>Jogar partida</button>
+        </div>
       </div>
 
       <div style="width:320px">
         <div class="card">
           <h3>Banco / Jogadores contratados</h3>
-          <div class="bench" id="bench">
-          </div>
+          <div class="bench" id="bench"></div>
           <div style="margin-top:10px" class="controls">
             <button id="btnBackToMarket">Voltar ao Mercado</button>
             <div class="muted" style="margin-left:auto">Arraste para escalar. Clique para desassociar.</div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tela 4 -->
+  <div id="tela4" class="card" style="display:none">
+    <h2>Partida em andamento</h2>
+    <div class="row-lg">
+      <div style="flex:1">
+        <h3 id="userTeamName">Meu Time</h3>
+        <ul id="jogadoresUsuario"></ul>
+      </div>
+      <div style="flex:2;text-align:center">
+        <h2 id="placar">0 x 0</h2>
+        <div id="comentarios" style="text-align:left;max-height:300px;overflow:auto;border:1px solid #ddd;border-radius:6px;padding:10px"></div>
+      </div>
+      <div style="flex:1">
+        <h3>Vila Freitas</h3>
+        <ul id="jogadoresVila"></ul>
       </div>
     </div>
   </div>
@@ -152,14 +176,22 @@ const btnToTela2 = document.getElementById('btnToTela2');
 const tela1 = document.getElementById('tela1');
 const tela2 = document.getElementById('tela2');
 const tela3 = document.getElementById('tela3');
+const tela4 = document.getElementById('tela4');
 
 const cashDisplay = document.getElementById('cashDisplay');
 const selectedCountEl = document.getElementById('selectedCount');
 const playersTbody = document.querySelector('#playersTable tbody');
 const btnEscalar = document.getElementById('btnEscalar');
+const btnPlayMatch = document.getElementById('btnPlayMatch');
 
 const bench = document.getElementById('bench');
 const btnBackToMarket = document.getElementById('btnBackToMarket');
+
+const jogadoresUsuario = document.getElementById("jogadoresUsuario");
+const jogadoresVila = document.getElementById("jogadoresVila");
+const placar = document.getElementById("placar");
+const comentarios = document.getElementById("comentarios");
+const userTeamNameEl = document.getElementById("userTeamName");
 
 let players = [];
 let hired = [];
@@ -403,6 +435,10 @@ function dropHandler(ev) {
   card.style.background = "#ddd";
   card.style.cursor = "not-allowed";
   card.draggable = false;
+
+  // Habilita botão de jogar se todos os slots tiverem alguém
+  const filled = document.querySelectorAll('.position-slot[data-assigned]').length;
+  if (filled >= 11) btnPlayMatch.disabled = false;
 }
 
 function showMessage(msg) {
@@ -421,6 +457,60 @@ function showMessage(msg) {
 
   setTimeout(() => box.remove(), 2500);
 }
+
+// Botão Jogar Partida
+btnPlayMatch.addEventListener("click", () => {
+  tela3.style.display = "none";
+  tela4.style.display = "block";
+  userTeamNameEl.textContent = teamName.value || "Meu Time";
+
+  // escalação usuário (11 escalados)
+  jogadoresUsuario.innerHTML = "";
+  document.querySelectorAll(".position-slot[data-assigned]").forEach(slot => {
+    const id = slot.dataset.assigned;
+    const p = hired.find(h => h.id === id);
+    if (p) {
+      const li = document.createElement("li");
+      li.textContent = p.name + " (" + p.pos + ")";
+      jogadoresUsuario.appendChild(li);
+    }
+  });
+
+  // escalação vila freitas
+  const escalaVila = ["João Goleiro", "Zé Zagueiro", "Marquinho Lateral", "Beto Zagueiro", "Tonho Lateral", "Carlinhos Volante", "Neto Meia", "Juninho Meia", "Paulinho Atacante", "Zezinho Atacante", "Didi Atacante"];
+  jogadoresVila.innerHTML = "";
+  escalaVila.forEach(j => {
+    const li = document.createElement("li");
+    li.textContent = j;
+    jogadoresVila.appendChild(li);
+  });
+
+  // simulação
+  placar.textContent = "0 x 0";
+  comentarios.innerHTML = "<p><em>Apito inicial...</em></p>";
+  let golsU=0,golsV=0,minuto=1;
+  const lances=["Escanteio perigoso!","Falta dura no meio-campo.","Chutão pra fora, quase na arquibancada!",
+    "Torcida grita 'é campeão!' sem motivo.","Juiz tropeçou na bola.","Goleiro saiu jogando errado.",
+    "Zagueiro furou feio, risos na torcida.","Bola na trave!!!","Carrinho criminoso, juiz fingiu que não viu.",
+    "Bandeirinha levantou a bandeira sem motivo."];
+
+  const interval=setInterval(()=>{
+    if(minuto>=60){
+      clearInterval(interval);
+      comentarios.innerHTML+="<p><strong>Fim de jogo!</strong></p>";
+      return;
+    }
+    let lance=lances[Math.floor(Math.random()*lances.length)];
+    if(Math.random()<0.15){
+      if(Math.random()<0.5){golsU++;lance="GOOOOL do "+(teamName.value||"Meu Time")+"!!!";}
+      else{golsV++;lance="GOOOOL da Vila Freitas!!!";}
+      placar.textContent=golsU+" x "+golsV;
+    }
+    comentarios.innerHTML+=`<p>${minuto} min - ${lance}</p>`;
+    comentarios.scrollTop=comentarios.scrollHeight;
+    minuto+=6;
+  },6000);
+});
 
 // Inicialização
 generatePlayers();
