@@ -231,7 +231,7 @@ function generatePlayers() {
     const fname = firsts[i % firsts.length] + ' ' + lastParts[i % lastParts.length];
     const age = randInt(16, 45);
     // CORREÇÃO: Nova lógica de salário para caber no orçamento de 5 mil
-    const salary = Math.round(randInt(100, 350) / 50) * 50;
+    const salary = Math.round(randInt(10, 200) / 10) * 10;
     const foot = pickFoot();
     players.push({
       id: 'p' + i,
