@@ -43,7 +43,6 @@
 
 <div class="container">
 
-  <!-- TELA 1 -->
   <div id="tela1" class="card">
     <h2>Tela 1 — Cadastro</h2>
     <label>Nome do seu time
@@ -61,7 +60,6 @@
     </div>
   </div>
 
-  <!-- TELA 2 -->
   <div id="tela2" class="card" style="display:none">
     <h2>Tela 2 — Mercado de Jogadores</h2>
     <div class="row">
@@ -97,7 +95,6 @@
     </div>
   </div>
 
-  <!-- TELA 3 -->
   <div id="tela3" class="card" style="display:none">
     <h2>Tela 3 — Escalação</h2>
     <div class="row-lg">
@@ -105,7 +102,6 @@
         <div class="card">
           <h3>Escalação (arraste do banco para a posição)</h3>
           <div class="pitch" id="pitch">
-            <!-- positional layout (11 positions simple layout) -->
             <div style="display:flex;flex-wrap:wrap;justify-content:center">
               <div class="position-slot" data-pos="GK" ondrop="dropHandler(event)" ondragover="allowDrop(event)" id="slot-GK">GK</div>
             </div>
@@ -133,8 +129,7 @@
         <div class="card">
           <h3>Banco / Jogadores contratados</h3>
           <div class="bench" id="bench">
-            <!-- dynamically filled with hired players (max 22) -->
-          </div>
+            </div>
           <div style="margin-top:10px" class="controls">
             <button id="btnBackToMarket">Voltar ao Mercado</button>
             <div class="muted" style="margin-left:auto">Arraste para escalar. Clique para desassociar.</div>
@@ -154,7 +149,7 @@
   - Tela3: mostra banco com contratados e permite drag&drop para 11 posições
 */
 
-// --- Config inicial com base no protótipo (Dinheiro em caixa 5 mil reais). Referência: protótipo. :contentReference[oaicite:1]{index=1}
+// --- Config inicial com base no protótipo (Dinheiro em caixa 5 mil reais).
 let CASH = 5000;
 const MAX_PLAYERS = 22;
 const TOTAL_MARKET = 42;
@@ -180,11 +175,10 @@ const btnBackToMarket = document.getElementById('btnBackToMarket');
 
 let players = [];     // todos do mercado
 let hired = [];       // contratados (max 22)
-let selectedCount = 0;
 
 function formatReal(n){ return 'R$ ' + n.toLocaleString('pt-BR'); }
 function updateCash(){ cashDisplay.textContent = formatReal(CASH); }
-function updateSelectedCount(){ selectedCountEl.textContent = selectedCount; }
+function updateSelectedCount(){ selectedCountEl.textContent = hired.length; }
 
 // Habilitar botão Tela1 quando todos preenchidos
 function validateTela1(){
@@ -197,11 +191,9 @@ cityName.addEventListener('input', validateTela1);
 btnToTela2.addEventListener('click', ()=> {
   tela1.style.display = 'none';
   tela2.style.display = 'block';
-  // preenche título se necessário (poderia usar valores)
 });
 
 // --- Gerador de nomes e distribuição ---
-// Lista de sobrenomes e apelidos estilo anos 90 (fictícios)
 const firsts = [
  "Marrentinho","Juscelino","Ronaldinho","Berg","Tico","Zeca","GarrinchaJr",
  "Xandão","Pedrinho","Claudinho","Sandro","Marollo","Ricardão","RonaldoDoBairro",
@@ -212,17 +204,15 @@ const firsts = [
 ];
 const lastParts = ["Carioca","Paranaense","Paulista","Baiano","Gaucho","Mineiro","Nordestino","Pernambucano","Capixaba","Catarinense"];
 
-// Proporções para 42 jogadores:
 const distribution = {
-  GK: 4,        // goleiros
-  ZAG: 8,       // zagueiros
-  LAT: 8,       // laterais (somando com zagueiro dá defensores)
-  VOL: 6,       // volantes
-  MEI: 8,       // meias
-  ATA: 8        // atacantes (inclui "atacante" e "meia-atacante")
+  GK: 4,
+  ZAG: 8,
+  LAT: 8,
+  VOL: 6,
+  MEI: 8,
+  ATA: 8
 };
-// soma = 42
-// pé: probabilidade Ambidestro 10%, direito 60%, esquerdo 30%
+
 function pickFoot(){
   const r = Math.random()*100;
   if(r < 10) return 'Ambidestro';
@@ -231,21 +221,17 @@ function pickFoot(){
 }
 function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
 
-// Gera array de jogadores respeitando as proporções
 function generatePlayers(){
   players = [];
-  // create position buckets
   const buckets = [];
   Object.keys(distribution).forEach(k => {
     for(let i=0;i<distribution[k];i++) buckets.push(k);
   });
-  // if rounding errors, fill with midfielders
   while(buckets.length < TOTAL_MARKET) buckets.push('MEI');
 
   for(let i=0;i<TOTAL_MARKET;i++){
     const posKey = buckets[i];
     let posLabel = '';
-    // map key para label mais legível
     switch(posKey){
       case 'GK': posLabel='Goleiro'; break;
       case 'ZAG': posLabel='Zagueiro'; break;
@@ -257,7 +243,7 @@ function generatePlayers(){
     }
     const fname = firsts[i % firsts.length] + ' ' + lastParts[i % lastParts.length];
     const age = randInt(16,45);
-    const salary = Math.round(randInt(100,900)/50)*50; // round to nearest 50 for estética
+    const salary = Math.round(randInt(100,900)/50)*50;
     const foot = pickFoot();
     players.push({
       id: 'p'+i,
@@ -268,6 +254,31 @@ function generatePlayers(){
       salary,
     });
   }
+}
+
+// CORREÇÃO: Adiciona a função para sincronizar o estado dos checkboxes
+function syncCheckboxes() {
+  const allCheckboxes = document.querySelectorAll('#playersTable input[type=checkbox]');
+  const hiredIds = hired.map(p => p.id);
+
+  allCheckboxes.forEach(cb => {
+    const playerId = cb.dataset.id;
+    const isHired = hiredIds.includes(playerId);
+    
+    cb.checked = isHired;
+    
+    if (hired.length >= MAX_PLAYERS && !isHired) {
+      cb.disabled = true;
+    } else {
+      cb.disabled = false;
+      const player = players.find(p => p.id === playerId);
+      if (player && CASH - player.salary < 0) {
+        cb.disabled = true;
+      }
+    }
+  });
+
+  btnEscalar.disabled = (hired.length !== MAX_PLAYERS);
 }
 
 // Render table
@@ -282,7 +293,7 @@ function renderMarket(){
       <td>${p.age}</td>
       <td>${formatReal(p.salary)}</td>
       <td style="width:120px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-        <input type="checkbox" data-id="${p.id}" style="width:18px;height:18px;appearance:none;border:2px solid #444;border-radius:3px" />
+        <input type="checkbox" data-id="${p.id}" />
         <span class="muted">Contratar</span>
       </label></td>
     `;
@@ -294,62 +305,40 @@ function renderMarket(){
     cb.addEventListener('change', (ev)=>{
       const id = cb.dataset.id;
       const ply = players.find(x=>x.id===id);
+      
       if(cb.checked){
-        // check limits: max players and money
-        if(selectedCount >= MAX_PLAYERS){
+        if(hired.length >= MAX_PLAYERS){
           alert('Você já selecionou 22 jogadores (limite).');
-          cb.checked = false; return;
+          cb.checked = false; 
+          return;
         }
         if(CASH - ply.salary < 0){
           alert('Saldo insuficiente para contratar este jogador.');
-          cb.checked = false; return;
+          cb.checked = false; 
+          return;
         }
-        // contratar
         CASH -= ply.salary;
         hired.push(ply);
-        selectedCount++;
       } else {
-        // descontratar
         CASH += ply.salary;
         hired = hired.filter(x=>x.id!==id);
-        selectedCount--;
       }
+
       updateCash();
       updateSelectedCount();
-      // enable escalar quando 22 contratados
-      btnEscalar.disabled = !(selectedCount === MAX_PLAYERS);
-      // disable other checkboxes if insufficient funds or reached limit
-      refreshCheckboxAvailability();
+      syncCheckboxes();
     });
   });
-  refreshCheckboxAvailability();
-}
 
-function refreshCheckboxAvailability(){
-  // If already 22 selected, disable unchecked checkboxes
-  const allCbs = Array.from(document.querySelectorAll('#playersTable input[type=checkbox]'));
-  if(selectedCount >= MAX_PLAYERS){
-    allCbs.forEach(cb=>{
-      if(!cb.checked) cb.disabled = true;
-    });
-    return;
-  }
-  // otherwise enable those that user can afford, disable those unaffordable
-  allCbs.forEach(cb=>{
-    const id = cb.dataset.id;
-    const ply = players.find(x=>x.id===id);
-    cb.disabled = false;
-    if(!cb.checked && CASH - ply.salary < 0) cb.disabled = true;
-  });
+  syncCheckboxes();
 }
 
 // Botão Escalar
 btnEscalar.addEventListener('click', ()=>{
-  if(selectedCount !== MAX_PLAYERS){
+  if(hired.length !== MAX_PLAYERS){
     alert('Você precisa contratar 22 jogadores para escalar o time.');
     return;
   }
-  // show tela3
   tela2.style.display = 'none';
   tela3.style.display = 'block';
   populateBench();
@@ -364,7 +353,6 @@ btnBackToMarket.addEventListener('click', ()=>{
 // Preenche banco com contratados
 function populateBench(){
   bench.innerHTML = '';
-  // hired array may have players in random order
   hired.forEach(p=>{
     const div = document.createElement('div');
     div.className = 'player-card';
@@ -373,16 +361,12 @@ function populateBench(){
     div.dataset.pid = p.id;
     div.innerHTML = `<div><strong>${p.name}</strong><div class="muted">${p.pos} • ${p.foot} • ${p.age} anos</div></div>
                      <div class="muted">${formatReal(p.salary)}</div>`;
-    // drag handlers
     div.addEventListener('dragstart', dragStart);
     bench.appendChild(div);
-    // click to remove from slot if assigned currently (allows user to click to unassign)
     div.addEventListener('click', ()=>{
-      // if player assigned to slot, remove from slot (find slot that contains this pid)
       const occupied = document.querySelectorAll('[data-assigned]');
       occupied.forEach(slot=>{
         if(slot.dataset.assigned === p.id){
-          // clear
           slot.textContent = slot.dataset.pos || '';
           delete slot.dataset.assigned;
         }
@@ -400,13 +384,9 @@ function dropHandler(ev){
   ev.preventDefault();
   const pid = ev.dataTransfer.getData("text/plain");
   const slot = ev.currentTarget;
-  // If slot already has assigned player, swap back to bench (simple behavior: swap)
   if(slot.dataset.assigned){
-    // move existing assigned back to bench visually
     const prevId = slot.dataset.assigned;
-    // if bench already contains it, nothing to do (we keep bench list static)
   }
-  // assign
   slot.dataset.assigned = pid;
   const p = hired.find(x=>x.id===pid);
   slot.textContent = p ? p.name : '---';
@@ -418,10 +398,8 @@ renderMarket();
 updateCash();
 updateSelectedCount();
 
-// Expor algumas funções no global para ondrop inline (utilidade)
 window.allowDrop = allowDrop;
 window.dropHandler = dropHandler;
-
 </script>
 </body>
 </html>
