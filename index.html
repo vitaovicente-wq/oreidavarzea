@@ -368,3 +368,68 @@ function allowDrop(ev) { ev.preventDefault(); }
 function dragStart(ev) {
   ev.dataTransfer.setData("text/plain", ev.target.dataset.pid);
 }
+function dropHandler(ev) {
+  ev.preventDefault();
+  const pid = ev.dataTransfer.getData("text/plain");
+  const slot = ev.currentTarget;
+  const p = hired.find(x => x.id === pid);
+
+  // Verifica se já foi escalado
+  if (document.querySelector(`[data-assigned='${pid}']`)) {
+    alert(`${p.name} já está escalado!`);
+    return;
+  }
+
+  // Regras de posição
+  const slotPos = slot.dataset.pos;
+  let allowed = false;
+
+  if (slotPos === "GK" && p.pos === "Goleiro") allowed = true;
+  if ((slotPos.startsWith("CB") || slotPos === "LB" || slotPos === "RB") && (p.pos === "Zagueiro" || p.pos === "Lateral")) allowed = true;
+  if (slotPos === "DM" && p.pos === "Volante") allowed = true;
+  if ((slotPos.startsWith("CM") || slotPos === "LW" || slotPos === "RW") && p.pos === "Meia") allowed = true;
+  if (slotPos === "ST" && p.pos === "Atacante") allowed = true;
+
+  if (!allowed) {
+    showMessage("Eu não sei jogar aí, professor!");
+    return;
+  }
+
+  // Escala o jogador
+  slot.dataset.assigned = pid;
+  slot.textContent = p.name;
+
+  const card = document.getElementById('bench-' + pid);
+  card.style.background = "#ddd";
+  card.style.cursor = "not-allowed";
+  card.draggable = false;
+}
+
+function showMessage(msg) {
+  const box = document.createElement('div');
+  box.textContent = msg;
+  box.style.position = "fixed";
+  box.style.top = "20px";
+  box.style.right = "20px";
+  box.style.background = "#ffefc2";
+  box.style.color = "#333";
+  box.style.padding = "10px 16px";
+  box.style.border = "1px solid #e6b800";
+  box.style.borderRadius = "8px";
+  box.style.boxShadow = "0 4px 8px rgba(0,0,0,0.15)";
+  document.body.appendChild(box);
+
+  setTimeout(() => box.remove(), 2500);
+}
+
+// Inicialização
+generatePlayers();
+renderMarket();
+updateCash();
+updateSelectedCount();
+
+window.allowDrop = allowDrop;
+window.dropHandler = dropHandler;
+</script>
+</body>
+</html>
