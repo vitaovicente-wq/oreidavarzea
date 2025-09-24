@@ -33,59 +33,38 @@
   .badge-pai{background:#fff59d;color:#000}
   .badge-trabalho{background:#bbdefb}
   
-  /* Tooltip FIXED - Solução definitiva */
-  .tooltip-container {
-    position: relative;
-    display: inline-block;
+  /* Box de fala do jogador */
+  .player-speech-box {
+    position: sticky;
+    top: 0;
+    background: #fff9c4;
+    border: 2px solid #ffd54f;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 100;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    font-style: italic;
   }
   
-  .player-name{
-    cursor:pointer;
-    text-decoration:underline dotted;
-    color:#0b6bd6;
-    padding:2px 4px;
-    border-radius:3px;
-    transition:background-color 0.2s;
-  }
-  .player-name:hover{background-color:#f0f8ff}
-  
-  /* Tooltip fixo na tela */
-  .tooltip-global {
-    position: fixed;
-    z-index: 10000;
-    background-color: #333;
-    color: #fff;
-    padding: 12px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-    max-width: 300px;
-    font-size: 13px;
-    line-height: 1.4;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s;
+  .player-speech-box:before {
+    content: "💬";
+    font-size: 20px;
+    margin-right: 10px;
   }
   
-  .tooltip-global.visible {
-    opacity: 1;
-  }
-  
-  .tooltip-global::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -6px;
-    border-width: 6px;
-    border-style: solid;
-    border-color: #333 transparent transparent transparent;
+  .player-name-highlight {
+    font-weight: bold;
+    color: #0b6bd6;
+    cursor: pointer;
+    text-decoration: underline dotted;
   }
 </style>
 </head>
 <body>
-<!-- Tooltip global -->
-<div id="globalTooltip" class="tooltip-global"></div>
-
 <header>
   <div class="container"><h1>O Rei da Várzea — Protótipo</h1></div>
 </header>
@@ -113,6 +92,12 @@
   <!-- TELA 2 -->
   <div id="tela2" class="card" style="display:none">
     <h2>Tela 2 — Mercado de Jogadores</h2>
+    
+    <!-- Box de fala do jogador -->
+    <div id="playerSpeechBox" class="player-speech-box" style="display:none">
+      Passe o mouse sobre os nomes dos jogadores para ver suas apresentações!
+    </div>
+    
     <div id="marketMessage" style="font-weight:bold;margin-bottom:10px">Escolha no mínimo 2 goleiros para o seu time</div>
 
     <div style="margin-top:10px;overflow:auto;max-height:480px">
@@ -318,7 +303,7 @@ const apresentacoes = {
       "Quando recebo a bola, já tenho um plano. Gosto de virar o jogo, de dar uns lançamentos longos e de surpreender o adversário."
     ],
     "Volante Agressivo": [
-      "Quando o jogo fica difícil, eu chego mais forte. Dou umas chegadas pra roubar a bola, mas sem machucar.",
+      "Quando o jogo fica difícil, eu chego mais forte. Dou umus chegadas pra roubar a bola, mas sem machucar.",
       "O adversário pode tentar sair tocando, mas eu pressiono a marcação. Minha missão é roubar a bola e já lançar o ataque."
     ],
     "Líder": [
@@ -400,64 +385,7 @@ const placar = document.getElementById('placar');
 const comentarios = document.getElementById('comentarios');
 const btnContinuar = document.getElementById('btnContinuar');
 
-const globalTooltip = document.getElementById('globalTooltip');
-
-/* -------------------- Sistema de Tooltip Global -------------------- */
-let currentTooltipElement = null;
-
-function setupTooltip(element, text) {
-  element.addEventListener('mouseenter', function(e) {
-    currentTooltipElement = element;
-    showGlobalTooltip(e, text);
-  });
-  
-  element.addEventListener('mousemove', function(e) {
-    if (currentTooltipElement === element) {
-      moveGlobalTooltip(e);
-    }
-  });
-  
-  element.addEventListener('mouseleave', function() {
-    if (currentTooltipElement === element) {
-      hideGlobalTooltip();
-      currentTooltipElement = null;
-    }
-  });
-}
-
-function showGlobalTooltip(e, text) {
-  globalTooltip.textContent = text;
-  globalTooltip.classList.add('visible');
-  moveGlobalTooltip(e);
-}
-
-function moveGlobalTooltip(e) {
-  const x = e.clientX + 15;
-  const y = e.clientY - 10;
-  
-  globalTooltip.style.left = x + 'px';
-  globalTooltip.style.top = y + 'px';
-}
-
-function hideGlobalTooltip() {
-  globalTooltip.classList.remove('visible');
-}
-
-function criarElementoTooltip(nome, texto) {
-  const container = document.createElement('div');
-  container.className = 'tooltip-container';
-  
-  const span = document.createElement('span');
-  span.className = 'player-name';
-  span.textContent = nome;
-  
-  container.appendChild(span);
-  
-  // Configurar o tooltip
-  setupTooltip(span, texto);
-  
-  return container;
-}
+const playerSpeechBox = document.getElementById('playerSpeechBox');
 
 /* -------------------- Helpers -------------------- */
 function showNotif(text, time=2500){
@@ -491,6 +419,15 @@ function getApresentacaoJogador(jogador) {
   const textoEscolhido = textos[Math.floor(Math.random() * textos.length)];
   
   return textoEscolhido;
+}
+
+function showPlayerSpeech(playerName, speech) {
+  playerSpeechBox.style.display = 'flex';
+  playerSpeechBox.innerHTML = `💬 <span class="player-name-highlight">${playerName}</span>: "${speech}"`;
+}
+
+function hidePlayerSpeech() {
+  playerSpeechBox.style.display = 'none';
 }
 
 /* -------------------- Gerar jogadores com novas características -------------------- */
@@ -544,12 +481,17 @@ function generatePlayers(){
 function renderMarket(filter){
   playersTbody.innerHTML = '';
   const list = players.filter(p => !filter || p.pos === filter);
+  
+  // Mostrar box de fala
+  playerSpeechBox.style.display = 'flex';
+  
   if(list.length === 0){
     const tr = document.createElement('tr');
     tr.innerHTML = '<td colspan="8" class="muted">Nenhum jogador disponível para essa posição.</td>';
     playersTbody.appendChild(tr);
     return;
   }
+  
   list.forEach(p=>{
     const tr = document.createElement('tr');
     const hiredAlready = hired.some(h=>h.id===p.id);
@@ -558,15 +500,32 @@ function renderMarket(filter){
     let detalhes = p.profissao.nome;
     if (p.isPai) detalhes += ' 👨‍👧‍👦';
     
+    // Criar célula do nome com evento de hover
     const nomeCell = document.createElement('td');
-    const tooltipContainer = criarElementoTooltip(p.name, p.apresentacao);
+    const nomeSpan = document.createElement('span');
+    nomeSpan.className = 'player-name-highlight';
+    nomeSpan.textContent = p.name;
+    nomeSpan.title = "Clique para ver a apresentação";
+    
+    // Eventos para mostrar a fala
+    nomeSpan.addEventListener('mouseenter', () => {
+      showPlayerSpeech(p.name, p.apresentacao);
+    });
+    
+    nomeSpan.addEventListener('click', () => {
+      showPlayerSpeech(p.name, p.apresentacao);
+    });
+    
+    nomeSpan.addEventListener('mouseleave', () => {
+      // Não esconder imediatamente, só se clicar em outro lugar
+    });
+    
     const posDiv = document.createElement('div');
     posDiv.className = 'muted';
     posDiv.textContent = p.pos;
     
-    nomeCell.appendChild(tooltipContainer);
+    nomeCell.appendChild(nomeSpan);
     nomeCell.appendChild(posDiv);
-    
     tr.appendChild(nomeCell);
     
     tr.innerHTML += `
@@ -588,7 +547,42 @@ function renderMarket(filter){
   updateCheckboxStates();
 }
 
-// ... (o resto do código permanece igual) ...
+function updateCheckboxStates(){
+  playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    const pid = cb.dataset.id;
+    const ply = players.find(p=>p.id===pid);
+    if(!cb.checked && (hired.length >= MAX_PLAYERS || CASH - ply.salary < 0)) cb.disabled = true;
+    else cb.disabled = false;
+  });
+  updateButtonStates();
+}
+
+function onToggleHire(e){
+  const cb = e.currentTarget;
+  const pid = cb.dataset.id;
+  const ply = players.find(p=>p.id===pid);
+  if(cb.checked){
+    if(hired.length >= MAX_PLAYERS){ showNotif('Limite de 22 jogadores'); cb.checked=false; return; }
+    if(CASH - ply.salary < 0){ showNotif('Saldo insuficiente'); cb.checked=false; return; }
+    CASH -= ply.salary;
+    hired.push(ply);
+  } else {
+    CASH += ply.salary;
+    hired = hired.filter(h => h.id !== pid);
+    // if this player was assigned to a slot, free it
+    document.querySelectorAll('.position-slot[data-assigned]').forEach(slot=>{
+      if(slot.dataset.assigned === pid){
+        slot.textContent = slot.dataset.pos;
+        delete slot.dataset.assigned;
+        const card = document.getElementById('bench-'+pid);
+        if(card){ card.classList.remove('locked'); card.draggable = true; card.style.cursor='grab'; }
+      }
+    });
+  }
+  updateCash(); updateSelectedCount();
+  // re-render filter to update checkboxes disable state
+  renderMarket(steps[marketStep].filter);
+}
 
 /* -------------------- Buttons e passos -------------------- */
 function countHiredByPos(label){
@@ -597,31 +591,56 @@ function countHiredByPos(label){
 
 function updateButtonStates(){
   btnEscalar.disabled = (hired.length !== MAX_PLAYERS);
+  
+  // DEBUG: Verificar quantos goleiros foram contratados
+  const goleirosContratados = countHiredByPos("Goleiro");
+  console.log("Goleiros contratados:", goleirosContratados);
+  console.log("Total contratados:", hired.length);
+  
   updateSelectedCount();
   updateCash();
 }
 
 btnNextStep.addEventListener('click', ()=>{
   const current = steps[marketStep];
+  
+  // DEBUG
+  console.log("Passo atual:", marketStep);
+  console.log("Filtro atual:", current.filter);
+  console.log("Mínimo necessário:", current.min);
+  
   if(current && current.filter){
     const have = countHiredByPos(current.filter);
+    console.log("Quantidade contratada:", have);
+    
     if(have < current.min){
-      showNotif(`Escolha no mínimo ${current.min} ${current.filter}(s).`);
+      showNotif(`Escolha no mínimo ${current.min} ${current.filter}(s). Você tem ${have}.`);
       return;
     }
   }
+  
   marketStep++;
-  if(marketStep >= steps.length) marketStep = steps.length - 1;
+  if(marketStep >= steps.length) {
+    // Se completou todos os passos, vai para a tela de escalação
+    btnEscalar.click();
+    return;
+  }
+  
   marketMessage.textContent = steps[marketStep].msg;
   renderMarket(steps[marketStep].filter);
 });
 
 btnEscalar.addEventListener('click', ()=>{
-  if(hired.length !== MAX_PLAYERS){ showNotif('Você precisa contratar exatamente 22 jogadores para escalar.'); return; }
+  if(hired.length !== MAX_PLAYERS){ 
+    showNotif(`Você precisa contratar exatamente 22 jogadores para escalar. Você tem ${hired.length}.`); 
+    return; 
+  }
   tela2.style.display='none';
   tela3.style.display='block';
   populateBench();
 });
+
+// ... (o resto do código permanece igual) ...
 
 /* -------------------- Escalação (drag/drop) -------------------- */
 function populateBench(){
@@ -639,27 +658,14 @@ function populateBench(){
     if (p.isPai) badges += '<span class="badge badge-pai">Pai</span>';
     badges += `<span class="badge badge-trabalho">${p.profissao.nome}</span>`;
     
-    const leftDiv = document.createElement('div');
-    
-    const tooltipContainer = criarElementoTooltip(p.name, p.apresentacao);
-    leftDiv.appendChild(tooltipContainer);
-    
-    const infoDiv1 = document.createElement('div');
-    infoDiv1.className = 'muted';
-    infoDiv1.textContent = `${p.pos} • ${p.foot} • ${p.age} anos`;
-    leftDiv.appendChild(infoDiv1);
-    
-    const infoDiv2 = document.createElement('div');
-    infoDiv2.innerHTML = `${renderHealthBar(p.health)} ${badges}`;
-    leftDiv.appendChild(infoDiv2);
-    
-    const rightDiv = document.createElement('div');
-    rightDiv.className = 'muted';
-    rightDiv.textContent = formatReal(p.salary);
-    
-    div.appendChild(leftDiv);
-    div.appendChild(rightDiv);
-    
+    div.innerHTML = `
+      <div>
+        <strong>${p.name}</strong>
+        <div class="muted">${p.pos} • ${p.foot} • ${p.age} anos</div>
+        <div>${renderHealthBar(p.health)} ${badges}</div>
+      </div>
+      <div class="muted">${formatReal(p.salary)}</div>
+    `;
     div.addEventListener('dragstart', dragStart);
     div.addEventListener('click', ()=>{
       const pid = div.dataset.pid;
@@ -671,7 +677,6 @@ function populateBench(){
         if(document.querySelectorAll('.position-slot[data-assigned]').length < 11) btnPlayMatch.disabled = true;
       }
     });
-    
     bench.appendChild(div);
   });
 }
@@ -704,126 +709,7 @@ function dropHandler(ev){
   if(document.querySelectorAll('.position-slot[data-assigned]').length >= 11) btnPlayMatch.disabled = false;
 }
 
-/* -------------------- Partida (simulação) -------------------- */
-btnPlayMatch.addEventListener('click', ()=>{
-  tela3.style.display='none';
-  tela4.style.display='block';
-  userTeamNameEl.textContent = teamName.value || 'Meu Time';
-
-  jogadoresUsuario.innerHTML = '';
-  document.querySelectorAll('.position-slot[data-assigned]').forEach(slot=>{
-    const pid = slot.dataset.assigned;
-    const p = hired.find(h=>h.id===pid);
-    if(p){ 
-      const li = document.createElement('li'); 
-      li.innerHTML = `${p.name} (${p.pos}) ${renderHealthBar(p.health)}`;
-      jogadoresUsuario.appendChild(li); 
-    }
-  });
-
-  const escalaVila = ["Tadeu (GK)","Joãozinho (LB)","Bira (ZAG)","Marcão (ZAG)","Nego (RB)","Léo (VOL)","Careca (VOL)","Tico (MEI)","Juninho (MEI)","Beto (ATA)","Formiga (ATA)"];
-  jogadoresVila.innerHTML = '';
-  escalaVila.forEach(j=>{ const li=document.createElement('li'); li.textContent=j; jogadoresVila.appendChild(li); });
-
-  placar.textContent = '0 x 0';
-  comentarios.innerHTML = '<p><em>Apito inicial...</em></p>';
-  let golsU=0, golsV=0, minuto=1;
-  
-  const lances = [
-    "Escanteio perigoso!",
-    "Falta dura no meio-campo.",
-    "Chutão pra fora, quase na arquibancada!",
-    "Torcida grita 'é campeão!' sem motivo.",
-    "Juiz tropeçou na bola.",
-    "Goleiro saiu jogando errado.",
-    "Zagueiro furou feio, risos na torcida.",
-    "Bola na trave!!!",
-    "Carrinho criminoso, juiz fingiu que não viu.",
-    "Bandeirinha levantou a bandeira sem motivo."
-  ];
-
-  const intervalMs = 6000;
-  const interval = setInterval(()=>{
-    if(minuto >= 60){ 
-      clearInterval(interval); 
-      comentarios.innerHTML += '<p><strong>Fim de jogo!</strong></p>';
-      
-      // Aplicar desgaste de saúde após a partida
-      aplicarDesgasteSaude();
-      
-      btnContinuar.style.display='inline-block'; 
-      return; 
-    }
-    
-    let lance = lances[Math.floor(Math.random()*lances.length)];
-    
-    // Chance de comentário específico sobre saúde/profissão
-    if(Math.random() < 0.1) {
-      const jogadoresEscalados = hired.filter(p => 
-        document.querySelector(`.position-slot[data-assigned="${p.id}"]`)
-      );
-      if(jogadoresEscalados.length > 0) {
-        const jogador = jogadoresEscalados[Math.floor(Math.random() * jogadoresEscalados.length)];
-        if(jogador.health < 50) {
-          lance = `${jogador.name} parece cansado, a saúde está baixa!`;
-        } else if(jogador.profissao.tipo === 'executivo') {
-          lance = `${jogador.name} (${jogador.profissao.nome}) parece lento, vida de escritório pesa!`;
-        } else if(jogador.isPai) {
-          lance = `${jogador.name} corre muito, mas deve ter acordado de madrugada com o filho!`;
-        }
-      }
-    }
-    
-    if(Math.random() < 0.15){
-      if(Math.random() < 0.5){ 
-        golsU++; 
-        lance = "GOOOOL do " + (teamName.value || "Meu Time") + "!!!"; 
-      }
-      else { 
-        golsV++; 
-        lance = "GOOOOL da Vila Freitas!!!"; 
-      }
-      placar.textContent = `${golsU} x ${golsV}`;
-    }
-    comentarios.innerHTML += `<p>${minuto} min - ${lance}</p>`;
-    comentarios.scrollTop = comentarios.scrollHeight;
-    minuto += 6;
-  }, intervalMs);
-});
-
-function aplicarDesgasteSaude() {
-  hired.forEach(jogador => {
-    // Desgaste base da partida
-    let desgaste = 5;
-    
-    // Desgaste adicional pela profissão (executivos se desgastam mais)
-    if(jogador.profissao.tipo === 'executivo') {
-      desgaste += 3;
-    } else if(jogador.profissao.tipo === 'manual') {
-      desgaste += 1; // trabalhos manuais dão mais resistência
-    }
-    
-    // Desgaste adicional se for pai
-    if(jogador.isPai) {
-      desgaste += 2;
-    }
-    
-    jogador.health = Math.max(0, jogador.health - desgaste);
-  });
-  
-  showNotif('Saúde dos jogadores atualizada após a partida!');
-}
-
-/* voltar para escalação */
-btnContinuar.addEventListener('click', ()=>{
-  btnContinuar.style.display='none';
-  tela4.style.display='none';
-  tela3.style.display='block';
-  btnPlayMatch.disabled = true;
-  
-  // Atualizar a exibição da saúde no banco
-  populateBench();
-});
+// ... (o resto do código permanece igual) ...
 
 /* -------------------- Tela1: validação e navegação -------------------- */
 function validateTela1(){
@@ -847,7 +733,9 @@ generatePlayers();
 updateCash();
 updateSelectedCount();
 marketMessage.textContent = steps[marketStep].msg;
-renderMarket(steps[marketStep].filter);
+
+// Inicializar com mensagem padrão no box de fala
+playerSpeechBox.innerHTML = '💬 Passe o mouse sobre os nomes dos jogadores para ver suas apresentações!';
 
 /* deixar funções disponíveis para os ondrop/ondragover inline */
 window.allowDrop = allowDrop;
