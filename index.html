@@ -26,21 +26,20 @@
   .pitch{width:100%;height:420px;background:linear-gradient(#73c26b,#5eb95e);border-radius:12px;padding:12px;box-sizing:border-box}
   .notif{position:fixed;top:18px;right:18px;background:#ffefc2;color:#333;padding:10px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);border:1px solid #e6b800}
   .tooltip {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0,0,0,0.8);
+    position: fixed;
+    background: rgba(0,0,0,0.85);
     color: #fff;
-    padding: 8px;
+    padding: 8px 12px;
     border-radius: 6px;
     white-space: nowrap;
-    z-index: 10;
-    font-size: 12px;
+    z-index: 100;
+    font-size: 13px;
     display: none;
     pointer-events: none;
+    max-width: 250px;
+    line-height: 1.4;
   }
-  .player-card:hover .tooltip {
+  .tooltip.active {
     display: block;
   }
 </style>
@@ -72,10 +71,11 @@
   <div id="tela2" class="card" style="display:none">
     <h2>Tela 2 — Mercado de Jogadores</h2>
     <div id="marketMessage" style="font-weight:bold;margin-bottom:10px">Escolha no mínimo 2 goleiros para o seu time</div>
+    <div class="muted">Clique no nome do jogador para ver a sua apresentação.</div>
 
     <div style="margin-top:10px;overflow:auto;max-height:480px">
       <table id="playersTable">
-        <thead><tr><th>Nome</th><th>Posição</th><th>Pé</th><th>Idade</th><th>Salário</th><th>Saúde</th><th>Contratar</th></tr></thead>
+        <thead><tr><th>Nome</th><th>Posição</th><th>Profissão</th><th>Idade</th><th>Salário</th><th>Saúde</th><th>Contratar</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -156,6 +156,7 @@
       </div>
     </div>
   </div>
+<div id="tooltip" class="tooltip"></div>
 
 </div>
 
@@ -205,6 +206,7 @@ const userTeamNameEl = document.getElementById('userTeamName');
 const placar = document.getElementById('placar');
 const comentarios = document.getElementById('comentarios');
 const btnContinuar = document.getElementById('btnContinuar');
+const tooltip = document.getElementById('tooltip');
 
 /* -------------------- Helpers -------------------- */
 function showNotif(text, time=2500){
@@ -314,13 +316,9 @@ function renderMarket(filter){
     const tr = document.createElement('tr');
     const hiredAlready = hired.some(h=>h.id===p.id);
     tr.innerHTML = `
-      <td>
-        <strong>${p.name}</strong>
-        <div class="muted">${p.pos}</div>
-        <div class="tooltip">${p.specialityText}</div>
-      </td>
+      <td><strong class="player-name" data-id="${p.id}">${p.name}</strong><div class="muted">${p.pos}</div></td>
       <td>${p.pos}</td>
-      <td>${p.foot}</td>
+      <td>${p.profession.name}</td>
       <td>${p.age}</td>
       <td>${formatReal(p.salary)}</td>
       <td>${p.health}</td>
@@ -330,8 +328,31 @@ function renderMarket(filter){
   });
   // attach listeners
   playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb => cb.onchange = onToggleHire);
+  playersTbody.querySelectorAll('.player-name').forEach(nameEl => nameEl.addEventListener('click', onPlayerNameClick));
   // update disabled states
   updateCheckboxStates();
+}
+
+function onPlayerNameClick(e) {
+  const playerId = e.target.dataset.id;
+  const player = players.find(p => p.id === playerId);
+  if (player) {
+    showTooltip(e, player.specialityText);
+  }
+}
+
+function showTooltip(e, text) {
+  tooltip.textContent = text;
+  tooltip.classList.add('active');
+  const x = e.clientX;
+  const y = e.clientY;
+  tooltip.style.left = `${x + 15}px`;
+  tooltip.style.top = `${y - 15}px`;
+  document.addEventListener('click', hideTooltip, { once: true });
+}
+
+function hideTooltip() {
+  tooltip.classList.remove('active');
 }
 
 function updateCheckboxStates(){
@@ -416,16 +437,17 @@ function populateBench(){
     div.dataset.pos = p.pos;
     div.innerHTML = `
       <div>
-        <strong>${p.name}</strong>
+        <strong class="player-name" data-id="${p.id}">${p.name}</strong>
         <div class="muted">${p.pos} • ${p.foot} • ${p.age} anos</div>
         <div class="muted"><strong>Profissão:</strong> ${p.profession.name} ${p.isParent ? ' • Pai' : ''}</div>
         <div class="muted"><strong>Saúde:</strong> ${p.health}</div>
-        <div class="tooltip">${p.specialityText}</div>
       </div>
       <div class="muted">${formatReal(p.salary)}</div>
     `;
     div.addEventListener('dragstart', dragStart);
-    div.addEventListener('click', ()=>{
+    div.querySelector('.player-name').addEventListener('click', onPlayerNameClick);
+    div.addEventListener('click', (e)=>{
+      if (e.target.classList.contains('player-name')) return;
       const pid = div.dataset.pid;
       const slot = document.querySelector(`.position-slot[data-assigned="${pid}"]`);
       if(slot){
