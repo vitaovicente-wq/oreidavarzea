@@ -32,11 +32,57 @@
   .badge{display:inline-block;padding:2px 6px;border-radius:10px;font-size:10px;margin-left:4px;background:#e0e0e0}
   .badge-pai{background:#fff59d;color:#000}
   .badge-trabalho{background:#bbdefb}
-  .tooltip{position:relative;display:inline-block}
-  .tooltip .tooltiptext{visibility:hidden;width:280px;background-color:#333;color:#fff;text-align:center;border-radius:6px;padding:8px;position:absolute;z-index:1;bottom:125%;left:50%;margin-left:-140px;opacity:0;transition:opacity 0.3s;font-size:12px;line-height:1.4}
+  
+  /* Tooltip melhorado */
+  .tooltip{position:relative;display:inline-block;z-index:1000}
+  .tooltip .tooltiptext{
+    visibility:hidden;
+    width:300px;
+    background-color:#333;
+    color:#fff;
+    text-align:center;
+    border-radius:8px;
+    padding:12px;
+    position:absolute;
+    z-index:1001;
+    bottom:100%;
+    left:50%;
+    transform:translateX(-50%);
+    margin-bottom:10px;
+    opacity:0;
+    transition:opacity 0.3s;
+    font-size:13px;
+    line-height:1.4;
+    box-shadow:0 4px 12px rgba(0,0,0,0.3);
+    word-wrap:break-word;
+    white-space:normal;
+  }
   .tooltip:hover .tooltiptext{visibility:visible;opacity:1}
-  .tooltip .tooltiptext::after{content:"";position:absolute;top:100%;left:50%;margin-left:-5px;border-width:5px;border-style:solid;border-color:#333 transparent transparent transparent}
-  .player-name{cursor:pointer;text-decoration:underline dotted;color:#0b6bd6}
+  .tooltip .tooltiptext::after{
+    content:"";
+    position:absolute;
+    top:100%;
+    left:50%;
+    margin-left:-6px;
+    border-width:6px;
+    border-style:solid;
+    border-color:#333 transparent transparent transparent;
+  }
+  .player-name{
+    cursor:pointer;
+    text-decoration:underline dotted;
+    color:#0b6bd6;
+    padding:2px 4px;
+    border-radius:3px;
+    transition:background-color 0.2s;
+  }
+  .player-name:hover{background-color:#f0f8ff}
+  
+  /* Garantir que os tooltips não sejam cortados */
+  #playersTable { position: relative; }
+  #playersTable tbody tr { position: static; }
+  .bench { position: relative; overflow: visible; }
+  .player-card { position: static; }
 </style>
 </head>
 <body>
@@ -69,7 +115,7 @@
     <h2>Tela 2 — Mercado de Jogadores</h2>
     <div id="marketMessage" style="font-weight:bold;margin-bottom:10px">Escolha no mínimo 2 goleiros para o seu time</div>
 
-    <div style="margin-top:10px;overflow:auto;max-height:480px">
+    <div style="margin-top:10px;overflow:auto;max-height:480px;position:relative">
       <table id="playersTable">
         <thead><tr><th>Nome</th><th>Posição</th><th>Pé</th><th>Idade</th><th>Salário</th><th>Saúde</th><th>Detalhes</th><th>Contratar</th></tr></thead>
         <tbody></tbody>
@@ -128,7 +174,7 @@
       <div style="width:320px">
         <div class="card">
           <h3>Banco / Jogadores contratados</h3>
-          <div class="bench" id="bench"></div>
+          <div class="bench" id="bench" style="position:relative;overflow:visible"></div>
           <div class="muted" style="margin-top:8px">Clique no jogador no banco para desassociar (se já estiver escalado).</div>
         </div>
       </div>
@@ -158,6 +204,7 @@
 </div>
 
 <script>
+// ... (o resto do código JavaScript permanece exatamente igual) ...
 /* -------------------- Config / Estado -------------------- */
 const MAX_PLAYERS = 22;
 const TOTAL_MARKET = 42;
