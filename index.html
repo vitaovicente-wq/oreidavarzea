@@ -38,6 +38,7 @@
     pointer-events: none;
     max-width: 250px;
     line-height: 1.4;
+    transform: translate(-50%, -110%);
   }
   .tooltip.active {
     display: block;
@@ -344,10 +345,22 @@ function onPlayerNameClick(e) {
 function showTooltip(e, text) {
   tooltip.textContent = text;
   tooltip.classList.add('active');
+  
   const x = e.clientX;
   const y = e.clientY;
-  tooltip.style.left = `${x + 15}px`;
-  tooltip.style.top = `${y - 15}px`;
+
+  let top = y;
+  let left = x;
+
+  // Position the tooltip based on mouse position, with some offset
+  tooltip.style.left = `${left}px`;
+  tooltip.style.top = `${top}px`;
+  
+  // Center the tooltip relative to the click, but with an upward shift
+  const tooltipRect = tooltip.getBoundingClientRect();
+  tooltip.style.left = `${x - tooltipRect.width / 2}px`;
+  tooltip.style.top = `${y - tooltipRect.height - 15}px`;
+
   document.addEventListener('click', hideTooltip, { once: true });
 }
 
