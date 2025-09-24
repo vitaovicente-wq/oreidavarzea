@@ -41,7 +41,9 @@
     max-width: 250px;
     line-height: 1.4;
   }
-  .tooltip.active { display: block; }
+  .tooltip.active {
+    display: block;
+  }
 </style>
 </head>
 <body>
@@ -54,13 +56,13 @@
   <div id="tela1" class="card">
     <h2>Tela 1 — Cadastro</h2>
     <label>Nome do seu time
-      <input id="teamName" type="text" placeholder="Ex: Os Meninos da Rua" oninput="validateTela1()" />
+      <input id="teamName" type="text" placeholder="Ex: Os Meninos da Rua" />
     </label>
     <label>Seu nome
-      <input id="userName" type="text" placeholder="Seu nome" oninput="validateTela1()" />
+      <input id="userName" type="text" placeholder="Seu nome" />
     </label>
     <label>Cidade
-      <input id="cityName" type="text" placeholder="Cidade" oninput="validateTela1()" />
+      <input id="cityName" type="text" placeholder="Cidade" />
     </label>
     <div class="controls">
       <button id="btnToTela2" disabled>Contratar jogadores</button>
@@ -101,17 +103,20 @@
             <div style="display:flex;flex-wrap:wrap;justify-content:center">
               <div class="position-slot" data-pos="GK" id="slot-GK" ondrop="dropHandler(event)" ondragover="allowDrop(event)">GK</div>
             </div>
+
             <div style="display:flex;justify-content:space-between;margin-top:12px">
               <div class="position-slot" data-pos="LB" id="slot-LB" ondrop="dropHandler(event)" ondragover="allowDrop(event)">LB</div>
               <div class="position-slot" data-pos="CB1" id="slot-CB1" ondrop="dropHandler(event)" ondragover="allowDrop(event)">CB</div>
               <div class="position-slot" data-pos="CB2" id="slot-CB2" ondrop="dropHandler(event)" ondragover="allowDrop(event)">CB</div>
               <div class="position-slot" data-pos="RB" id="slot-RB" ondrop="dropHandler(event)" ondragover="allowDrop(event)">RB</div>
             </div>
+
             <div style="display:flex;justify-content:space-around;margin-top:12px">
               <div class="position-slot" data-pos="DM" id="slot-DM" ondrop="dropHandler(event)" ondragover="allowDrop(event)">VOL</div>
               <div class="position-slot" data-pos="CM1" id="slot-CM1" ondrop="dropHandler(event)" ondragover="allowDrop(event)">MEI</div>
               <div class="position-slot" data-pos="CM2" id="slot-CM2" ondrop="dropHandler(event)" ondragover="allowDrop(event)">MEI</div>
             </div>
+
             <div style="display:flex;justify-content:space-between;margin-top:12px">
               <div class="position-slot" data-pos="LW" id="slot-LW" ondrop="dropHandler(event)" ondragover="allowDrop(event)">AE</div>
               <div class="position-slot" data-pos="ST" id="slot-ST" ondrop="dropHandler(event)" ondragover="allowDrop(event)">ATA</div>
@@ -119,10 +124,12 @@
             </div>
           </div>
         </div>
+
         <div class="controls" style="margin-top:10px">
           <button id="btnPlayMatch" disabled>Jogar partida</button>
         </div>
       </div>
+
       <div style="width:320px">
         <div class="card">
           <h3>Banco / Jogadores contratados</h3>
@@ -151,10 +158,9 @@
       </div>
     </div>
   </div>
+<div id="tooltip" class="tooltip"></div>
 
 </div>
-
-<div class="tooltip" id="tooltip"></div>
 
 <script>
 /* -------------------- Config / Estado -------------------- */
@@ -185,6 +191,7 @@ const tela1 = document.getElementById('tela1');
 const tela2 = document.getElementById('tela2');
 const tela3 = document.getElementById('tela3');
 const tela4 = document.getElementById('tela4');
+
 
 const marketMessage = document.getElementById('marketMessage');
 const playersTbody = document.querySelector('#playersTable tbody');
