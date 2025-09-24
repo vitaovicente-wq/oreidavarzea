@@ -57,6 +57,20 @@
     background-color: #f0f8ff;
   }
   .badge-pai{background:#fff59d;color:#000;padding:2px 6px;border-radius:10px;font-size:10px;margin-left:4px}
+  .contrato-select {
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 12px;
+    width: 100px;
+  }
+  .btn-voltar {
+    background: #6c757d;
+    margin-right: 10px;
+  }
+  .btn-voltar:hover {
+    background: #5a6268;
+  }
 </style>
 </head>
 <body>
@@ -99,6 +113,7 @@
           <th>Idade</th>
           <th>Passe</th>
           <th>Salário/Jogo</th>
+          <th>Tempo Contrato</th>
           <th>Habilidade</th>
           <th>Saúde</th>
           <th>Profissão</th>
@@ -108,6 +123,7 @@
       </table>
     </div>
     <div class="controls">
+      <button id="btnVoltarStep" class="btn-voltar" style="display:none">← Voltar</button>
       <button id="btnNextStep">Próximo</button>
       <button id="btnEscalar" disabled>Escalar time</button>
       <div style="margin-left:auto">
@@ -210,6 +226,7 @@ const elements = {
   tela3: document.getElementById('tela3'),
   tela4: document.getElementById('tela4'),
   btnToTela2: document.getElementById('btnToTela2'),
+  btnVoltarStep: document.getElementById('btnVoltarStep'),
   marketMessage: document.getElementById('marketMessage'),
   playersTbody: document.querySelector('#playersTable tbody'),
   btnNextStep: document.getElementById('btnNextStep'),
@@ -268,46 +285,48 @@ function generateSkillDistribution() {
   // Garantir um jogador com habilidade 100
   skills.push(100);
   
-  // Distribuição normal entre 25-38 para a maioria
+  // Distribuição mais realista para várzea
   for (let i = 1; i < TOTAL_MARKET; i++) {
     let skill;
-    do {
-      // Distribuição normal com média ~31.5
-      skill = Math.round(Math.random() * 13) + 25; // 25-38
-      // Adicionar alguma variação para fora da média
-      if (Math.random() < 0.2) {
-        skill = Math.max(20, Math.min(45, skill + Math.round(Math.random() * 10) - 5));
-      }
-    } while (skill < 20 || skill > 45);
-    skills.push(skill);
+    // Maioria entre 25-45, alguns acima e abaixo
+    const rand = Math.random();
+    if (rand < 0.6) {
+      skill = Math.round(Math.random() * 20) + 25; // 25-45 (60%)
+    } else if (rand < 0.85) {
+      skill = Math.round(Math.random() * 15) + 46; // 46-60 (25%)
+    } else if (rand < 0.95) {
+      skill = Math.round(Math.random() * 10) + 15; // 15-24 (10%)
+    } else {
+      skill = Math.round(Math.random() * 15) + 61; // 61-75 (5%)
+    }
+    skills.push(Math.min(100, skill));
   }
   
-  // Embaralhar as habilidades
   return skills.sort(() => Math.random() - 0.5);
 }
 
-// ========== CALCULAR PASSE E SALÁRIO BASEADO EM HABILIDADE E IDADE ==========
+// ========== CALCULAR PASSE E SALÁRIO MAIS REALISTA ==========
 function calculatePlayerValue(skill, age) {
-  // Base do passe: habilidade é o fator principal
-  let basePasse = skill * 10; // R$ 1000 por ponto de habilidade
+  // PASSE MAIS BARATO - Permitir contratar 22 jogadores com ~R$ 3.000
+  let basePasse = skill * 5; // Reduzido de 10 para 5 (R$ 500 por ponto de habilidade)
   
-  // Ajuste por idade: jogadores mais jovens valem mais
+  // Ajuste por idade: jovens valem mais, veteranos menos
   let ageMultiplier = 1;
-  if (age <= 20) ageMultiplier = 1.5;
-  else if (age <= 25) ageMultiplier = 1.3;
-  else if (age <= 30) ageMultiplier = 1.0;
-  else if (age <= 35) ageMultiplier = 0.7;
+  if (age <= 20) ageMultiplier = 1.8;
+  else if (age <= 25) ageMultiplier = 1.5;
+  else if (age <= 30) ageMultiplier = 1.2;
+  else if (age <= 35) ageMultiplier = 0.8;
   else ageMultiplier = 0.5;
   
-  const passe = Math.round(basePasse * ageMultiplier / 10) * 10; // Arredondar para dezena
+  const passe = Math.round(basePasse * ageMultiplier / 10) * 10;
   
-  // Salário por jogo: baseado na habilidade com variação
-  const baseSalario = 50 + (skill * 1); // R$ 50 + R$ 1 por ponto de habilidade
-  const salario = Math.round((baseSalario + Math.random() * 30) / 5) * 5; // Arredondar para múltiplo de 5
+  // Salário por jogo mais realista
+  const baseSalario = 30 + (skill * 0.8); // Reduzido também
+  const salario = Math.round((baseSalario + Math.random() * 20) / 5) * 5;
   
   return {
-    passe: Math.max(100, Math.min(2000, passe)), // Limites: R$ 100 a R$ 2000
-    salarioJogo: Math.max(50, Math.min(150, salario)) // Limites: R$ 50 a R$ 150
+    passe: Math.max(50, Math.min(800, passe)), // Limites: R$ 50 a R$ 800
+    salarioJogo: Math.max(30, Math.min(120, salario)) // Limites: R$ 30 a R$ 120
   };
 }
 
@@ -328,8 +347,19 @@ elements.btnToTela2.addEventListener('click', () => {
   elements.tela1.style.display = 'none';
   elements.tela2.style.display = 'block';
   marketStep = 1;
+  updateButtonStates(); // Atualizar visibilidade do botão voltar
   elements.marketMessage.textContent = steps[marketStep].msg;
   renderMarket(steps[marketStep].filter);
+});
+
+// ========== BOTÃO VOLTAR ==========
+elements.btnVoltarStep.addEventListener('click', () => {
+  if (marketStep > 1) {
+    marketStep--;
+    elements.marketMessage.textContent = steps[marketStep].msg;
+    renderMarket(steps[marketStep].filter);
+    updateButtonStates();
+  }
 });
 
 // ========== GERAÇÃO DE JOGADORES ==========
@@ -341,19 +371,17 @@ function generatePlayers() {
   const positions = ['Goleiro', 'Lateral', 'Zagueiro', 'Volante', 'Meia', 'Atacante'];
   const counts = { 'Goleiro': 6, 'Lateral': 8, 'Zagueiro': 8, 'Volante': 6, 'Meia': 8, 'Atacante': 6 };
   
-  // Gerar distribuição de habilidades
   const skills = generateSkillDistribution();
   
   let id = 0;
   positions.forEach(pos => {
     for (let i = 0; i < counts[pos]; i++) {
       const name = `${firsts[id % firsts.length]} ${lastParts[id % lastParts.length]}`;
-      const age = Math.floor(Math.random() * 25) + 16; // 16-40 anos
+      const age = Math.floor(Math.random() * 25) + 16;
       const skill = skills[id];
       const health = Math.random() > 0.3 ? 100 : 80;
       const isPai = Math.random() < 0.2;
       
-      // Calcular passe e salário baseado na habilidade e idade
       const valores = calculatePlayerValue(skill, age);
       
       const apresentacoes = {
@@ -374,6 +402,7 @@ function generatePlayers() {
         skill: skill,
         passe: valores.passe,
         salarioJogo: valores.salarioJogo,
+        contrato: '6 meses', // Default
         health: health,
         profissao: { nome: ['Pedreiro', 'Eletricista', 'Professor', 'Vendedor', 'Gerente', 'Entregador'][Math.floor(Math.random() * 6)], tipo: 'manual' },
         isPai: isPai,
@@ -384,14 +413,14 @@ function generatePlayers() {
   });
 }
 
-// ========== MERCADO ==========
+// ========== MERCADO COM CONTRATO ==========
 function renderMarket(filter) {
   elements.playersTbody.innerHTML = '';
   const list = filter ? players.filter(p => p.pos === filter) : players;
   
   if (list.length === 0) {
     const tr = document.createElement('tr');
-    tr.innerHTML = '<td colspan="10" class="muted">Nenhum jogador disponível</td>';
+    tr.innerHTML = '<td colspan="11" class="muted">Nenhum jogador disponível</td>';
     elements.playersTbody.appendChild(tr);
     return;
   }
@@ -410,6 +439,13 @@ function renderMarket(filter) {
       <td>${p.age}</td>
       <td>${formatReal(p.passe)}</td>
       <td>${formatReal(p.salarioJogo)}</td>
+      <td>
+        <select class="contrato-select" data-id="${p.id}" ${hiredAlready ? 'disabled' : ''}>
+          <option value="3 meses">3 meses</option>
+          <option value="6 meses" selected>6 meses</option>
+          <option value="1 ano">1 ano</option>
+        </select>
+      </td>
       <td>${renderSkillBar(p.skill)}</td>
       <td>${renderHealthBar(p.health)}</td>
       <td>${p.profissao.nome}${p.isPai ? ' <span class="badge-pai">Pai</span>' : ''}</td>
@@ -420,6 +456,16 @@ function renderMarket(filter) {
     const nomeSpan = tr.querySelector('.player-name-highlight');
     nomeSpan.addEventListener('mouseenter', () => {
       showPlayerSpeech(p.name, p.apresentacao);
+    });
+    
+    // Evento para seleção de contrato
+    const selectContrato = tr.querySelector('.contrato-select');
+    selectContrato.addEventListener('change', (e) => {
+      const playerId = e.target.dataset.id;
+      const player = players.find(p => p.id === playerId);
+      if (player) {
+        player.contrato = e.target.value;
+      }
     });
     
     elements.playersTbody.appendChild(tr);
@@ -450,7 +496,7 @@ function onToggleHire(e) {
       return;
     }
     CASH -= ply.passe;
-    hired.push(ply);
+    hired.push({...ply}); // Copia o jogador com o contrato atual
   } else {
     CASH += ply.passe;
     hired = hired.filter(h => h.id !== pid);
@@ -476,8 +522,13 @@ function countHiredByPos(pos) {
 }
 
 function updateButtonStates() {
+  // Botão Voltar (mostrar apenas a partir do passo 2)
+  elements.btnVoltarStep.style.display = marketStep > 1 ? 'inline-block' : 'none';
+  
+  // Botão Escalar
   elements.btnEscalar.disabled = hired.length !== MAX_PLAYERS;
   
+  // Botão Próximo
   if (marketStep >= 1 && marketStep < steps.length) {
     const current = steps[marketStep];
     const have = countHiredByPos(current.filter);
@@ -520,13 +571,153 @@ elements.btnEscalar.addEventListener('click', () => {
     showNotif(`Contrate exatamente 22 jogadores! Você tem ${hired.length}.`);
     return;
   }
+  
+  // Calcular custo total dos 22 jogadores
+  const custoTotal = hired.reduce((total, jogador) => total + jogador.passe, 0);
+  console.log('Custo total da equipe:', formatReal(custoTotal));
+  
   elements.tela2.style.display = 'none';
   elements.tela3.style.display = 'block';
   populateBench();
 });
 
-// ========== RESTANTE DO CÓDIGO (ESCALAÇÃO E PARTIDA) PERMANECE IGUAL ==========
-// ... [O código das funções populateBench, allowDrop, dragStart, dropHandler, simulateMatch permanece igual]
+// ========== RESTANTE DO CÓDIGO (ESCALAÇÃO E PARTIDA) ==========
+function populateBench() {
+  elements.bench.innerHTML = '';
+  hired.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'player-card';
+    div.id = 'bench-' + p.id;
+    div.draggable = true;
+    div.dataset.pid = p.id;
+    div.innerHTML = `
+      <div>
+        <strong>${p.name}</strong>
+        <div class="muted">${p.pos} • ${p.foot} • ${p.age} anos</div>
+        <div>${renderSkillBar(p.skill)} ${renderHealthBar(p.health)}</div>
+        <div class="muted">Contrato: ${p.contrato}</div>
+      </div>
+      <div class="muted">${formatReal(p.salarioJogo)}/jogo</div>
+    `;
+    
+    div.addEventListener('dragstart', dragStart);
+    elements.bench.appendChild(div);
+  });
+  
+  document.querySelectorAll('.position-slot').forEach(slot => {
+    slot.addEventListener('dragover', allowDrop);
+    slot.addEventListener('drop', dropHandler);
+  });
+}
+
+function allowDrop(ev) {
+  ev.preventDefault();
+}
+
+function dragStart(ev) {
+  ev.dataTransfer.setData('text/plain', ev.target.dataset.pid);
+}
+
+function dropHandler(ev) {
+  ev.preventDefault();
+  const pid = ev.dataTransfer.getData('text/plain');
+  const slot = ev.currentTarget;
+  const p = hired.find(h => h.id === pid);
+  
+  if (!p) return;
+  if (document.querySelector(`[data-assigned="${pid}"]`)) {
+    showNotif(`${p.name} já está escalado!`);
+    return;
+  }
+  
+  const slotPos = slot.dataset.pos;
+  const validPositions = {
+    'GK': ['Goleiro'], 'LB': ['Lateral', 'Zagueiro'], 'RB': ['Lateral', 'Zagueiro'],
+    'CB1': ['Zagueiro', 'Lateral'], 'CB2': ['Zagueiro', 'Lateral'], 'DM': ['Volante'],
+    'CM1': ['Meia'], 'CM2': ['Meia'], 'LW': ['Meia'], 'RW': ['Meia'], 'ST': ['Atacante']
+  };
+  
+  if (!validPositions[slotPos]?.includes(p.pos)) {
+    showNotif(`${p.name} não joga como ${slotPos}!`);
+    return;
+  }
+  
+  slot.dataset.assigned = pid;
+  slot.textContent = p.name;
+  
+  const card = document.getElementById('bench-' + pid);
+  if (card) {
+    card.classList.add('locked');
+    card.draggable = false;
+  }
+  
+  const assignedCount = document.querySelectorAll('.position-slot[data-assigned]').length;
+  elements.btnPlayMatch.disabled = assignedCount < 11;
+}
+
+elements.btnPlayMatch.addEventListener('click', () => {
+  elements.tela3.style.display = 'none';
+  elements.tela4.style.display = 'block';
+  elements.userTeamName.textContent = elements.teamName.value || 'Meu Time';
+  simulateMatch();
+});
+
+function simulateMatch() {
+  elements.placar.textContent = '0 x 0';
+  elements.comentarios.innerHTML = '<p><em>Apito inicial da partida!</em></p>';
+  
+  let golsCasa = 0;
+  let golsVisitante = 0;
+  let minuto = 1;
+  
+  const interval = setInterval(() => {
+    if (minuto > 90) {
+      clearInterval(interval);
+      elements.comentarios.innerHTML += '<p><strong>Fim de jogo!</strong></p>';
+      elements.btnContinuar.style.display = 'block';
+      
+      // Aplicar desgaste de saúde
+      hired.forEach(jogador => {
+        let desgaste = 5;
+        if (jogador.profissao.tipo === 'executivo') desgaste += 3;
+        if (jogador.isPai) desgaste += 2;
+        jogador.health = Math.max(0, jogador.health - desgaste);
+      });
+      
+      return;
+    }
+    
+    const lances = [
+      "Jogada de perigo! Quase gol!", "Falta cometida no meio-campo",
+      "Escanteio para o time da casa", "Contra-ataque perigoso!",
+      "Chute de longa distância!", "Defesa difícil do goleiro!"
+    ];
+    
+    let lance = lances[Math.floor(Math.random() * lances.length)];
+    
+    if (Math.random() < 0.1) {
+      if (Math.random() < 0.5) {
+        golsCasa++;
+        lance = "⚽ GOOOOL DO " + (elements.teamName.value || "TIME DA CASA") + "!";
+      } else {
+        golsVisitante++;
+        lance = "⚽ GOOOOL DA VILA FREITAS!";
+      }
+      elements.placar.textContent = `${golsCasa} x ${golsVisitante}`;
+    }
+    
+    elements.comentarios.innerHTML += `<p>${minuto}min - ${lance}</p>`;
+    elements.comentarios.scrollTop = elements.comentarios.scrollHeight;
+    minuto++;
+  }, 500);
+}
+
+elements.btnContinuar.addEventListener('click', () => {
+  elements.tela4.style.display = 'none';
+  elements.tela3.style.display = 'block';
+  elements.btnContinuar.style.display = 'none';
+  populateBench(); // Atualizar saúde no banco
+});
 
 // ========== INICIALIZAÇÃO ==========
 function init() {
@@ -537,17 +728,15 @@ function init() {
   validateTela1();
   elements.marketMessage.textContent = steps[marketStep].msg;
   
-  // Log da distribuição de habilidades para debug
-  const habilidades = players.map(p => p.skill);
-  console.log('Distribuição de habilidades:', {
-    min: Math.min(...habilidades),
-    max: Math.max(...habilidades),
-    media: (habilidades.reduce((a, b) => a + b, 0) / habilidades.length).toFixed(1),
-    jogador100: players.find(p => p.skill === 100)?.name
-  });
+  // Debug dos valores
+  const totalPasse = players.reduce((sum, p) => sum + p.passe, 0);
+  const mediaPasse = totalPasse / players.length;
+  console.log('Valores realistas - Média de passe:', formatReal(mediaPasse));
+  console.log('Jogador mais caro:', formatReal(Math.max(...players.map(p => p.passe))));
 }
 
 init();
 </script>
 </body>
 </html>
+
