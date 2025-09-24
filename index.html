@@ -5,227 +5,197 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>O Rei da Várzea — Protótipo</title>
 <style>
-  :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;}
-  body{margin:0;background:#f5f7fb;color:#111}
-  header{background:#0b6bd6;color:#fff;padding:14px 18px}
-  .container{max-width:1100px;margin:18px auto;padding:10px}
-  .card{background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);padding:16px;margin-bottom:16px;}
-  label{display:block;margin-top:8px}
-  input[type=text]{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px}
-  button{background:#0b6bd6;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
-  button[disabled]{opacity:0.45;cursor:default}
-  table{width:100%;border-collapse:collapse;font-size:14px}
-  th,td{padding:8px;border-bottom:1px solid #eee;text-align:left}
-  th{background:#fafafa}
-  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px}
-  .muted{color:#666;font-size:13px}
-  .bench{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto;padding:8px;border:1px dashed #ccc;border-radius:8px}
-  .player-card{padding:8px;border-radius:8px;background:#fff;border:1px solid #eee;margin-bottom:6px;cursor:grab;display:flex;justify-content:space-between;align-items:center;position:relative}
-  .player-card.locked{background:#ddd;cursor:not-allowed}
-  .position-slot{width:90px;height:40px;border-radius:6px;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;cursor:pointer;margin:6px}
-  .pitch{width:100%;height:420px;background:linear-gradient(#73c26b,#5eb95e);border-radius:12px;padding:12px;box-sizing:border-box}
-  .notif{position:fixed;top:18px;right:18px;background:#ffefc2;color:#333;padding:10px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);border:1px solid #e6b800}
-  .tooltip {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: rgba(0,0,0,0.85);
-    color: #fff;
-    padding: 8px 12px;
-    border-radius: 6px;
-    white-space: nowrap;
-    z-index: 100;
-    font-size: 13px;
-    display: none;
-    pointer-events: none;
-    max-width: 250px;
-    line-height: 1.4;
-  }
-  .tooltip.active { display: block; }
+  body{font-family:sans-serif;margin:0;padding:0;background:#f2f2f2}
+  .screen{display:none;padding:20px}
+  .active{display:block}
+  table{width:100%;border-collapse:collapse;margin-bottom:10px}
+  th,td{border:1px solid #ccc;padding:5px;text-align:center}
+  .muted{color:#666;font-size:0.9em}
+  button{padding:10px 20px;font-size:16px;margin-top:10px}
+  .player-name{cursor:pointer;color:blue;text-decoration:underline}
 </style>
 </head>
 <body>
-<header>
-  <div class="container"><h1>O Rei da Várzea — Protótipo</h1></div>
-</header>
 
-<div class="container">
+<!-- Tela 1 -->
+<div id="screen1" class="screen active">
+  <h2>Bem-vindo ao O Rei da Várzea</h2>
+  <button id="btnStart">Começar</button>
+</div>
 
-  <!-- Tela 1 -->
-  <div id="tela1" class="card">
-    <h2>Tela 1 — Cadastro</h2>
-    <label>Nome do seu time
-      <input id="teamName" type="text" placeholder="Ex: Os Meninos da Rua" oninput="validateTela1()" />
-    </label>
-    <label>Seu nome
-      <input id="userName" type="text" placeholder="Seu nome" oninput="validateTela1()" />
-    </label>
-    <label>Cidade
-      <input id="cityName" type="text" placeholder="Cidade" oninput="validateTela1()" />
-    </label>
-    <div class="controls">
-      <button id="btnToTela2" disabled>Contratar jogadores</button>
-      <div class="muted">Preencha todos os campos para habilitar.</div>
-    </div>
-  </div>
+<!-- Tela 2: Mercado -->
+<div id="screen2" class="screen">
+  <h2 id="marketMessage">Escolha seus jogadores</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Posição</th>
+        <th>Profissão</th>
+        <th>Idade</th>
+        <th>Salário</th>
+        <th>Saúde</th>
+        <th>Contratar</th>
+      </tr>
+    </thead>
+    <tbody id="playersTbody"></tbody>
+  </table>
+  <button id="btnNextStep">Próximo</button>
+</div>
 
-  <!-- Tela 2 -->
-  <div id="tela2" class="card" style="display:none">
-    <h2>Tela 2 — Mercado de Jogadores</h2>
-    <div id="marketMessage" style="font-weight:bold;margin-bottom:10px"></div>
-    <div class="muted">Clique no nome do jogador para ver a sua apresentação.</div>
+<!-- Tela 3 -->
+<div id="screen3" class="screen">
+  <h2>Resumo do Time</h2>
+  <ul id="summary"></ul>
+  <button id="btnNextScreen3">Continuar</button>
+</div>
 
-    <div style="margin-top:10px;overflow:auto;max-height:480px">
-      <table id="playersTable">
-        <thead><tr><th>Nome</th><th>Posição</th><th>Profissão</th><th>Idade</th><th>Salário</th><th>Saúde</th><th>Contratar</th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-
-    <div class="controls">
-      <button id="btnNextStep">Próximo</button>
-      <button id="btnEscalar" disabled>Escalar time</button>
-      <div style="margin-left:auto">
-        <strong>Dinheiro em caixa:</strong>
-        <span id="cashDisplay">R$ 5.000</span> |
-        <span class="muted">Elenco <span id="selectedCount">0</span>/22</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tela 3 -->
-  <div id="tela3" class="card" style="display:none">
-    <h2>Tela 3 — Escalação</h2>
-    <!-- ... Manter layout de escalação e banco igual ao original ... -->
-  </div>
-
-  <!-- Tela 4 -->
-  <div id="tela4" class="card" style="display:none">
-    <h2>Partida em andamento</h2>
-    <!-- ... Layout da partida igual ao original ... -->
-  </div>
-
-  <div id="tooltip" class="tooltip"></div>
-
+<!-- Tela 4 -->
+<div id="screen4" class="screen">
+  <h2>Time Escalado!</h2>
+  <ul id="finalTeam"></ul>
 </div>
 
 <script>
-/* -------------------- Estado -------------------- */
-const MAX_PLAYERS = 22;
-let CASH = 5000;
-let players = [];
+const screen1 = document.getElementById('screen1');
+const screen2 = document.getElementById('screen2');
+const screen3 = document.getElementById('screen3');
+const screen4 = document.getElementById('screen4');
+
+const btnStart = document.getElementById('btnStart');
+const btnNextStep = document.getElementById('btnNextStep');
+const btnNextScreen3 = document.getElementById('btnNextScreen3');
+
+const playersTbody = document.getElementById('playersTbody');
+const marketMessage = document.getElementById('marketMessage');
+const summary = document.getElementById('summary');
+const finalTeam = document.getElementById('finalTeam');
+
+const players = [
+  {id:1,name:'João',pos:'Goleiro',profession:{name:'Profissional'},age:22,salary:5000,health:'Ótima',specialityText:'Defesa'},
+  {id:2,name:'Carlos',pos:'Goleiro',profession:{name:'Amador'},age:28,salary:3000,health:'Boa',specialityText:'Reflexos'},
+  {id:3,name:'Lucas',pos:'Zagueiro',profession:{name:'Profissional'},age:25,salary:4000,health:'Ótima',specialityText:'Desarme'},
+  {id:4,name:'Pedro',pos:'Zagueiro',profession:{name:'Amador'},age:27,salary:2500,health:'Boa',specialityText:'Posicionamento'},
+  {id:5,name:'Mateus',pos:'Atacante',profession:{name:'Profissional'},age:24,salary:6000,health:'Ótima',specialityText:'Finalização'},
+  {id:6,name:'Rafael',pos:'Meio-campo',profession:{name:'Amador'},age:23,salary:3500,health:'Boa',specialityText:'Distribuição'},
+  {id:7,name:'Bruno',pos:'Atacante',profession:{name:'Amador'},age:21,salary:2000,health:'Boa',specialityText:'Velocidade'},
+  // Adicione todos os jogadores necessários
+];
+
 let hired = [];
-let marketStep = 1; // Começa em goleiros
-
+let marketStep = 0;
 const steps = [
-  { msg: "Hora de montar o seu time, escolha 22 jogadores para iniciar", filter: null, min: 0 },
-  { msg: "Escolha no mínimo 2 goleiros para o seu time", filter: "Goleiro", min: 2 },
-  { msg: "Escolha no mínimo 3 laterais para o seu time", filter: "Lateral", min: 3 },
-  { msg: "Escolha no mínimo 3 zagueiros para o seu time", filter: "Zagueiro", min: 3 },
-  { msg: "Escolha no mínimo 3 volantes para o seu time", filter: "Volante", min: 3 },
-  { msg: "Escolha no mínimo 6 meias para o seu time", filter: "Meia", min: 6 },
-  { msg: "Escolha no mínimo 4 atacantes para o seu time", filter: "Atacante", min: 4 }
+  {filter:'Goleiro',min:1,msg:'Escolha seus goleiros'},
+  {filter:'Zagueiro',min:2,msg:'Escolha seus zagueiros'},
+  {filter:'Meio-campo',min:2,msg:'Escolha seus meio-campistas'},
+  {filter:'Atacante',min:2,msg:'Escolha seus atacantes'}
 ];
 
-/* -------------------- Jogadores originais -------------------- */
-const originalNames = [
-  "Marrentinho Carioca","Juscelino Paulista","Ronaldinho Baiano","Berg Gaucho",
-  "Tico Mineiro","Zeca Nordestino","Xandão Pernambucano","Pedrinho Capixaba",
-  "Claudinho de Jesus","Sandro do Pneu","Marollo do Grau","Ricardão Carioca",
-  "Juninho Paulista","Baiano Baiano","Fumaça Gaucho","Cascata Mineiro",
-  "Tubarão Nordestino","Gordão Pernambucano"
-];
+function showScreen(screen){
+  [screen1,screen2,screen3,screen4].forEach(s=>s.classList.remove('active'));
+  screen.classList.add('active');
+}
 
-/* -------------------- Funções helpers -------------------- */
-function formatReal(n){ return 'R$ '+n.toLocaleString('pt-BR'); }
-function updateCash(){ document.getElementById('cashDisplay').textContent = formatReal(CASH); }
-function updateSelectedCount(){ document.getElementById('selectedCount').textContent = hired.length; }
-function showNotif(text,time=2500){ const box=document.createElement('div');box.className='notif';box.textContent=text;document.body.appendChild(box);setTimeout(()=>box.remove(),time);}
-function pickFoot(){ const r=Math.random()*100; if(r<10)return 'Ambidestro'; if(r<70)return 'Direito'; return 'Esquerdo'; }
-function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+btnStart.onclick = ()=>showScreen(screen2);
 
-/* -------------------- Gerar jogadores -------------------- */
-function generatePlayers(){
-  const positions = ["Goleiro","Lateral","Zagueiro","Volante","Meia","Atacante"];
-  players=[];
-  for(let i=0;i<originalNames.length;i++){
-    const pos = positions[i % positions.length];
-    players.push({
-      id:'p'+i,
-      name:originalNames[i],
-      pos,
-      foot:pickFoot(),
-      age:randInt(16,45),
-      salary:randInt(50,200),
-      health:randInt(80,100),
-      profession:{name:"Profissão X",salaryMod:1,isSedentary:false}
-    });
+function formatReal(num){return 'R$ '+num.toLocaleString('pt-BR')}
+
+function showNotif(msg){alert(msg)}
+
+function onToggleHire(e){
+  const id = parseInt(e.target.dataset.id);
+  if(e.target.checked){
+    const player = players.find(p=>p.id===id);
+    hired.push(player);
+  }else{
+    hired = hired.filter(h=>h.id!==id);
   }
 }
 
-/* -------------------- Render mercado -------------------- */
-const playersTbody = document.querySelector('#playersTable tbody');
 function renderMarket(filter){
-  playersTbody.innerHTML='';
-  const list = players.filter(p=>!filter||p.pos===filter);
-  if(list.length===0){ const tr=document.createElement('tr');tr.innerHTML='<td colspan="7" class="muted">Nenhum jogador disponível para essa posição.</td>';playersTbody.appendChild(tr);return;}
+  playersTbody.innerHTML = '';
+  const list = players.filter(p => !hired.some(h => h.id === p.id) && (!filter || p.pos === filter));
+  
+  if(list.length === 0){
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td colspan="7" class="muted">Nenhum jogador disponível para essa posição.</td>';
+    playersTbody.appendChild(tr);
+    return;
+  }
+
   list.forEach(p=>{
-    const tr=document.createElement('tr');
-    const hiredAlready = hired.some(h=>h.id===p.id);
-    tr.innerHTML=`
-      <td><strong>${p.name}</strong><div class="muted">${p.pos}</div></td>
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>
+        <strong class="player-name" data-id="${p.id}" onclick="showPlayerPresentation(event, '${p.specialityText.replace(/'/g, "\\'")}')">${p.name}</strong>
+        <div class="muted">${p.pos}</div>
+      </td>
       <td>${p.pos}</td>
       <td>${p.profession.name}</td>
       <td>${p.age}</td>
       <td>${formatReal(p.salary)}</td>
       <td>${p.health}</td>
-      <td><input type="checkbox" data-id="${p.id}" ${hiredAlready?'checked':''}></td>
+      <td style="width:120px">
+        <input type="checkbox" data-id="${p.id}" ${hired.some(h => h.id === p.id) ? 'checked' : ''}>
+      </td>
     `;
     playersTbody.appendChild(tr);
   });
-  playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.onchange=onToggleHire);
-}
-function onToggleHire(e){
-  const cb=e.currentTarget;
-  const pid=cb.dataset.id;
-  const ply=players.find(p=>p.id===pid);
-  if(cb.checked){ CASH-=ply.salary; hired.push(ply); } 
-  else{ CASH+=ply.salary; hired=hired.filter(h=>h.id!==pid); }
-  updateCash(); updateSelectedCount(); renderMarket(steps[marketStep].filter);
+
+  playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb => cb.onchange = onToggleHire);
 }
 
-/* -------------------- Botões -------------------- */
-document.getElementById('btnToTela2').addEventListener('click',()=>{
-  document.getElementById('tela1').style.display='none';
-  document.getElementById('tela2').style.display='block';
-  marketStep=1;
-  document.getElementById('marketMessage').textContent=steps[marketStep].msg;
-  renderMarket(steps[marketStep].filter);
-});
-document.getElementById('btnNextStep').addEventListener('click',()=>{
-  // Verifica mínimo
-  const minRequired = steps[marketStep].min;
-  const hiredInStep = hired.filter(h=>h.pos===steps[marketStep].filter).length;
-  if(hiredInStep<minRequired){ showNotif(`Escolha pelo menos ${minRequired} jogadores desta posição`); return; }
+function showPlayerPresentation(e,text){alert('Especialidade: '+text)}
+
+btnNextStep.onclick = ()=>{
+  const current = steps[marketStep];
+  if(current && current.filter){
+    const have = hired.filter(h => h.pos === current.filter).length;
+    if(have < current.min){
+      showNotif(`Escolha no mínimo ${current.min} ${current.filter}(s).`);
+      return;
+    }
+  }
+
   marketStep++;
-  if(marketStep>=steps.length){ document.getElementById('btnEscalar').disabled=false; document.getElementById('btnNextStep').disabled=true; return; }
-  document.getElementById('marketMessage').textContent=steps[marketStep].msg;
-  renderMarket(steps[marketStep].filter);
-});
-document.getElementById('btnEscalar').addEventListener('click',()=>{ showNotif("Você pode escalar seu time agora!"); });
+  if(marketStep >= steps.length){
+    marketStep = steps.length - 1;
+    // Avança para Tela 3
+    showScreen(screen3);
+    renderSummary();
+    return;
+  }
 
-/* -------------------- Tela 1 validação -------------------- */
-function validateTela1(){
-  const v1=document.getElementById('teamName').value.trim();
-  const v2=document.getElementById('userName').value.trim();
-  const v3=document.getElementById('cityName').value.trim();
-  document.getElementById('btnToTela2').disabled = !(v1 && v2 && v3);
+  marketMessage.textContent = steps[marketStep].msg;
+  renderMarket(steps[marketStep].filter);
+};
+
+function renderSummary(){
+  summary.innerHTML='';
+  hired.forEach(p=>{
+    const li = document.createElement('li');
+    li.textContent = `${p.name} - ${p.pos}`;
+    summary.appendChild(li);
+  });
 }
 
-/* -------------------- Inicialização -------------------- */
-generatePlayers();
-updateCash();
-updateSelectedCount();
+btnNextScreen3.onclick = ()=>{
+  showScreen(screen4);
+  renderFinal();
+};
+
+function renderFinal(){
+  finalTeam.innerHTML='';
+  hired.forEach(p=>{
+    const li = document.createElement('li');
+    li.textContent = `${p.name} - ${p.pos}`;
+    finalTeam.appendChild(li);
+  });
+}
+
+// Inicializa mercado com primeira posição
+renderMarket(steps[marketStep].filter);
 </script>
+
 </body>
 </html>
