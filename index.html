@@ -32,6 +32,11 @@
   .badge{display:inline-block;padding:2px 6px;border-radius:10px;font-size:10px;margin-left:4px;background:#e0e0e0}
   .badge-pai{background:#fff59d;color:#000}
   .badge-trabalho{background:#bbdefb}
+  .tooltip{position:relative;display:inline-block}
+  .tooltip .tooltiptext{visibility:hidden;width:280px;background-color:#333;color:#fff;text-align:center;border-radius:6px;padding:8px;position:absolute;z-index:1;bottom:125%;left:50%;margin-left:-140px;opacity:0;transition:opacity 0.3s;font-size:12px;line-height:1.4}
+  .tooltip:hover .tooltiptext{visibility:visible;opacity:1}
+  .tooltip .tooltiptext::after{content:"";position:absolute;top:100%;left:50%;margin-left:-5px;border-width:5px;border-style:solid;border-color:#333 transparent transparent transparent}
+  .player-name{cursor:pointer;text-decoration:underline dotted;color:#0b6bd6}
 </style>
 </head>
 <body>
@@ -185,6 +190,142 @@ const profissoes = [
   { nome: "Enfermeiro", tipo: "comercial", desgasteSaude: 6, salarioExtra: 1300 }
 ];
 
+/* -------------------- Textos de Apresentação -------------------- */
+const apresentacoes = {
+  Goleiro: {
+    "Pegador de Pênaltis": [
+      "Pode bater, professor! Pênalti pra mim é como beija-flor no mel, eu pego!",
+      "Na hora do pênalti, fecho o gol e abro o caixão do atacante. Não tem jeito!"
+    ],
+    "Muralha": [
+      "Dentro da pequena área, eu viro um paredão de concreto. Chuta que é meu!",
+      "Tirou a bola da zaga? Não importa! De perto, ninguém me passa!"
+    ],
+    "Goleiro-Líbero": [
+      "Gosto de jogar com os pés, de dar uma ajuda na saída de bola, o time pode confiar em mim.",
+      "Não sou um goleiro comum. Saio jogando, dou uns dribles e viro o jogo."
+    ],
+    "Defensor de Faltas": [
+      "A falta é a especialidade da casa. Pode cruzar, pode chutar, que eu tô pronto.",
+      "O adversário pode ensaiar o escanteio à vontade, a bola parada é minha, eu resolvo!"
+    ],
+    "Paredão": [
+      "Não importa a distância, se a bola está vindo de longe, ela é minha, e o gol está seguro.",
+      "De fora da área? Pode chutar! Eu consigo ver a bola de longe e sei pra onde ela vai."
+    ]
+  },
+  Lateral: {
+    "Cavalinho": [
+      "Sou o motorzinho da lateral! Subo e desço o jogo todo, sem parar, sem cansar!",
+      "Sabe aqueles 90 minutos de jogo? Pra mim são 90 minutos de pique, correndo pra defender e pra atacar."
+    ],
+    "Cruzamento Preciso": [
+      "Pode pedir, atacante! Eu cruzo a bola na sua cabeça, é só empurrar pra dentro.",
+      "Meu cruzamento é uma obra de arte. A bola vai na medida certa pra você botar pra dentro."
+    ],
+    "De Ferro": [
+      "Jogo de corpo, dividida... pode vir, meu joelho e minha canela são de aço.",
+      "Não saio do jogo por uma pancada, sou duro na queda, pode vir quente que eu estou fervendo!"
+    ],
+    "Apoio Ofensivo": [
+      "Não vivo só de defesa! Gosto de ir pro ataque, de driblar, de fazer jogada na ponta.",
+      "Sempre que posso, me aventuro no ataque, sou um problema a mais pra defesa do adversário."
+    ],
+    "Marcador Implacável": [
+      "Não dou espaço pra ninguém. Se o adversário é rápido, eu sou mais! Se ele dribla, eu roubo a bola!",
+      "O atacante adversário pode pedir pra sair. Fico no pé dele o jogo todo, ele não toca na bola."
+    ]
+  },
+  Zagueiro: {
+    "Cão de Guarda": [
+      "Entrou na área, a bola é minha! O atacante pode até pensar que é dele, mas eu roubo fácil.",
+      "Meu trabalho é um só: vigiar o atacante adversário. Se ele tiver um centímetro de espaço, eu fecho!"
+    ],
+    "Cabeceador": [
+      "Se a bola vem pelo alto, não tem pra ninguém! Eu sou o rei do ar, pode cruzar que eu meto de cabeça.",
+      "Zagueiro que não sobe pra cabecear, não é zagueiro. Eu sou o melhor no jogo aéreo!"
+    ],
+    "Senhor do Meio de Campo": [
+      "Gosto de antecipar. Se a bola estiver no meio de campo, é minha, e eu desarmo o ataque deles!",
+      "Eu resolvo a parada lá na frente. O contra-ataque do adversário para nos meus pés!"
+    ],
+    "Zagueiro Artilheiro": [
+      "Ninguém espera que eu chute, mas eu gosto de arriscar. Meu chute é forte, pode ser de longe que a bola vai no ângulo!",
+      "Quando o juiz apita a falta, o artilheiro do time sou eu. Minha perna é pesada e o chute vai no gol!"
+    ],
+    "De Ferro": [
+      "Jogo de corpo, dividida... pode vir, meu joelho e minha canela são de aço.",
+      "Não saio do jogo por uma pancada, sou duro na queda, pode vir quente que eu estou fervendo!"
+    ]
+  },
+  Volante: {
+    "Motorzinho": [
+      "Eu corro por mim e pelo time todo. No final do jogo, eu continuo com fôlego, sou incansável!",
+      "Onde a bola está, eu estou. Sigo a bola por todo o campo, dou o sangue pela vitória."
+    ],
+    "Carrinho Cirúrgico": [
+      "Eu dou o carrinho certo na hora certa. O adversário não sente a minha chegada, só perde a bola.",
+      "Não faço falta. Meu carrinho é limpo, perfeito, só para roubar a bola, nada mais!"
+    ],
+    "Lançador": [
+      "A bola tá aqui, o atacante já está correndo lá na frente. Dou um lançamento que a bola chega limpa nos pés dele!",
+      "Quando recebo a bola, já tenho um plano. Gosto de virar o jogo, de dar uns lançamentos longos e de surpreender o adversário."
+    ],
+    "Volante Agressivo": [
+      "Quando o jogo fica difícil, eu chego mais forte. Dou umas chegadas pra roubar a bola, mas sem machucar.",
+      "O adversário pode tentar sair tocando, mas eu pressiono a marcação. Minha missão é roubar a bola e já lançar o ataque."
+    ],
+    "Líder": [
+      "Eu sou a voz do time em campo. Grito, dou umas instruções e ajudo a equipe a se organizar.",
+      "Quando o time está desorganizado, eu entro e coloco ordem na casa. A minha presença faz a diferença!"
+    ]
+  },
+  Meia: {
+    "Maestro": [
+      "O jogo passa pelos meus pés. Me chamam de maestro, porque eu dou ritmo ao jogo e dou umas assistências que surpreendem!",
+      "Eu penso antes de tocar na bola. Meu passe é perfeito e a minha visão de jogo ajuda o time a fazer gols."
+    ],
+    "Bola Parada": [
+      "Se a falta é pra bater, é pra botar a bola no ângulo. Nos escanteios, eu coloco a bola na cabeça do atacante.",
+      "A bola parada é o meu momento. Se a defesa adversária está fechada, eu crio uma oportunidade com a minha cobrança."
+    ],
+    "Drible Curto": [
+      "Me fecharam na marcação, mas eu saio com um drible, uma jogada, e a defesa adversária nem entende.",
+      "Meu drible é curto, mas é preciso. Em um espacinho, eu passo por dois ou três, e a jogada acontece."
+    ],
+    "Infiltrador": [
+      "Eu não espero a bola chegar, eu vou atrás dela. Corro entre os zagueiros, e quando percebem, eu já estou na cara do gol.",
+      "Minha função é simples: me infiltrar na defesa. Eu me desmarco, recebo a bola e o gol é quase certo."
+    ],
+    "Chute de Longe": [
+      "Gosto de chutar de longe. Se tiver espaço, chuto a gol e a bola vai no ângulo!",
+      "Eles podem deixar o espaço, eu chuto a gol e a bola vai em alta velocidade, e o goleiro não pega!"
+    ]
+  },
+  Atacante: {
+    "Matador": [
+      "Se a bola chega no pé, eu chuto. Gosto de fazer gol, e a bola, em vez de bater na trave, entra na rede.",
+      "Na frente do gol, não tem pra ninguém. Eu tenho precisão, e o gol é certo!"
+    ],
+    "Cabeceador": [
+      "Minha cabeça é a minha arma secreta. Em todo cruzamento, eu estou lá pra subir mais que o zagueiro e botar pra dentro!",
+      "Eu sou alto, sou forte, e meu tempo de bola é perfeito. Pode cruzar, que a bola é minha, e o gol é nosso!"
+    ],
+    "Puro Veneno": [
+      "Sou rápido, professor. Se a bola está nos meus pés, eu saio em disparada e o zagueiro só me encontra na hora de comemorar o gol!",
+      "Não me dão espaço, mas não precisam. Eu driblo rápido, e quando a defesa pensa em me marcar, eu já estou na cara do gol."
+    ],
+    "Artilheiro da Área": [
+      "Eu não dou passe. Minha missão é ficar na área, esperar a bola e fazer o gol!",
+      "Não importa como a bola venha, eu me viro. Se é de calcanhar, eu faço. Se é de letra, eu faço. O importante é o gol."
+    ],
+    "Batedor de Falta": [
+      "O juiz apitou falta na frente da área? Pode deixar comigo. Meu chute é certeiro e vai no ângulo.",
+      "Falta perto do gol é quase um pênalti. Sou o melhor batedor, minha bola tem um efeito que engana o goleiro e entra no gol."
+    ]
+  }
+};
+
 /* -------------------- Elementos DOM -------------------- */
 const teamName = document.getElementById('teamName');
 const userName = document.getElementById('userName');
@@ -235,6 +376,25 @@ function renderHealthBar(health) {
   </div> ${health}%`;
 }
 
+function getApresentacaoJogador(jogador) {
+  const posicoes = apresentacoes[jogador.pos];
+  if (!posicoes) return "Professor, pode contar comigo! Vou dar o meu melhor em campo!";
+  
+  const tipos = Object.keys(posicoes);
+  const tipoEscolhido = tipos[Math.floor(Math.random() * tipos.length)];
+  const textos = posicoes[tipoEscolhido];
+  const textoEscolhido = textos[Math.floor(Math.random() * textos.length)];
+  
+  return textoEscolhido;
+}
+
+function criarTooltip(nome, texto) {
+  return `<div class="tooltip">
+    <span class="player-name">${nome}</span>
+    <span class="tooltiptext">${texto}</span>
+  </div>`;
+}
+
 /* -------------------- Gerar jogadores com novas características -------------------- */
 const firsts = ["Marrentinho","Juscelino","Ronaldinho","Berg","Tico","Zeca","Xandão","Pedrinho","Claudinho","Sandro","Marollo","Ricardão"];
 const lastParts = ["Carioca","Paulista","Baiano","Gaucho","Mineiro","Nordestino","Pernambucano","Capixaba"];
@@ -264,6 +424,9 @@ function generatePlayers(){
     // Ser pai (20% de chance)
     const isPai = Math.random() < 0.2;
     
+    // Gerar apresentação
+    const apresentacao = getApresentacaoJogador({ pos: posLabel });
+    
     players.push({ 
       id:'p'+i, 
       name, 
@@ -273,7 +436,8 @@ function generatePlayers(){
       salary: Math.round(randInt(50,200)/10)*10,
       health: health,
       profissao: profissao,
-      isPai: isPai
+      isPai: isPai,
+      apresentacao: apresentacao
     });
   }
 }
@@ -297,7 +461,7 @@ function renderMarket(filter){
     if (p.isPai) detalhes += ' 👨‍👧‍👦';
     
     tr.innerHTML = `
-      <td><strong>${p.name}</strong><div class="muted">${p.pos}</div></td>
+      <td>${criarTooltip(p.name, p.apresentacao)}<div class="muted">${p.pos}</div></td>
       <td>${p.pos}</td>
       <td>${p.foot}</td>
       <td>${p.age}</td>
@@ -402,7 +566,7 @@ function populateBench(){
     
     div.innerHTML = `
       <div>
-        <strong>${p.name}</strong>
+        ${criarTooltip(p.name, p.apresentacao)}
         <div class="muted">${p.pos} • ${p.foot} • ${p.age} anos</div>
         <div>${renderHealthBar(p.health)} ${badges}</div>
       </div>
