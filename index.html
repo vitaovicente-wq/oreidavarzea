@@ -5,233 +5,438 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>O Rei da Várzea — Protótipo</title>
 <style>
-  body { font-family: Arial, sans-serif; margin: 20px; }
-  .screen { display: none; }
-  .active { display: block; }
-  button { margin: 10px 0; padding: 10px 20px; font-size: 16px; }
-  table { border-collapse: collapse; width: 100%; margin: 10px 0; }
-  th, td { border: 1px solid #999; padding: 6px; text-align: center; }
+  :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+  body{margin:0;background:#f5f7fb;color:#111}
+  header{background:#0b6bd6;color:#fff;padding:14px 18px}
+  .container{max-width:1100px;margin:18px auto;padding:10px}
+  .card{background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);padding:16px;margin-bottom:16px;}
+  label{display:block;margin-top:8px}
+  input[type=text]{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px}
+  button{background:#0b6bd6;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
+  button[disabled]{opacity:0.45;cursor:default}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+  th{background:#fafafa}
+  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .muted{color:#666;font-size:13px}
+  .bench{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto;padding:8px;border:1px dashed #ccc;border-radius:8px}
+  .player-card{padding:8px;border-radius:8px;background:#fff;border:1px solid #eee;margin-bottom:6px;cursor:grab;display:flex;justify-content:space-between;align-items:center}
+  .player-card.locked{background:#ddd;cursor:not-allowed}
+  .position-slot{width:90px;height:40px;border-radius:6px;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;cursor:pointer;margin:6px}
+  .pitch{width:100%;height:420px;background:linear-gradient(#73c26b,#5eb95e);border-radius:12px;padding:12px;box-sizing:border-box}
+  .notif{position:fixed;top:18px;right:18px;background:#ffefc2;color:#333;padding:10px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);border:1px solid #e6b800}
 </style>
 </head>
 <body>
+<header>
+  <div class="container"><h1>O Rei da Várzea — Protótipo</h1></div>
+</header>
 
-<!-- Tela 1: Início -->
-<div id="screen1" class="screen active">
-  <h1>O Rei da Várzea</h1>
-  <button id="btnStart">Escalar Time</button>
-</div>
+<div class="container">
 
-<!-- Tela 2: Escalação -->
-<div id="screen2" class="screen">
-  <h2>Escalação do seu time</h2>
-  <p id="position-instruction"></p>
-  <table>
-    <thead>
-      <tr><th>Jogador</th><th>Posição</th><th>Ação</th></tr>
-    </thead>
-    <tbody id="playersTable"></tbody>
-  </table>
-  <button id="btnNextPosition">Próxima posição</button>
-  <button id="btnDone">Confirmar Escalação</button>
-</div>
+  <!-- TELA 1 -->
+  <div id="tela1" class="card">
+    <h2>Tela 1 — Cadastro</h2>
+    <label>Nome do seu time
+      <input id="teamName" type="text" placeholder="Ex: Os Meninos da Rua" />
+    </label>
+    <label>Seu nome
+      <input id="userName" type="text" placeholder="Seu nome" />
+    </label>
+    <label>Cidade
+      <input id="cityName" type="text" placeholder="Cidade" />
+    </label>
+    <div class="controls">
+      <button id="btnToTela2" disabled>Contratar jogadores</button>
+      <div class="muted">Preencha todos os campos para habilitar.</div>
+    </div>
+  </div>
 
-<!-- Tela 3: Confirmar Times -->
-<div id="screen3" class="screen">
-  <h2>Seu time: <span id="user-team-name"></span></h2>
-  <ul id="userTeamList"></ul>
-  <h2>Adversário: Vila Freitas</h2>
-  <ul id="opponentTeamList"></ul>
-  <button id="btnPlayMatch">Jogar Partida</button>
-</div>
+  <!-- TELA 2 -->
+  <div id="tela2" class="card" style="display:none">
+    <h2>Tela 2 — Mercado de Jogadores</h2>
+    <div id="marketMessage" style="font-weight:bold;margin-bottom:10px">Escolha no mínimo 2 goleiros para o seu time</div>
 
-<!-- Tela 4: Partida -->
-<div id="screen4" class="screen">
-  <h2>Partida</h2>
-  <p><strong><span id="user-team-name2"></span></strong> x <strong>Vila Freitas</strong></p>
-  
-  <h3>Time Titular - <span id="user-team-name3"></span></h3>
-  <ul id="jogadoresUsuario"></ul>
-  <h3>Banco de Reservas - <span id="user-team-name4"></span></h3>
-  <ul id="reservasUsuario"></ul>
+    <div style="margin-top:10px;overflow:auto;max-height:480px">
+      <table id="playersTable">
+        <thead><tr><th>Nome</th><th>Posição</th><th>Pé</th><th>Idade</th><th>Salário</th><th>Contratar</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
 
-  <h3>Time Titular - Vila Freitas</h3>
-  <ul id="jogadoresVila"></ul>
-  <h3>Banco de Reservas - Vila Freitas</h3>
-  <ul id="reservasVila"></ul>
-  
-  <h3>Resultado</h3>
-  <p id="resultado"></p>
-  <div id="comentarios"></div>
-  <button id="btnContinue">Continuar</button>
+    <div class="controls">
+      <button id="btnNextStep">Próximo</button>
+      <button id="btnEscalar" disabled>Escalar time</button>
+      <div style="margin-left:auto">
+        <strong>Dinheiro em caixa:</strong>
+        <span id="cashDisplay">R$ 5.000</span> |
+        <span class="muted">Elenco <span id="selectedCount">0</span>/22</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TELA 3 -->
+  <div id="tela3" class="card" style="display:none">
+    <h2>Tela 3 — Escalação</h2>
+    <div style="display:flex;gap:16px">
+      <div style="flex:1">
+        <div class="card">
+          <h3>Escalação (arraste do banco para a posição)</h3>
+          <div class="pitch" id="pitch">
+            <div style="display:flex;flex-wrap:wrap;justify-content:center">
+              <div class="position-slot" data-pos="GK" id="slot-GK" ondrop="dropHandler(event)" ondragover="allowDrop(event)">GK</div>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;margin-top:12px">
+              <div class="position-slot" data-pos="LB" id="slot-LB" ondrop="dropHandler(event)" ondragover="allowDrop(event)">LB</div>
+              <div class="position-slot" data-pos="CB1" id="slot-CB1" ondrop="dropHandler(event)" ondragover="allowDrop(event)">CB</div>
+              <div class="position-slot" data-pos="CB2" id="slot-CB2" ondrop="dropHandler(event)" ondragover="allowDrop(event)">CB</div>
+              <div class="position-slot" data-pos="RB" id="slot-RB" ondrop="dropHandler(event)" ondragover="allowDrop(event)">RB</div>
+            </div>
+
+            <div style="display:flex;justify-content:space-around;margin-top:12px">
+              <div class="position-slot" data-pos="DM" id="slot-DM" ondrop="dropHandler(event)" ondragover="allowDrop(event)">VOL</div>
+              <div class="position-slot" data-pos="CM1" id="slot-CM1" ondrop="dropHandler(event)" ondragover="allowDrop(event)">MEI</div>
+              <div class="position-slot" data-pos="CM2" id="slot-CM2" ondrop="dropHandler(event)" ondragover="allowDrop(event)">MEI</div>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;margin-top:12px">
+              <div class="position-slot" data-pos="LW" id="slot-LW" ondrop="dropHandler(event)" ondragover="allowDrop(event)">AE</div>
+              <div class="position-slot" data-pos="ST" id="slot-ST" ondrop="dropHandler(event)" ondragover="allowDrop(event)">ATA</div>
+              <div class="position-slot" data-pos="RW" id="slot-RW" ondrop="dropHandler(event)" ondragover="allowDrop(event)">AD</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls" style="margin-top:10px">
+          <button id="btnPlayMatch" disabled>Jogar partida</button>
+        </div>
+      </div>
+
+      <div style="width:320px">
+        <div class="card">
+          <h3>Banco / Jogadores contratados</h3>
+          <div class="bench" id="bench"></div>
+          <div class="muted" style="margin-top:8px">Clique no jogador no banco para desassociar (se já estiver escalado).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TELA 4 -->
+  <div id="tela4" class="card" style="display:none">
+    <h2>Partida em andamento</h2>
+    <div style="display:flex;gap:16px">
+      <div style="flex:1">
+        <h3 id="userTeamName">Meu Time</h3>
+        <ul id="jogadoresUsuario"></ul>
+      </div>
+      <div style="flex:2;text-align:center">
+        <h2 id="placar">0 x 0</h2>
+        <div id="comentarios" style="text-align:left;max-height:300px;overflow:auto;border:1px solid #ddd;border-radius:6px;padding:10px"></div>
+        <div style="margin-top:10px"><button id="btnContinuar" style="display:none">Continuar</button></div>
+      </div>
+      <div style="flex:1">
+        <h3>Vila Freitas</h3>
+        <ul id="jogadoresVila"></ul>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
-const screens = {
-  1: document.getElementById('screen1'),
-  2: document.getElementById('screen2'),
-  3: document.getElementById('screen3'),
-  4: document.getElementById('screen4')
-};
+/* -------------------- Config / Estado -------------------- */
+const MAX_PLAYERS = 22;
+let CASH = 5000;
+let players = [];
+let hired = [];
+let marketStep = 1;
 
-function showScreen(n) {
-  for (let i=1; i<=4; i++) screens[i].classList.remove('active');
-  screens[n].classList.add('active');
-}
-
-const positions = ["Goleiro", "Zagueiro", "Lateral", "Meia", "Atacante"];
-let currentPositionIndex = 0;
-let userTeam = [];
-let userReserves = [];
-let opponentTeam = [];
-let opponentReserves = [];
-let players = [
-  {name:"João", pos:"Goleiro"},
-  {name:"Pedro", pos:"Zagueiro"},
-  {name:"Lucas", pos:"Zagueiro"},
-  {name:"Mateus", pos:"Lateral"},
-  {name:"Tiago", pos:"Lateral"},
-  {name:"Rafael", pos:"Meia"},
-  {name:"Bruno", pos:"Meia"},
-  {name:"Carlos", pos:"Atacante"},
-  {name:"Eduardo", pos:"Atacante"},
-  {name:"Marcos", pos:"Atacante"}
+const steps = [
+  { msg: "Hora de montar o seu time, escolha 22 jogadores para iniciar", filter: null, min: 0 },
+  { msg: "Escolha no mínimo 2 goleiros para o seu time", filter: "Goleiro", min: 2 },
+  { msg: "Escolha no mínimo 3 laterais para o seu time", filter: "Lateral", min: 3 },
+  { msg: "Escolha no mínimo 3 zagueiros para o seu time", filter: "Zagueiro", min: 3 },
+  { msg: "Escolha no mínimo 3 volantes para o seu time", filter: "Volante", min: 3 },
+  { msg: "Escolha no mínimo 6 meias para o seu time", filter: "Meia", min: 6 },
+  { msg: "Escolha no mínimo 4 atacantes para o seu time", filter: "Atacante", min: 4 }
 ];
 
-document.getElementById('btnStart').addEventListener('click', ()=>{
-  currentPositionIndex = 0;
-  userTeam = [];
-  userReserves = [];
-  showPlayersForPosition();
-  showScreen(2);
-});
+/* -------------------- DOM -------------------- */
+const teamName = document.getElementById('teamName');
+const userName = document.getElementById('userName');
+const cityName = document.getElementById('cityName');
 
-function showPlayersForPosition() {
-  const pos = positions[currentPositionIndex];
-  document.getElementById('position-instruction').innerText = "Escolha jogadores para posição: " + pos;
-  const tbody = document.getElementById('playersTable');
-  tbody.innerHTML = "";
-  players.forEach((p, idx)=>{
-    if (p.pos === pos) {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${p.name}</td><td>${p.pos}</td>
-        <td><button onclick="selectPlayer(${idx})">Escalar</button></td>`;
-      tbody.appendChild(tr);
-    }
-  });
-}
+const tela1 = document.getElementById('tela1');
+const tela2 = document.getElementById('tela2');
+const tela3 = document.getElementById('tela3');
+const tela4 = document.getElementById('tela4');
 
-window.selectPlayer = function(idx) {
-  userTeam.push(players[idx]);
-  players.splice(idx,1);
-  showPlayersForPosition();
-}
+const btnToTela2 = document.getElementById('btnToTela2');
+const marketMessage = document.getElementById('marketMessage');
+const playersTbody = document.querySelector('#playersTable tbody');
+const btnNextStep = document.getElementById('btnNextStep');
+const btnEscalar = document.getElementById('btnEscalar');
+const cashDisplay = document.getElementById('cashDisplay');
+const selectedCountEl = document.getElementById('selectedCount');
 
-document.getElementById('btnNextPosition').addEventListener('click', ()=>{
-  if (currentPositionIndex < positions.length-1) {
-    currentPositionIndex++;
-    showPlayersForPosition();
+const bench = document.getElementById('bench');
+const btnPlayMatch = document.getElementById('btnPlayMatch');
+
+const jogadoresUsuario = document.getElementById('jogadoresUsuario');
+const jogadoresVila = document.getElementById('jogadoresVila');
+const userTeamNameEl = document.getElementById('userTeamName');
+const placar = document.getElementById('placar');
+const comentarios = document.getElementById('comentarios');
+const btnContinuar = document.getElementById('btnContinuar');
+
+/* -------------------- Helpers -------------------- */
+function showNotif(text,time=2500){ const box=document.createElement('div'); box.className='notif'; box.textContent=text; document.body.appendChild(box); setTimeout(()=>box.remove(),time);}
+function formatReal(n){return 'R$ '+n.toLocaleString('pt-BR');}
+function updateCash(){cashDisplay.textContent=formatReal(CASH);}
+function updateSelectedCount(){selectedCountEl.textContent=hired.length;}
+
+/* -------------------- Gerar jogadores -------------------- */
+const firsts = ["Marrentinho","Juscelino","Ronaldinho","Berg","Tico","Zeca","Xandão","Pedrinho","Claudinho","Sandro","Marollo","Ricardão"];
+const lastParts = ["Carioca","Paulista","Baiano","Gaucho","Mineiro","Nordestino","Pernambucano","Capixaba"];
+const distribution = { GK:4, ZAG:8, LAT:8, VOL:6, MEI:8, ATA:8 };
+
+function pickFoot(){ const r=Math.random()*100; if(r<10) return 'Ambidestro'; if(r<70) return 'Direito'; return 'Esquerdo'; }
+function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
+
+function generatePlayers(){
+  players=[];
+  const buckets=[];
+  Object.keys(distribution).forEach(k=>{for(let i=0;i<distribution[k];i++) buckets.push(k);});
+  while(buckets.length<42) buckets.push('MEI');
+  for(let i=0;i<42;i++){
+    const posKey=buckets[i];
+    const map={GK:'Goleiro', ZAG:'Zagueiro', LAT:'Lateral', VOL:'Volante', MEI:'Meia', ATA:'Atacante'};
+    const posLabel = map[posKey] || 'Meia';
+    const name = firsts[i%firsts.length] + ' ' + lastParts[i%lastParts.length];
+    players.push({id:'p'+i,name,pos:posLabel,foot:pickFoot(),age:randInt(16,45),salary:Math.round(randInt(50,200)/10)*10});
   }
+}
+
+/* -------------------- Mercado -------------------- */
+function renderMarket(filter){
+  playersTbody.innerHTML='';
+  const list = players.filter(p => !filter || p.pos===filter);
+  if(list.length===0){ const tr=document.createElement('tr'); tr.innerHTML='<td colspan="6" class="muted">Nenhum jogador disponível para essa posição.</td>'; playersTbody.appendChild(tr); return; }
+  list.forEach(p=>{
+    const tr=document.createElement('tr');
+    const hiredAlready=hired.some(h=>h.id===p.id);
+    tr.innerHTML = `
+      <td><strong>${p.name}</strong><div class="muted">${p.pos}</div></td>
+      <td>${p.pos}</td>
+      <td>${p.foot}</td>
+      <td>${p.age}</td>
+      <td>${formatReal(p.salary)}</td>
+      <td><input type="checkbox" data-id="${p.id}" ${hiredAlready?'checked':''}></td>
+    `;
+    playersTbody.appendChild(tr);
+  });
+  playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.onchange=onToggleHire);
+  updateCheckboxStates();
+}
+
+function updateCheckboxStates(){
+  playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    const pid=cb.dataset.id;
+    const ply=players.find(p=>p.id===pid);
+    if(!cb.checked && (hired.length>=MAX_PLAYERS || CASH-ply.salary<0)) cb.disabled=true;
+    else cb.disabled=false;
+  });
+  updateButtonStates();
+}
+
+function onToggleHire(e){
+  const cb=e.currentTarget;
+  const pid=cb.dataset.id;
+  const ply=players.find(p=>p.id===pid);
+  if(cb.checked){
+    if(hired.length>=MAX_PLAYERS){ showNotif('Limite de 22 jogadores'); cb.checked=false; return;}
+    if(CASH-ply.salary<0){ showNotif('Saldo insuficiente'); cb.checked=false; return;}
+    CASH-=ply.salary; hired.push(ply);
+  } else {
+    CASH+=ply.salary; hired=hired.filter(h=>h.id!==pid);
+    document.querySelectorAll('.position-slot[data-assigned]').forEach(slot=>{
+      if(slot.dataset.assigned===pid){
+        slot.textContent=slot.dataset.pos; delete slot.dataset.assigned;
+        const card=document.getElementById('bench-'+pid); if(card){ card.classList.remove('locked'); card.draggable=true; card.style.cursor='grab'; }
+      }
+    });
+  }
+  updateCash(); updateSelectedCount(); renderMarket(steps[marketStep].filter);
+}
+
+function countHiredByPos(label){ return hired.filter(h=>h.pos===label).length; }
+function updateButtonStates(){ btnEscalar.disabled = (hired.length!==MAX_PLAYERS); updateSelectedCount(); updateCash(); }
+
+/* -------------------- Buttons -------------------- */
+btnNextStep.addEventListener('click',()=>{
+  const current=steps[marketStep];
+  if(current && current.filter){
+    const have=countHiredByPos(current.filter);
+    if(have<current.min){ showNotif(`Escolha no mínimo ${current.min} ${current.filter}(s).`); return;}
+  }
+  marketStep++; if(marketStep>=steps.length) marketStep=steps.length-1;
+  marketMessage.textContent=steps[marketStep].msg;
+  renderMarket(steps[marketStep].filter);
 });
 
-document.getElementById('btnDone').addEventListener('click', ()=>{
-  // Definir reservas do usuário
-  userReserves = [...players];
-  // Criar adversário simples
-  opponentTeam = [
-    {name:"Vila Goleiro", pos:"Goleiro"},
-    {name:"Vila Zagueiro", pos:"Zagueiro"},
-    {name:"Vila Lateral", pos:"Lateral"},
-    {name:"Vila Meia", pos:"Meia"},
-    {name:"Vila Atacante", pos:"Atacante"}
-  ];
-  opponentReserves = [
-    {name:"Vila Reserva 1", pos:"Meia"},
-    {name:"Vila Reserva 2", pos:"Atacante"}
-  ];
-  
-  document.getElementById('user-team-name').innerText = "Seu Time";
-  const ul = document.getElementById('userTeamList');
-  ul.innerHTML = "";
-  userTeam.forEach(p=>{
-    const li = document.createElement('li');
-    li.innerText = p.name+" - "+p.pos;
-    ul.appendChild(li);
-  });
-  const ul2 = document.getElementById('opponentTeamList');
-  ul2.innerHTML = "";
-  opponentTeam.forEach(p=>{
-    const li = document.createElement('li');
-    li.innerText = p.name+" - "+p.pos;
-    ul2.appendChild(li);
-  });
-  showScreen(3);
+btnEscalar.addEventListener('click',()=>{
+  if(hired.length!==MAX_PLAYERS){ showNotif('Você precisa contratar exatamente 22 jogadores para escalar.'); return;}
+  tela2.style.display='none'; tela3.style.display='block';
+  populateBench();
 });
 
-document.getElementById('btnPlayMatch').addEventListener('click', ()=>{
-  document.getElementById('user-team-name2').innerText = "Seu Time";
-  document.getElementById('user-team-name3').innerText = "Seu Time";
-  document.getElementById('user-team-name4').innerText = "Seu Time";
-  
-  const jogadoresUsuario = document.getElementById('jogadoresUsuario');
-  jogadoresUsuario.innerHTML = "";
-  userTeam.forEach(p=>{
+/* -------------------- Escalação Drag & Drop -------------------- */
+function populateBench(){
+  bench.innerHTML='';
+  hired.forEach(p=>{
+    const div=document.createElement('div');
+    div.className='player-card'; div.id='bench-'+p.id; div.draggable=true;
+    div.innerHTML=`<div><strong>${p.name}</strong><div class="muted">${p.pos} • ${p.foot} • ${p.age} anos</div></div>`;
+    div.dataset.id=p.id; div.dataset.pos=p.pos;
+    div.ondragstart=dragHandler;
+    div.onclick=()=>{ unassignPlayer(p.id); };
+    bench.appendChild(div);
+  });
+  btnPlayMatch.disabled=false;
+}
+
+function dragHandler(ev){ ev.dataTransfer.setData("text/plain", ev.currentTarget.dataset.id); }
+function allowDrop(ev){ ev.preventDefault(); }
+function dropHandler(ev){
+  ev.preventDefault();
+  const pid=ev.dataTransfer.getData("text/plain");
+  const ply=hired.find(p=>p.id===pid);
+  const slot=ev.currentTarget;
+  if(slot.dataset.assigned){ showNotif('Posição já ocupada'); return;}
+  slot.textContent=ply.name; slot.dataset.assigned=pid;
+  const card=document.getElementById('bench-'+pid); if(card){ card.classList.add('locked'); card.draggable=false; card.style.cursor='not-allowed'; }
+}
+
+function unassignPlayer(pid){
+  const slot=document.querySelector(`.position-slot[data-assigned='${pid}']`);
+  if(slot){ slot.textContent=slot.dataset.pos; delete slot.dataset.assigned; }
+  const card=document.getElementById('bench-'+pid); if(card){ card.classList.remove('locked'); card.draggable=true; card.style.cursor='grab'; }
+}
+
+/* -------------------- Tela 1 -> 2 -------------------- */
+[teamName,userName,cityName].forEach(inp=>inp.addEventListener('input',()=>{
+  btnToTela2.disabled = !(teamName.value && userName.value && cityName.value);
+}));
+
+btnToTela2.addEventListener('click',()=>{
+  tela1.style.display='none';
+  tela2.style.display='block';
+  generatePlayers();
+  renderMarket(steps[marketStep].filter);
+  updateCash(); updateSelectedCount();
+});
+
+/* -------------------- Tela 3 -> 4 / Partida -------------------- */
+btnPlayMatch.addEventListener('click', ()=>{
+  const slots = document.querySelectorAll('.position-slot');
+  let allFilled = true;
+  slots.forEach(slot => { if(!slot.dataset.assigned) allFilled=false; });
+  if(!allFilled){ showNotif('Preencha todas as posições antes de jogar a partida.'); return; }
+
+  // avançar para Tela 4
+  tela3.style.display='none';
+  tela4.style.display='block';
+  userTeamNameEl.textContent = teamName.value;
+
+  // Meu time
+  jogadoresUsuario.innerHTML='';
+  hired.forEach(p=>{
     const li = document.createElement('li');
-    li.innerText = p.name+" - "+p.pos;
+    li.textContent = `${p.name} (${p.pos})`;
     jogadoresUsuario.appendChild(li);
   });
 
-  const reservasUsuario = document.getElementById('reservasUsuario');
-  reservasUsuario.innerHTML = "";
-  userReserves.forEach(p=>{
+  // Time adversário (Vila Freitas)
+  jogadoresVila.innerHTML='';
+  for(let i=0;i<11;i++){
+    const name = `Vila Player ${i+1}`;
     const li = document.createElement('li');
-    li.innerText = p.name+" - "+p.pos;
-    reservasUsuario.appendChild(li);
-  });
-
-  const jogadoresVila = document.getElementById('jogadoresVila');
-  jogadoresVila.innerHTML = "";
-  opponentTeam.forEach(p=>{
-    const li = document.createElement('li');
-    li.innerText = p.name+" - "+p.pos;
+    li.textContent = name;
     jogadoresVila.appendChild(li);
-  });
+  }
 
-  const reservasVila = document.getElementById('reservasVila');
-  reservasVila.innerHTML = "";
-  opponentReserves.forEach(p=>{
-    const li = document.createElement('li');
-    li.innerText = p.name+" - "+p.pos;
-    reservasVila.appendChild(li);
-  });
+  // Partida
+  placar.textContent='0 x 0';
+  comentarios.innerHTML='A partida começou!<br>';
 
-  // Simulação de resultado
-  const golUser = Math.floor(Math.random()*5);
-  const golVila = Math.floor(Math.random()*5);
-  document.getElementById('resultado').innerText = `Placar: Seu Time ${golUser} x ${golVila} Vila Freitas`;
-  const comentarios = document.getElementById('comentarios');
-  comentarios.innerHTML = "<p>Jogo emocionante na várzea!</p>";
-  
-  showScreen(4);
+  // Simulação simples de jogo
+  let golsUser = 0, golsVila = 0;
+  let events = [
+    'Chute perigoso!',
+    'Defesa incrível do goleiro!',
+    'Ataque fulminante!',
+    'Falta cometida!',
+    'Escanteio para o time adversário!',
+    'Contra-ataque perigoso!',
+  ];
+
+  let turn = 0;
+  const interval = setInterval(()=>{
+    if(turn >= 20){
+      clearInterval(interval);
+      comentarios.innerHTML += `<strong>Fim de jogo!</strong> Placar final: ${golsUser} x ${golsVila}<br>`;
+      btnContinuar.style.display='inline-block';
+      return;
+    }
+    const event = events[Math.floor(Math.random()*events.length)];
+    const chance = Math.random();
+    if(chance<0.1) { golsUser++; comentarios.innerHTML += `⚽ ${teamName.value} marcou um gol!<br>`; }
+    else if(chance>0.9) { golsVila++; comentarios.innerHTML += `⚽ Vila Freitas marcou um gol!<br>`; }
+    else { comentarios.innerHTML += event + '<br>'; }
+
+    placar.textContent = `${golsUser} x ${golsVila}`;
+    comentarios.scrollTop = comentarios.scrollHeight;
+    turn++;
+  }, 1000);
+});
+<script>
+/* ... todo o código do jogo: Tela 1, Tela 2, Tela 3 ... */
+
+/* --- Simulação da partida (Tela 4) --- */
+btnPlayMatch.addEventListener('click', ()=>{
+  // aqui está toda a lógica do jogo e da simulação
+  // no final aparece o botão Continuar
 });
 
-document.getElementById('btnContinue').addEventListener('click', ()=>{
-  userTeam = [];
-  userReserves = [];
-  players = [
-    {name:"João", pos:"Goleiro"},
-    {name:"Pedro", pos:"Zagueiro"},
-    {name:"Lucas", pos:"Zagueiro"},
-    {name:"Mateus", pos:"Lateral"},
-    {name:"Tiago", pos:"Lateral"},
-    {name:"Rafael", pos:"Meia"},
-    {name:"Bruno", pos:"Meia"},
-    {name:"Carlos", pos:"Atacante"},
-    {name:"Eduardo", pos:"Atacante"},
-    {name:"Marcos", pos:"Atacante"}
-  ];
-  currentPositionIndex = 0;
-  showPlayersForPosition();
-  showScreen(2);
+/* --- Botão Continuar (voltar para Tela 3) --- */
+btnContinuar.addEventListener('click', ()=>{
+  tela4.style.display = 'none';
+  tela3.style.display = 'block';
+
+  // limpar escalação
+  document.querySelectorAll('.position-slot').forEach(slot=>{
+    slot.textContent = slot.dataset.pos;
+    delete slot.dataset.assigned;
+  });
+
+  // reconstruir banco
+  bench.innerHTML = '';
+  hired.forEach(p=>{
+    const div = document.createElement('div');
+    div.className = 'player-card';
+    div.id = 'bench-'+p.id;
+    div.draggable = true;
+    div.textContent = `${p.name} (${p.pos})`;
+    div.ondragstart = ev=>{ ev.dataTransfer.setData("text/plain",p.id); };
+    div.onclick = ()=>{ unassignPlayer(p.id); };
+    bench.appendChild(div);
+  });
+
+  btnContinuar.style.display = 'none';
+  placar.textContent = '0 x 0';
+  comentarios.innerHTML = '';
 });
 </script>
 </body>
