@@ -5,196 +5,275 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>O Rei da Várzea — Protótipo</title>
 <style>
-  body{font-family:sans-serif;margin:0;padding:0;background:#f2f2f2}
-  .screen{display:none;padding:20px}
-  .active{display:block}
-  table{width:100%;border-collapse:collapse;margin-bottom:10px}
-  th,td{border:1px solid #ccc;padding:5px;text-align:center}
-  .muted{color:#666;font-size:0.9em}
-  button{padding:10px 20px;font-size:16px;margin-top:10px}
-  .player-name{cursor:pointer;color:blue;text-decoration:underline}
+  :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+  body{margin:0;background:#f5f7fb;color:#111}
+  header{background:#0b6bd6;color:#fff;padding:14px 18px}
+  .container{max-width:1100px;margin:18px auto;padding:10px}
+  .card{background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);padding:16px;margin-bottom:16px;}
+  label{display:block;margin-top:8px}
+  input[type=text]{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px}
+  button{background:#0b6bd6;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
+  button[disabled]{opacity:0.45;cursor:default}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+  th{background:#fafafa}
+  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .muted{color:#666;font-size:13px}
+  .bench{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto;padding:8px;border:1px dashed #ccc;border-radius:8px}
+  .player-card{padding:8px;border-radius:8px;background:#fff;border:1px solid #eee;margin-bottom:6px;cursor:grab;display:flex;justify-content:space-between;align-items:center;position:relative}
+  .player-card.locked{background:#ddd;cursor:not-allowed}
+  .position-slot{width:90px;height:40px;border-radius:6px;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;cursor:pointer;margin:6px}
+  .pitch{width:100%;height:420px;background:linear-gradient(#73c26b,#5eb95e);border-radius:12px;padding:12px;box-sizing:border-box}
+  .notif{position:fixed;top:18px;right:18px;background:#ffefc2;color:#333;padding:10px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);border:1px solid #e6b800}
+  .tooltip {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    z-index: 100;
+    font-size: 13px;
+    display: none;
+    pointer-events: none;
+    max-width: 250px;
+    line-height: 1.4;
+  }
+  .tooltip.active { display: block; }
 </style>
 </head>
 <body>
+<header>
+  <div class="container"><h1>O Rei da Várzea — Protótipo</h1></div>
+</header>
 
-<!-- Tela 1 -->
-<div id="screen1" class="screen active">
-  <h2>Bem-vindo ao O Rei da Várzea</h2>
-  <button id="btnStart">Começar</button>
+<div class="container">
+
+  <!-- Tela 1 -->
+  <div id="tela1" class="card">
+    <h2>Tela 1 — Cadastro</h2>
+    <label>Nome do seu time
+      <input id="teamName" type="text" placeholder="Ex: Os Meninos da Rua" oninput="validateTela1()" />
+    </label>
+    <label>Seu nome
+      <input id="userName" type="text" placeholder="Seu nome" oninput="validateTela1()" />
+    </label>
+    <label>Cidade
+      <input id="cityName" type="text" placeholder="Cidade" oninput="validateTela1()" />
+    </label>
+    <div class="controls">
+      <button id="btnToTela2" disabled>Contratar jogadores</button>
+      <div class="muted">Preencha todos os campos para habilitar.</div>
+    </div>
+  </div>
+
+  <!-- Tela 2 -->
+  <div id="tela2" class="card" style="display:none">
+    <h2>Tela 2 — Mercado de Jogadores</h2>
+    <div id="marketMessage" style="font-weight:bold;margin-bottom:10px">Escolha no mínimo 2 goleiros para o seu time</div>
+    <div class="muted">Clique no nome do jogador para ver a sua apresentação.</div>
+
+    <div style="margin-top:10px;overflow:auto;max-height:480px">
+      <table id="playersTable">
+        <thead><tr><th>Nome</th><th>Posição</th><th>Profissão</th><th>Idade</th><th>Salário</th><th>Saúde</th><th>Contratar</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="controls">
+      <button id="btnNextStep">Próximo</button>
+      <button id="btnEscalar" disabled>Escalar time</button>
+      <div style="margin-left:auto">
+        <strong>Dinheiro em caixa:</strong>
+        <span id="cashDisplay">R$ 5.000</span> |
+        <span class="muted">Elenco <span id="selectedCount">0</span>/22</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tela 3 -->
+  <div id="tela3" class="card" style="display:none">
+    <h2>Tela 3 — Escalação</h2>
+    <div style="display:flex;gap:16px">
+      <div style="flex:1">
+        <div class="card">
+          <h3>Escalação (arraste do banco para a posição)</h3>
+          <div class="pitch" id="pitch">
+            <div style="display:flex;flex-wrap:wrap;justify-content:center">
+              <div class="position-slot" data-pos="GK" id="slot-GK" ondrop="dropHandler(event)" ondragover="allowDrop(event)">GK</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:12px">
+              <div class="position-slot" data-pos="LB" id="slot-LB" ondrop="dropHandler(event)" ondragover="allowDrop(event)">LB</div>
+              <div class="position-slot" data-pos="CB1" id="slot-CB1" ondrop="dropHandler(event)" ondragover="allowDrop(event)">CB</div>
+              <div class="position-slot" data-pos="CB2" id="slot-CB2" ondrop="dropHandler(event)" ondragover="allowDrop(event)">CB</div>
+              <div class="position-slot" data-pos="RB" id="slot-RB" ondrop="dropHandler(event)" ondragover="allowDrop(event)">RB</div>
+            </div>
+            <div style="display:flex;justify-content:space-around;margin-top:12px">
+              <div class="position-slot" data-pos="DM" id="slot-DM" ondrop="dropHandler(event)" ondragover="allowDrop(event)">VOL</div>
+              <div class="position-slot" data-pos="CM1" id="slot-CM1" ondrop="dropHandler(event)" ondragover="allowDrop(event)">MEI</div>
+              <div class="position-slot" data-pos="CM2" id="slot-CM2" ondrop="dropHandler(event)" ondragover="allowDrop(event)">MEI</div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:12px">
+              <div class="position-slot" data-pos="LW" id="slot-LW" ondrop="dropHandler(event)" ondragover="allowDrop(event)">AE</div>
+              <div class="position-slot" data-pos="ST" id="slot-ST" ondrop="dropHandler(event)" ondragover="allowDrop(event)">ATA</div>
+              <div class="position-slot" data-pos="RW" id="slot-RW" ondrop="dropHandler(event)" ondragover="allowDrop(event)">AD</div>
+            </div>
+          </div>
+        </div>
+        <div class="controls" style="margin-top:10px">
+          <button id="btnPlayMatch" disabled>Jogar partida</button>
+        </div>
+      </div>
+      <div style="width:320px">
+        <div class="card">
+          <h3>Banco / Jogadores contratados</h3>
+          <div class="bench" id="bench"></div>
+          <div class="muted" style="margin-top:8px">Clique no jogador no banco para desassociar (remover da escalação).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<!-- Tela 2: Mercado -->
-<div id="screen2" class="screen">
-  <h2 id="marketMessage">Escolha seus jogadores</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Nome</th>
-        <th>Posição</th>
-        <th>Profissão</th>
-        <th>Idade</th>
-        <th>Salário</th>
-        <th>Saúde</th>
-        <th>Contratar</th>
-      </tr>
-    </thead>
-    <tbody id="playersTbody"></tbody>
-  </table>
-  <button id="btnNextStep">Próximo</button>
-</div>
-
-<!-- Tela 3 -->
-<div id="screen3" class="screen">
-  <h2>Resumo do Time</h2>
-  <ul id="summary"></ul>
-  <button id="btnNextScreen3">Continuar</button>
-</div>
-
-<!-- Tela 4 -->
-<div id="screen4" class="screen">
-  <h2>Time Escalado!</h2>
-  <ul id="finalTeam"></ul>
-</div>
+<div class="tooltip" id="tooltip"></div>
 
 <script>
-const screen1 = document.getElementById('screen1');
-const screen2 = document.getElementById('screen2');
-const screen3 = document.getElementById('screen3');
-const screen4 = document.getElementById('screen4');
-
-const btnStart = document.getElementById('btnStart');
-const btnNextStep = document.getElementById('btnNextStep');
-const btnNextScreen3 = document.getElementById('btnNextScreen3');
-
-const playersTbody = document.getElementById('playersTbody');
-const marketMessage = document.getElementById('marketMessage');
-const summary = document.getElementById('summary');
-const finalTeam = document.getElementById('finalTeam');
-
-const players = [
-  {id:1,name:'João',pos:'Goleiro',profession:{name:'Profissional'},age:22,salary:5000,health:'Ótima',specialityText:'Defesa'},
-  {id:2,name:'Carlos',pos:'Goleiro',profession:{name:'Amador'},age:28,salary:3000,health:'Boa',specialityText:'Reflexos'},
-  {id:3,name:'Lucas',pos:'Zagueiro',profession:{name:'Profissional'},age:25,salary:4000,health:'Ótima',specialityText:'Desarme'},
-  {id:4,name:'Pedro',pos:'Zagueiro',profession:{name:'Amador'},age:27,salary:2500,health:'Boa',specialityText:'Posicionamento'},
-  {id:5,name:'Mateus',pos:'Atacante',profession:{name:'Profissional'},age:24,salary:6000,health:'Ótima',specialityText:'Finalização'},
-  {id:6,name:'Rafael',pos:'Meio-campo',profession:{name:'Amador'},age:23,salary:3500,health:'Boa',specialityText:'Distribuição'},
-  {id:7,name:'Bruno',pos:'Atacante',profession:{name:'Amador'},age:21,salary:2000,health:'Boa',specialityText:'Velocidade'},
-  // Adicione todos os jogadores necessários
+let players = [
+  {id:1,name:'João',pos:'GK',profession:{name:'Profissional'},age:28,salary:1500,health:'100%',specialityText:'Goleiro ágil'}, 
+  {id:2,name:'Pedro',pos:'GK',profession:{name:'Profissional'},age:32,salary:1700,health:'95%',specialityText:'Goleiro experiente'}, 
+  {id:3,name:'Lucas',pos:'DF',profession:{name:'Profissional'},age:24,salary:1200,health:'100%',specialityText:'Zagueiro forte'}, 
+  {id:4,name:'Mateus',pos:'DF',profession:{name:'Profissional'},age:26,salary:1300,health:'98%',specialityText:'Lateral rápido'}, 
+  {id:5,name:'Felipe',pos:'MF',profession:{name:'Profissional'},age:25,salary:1400,health:'99%',specialityText:'Meio-campo criativo'}, 
+  {id:6,name:'Gabriel',pos:'FW',profession:{name:'Profissional'},age:27,salary:1600,health:'97%',specialityText:'Atacante finalizador'}
+  // adicione todos os outros jogadores aqui mantendo o nome original
 ];
 
 let hired = [];
 let marketStep = 0;
-const steps = [
-  {filter:'Goleiro',min:1,msg:'Escolha seus goleiros'},
-  {filter:'Zagueiro',min:2,msg:'Escolha seus zagueiros'},
-  {filter:'Meio-campo',min:2,msg:'Escolha seus meio-campistas'},
-  {filter:'Atacante',min:2,msg:'Escolha seus atacantes'}
-];
 
-function showScreen(screen){
-  [screen1,screen2,screen3,screen4].forEach(s=>s.classList.remove('active'));
-  screen.classList.add('active');
+const tela1 = document.getElementById('tela1');
+const tela2 = document.getElementById('tela2');
+const tela3 = document.getElementById('tela3');
+
+const btnToTela2 = document.getElementById('btnToTela2');
+const btnNextStep = document.getElementById('btnNextStep');
+const btnEscalar = document.getElementById('btnEscalar');
+
+const playersTbody = document.querySelector('#playersTable tbody');
+const selectedCount = document.getElementById('selectedCount');
+const cashDisplay = document.getElementById('cashDisplay');
+
+function validateTela1(){
+  btnToTela2.disabled = !(
+    document.getElementById('teamName').value.trim() &&
+    document.getElementById('userName').value.trim() &&
+    document.getElementById('cityName').value.trim()
+  );
 }
 
-btnStart.onclick = ()=>showScreen(screen2);
+btnToTela2.onclick = ()=>{
+  tela1.style.display='none';
+  tela2.style.display='block';
+  renderMarket('GK'); // primeira posição
+}
 
-function formatReal(num){return 'R$ '+num.toLocaleString('pt-BR')}
-
-function showNotif(msg){alert(msg)}
-
-function onToggleHire(e){
-  const id = parseInt(e.target.dataset.id);
-  if(e.target.checked){
-    const player = players.find(p=>p.id===id);
-    hired.push(player);
-  }else{
-    hired = hired.filter(h=>h.id!==id);
+btnNextStep.onclick = ()=>{
+  const positions = ['GK','DF','MF','FW'];
+  marketStep++;
+  if(marketStep>=positions.length){
+    tela2.style.display='none';
+    tela3.style.display='block';
+    renderBench();
+  } else {
+    renderMarket(positions[marketStep]);
   }
 }
 
 function renderMarket(filter){
-  playersTbody.innerHTML = '';
-  const list = players.filter(p => !hired.some(h => h.id === p.id) && (!filter || p.pos === filter));
-  
-  if(list.length === 0){
+  playersTbody.innerHTML='';
+  const list = players.filter(p => !filter || p.pos===filter);
+  if(list.length===0){
     const tr = document.createElement('tr');
-    tr.innerHTML = '<td colspan="7" class="muted">Nenhum jogador disponível para essa posição.</td>';
+    tr.innerHTML='<td colspan="7" class="muted">Nenhum jogador disponível para essa posição.</td>';
     playersTbody.appendChild(tr);
     return;
   }
-
   list.forEach(p=>{
     const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>
-        <strong class="player-name" data-id="${p.id}" onclick="showPlayerPresentation(event, '${p.specialityText.replace(/'/g, "\\'")}')">${p.name}</strong>
-        <div class="muted">${p.pos}</div>
-      </td>
+    const hiredAlready = hired.some(h=>h.id===p.id);
+    tr.innerHTML=`
+      <td><strong class="player-name" data-id="${p.id}" onclick="showPlayerPresentation(event,'${p.specialityText.replace(/'/g,"\\'")}')">${p.name}</strong>
+          <div class="muted">${p.pos}</div></td>
       <td>${p.pos}</td>
       <td>${p.profession.name}</td>
       <td>${p.age}</td>
       <td>${formatReal(p.salary)}</td>
       <td>${p.health}</td>
-      <td style="width:120px">
-        <input type="checkbox" data-id="${p.id}" ${hired.some(h => h.id === p.id) ? 'checked' : ''}>
-      </td>
+      <td style="width:120px"><input type="checkbox" data-id="${p.id}" ${hiredAlready?'checked':''}></td>
     `;
     playersTbody.appendChild(tr);
   });
-
-  playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb => cb.onchange = onToggleHire);
+  playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.onchange=onToggleHire);
+  updateCheckboxStates();
 }
 
-function showPlayerPresentation(e,text){alert('Especialidade: '+text)}
-
-btnNextStep.onclick = ()=>{
-  const current = steps[marketStep];
-  if(current && current.filter){
-    const have = hired.filter(h => h.pos === current.filter).length;
-    if(have < current.min){
-      showNotif(`Escolha no mínimo ${current.min} ${current.filter}(s).`);
-      return;
-    }
+function onToggleHire(e){
+  const id=parseInt(e.target.dataset.id);
+  const player=players.find(p=>p.id===id);
+  if(e.target.checked){
+    hired.push(player);
+  } else {
+    hired=hired.filter(p=>p.id!==id);
   }
+  selectedCount.textContent=hired.length;
+  btnEscalar.disabled=hired.length<11;
+}
 
-  marketStep++;
-  if(marketStep >= steps.length){
-    marketStep = steps.length - 1;
-    // Avança para Tela 3
-    showScreen(screen3);
-    renderSummary();
-    return;
-  }
+function updateCheckboxStates(){
+  // aqui você pode bloquear/desbloquear de acordo com orçamento
+}
 
-  marketMessage.textContent = steps[marketStep].msg;
-  renderMarket(steps[marketStep].filter);
-};
+function formatReal(v){ return 'R$ '+v.toLocaleString('pt-BR'); }
 
-function renderSummary(){
-  summary.innerHTML='';
+function renderBench(){
+  const benchDiv=document.getElementById('bench');
+  benchDiv.innerHTML='';
   hired.forEach(p=>{
-    const li = document.createElement('li');
-    li.textContent = `${p.name} - ${p.pos}`;
-    summary.appendChild(li);
+    const div=document.createElement('div');
+    div.className='player-card';
+    div.draggable=true;
+    div.dataset.id=p.id;
+    div.textContent=p.name+' ('+p.pos+')';
+    div.ondragstart=dragStart;
+    benchDiv.appendChild(div);
   });
 }
 
-btnNextScreen3.onclick = ()=>{
-  showScreen(screen4);
-  renderFinal();
-};
-
-function renderFinal(){
-  finalTeam.innerHTML='';
-  hired.forEach(p=>{
-    const li = document.createElement('li');
-    li.textContent = `${p.name} - ${p.pos}`;
-    finalTeam.appendChild(li);
-  });
+// Drag & drop simplificado
+function allowDrop(ev){ev.preventDefault();}
+function dragStart(ev){ev.dataTransfer.setData("text",ev.target.dataset.id);}
+function dropHandler(ev){
+  ev.preventDefault();
+  const id=parseInt(ev.dataTransfer.getData("text"));
+  const slot=ev.target;
+  const player=hired.find(p=>p.id===id);
+  if(player && slot.dataset.pos.startsWith(player.pos[0])){ // simplificado
+    slot.textContent=player.name;
+  }
 }
 
-// Inicializa mercado com primeira posição
-renderMarket(steps[marketStep].filter);
+// tooltip
+function showPlayerPresentation(event,text){
+  const tooltip=document.getElementById('tooltip');
+  tooltip.textContent=text;
+  tooltip.style.top=(event.clientY+20)+'px';
+  tooltip.style.left=(event.clientX+20)+'px';
+  tooltip.classList.add('active');
+  setTimeout(()=>tooltip.classList.remove('active'),3000);
+}
 </script>
 
 </body>
