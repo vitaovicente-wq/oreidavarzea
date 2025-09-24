@@ -55,7 +55,7 @@
   <!-- TELA 2 -->
   <div id="tela2" class="card" style="display:none">
     <h2>Tela 2 — Mercado de Jogadores</h2>
-    <div id="marketMessage" style="font-weight:bold;margin-bottom:10px"></div>
+    <div id="marketMessage" style="font-weight:bold;margin-bottom:10px">Escolha no mínimo 2 goleiros para o seu time</div>
 
     <div style="margin-top:10px;overflow:auto;max-height:480px">
       <table id="playersTable">
@@ -86,20 +86,17 @@
             <div style="display:flex;flex-wrap:wrap;justify-content:center">
               <div class="position-slot" data-pos="GK" id="slot-GK" ondrop="dropHandler(event)" ondragover="allowDrop(event)">GK</div>
             </div>
-
             <div style="display:flex;justify-content:space-between;margin-top:12px">
               <div class="position-slot" data-pos="LB" id="slot-LB" ondrop="dropHandler(event)" ondragover="allowDrop(event)">LB</div>
               <div class="position-slot" data-pos="CB1" id="slot-CB1" ondrop="dropHandler(event)" ondragover="allowDrop(event)">CB</div>
               <div class="position-slot" data-pos="CB2" id="slot-CB2" ondrop="dropHandler(event)" ondragover="allowDrop(event)">CB</div>
               <div class="position-slot" data-pos="RB" id="slot-RB" ondrop="dropHandler(event)" ondragover="allowDrop(event)">RB</div>
             </div>
-
             <div style="display:flex;justify-content:space-around;margin-top:12px">
               <div class="position-slot" data-pos="DM" id="slot-DM" ondrop="dropHandler(event)" ondragover="allowDrop(event)">VOL</div>
               <div class="position-slot" data-pos="CM1" id="slot-CM1" ondrop="dropHandler(event)" ondragover="allowDrop(event)">MEI</div>
               <div class="position-slot" data-pos="CM2" id="slot-CM2" ondrop="dropHandler(event)" ondragover="allowDrop(event)">MEI</div>
             </div>
-
             <div style="display:flex;justify-content:space-between;margin-top:12px">
               <div class="position-slot" data-pos="LW" id="slot-LW" ondrop="dropHandler(event)" ondragover="allowDrop(event)">AE</div>
               <div class="position-slot" data-pos="ST" id="slot-ST" ondrop="dropHandler(event)" ondragover="allowDrop(event)">ATA</div>
@@ -223,7 +220,7 @@ function generatePlayers(){
   }
 }
 
-/* -------------------- Mercado (render + handlers) -------------------- */
+/* -------------------- Mercado -------------------- */
 function renderMarket(filter){
   playersTbody.innerHTML = '';
   const list = players.filter(p => !filter || p.pos === filter);
@@ -285,10 +282,7 @@ function onToggleHire(e){
   renderMarket(steps[marketStep].filter);
 }
 
-/* -------------------- Botões e passos -------------------- */
-function countHiredByPos(label){
-  return hired.filter(h => h.pos === label).length;
-}
+function countHiredByPos(label){ return hired.filter(h => h.pos === label).length; }
 
 function updateButtonStates(){
   btnEscalar.disabled = (hired.length !== MAX_PLAYERS);
@@ -296,19 +290,18 @@ function updateButtonStates(){
   updateCash();
 }
 
+/* -------------------- Passos mercado -------------------- */
 btnNextStep.addEventListener('click', ()=>{
-  const currentStep = steps[marketStep];
-  const count = currentStep.filter ? countHiredByPos(currentStep.filter) : hired.length;
-  if(currentStep.filter && count < currentStep.min){
-    showNotif(`Escolha no mínimo ${currentStep.min} ${currentStep.filter}(s).`);
-    return;
+  const current = steps[marketStep];
+  if(current && current.filter){
+    const have = countHiredByPos(current.filter);
+    if(have < current.min){
+      showNotif(`Escolha no mínimo ${current.min} ${current.filter}(s).`);
+      return;
+    }
   }
   marketStep++;
-  if(marketStep >= steps.length){
-    showNotif('Todos os passos concluídos. Agora você pode escalar o time.');
-    marketStep = steps.length - 1;
-    return;
-  }
+  if(marketStep >= steps.length) marketStep = steps.length - 1;
   marketMessage.textContent = steps[marketStep].msg;
   renderMarket(steps[marketStep].filter);
 });
@@ -317,54 +310,94 @@ btnEscalar.addEventListener('click', ()=>{
   if(hired.length !== MAX_PLAYERS){ showNotif('Você precisa contratar exatamente 22 jogadores para escalar.'); return; }
   tela2.style.display='none';
   tela3.style.display='block';
-  hired.forEach(p => {
-    const div = document.createElement('div'); div.id='bench-'+p.id; div.className='player-card'; div.draggable=true;
-    div.textContent = `${p.name} (${p.pos})`; div.dataset.id = p.id;
-    div.ondragstart = dragStartHandler; div.onclick = removeFromPitch;
-    bench.appendChild(div);
-  });
-  userTeamNameEl.textContent = teamName.value;
+  populateBench();
 });
 
-/* -------------------- Drag & Drop -------------------- */
-function allowDrop(ev){ ev.preventDefault(); }
-function dragStartHandler(ev){ ev.dataTransfer.setData("text", ev.target.dataset.id); }
-function dropHandler(ev){
-  ev.preventDefault();
-  const pid = ev.dataTransfer.getData("text");
-  const ply = hired.find(p=>p.id===pid);
-  if(!ply) return;
-  if(ev.target.dataset.assigned){ showNotif('Essa posição já está ocupada'); return; }
-  ev.target.textContent = ply.name;
-  ev.target.dataset.assigned = pid;
-  const card = document.getElementById('bench-'+pid); if(card){ card.classList.add('locked'); card.draggable=false; card.style.cursor='not-allowed'; }
-}
-
-function removeFromPitch(e){
-  const pid = e.currentTarget.dataset.id;
-  document.querySelectorAll('.position-slot[data-assigned="'+pid+'"]').forEach(slot=>{
-    slot.textContent = slot.dataset.pos;
-    delete slot.dataset.assigned;
+/* -------------------- Tela 1 -------------------- */
+[teamName,userName,cityName].forEach(input=>{
+  input.addEventListener('input',()=>{
+    btnToTela2.disabled = !(teamName.value && userName.value && cityName.value);
   });
-  e.currentTarget.classList.remove('locked'); e.currentTarget.draggable=true; e.currentTarget.style.cursor='grab';
-}
+});
 
-/* -------------------- TELA 1 inputs -------------------- */
-[teamName,userName,cityName].forEach(el => el.addEventListener('input',()=>{
-  btnToTela2.disabled = !(teamName.value && userName.value && cityName.value);
-}));
-
-btnToTela2.addEventListener('click',()=>{
-  tela1.style.display='none'; tela2.style.display='block';
-  marketStep = 1;
-  marketMessage.textContent = steps[marketStep].msg;
+btnToTela2.addEventListener('click', ()=>{
+  tela1.style.display='none';
+  tela2.style.display='block';
   generatePlayers();
   renderMarket(steps[marketStep].filter);
   updateCash();
+  updateSelectedCount();
 });
 
-/* Inicializa */
-updateCash(); updateSelectedCount();
+/* -------------------- Tela 3 — Drag & Drop -------------------- */
+function populateBench(){
+  bench.innerHTML='';
+  hired.forEach(p=>{
+    const div = document.createElement('div');
+    div.className='player-card';
+    div.id='bench-'+p.id;
+    div.draggable=true;
+    div.textContent = `${p.name} (${p.pos})`;
+    div.ondragstart = ev=>{ ev.dataTransfer.setData("text/plain",p.id); };
+    div.onclick = ()=>{
+      // remover do campo se estiver escalado
+      document.querySelectorAll('.position-slot[data-assigned]').forEach(slot=>{
+        if(slot.dataset.assigned===p.id){
+          slot.textContent=slot.dataset.pos;
+          delete slot.dataset.assigned;
+          div.classList.remove('locked');
+          div.draggable=true;
+        }
+      });
+    };
+    bench.appendChild(div);
+  });
+  btnPlayMatch.disabled = false;
+}
+
+function allowDrop(ev){ ev.preventDefault(); }
+function dropHandler(ev){
+  ev.preventDefault();
+  const pid = ev.dataTransfer.getData("text/plain");
+  const ply = hired.find(p=>p.id===pid);
+  const slot = ev.currentTarget;
+  if(slot.dataset.assigned){ showNotif('Posição já ocupada'); return; }
+  slot.textContent = ply.name;
+  slot.dataset.assigned = pid;
+  const card = document.getElementById('bench-'+pid);
+  if(card){ card.classList.add('locked'); card.draggable=false; card.style.cursor='not-allowed'; }
+}
+
+/* -------------------- Botão Jogar Partida -------------------- */
+btnPlayMatch.addEventListener('click', ()=>{
+  const slots = document.querySelectorAll('.position-slot');
+  let allFilled = true;
+  slots.forEach(slot => { if(!slot.dataset.assigned) allFilled=false; });
+  if(!allFilled){ showNotif('Preencha todas as posições antes de jogar a partida.'); return; }
+
+  // avançar para Tela 4
+  tela3.style.display='none';
+  tela4.style.display='block';
+  userTeamNameEl.textContent = teamName.value;
+
+  jogadoresUsuario.innerHTML='';
+  hired.forEach(p=>{
+    const li = document.createElement('li');
+    li.textContent = `${p.name} (${p.pos})`;
+    jogadoresUsuario.appendChild(li);
+  });
+
+  jogadoresVila.innerHTML='';
+  for(let i=0;i<11;i++){
+    const li = document.createElement('li');
+    li.textContent = `Vila Player ${i+1}`;
+    jogadoresVila.appendChild(li);
+  }
+
+  placar.textContent='0 x 0';
+  comentarios.innerHTML='A partida começou!<br>';
+  btnContinuar.style.display='inline-block';
+});
 </script>
 </body>
 </html>
