@@ -25,6 +25,13 @@
   .position-slot{width:90px;height:40px;border-radius:6px;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;cursor:pointer;margin:6px}
   .pitch{width:100%;height:420px;background:linear-gradient(#73c26b,#5eb95e);border-radius:12px;padding:12px;box-sizing:border-box}
   .notif{position:fixed;top:18px;right:18px;background:#ffefc2;color:#333;padding:10px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);border:1px solid #e6b800}
+  .health-bar{width:60px;height:8px;background:#eee;border-radius:4px;overflow:hidden;display:inline-block;margin-left:8px;vertical-align:middle}
+  .health-fill{height:100%;background:#4CAF50;transition:width 0.3s}
+  .health-low{background:#f44336}
+  .health-medium{background:#ff9800}
+  .badge{display:inline-block;padding:2px 6px;border-radius:10px;font-size:10px;margin-left:4px;background:#e0e0e0}
+  .badge-pai{background:#fff59d;color:#000}
+  .badge-trabalho{background:#bbdefb}
 </style>
 </head>
 <body>
@@ -59,7 +66,7 @@
 
     <div style="margin-top:10px;overflow:auto;max-height:480px">
       <table id="playersTable">
-        <thead><tr><th>Nome</th><th>Posição</th><th>Pé</th><th>Idade</th><th>Salário</th><th>Contratar</th></tr></thead>
+        <thead><tr><th>Nome</th><th>Posição</th><th>Pé</th><th>Idade</th><th>Salário</th><th>Saúde</th><th>Detalhes</th><th>Contratar</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -164,6 +171,20 @@ const steps = [
   { msg: "Escolha no mínimo 4 atacantes para o seu time", filter: "Atacante", min: 4 }
 ];
 
+/* -------------------- Profissões e Dinâmicas -------------------- */
+const profissoes = [
+  { nome: "Pedreiro", tipo: "manual", desgasteSaude: 2, salarioExtra: 800 },
+  { nome: "Eletricista", tipo: "manual", desgasteSaude: 2, salarioExtra: 900 },
+  { nome: "Marceneiro", tipo: "manual", desgasteSaude: 3, salarioExtra: 700 },
+  { nome: "Mecânico", tipo: "manual", desgasteSaude: 3, salarioExtra: 850 },
+  { nome: "Entregador", tipo: "manual", desgasteSaude: 4, salarioExtra: 750 },
+  { nome: "Vendedor", tipo: "comercial", desgasteSaude: 5, salarioExtra: 1200 },
+  { nome: "Gerente", tipo: "executivo", desgasteSaude: 6, salarioExtra: 2000 },
+  { nome: "Analista", tipo: "executivo", desgasteSaude: 5, salarioExtra: 1800 },
+  { nome: "Professor", tipo: "comercial", desgasteSaude: 4, salarioExtra: 1500 },
+  { nome: "Enfermeiro", tipo: "comercial", desgasteSaude: 6, salarioExtra: 1300 }
+];
+
 /* -------------------- Elementos DOM -------------------- */
 const teamName = document.getElementById('teamName');
 const userName = document.getElementById('userName');
@@ -201,7 +222,20 @@ function formatReal(n){ return 'R$ ' + n.toLocaleString('pt-BR'); }
 function updateCash(){ cashDisplay.textContent = formatReal(CASH); }
 function updateSelectedCount(){ selectedCountEl.textContent = hired.length; }
 
-/* -------------------- Gerar jogadores -------------------- */
+function getHealthColor(health) {
+  if (health >= 80) return '#4CAF50';
+  if (health >= 50) return '#ff9800';
+  return '#f44336';
+}
+
+function renderHealthBar(health) {
+  const color = getHealthColor(health);
+  return `<div class="health-bar">
+    <div class="health-fill" style="width: ${health}%; background: ${color}"></div>
+  </div> ${health}%`;
+}
+
+/* -------------------- Gerar jogadores com novas características -------------------- */
 const firsts = ["Marrentinho","Juscelino","Ronaldinho","Berg","Tico","Zeca","Xandão","Pedrinho","Claudinho","Sandro","Marollo","Ricardão"];
 const lastParts = ["Carioca","Paulista","Baiano","Gaucho","Mineiro","Nordestino","Pernambucano","Capixaba"];
 const distribution = { GK:4, ZAG:8, LAT:8, VOL:6, MEI:8, ATA:8 };
@@ -214,12 +248,33 @@ function generatePlayers(){
   const buckets = [];
   Object.keys(distribution).forEach(k => { for(let i=0;i<distribution[k];i++) buckets.push(k); });
   while(buckets.length < TOTAL_MARKET) buckets.push('MEI');
+  
   for(let i=0;i<TOTAL_MARKET;i++){
     const posKey = buckets[i];
     const map = { GK:'Goleiro', ZAG:'Zagueiro', LAT:'Lateral', VOL:'Volante', MEI:'Meia', ATA:'Atacante' };
     const posLabel = map[posKey] || 'Meia';
     const name = firsts[i % firsts.length] + ' ' + lastParts[i % lastParts.length];
-    players.push({ id:'p'+i, name, pos: posLabel, foot: pickFoot(), age: randInt(16,45), salary: Math.round(randInt(50,200)/10)*10 });
+    
+    // Nova lógica: saúde inicial variada (80 ou 100)
+    const health = Math.random() > 0.3 ? 100 : 80; // 70% com 100%, 30% com 80%
+    
+    // Profissão secundária
+    const profissao = profissoes[Math.floor(Math.random() * profissoes.length)];
+    
+    // Ser pai (20% de chance)
+    const isPai = Math.random() < 0.2;
+    
+    players.push({ 
+      id:'p'+i, 
+      name, 
+      pos: posLabel, 
+      foot: pickFoot(), 
+      age: randInt(16,45), 
+      salary: Math.round(randInt(50,200)/10)*10,
+      health: health,
+      profissao: profissao,
+      isPai: isPai
+    });
   }
 }
 
@@ -229,19 +284,26 @@ function renderMarket(filter){
   const list = players.filter(p => !filter || p.pos === filter);
   if(list.length === 0){
     const tr = document.createElement('tr');
-    tr.innerHTML = '<td colspan="6" class="muted">Nenhum jogador disponível para essa posição.</td>';
+    tr.innerHTML = '<td colspan="8" class="muted">Nenhum jogador disponível para essa posição.</td>';
     playersTbody.appendChild(tr);
     return;
   }
   list.forEach(p=>{
     const tr = document.createElement('tr');
     const hiredAlready = hired.some(h=>h.id===p.id);
+    
+    // Detalhes extras (profissão e se é pai)
+    let detalhes = p.profissao.nome;
+    if (p.isPai) detalhes += ' 👨‍👧‍👦';
+    
     tr.innerHTML = `
       <td><strong>${p.name}</strong><div class="muted">${p.pos}</div></td>
       <td>${p.pos}</td>
       <td>${p.foot}</td>
       <td>${p.age}</td>
       <td>${formatReal(p.salary)}</td>
+      <td>${renderHealthBar(p.health)}</td>
+      <td>${detalhes}</td>
       <td style="width:120px"><input type="checkbox" data-id="${p.id}" ${hiredAlready?'checked':''}></td>
     `;
     playersTbody.appendChild(tr);
@@ -332,7 +394,20 @@ function populateBench(){
     div.draggable = true;
     div.dataset.pid = p.id;
     div.dataset.pos = p.pos;
-    div.innerHTML = `<div><strong>${p.name}</strong><div class="muted">${p.pos} • ${p.foot} • ${p.age} anos</div></div><div class="muted">${formatReal(p.salary)}</div>`;
+    
+    // Badges para profissão e se é pai
+    let badges = '';
+    if (p.isPai) badges += '<span class="badge badge-pai">Pai</span>';
+    badges += `<span class="badge badge-trabalho">${p.profissao.nome}</span>`;
+    
+    div.innerHTML = `
+      <div>
+        <strong>${p.name}</strong>
+        <div class="muted">${p.pos} • ${p.foot} • ${p.age} anos</div>
+        <div>${renderHealthBar(p.health)} ${badges}</div>
+      </div>
+      <div class="muted">${formatReal(p.salary)}</div>
+    `;
     div.addEventListener('dragstart', dragStart);
     div.addEventListener('click', ()=>{
       const pid = div.dataset.pid;
@@ -386,7 +461,11 @@ btnPlayMatch.addEventListener('click', ()=>{
   document.querySelectorAll('.position-slot[data-assigned]').forEach(slot=>{
     const pid = slot.dataset.assigned;
     const p = hired.find(h=>h.id===pid);
-    if(p){ const li = document.createElement('li'); li.textContent = p.name + ' (' + p.pos + ')'; jogadoresUsuario.appendChild(li); }
+    if(p){ 
+      const li = document.createElement('li'); 
+      li.innerHTML = `${p.name} (${p.pos}) ${renderHealthBar(p.health)}`;
+      jogadoresUsuario.appendChild(li); 
+    }
   });
 
   const escalaVila = ["Tadeu (GK)","Joãozinho (LB)","Bira (ZAG)","Marcão (ZAG)","Nego (RB)","Léo (VOL)","Careca (VOL)","Tico (MEI)","Juninho (MEI)","Beto (ATA)","Formiga (ATA)"];
@@ -396,6 +475,7 @@ btnPlayMatch.addEventListener('click', ()=>{
   placar.textContent = '0 x 0';
   comentarios.innerHTML = '<p><em>Apito inicial...</em></p>';
   let golsU=0, golsV=0, minuto=1;
+  
   const lances = [
     "Escanteio perigoso!",
     "Falta dura no meio-campo.",
@@ -411,11 +491,45 @@ btnPlayMatch.addEventListener('click', ()=>{
 
   const intervalMs = 6000;
   const interval = setInterval(()=>{
-    if(minuto >= 60){ clearInterval(interval); comentarios.innerHTML += '<p><strong>Fim de jogo!</strong></p>'; btnContinuar.style.display='inline-block'; return; }
+    if(minuto >= 60){ 
+      clearInterval(interval); 
+      comentarios.innerHTML += '<p><strong>Fim de jogo!</strong></p>';
+      
+      // Aplicar desgaste de saúde após a partida
+      aplicarDesgasteSaude();
+      
+      btnContinuar.style.display='inline-block'; 
+      return; 
+    }
+    
     let lance = lances[Math.floor(Math.random()*lances.length)];
+    
+    // Chance de comentário específico sobre saúde/profissão
+    if(Math.random() < 0.1) {
+      const jogadoresEscalados = hired.filter(p => 
+        document.querySelector(`.position-slot[data-assigned="${p.id}"]`)
+      );
+      if(jogadoresEscalados.length > 0) {
+        const jogador = jogadoresEscalados[Math.floor(Math.random() * jogadoresEscalados.length)];
+        if(jogador.health < 50) {
+          lance = `${jogador.name} parece cansado, a saúde está baixa!`;
+        } else if(jogador.profissao.tipo === 'executivo') {
+          lance = `${jogador.name} (${jogador.profissao.nome}) parece lento, vida de escritório pesa!`;
+        } else if(jogador.isPai) {
+          lance = `${jogador.name} corre muito, mas deve ter acordado de madrugada com o filho!`;
+        }
+      }
+    }
+    
     if(Math.random() < 0.15){
-      if(Math.random() < 0.5){ golsU++; lance = "GOOOOL do " + (teamName.value || "Meu Time") + "!!!"; }
-      else { golsV++; lance = "GOOOOL da Vila Freitas!!!"; }
+      if(Math.random() < 0.5){ 
+        golsU++; 
+        lance = "GOOOOL do " + (teamName.value || "Meu Time") + "!!!"; 
+      }
+      else { 
+        golsV++; 
+        lance = "GOOOOL da Vila Freitas!!!"; 
+      }
       placar.textContent = `${golsU} x ${golsV}`;
     }
     comentarios.innerHTML += `<p>${minuto} min - ${lance}</p>`;
@@ -424,12 +538,38 @@ btnPlayMatch.addEventListener('click', ()=>{
   }, intervalMs);
 });
 
+function aplicarDesgasteSaude() {
+  hired.forEach(jogador => {
+    // Desgaste base da partida
+    let desgaste = 5;
+    
+    // Desgaste adicional pela profissão (executivos se desgastam mais)
+    if(jogador.profissao.tipo === 'executivo') {
+      desgaste += 3;
+    } else if(jogador.profissao.tipo === 'manual') {
+      desgaste += 1; // trabalhos manuais dão mais resistência
+    }
+    
+    // Desgaste adicional se for pai
+    if(jogador.isPai) {
+      desgaste += 2;
+    }
+    
+    jogador.health = Math.max(0, jogador.health - desgaste);
+  });
+  
+  showNotif('Saúde dos jogadores atualizada após a partida!');
+}
+
 /* voltar para escalação */
 btnContinuar.addEventListener('click', ()=>{
   btnContinuar.style.display='none';
   tela4.style.display='none';
   tela3.style.display='block';
   btnPlayMatch.disabled = true;
+  
+  // Atualizar a exibição da saúde no banco
+  populateBench();
 });
 
 /* -------------------- Tela1: validação e navegação -------------------- */
