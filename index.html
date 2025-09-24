@@ -401,7 +401,39 @@ btnPlayMatch.addEventListener('click', ()=>{
     turn++;
   }, 1000);
 });
+  /* -------------------- Botão Continuar (Tela 4) -------------------- */
+btnContinuar.addEventListener('click', ()=>{
+  // Voltar para a tela de escalação
+  tela4.style.display = 'none';
+  tela3.style.display = 'block';
 
+  // Limpar escalação (slots voltam a mostrar a posição original)
+  document.querySelectorAll('.position-slot').forEach(slot=>{
+    slot.textContent = slot.dataset.pos;
+    delete slot.dataset.assigned;
+  });
+
+  // Resetar banco para deixar todos os jogadores disponíveis novamente
+  bench.innerHTML = '';
+  hired.forEach(p=>{
+    const div = document.createElement('div');
+    div.className = 'player-card';
+    div.id = 'bench-'+p.id;
+    div.draggable = true;
+    div.textContent = `${p.name} (${p.pos})`;
+    div.ondragstart = ev=>{ ev.dataTransfer.setData("text/plain",p.id); };
+    div.onclick = ()=>{ unassignPlayer(p.id); };
+    bench.appendChild(div);
+  });
+
+  // Esconder o botão Continuar até a próxima partida
+  btnContinuar.style.display = 'none';
+
+  // Resetar placar e comentários
+  placar.textContent = '0 x 0';
+  comentarios.innerHTML = '';
+});
 </script>
 </body>
 </html>
+
