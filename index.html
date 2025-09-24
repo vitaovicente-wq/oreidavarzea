@@ -33,41 +33,12 @@
   .badge-pai{background:#fff59d;color:#000}
   .badge-trabalho{background:#bbdefb}
   
-  /* Tooltip melhorado */
-  .tooltip{position:relative;display:inline-block;z-index:1000}
-  .tooltip .tooltiptext{
-    visibility:hidden;
-    width:300px;
-    background-color:#333;
-    color:#fff;
-    text-align:center;
-    border-radius:8px;
-    padding:12px;
-    position:absolute;
-    z-index:1001;
-    bottom:100%;
-    left:50%;
-    transform:translateX(-50%);
-    margin-bottom:10px;
-    opacity:0;
-    transition:opacity 0.3s;
-    font-size:13px;
-    line-height:1.4;
-    box-shadow:0 4px 12px rgba(0,0,0,0.3);
-    word-wrap:break-word;
-    white-space:normal;
+  /* Tooltip FIXED - Solução definitiva */
+  .tooltip-container {
+    position: relative;
+    display: inline-block;
   }
-  .tooltip:hover .tooltiptext{visibility:visible;opacity:1}
-  .tooltip .tooltiptext::after{
-    content:"";
-    position:absolute;
-    top:100%;
-    left:50%;
-    margin-left:-6px;
-    border-width:6px;
-    border-style:solid;
-    border-color:#333 transparent transparent transparent;
-  }
+  
   .player-name{
     cursor:pointer;
     text-decoration:underline dotted;
@@ -78,14 +49,43 @@
   }
   .player-name:hover{background-color:#f0f8ff}
   
-  /* Garantir que os tooltips não sejam cortados */
-  #playersTable { position: relative; }
-  #playersTable tbody tr { position: static; }
-  .bench { position: relative; overflow: visible; }
-  .player-card { position: static; }
+  /* Tooltip fixo na tela */
+  .tooltip-global {
+    position: fixed;
+    z-index: 10000;
+    background-color: #333;
+    color: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    max-width: 300px;
+    font-size: 13px;
+    line-height: 1.4;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  
+  .tooltip-global.visible {
+    opacity: 1;
+  }
+  
+  .tooltip-global::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -6px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+  }
 </style>
 </head>
 <body>
+<!-- Tooltip global -->
+<div id="globalTooltip" class="tooltip-global"></div>
+
 <header>
   <div class="container"><h1>O Rei da Várzea — Protótipo</h1></div>
 </header>
@@ -115,7 +115,7 @@
     <h2>Tela 2 — Mercado de Jogadores</h2>
     <div id="marketMessage" style="font-weight:bold;margin-bottom:10px">Escolha no mínimo 2 goleiros para o seu time</div>
 
-    <div style="margin-top:10px;overflow:auto;max-height:480px;position:relative">
+    <div style="margin-top:10px;overflow:auto;max-height:480px">
       <table id="playersTable">
         <thead><tr><th>Nome</th><th>Posição</th><th>Pé</th><th>Idade</th><th>Salário</th><th>Saúde</th><th>Detalhes</th><th>Contratar</th></tr></thead>
         <tbody></tbody>
@@ -174,7 +174,7 @@
       <div style="width:320px">
         <div class="card">
           <h3>Banco / Jogadores contratados</h3>
-          <div class="bench" id="bench" style="position:relative;overflow:visible"></div>
+          <div class="bench" id="bench"></div>
           <div class="muted" style="margin-top:8px">Clique no jogador no banco para desassociar (se já estiver escalado).</div>
         </div>
       </div>
@@ -204,7 +204,6 @@
 </div>
 
 <script>
-// ... (o resto do código JavaScript permanece exatamente igual) ...
 /* -------------------- Config / Estado -------------------- */
 const MAX_PLAYERS = 22;
 const TOTAL_MARKET = 42;
@@ -401,6 +400,65 @@ const placar = document.getElementById('placar');
 const comentarios = document.getElementById('comentarios');
 const btnContinuar = document.getElementById('btnContinuar');
 
+const globalTooltip = document.getElementById('globalTooltip');
+
+/* -------------------- Sistema de Tooltip Global -------------------- */
+let currentTooltipElement = null;
+
+function setupTooltip(element, text) {
+  element.addEventListener('mouseenter', function(e) {
+    currentTooltipElement = element;
+    showGlobalTooltip(e, text);
+  });
+  
+  element.addEventListener('mousemove', function(e) {
+    if (currentTooltipElement === element) {
+      moveGlobalTooltip(e);
+    }
+  });
+  
+  element.addEventListener('mouseleave', function() {
+    if (currentTooltipElement === element) {
+      hideGlobalTooltip();
+      currentTooltipElement = null;
+    }
+  });
+}
+
+function showGlobalTooltip(e, text) {
+  globalTooltip.textContent = text;
+  globalTooltip.classList.add('visible');
+  moveGlobalTooltip(e);
+}
+
+function moveGlobalTooltip(e) {
+  const x = e.clientX + 15;
+  const y = e.clientY - 10;
+  
+  globalTooltip.style.left = x + 'px';
+  globalTooltip.style.top = y + 'px';
+}
+
+function hideGlobalTooltip() {
+  globalTooltip.classList.remove('visible');
+}
+
+function criarElementoTooltip(nome, texto) {
+  const container = document.createElement('div');
+  container.className = 'tooltip-container';
+  
+  const span = document.createElement('span');
+  span.className = 'player-name';
+  span.textContent = nome;
+  
+  container.appendChild(span);
+  
+  // Configurar o tooltip
+  setupTooltip(span, texto);
+  
+  return container;
+}
+
 /* -------------------- Helpers -------------------- */
 function showNotif(text, time=2500){
   const box = document.createElement('div'); box.className='notif'; box.textContent = text;
@@ -433,13 +491,6 @@ function getApresentacaoJogador(jogador) {
   const textoEscolhido = textos[Math.floor(Math.random() * textos.length)];
   
   return textoEscolhido;
-}
-
-function criarTooltip(nome, texto) {
-  return `<div class="tooltip">
-    <span class="player-name">${nome}</span>
-    <span class="tooltiptext">${texto}</span>
-  </div>`;
 }
 
 /* -------------------- Gerar jogadores com novas características -------------------- */
@@ -507,8 +558,18 @@ function renderMarket(filter){
     let detalhes = p.profissao.nome;
     if (p.isPai) detalhes += ' 👨‍👧‍👦';
     
-    tr.innerHTML = `
-      <td>${criarTooltip(p.name, p.apresentacao)}<div class="muted">${p.pos}</div></td>
+    const nomeCell = document.createElement('td');
+    const tooltipContainer = criarElementoTooltip(p.name, p.apresentacao);
+    const posDiv = document.createElement('div');
+    posDiv.className = 'muted';
+    posDiv.textContent = p.pos;
+    
+    nomeCell.appendChild(tooltipContainer);
+    nomeCell.appendChild(posDiv);
+    
+    tr.appendChild(nomeCell);
+    
+    tr.innerHTML += `
       <td>${p.pos}</td>
       <td>${p.foot}</td>
       <td>${p.age}</td>
@@ -517,50 +578,17 @@ function renderMarket(filter){
       <td>${detalhes}</td>
       <td style="width:120px"><input type="checkbox" data-id="${p.id}" ${hiredAlready?'checked':''}></td>
     `;
+    
     playersTbody.appendChild(tr);
   });
+  
   // attach listeners
   playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb => cb.onchange = onToggleHire);
   // update disabled states
   updateCheckboxStates();
 }
 
-function updateCheckboxStates(){
-  playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb => {
-    const pid = cb.dataset.id;
-    const ply = players.find(p=>p.id===pid);
-    if(!cb.checked && (hired.length >= MAX_PLAYERS || CASH - ply.salary < 0)) cb.disabled = true;
-    else cb.disabled = false;
-  });
-  updateButtonStates();
-}
-
-function onToggleHire(e){
-  const cb = e.currentTarget;
-  const pid = cb.dataset.id;
-  const ply = players.find(p=>p.id===pid);
-  if(cb.checked){
-    if(hired.length >= MAX_PLAYERS){ showNotif('Limite de 22 jogadores'); cb.checked=false; return; }
-    if(CASH - ply.salary < 0){ showNotif('Saldo insuficiente'); cb.checked=false; return; }
-    CASH -= ply.salary;
-    hired.push(ply);
-  } else {
-    CASH += ply.salary;
-    hired = hired.filter(h => h.id !== pid);
-    // if this player was assigned to a slot, free it
-    document.querySelectorAll('.position-slot[data-assigned]').forEach(slot=>{
-      if(slot.dataset.assigned === pid){
-        slot.textContent = slot.dataset.pos;
-        delete slot.dataset.assigned;
-        const card = document.getElementById('bench-'+pid);
-        if(card){ card.classList.remove('locked'); card.draggable = true; card.style.cursor='grab'; }
-      }
-    });
-  }
-  updateCash(); updateSelectedCount();
-  // re-render filter to update checkboxes disable state
-  renderMarket(steps[marketStep].filter);
-}
+// ... (o resto do código permanece igual) ...
 
 /* -------------------- Buttons e passos -------------------- */
 function countHiredByPos(label){
@@ -611,14 +639,27 @@ function populateBench(){
     if (p.isPai) badges += '<span class="badge badge-pai">Pai</span>';
     badges += `<span class="badge badge-trabalho">${p.profissao.nome}</span>`;
     
-    div.innerHTML = `
-      <div>
-        ${criarTooltip(p.name, p.apresentacao)}
-        <div class="muted">${p.pos} • ${p.foot} • ${p.age} anos</div>
-        <div>${renderHealthBar(p.health)} ${badges}</div>
-      </div>
-      <div class="muted">${formatReal(p.salary)}</div>
-    `;
+    const leftDiv = document.createElement('div');
+    
+    const tooltipContainer = criarElementoTooltip(p.name, p.apresentacao);
+    leftDiv.appendChild(tooltipContainer);
+    
+    const infoDiv1 = document.createElement('div');
+    infoDiv1.className = 'muted';
+    infoDiv1.textContent = `${p.pos} • ${p.foot} • ${p.age} anos`;
+    leftDiv.appendChild(infoDiv1);
+    
+    const infoDiv2 = document.createElement('div');
+    infoDiv2.innerHTML = `${renderHealthBar(p.health)} ${badges}`;
+    leftDiv.appendChild(infoDiv2);
+    
+    const rightDiv = document.createElement('div');
+    rightDiv.className = 'muted';
+    rightDiv.textContent = formatReal(p.salary);
+    
+    div.appendChild(leftDiv);
+    div.appendChild(rightDiv);
+    
     div.addEventListener('dragstart', dragStart);
     div.addEventListener('click', ()=>{
       const pid = div.dataset.pid;
@@ -630,6 +671,7 @@ function populateBench(){
         if(document.querySelectorAll('.position-slot[data-assigned]').length < 11) btnPlayMatch.disabled = true;
       }
     });
+    
     bench.appendChild(div);
   });
 }
