@@ -56,13 +56,13 @@
   <div id="tela1" class="card">
     <h2>Tela 1 — Cadastro</h2>
     <label>Nome do seu time
-      <input id="teamName" type="text" placeholder="Ex: Os Meninos da Rua" oninput="validateTela1()" />
+      <input id="teamName" type="text" placeholder="Ex: Os Meninos da Rua" />
     </label>
     <label>Seu nome
-      <input id="userName" type="text" placeholder="Seu nome" oninput="validateTela1()" />
+      <input id="userName" type="text" placeholder="Seu nome" />
     </label>
     <label>Cidade
-      <input id="cityName" type="text" placeholder="Cidade" oninput="validateTela1()" />
+      <input id="cityName" type="text" placeholder="Cidade" />
     </label>
     <div class="controls">
       <button id="btnToTela2" disabled>Contratar jogadores</button>
@@ -568,6 +568,7 @@ updateCash();
 updateSelectedCount();
 marketMessage.textContent = steps[marketStep].msg;
 renderMarket(steps[marketStep].filter);
+validateTela1();
 
 /* deixar funções disponíveis para os ondrop/ondragover inline */
 window.allowDrop = allowDrop;
