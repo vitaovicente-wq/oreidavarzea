@@ -11,14 +11,14 @@
   .container{max-width:1100px;margin:18px auto;padding:10px}
   .card{background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);padding:16px;margin-bottom:16px;}
   label{display:block;margin-top:8px}
-  input[type=text], select{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px}
+  input[type=text]{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px}
   button{background:#0b6bd6;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
   button[disabled]{opacity:0.5;cursor:default}
   table{width:100%;border-collapse:collapse;font-size:14px}
   th,td{padding:8px;border-bottom:1px solid #eee;text-align:left}
-  th{background:#fafafa;position:sticky;top:0}
+  th{background:#fafafa}
   .inline-muted{color:#666;font-size:13px}
-  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px}
   .bench{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto;padding:8px;border:1px dashed #ccc;border-radius:8px}
   .player-card{padding:8px;border-radius:8px;background:#fff;border:1px solid #eee;margin-bottom:6px;cursor:grab;display:flex;justify-content:space-between;align-items:center}
   .muted{color:#666;font-size:13px}
@@ -75,7 +75,7 @@
         <tbody></tbody>
       </table>
     </div>
-    <div style="margin-top:12px" class="controls">
+    <div class="controls">
       <button id="btnNextStep">Próximo</button>
       <button id="btnEscalar" disabled>Escalar time</button>
       <div>
@@ -151,8 +151,182 @@
 </div>
 
 <script>
-// (JS igual ao anterior, mas com marketStep iniciando em 1 (goleiros) e renderMarket chamado já filtrando "Goleiro")
-</script>
+// ---------------- VARIÁVEIS GLOBAIS ----------------
+let CASH = 5000;
+const MAX_PLAYERS = 22;
+const TOTAL_MARKET = 42;
+let players = [];
+let hired = [];
+let marketStep = 1;
 
+const steps = [
+  {msg:"Hora de montar o seu time, escolha 22 jogadores para iniciar",filter:null},
+  {msg:"Escolha no mínimo 2 goleiros para o seu time",filter:"Goleiro"},
+  {msg:"Escolha no mínimo 3 laterais para o seu time",filter:"Lateral"},
+  {msg:"Escolha no mínimo 3 zagueiros para o seu time",filter:"Zagueiro"},
+  {msg:"Escolha no mínimo 3 volantes para o seu time",filter:"Volante"},
+  {msg:"Escolha no mínimo 6 meias para o seu time",filter:"Meia"},
+  {msg:"Escolha no mínimo 4 atacantes para o seu time",filter:"Atacante"}
+];
+
+// ---------------- ELEMENTOS ----------------
+const teamName=document.getElementById('teamName');
+const userName=document.getElementById('userName');
+const cityName=document.getElementById('cityName');
+const btnToTela2=document.getElementById('btnToTela2');
+const tela1=document.getElementById('tela1');
+const tela2=document.getElementById('tela2');
+const tela3=document.getElementById('tela3');
+const tela4=document.getElementById('tela4');
+const cashDisplay=document.getElementById('cashDisplay');
+const selectedCountEl=document.getElementById('selectedCount');
+const playersTbody=document.querySelector('#playersTable tbody');
+const btnEscalar=document.getElementById('btnEscalar');
+const btnNextStep=document.getElementById('btnNextStep');
+const marketMessage=document.getElementById('marketMessage');
+const bench=document.getElementById('bench');
+const btnPlayMatch=document.getElementById('btnPlayMatch');
+const btnContinuar=document.getElementById('btnContinuar');
+const userTeamNameEl=document.getElementById('userTeamName');
+const jogadoresUsuario=document.getElementById('jogadoresUsuario');
+const jogadoresVila=document.getElementById('jogadoresVila');
+const placar=document.getElementById('placar');
+const comentarios=document.getElementById('comentarios');
+
+// ---------------- FUNÇÕES AUX ----------------
+function formatReal(n){return 'R$ '+n.toLocaleString('pt-BR');}
+function updateCash(){cashDisplay.textContent=formatReal(CASH);}
+function updateSelectedCount(){selectedCountEl.textContent=hired.length;}
+
+// ---------------- TELA 1 ----------------
+function validateTela1(){
+  btnToTela2.disabled=!(teamName.value.trim()&&userName.value.trim()&&cityName.value.trim());
+}
+teamName.addEventListener('input',validateTela1);
+userName.addEventListener('input',validateTela1);
+cityName.addEventListener('input',validateTela1);
+
+btnToTela2.addEventListener('click',()=>{
+  tela1.style.display='none';
+  tela2.style.display='block';
+  marketStep=1;
+  marketMessage.textContent=steps[marketStep].msg;
+  renderMarket(steps[marketStep].filter);
+});
+
+// ---------------- GERAÇÃO JOGADORES ----------------
+const firsts=["Marrentinho","Juscelino","Ronaldinho","Berg","Tico","Zeca","Xandão","Pedrinho","Claudinho","Sandro"];
+const lastParts=["Carioca","Paulista","Baiano","Gaucho","Mineiro","Nordestino"];
+const distribution={GK:4,ZAG:8,LAT:8,VOL:6,MEI:8,ATA:8};
+function pickFoot(){const r=Math.random()*100;if(r<10)return'Ambidestro';if(r<70)return'Direito';return'Esquerdo';}
+function randInt(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+
+function generatePlayers(){
+  const buckets=[];
+  Object.keys(distribution).forEach(k=>{for(let i=0;i<distribution[k];i++)buckets.push(k);});
+  while(buckets.length<TOTAL_MARKET)buckets.push('MEI');
+  for(let i=0;i<TOTAL_MARKET;i++){
+    const posKey=buckets[i];
+    let posLabel={GK:'Goleiro',ZAG:'Zagueiro',LAT:'Lateral',VOL:'Volante',MEI:'Meia',ATA:'Atacante'}[posKey];
+    const fname=firsts[i%firsts.length]+' '+lastParts[i%lastParts.length];
+    players.push({id:'p'+i,name:fname,pos:posLabel,foot:pickFoot(),age:randInt(16,45),salary:randInt(50,200)});
+  }
+}
+
+// ---------------- MERCADO ----------------
+function renderMarket(filter){
+  playersTbody.innerHTML='';
+  players.filter(p=>!filter||p.pos===filter).forEach(p=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><strong>${p.name}</strong></td>
+                  <td>${p.pos}</td>
+                  <td>${p.foot}</td>
+                  <td>${p.age}</td>
+                  <td>${formatReal(p.salary)}</td>
+                  <td><input type="checkbox" data-id="${p.id}"></td>`;
+    playersTbody.appendChild(tr);
+  });
+  initMarketEvents();
+}
+function initMarketEvents(){
+  document.querySelectorAll('#playersTable input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change',()=>{
+      const ply=players.find(x=>x.id===cb.dataset.id);
+      if(cb.checked){
+        if(hired.length>=MAX_PLAYERS||CASH-ply.salary<0){cb.checked=false;return;}
+        CASH-=ply.salary;hired.push(ply);
+      }else{
+        CASH+=ply.salary;hired=hired.filter(x=>x.id!==ply.id);
+      }
+      updateCash();updateSelectedCount();
+    });
+  });
+}
+btnNextStep.addEventListener('click',()=>{
+  marketStep++;
+  if(marketStep>=steps.length){marketStep=steps.length-1;}
+  marketMessage.textContent=steps[marketStep].msg;
+  renderMarket(steps[marketStep].filter);
+});
+btnEscalar.addEventListener('click',()=>{
+  if(hired.length!==MAX_PLAYERS){alert('Você precisa contratar exatamente 22 jogadores.');return;}
+  tela2.style.display='none';tela3.style.display='block';
+  populateBench();
+});
+
+// ---------------- ESCALAÇÃO ----------------
+function populateBench(){
+  bench.innerHTML='';
+  hired.forEach(p=>{
+    const div=document.createElement('div');
+    div.className='player-card';div.id='bench-'+p.id;div.draggable=true;div.dataset.pid=p.id;div.dataset.pos=p.pos;
+    div.innerHTML=`<div><strong>${p.name}</strong><div class="muted">${p.pos} • ${p.foot} • ${p.age} anos</div></div><div class="muted">${formatReal(p.salary)}</div>`;
+    div.addEventListener('dragstart',dragStart);bench.appendChild(div);
+  });
+}
+function allowDrop(ev){ev.preventDefault();}
+function dragStart(ev){ev.dataTransfer.setData("text/plain",ev.target.dataset.pid);}
+function dropHandler(ev){
+  ev.preventDefault();
+  const pid=ev.dataTransfer.getData("text/plain");
+  const slot=ev.currentTarget;
+  const p=hired.find(x=>x.id===pid);
+  if(document.querySelector(`[data-assigned='${pid}']`)){alert(`${p.name} já está escalado!`);return;}
+  slot.dataset.assigned=pid;slot.textContent=p.name;
+  document.getElementById('bench-'+pid).style.background="#ddd";
+  if(document.querySelectorAll('.position-slot[data-assigned]').length>=11)btnPlayMatch.disabled=false;
+}
+
+// ---------------- PARTIDA ----------------
+btnPlayMatch.addEventListener("click",()=>{
+  tela3.style.display="none";tela4.style.display="block";
+  userTeamNameEl.textContent=teamName.value||"Meu Time";
+  jogadoresUsuario.innerHTML="";
+  document.querySelectorAll(".position-slot[data-assigned]").forEach(slot=>{
+    const p=hired.find(h=>h.id===slot.dataset.assigned);
+    if(p){const li=document.createElement("li");li.textContent=p.name+" ("+p.pos+")";jogadoresUsuario.appendChild(li);}
+  });
+  const escalaVila=["João Goleiro","Zé Zagueiro","Marquinho Lateral","Beto Zagueiro","Tonho Lateral","Carlinhos Volante","Neto Meia","Juninho Meia","Paulinho Atacante","Zezinho Atacante","Didi Atacante"];
+  jogadoresVila.innerHTML="";escalaVila.forEach(j=>{const li=document.createElement("li");li.textContent=j;jogadoresVila.appendChild(li);});
+  placar.textContent="0 x 0";comentarios.innerHTML="<p><em>Apito inicial...</em></p>";
+  let golsU=0,golsV=0,minuto=1;
+  const lances=["Escanteio perigoso!","Falta dura no meio-campo.","Chutão pra fora!","Juiz tropeçou na bola.","Bola na trave!"];
+  const interval=setInterval(()=>{
+    if(minuto>=60){clearInterval(interval);comentarios.innerHTML+="<p><strong>Fim de jogo!</strong></p>";btnContinuar.style.display="inline-block";return;}
+    let lance=lances[Math.floor(Math.random()*lances.length)];
+    if(Math.random()<0.15){
+      if(Math.random()<0.5){golsU++;lance="GOOOOL do "+(teamName.value||"Meu Time")+"!!!";}
+      else{golsV++;lance="GOOOOL da Vila Freitas!!!";}
+      placar.textContent=golsU+" x "+golsV;
+    }
+    comentarios.innerHTML+=`<p>${minuto} min - ${lance}</p>`;
+    comentarios.scrollTop=comentarios.scrollHeight;minuto+=6;
+  },2000);
+});
+btnContinuar.addEventListener("click",()=>{tela4.style.display="none";tela3.style.display="block";btnPlayMatch.disabled=true;btnContinuar.style.display="none";});
+
+// ---------------- INIT ----------------
+generatePlayers();updateCash();updateSelectedCount();
+</script>
 </body>
 </html>
