@@ -346,20 +346,10 @@ function showTooltip(e, text) {
   tooltip.textContent = text;
   tooltip.classList.add('active');
   
-  const x = e.clientX;
-  const y = e.clientY;
-
-  let top = y;
-  let left = x;
-
-  // Position the tooltip based on mouse position, with some offset
-  tooltip.style.left = `${left}px`;
-  tooltip.style.top = `${top}px`;
+  const rect = e.target.getBoundingClientRect();
   
-  // Center the tooltip relative to the click, but with an upward shift
-  const tooltipRect = tooltip.getBoundingClientRect();
-  tooltip.style.left = `${x - tooltipRect.width / 2}px`;
-  tooltip.style.top = `${y - tooltipRect.height - 15}px`;
+  tooltip.style.left = `${rect.left + rect.width / 2}px`;
+  tooltip.style.top = `${rect.top}px`;
 
   document.addEventListener('click', hideTooltip, { once: true });
 }
