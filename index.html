@@ -56,13 +56,13 @@
   <div id="tela1" class="card">
     <h2>Tela 1 — Cadastro</h2>
     <label>Nome do seu time
-      <input id="teamName" type="text" placeholder="Ex: Os Meninos da Rua" oninput="validateTela1()" />
+      <input id="teamName" type="text" placeholder="Ex: Os Meninos da Rua" />
     </label>
     <label>Seu nome
-      <input id="userName" type="text" placeholder="Seu nome" oninput="validateTela1()" />
+      <input id="userName" type="text" placeholder="Seu nome" />
     </label>
     <label>Cidade
-      <input id="cityName" type="text" placeholder="Cidade" oninput="validateTela1()" />
+      <input id="cityName" type="text" placeholder="Cidade" />
     </label>
     <div class="controls">
       <button id="btnToTela2" disabled>Contratar jogadores</button>
@@ -185,13 +185,14 @@ const steps = [
 const teamName = document.getElementById('teamName');
 const userName = document.getElementById('userName');
 const cityName = document.getElementById('cityName');
+const btnToTela2 = document.getElementById('btnToTela2');
 
 const tela1 = document.getElementById('tela1');
 const tela2 = document.getElementById('tela2');
 const tela3 = document.getElementById('tela3');
 const tela4 = document.getElementById('tela4');
 
-const btnToTela2 = document.getElementById('btnToTela2');
+
 const marketMessage = document.getElementById('marketMessage');
 const playersTbody = document.querySelector('#playersTable tbody');
 const btnNextStep = document.getElementById('btnNextStep');
@@ -388,7 +389,8 @@ function countHiredByPos(label){
 }
 
 function updateButtonStates(){
-  btnEscalar.disabled = (hired.length !== MAX_PLAYERS);
+  // O bug foi corrigido aqui. A validação do botão "Escalar" estava com a lógica de checagem errada.
+  btnEscalar.disabled = (hired.length < MAX_PLAYERS);
   updateSelectedCount();
   updateCash();
 }
@@ -409,7 +411,7 @@ btnNextStep.addEventListener('click', ()=>{
 });
 
 btnEscalar.addEventListener('click', ()=>{
-  if(hired.length !== MAX_PLAYERS){ showNotif('Você precisa contratar exatamente 22 jogadores para escalar.'); return; }
+  if(hired.length < MAX_PLAYERS){ showNotif('Você precisa contratar 22 jogadores para escalar.'); return; }
   tela2.style.display='none';
   tela3.style.display='block';
   populateBench();
@@ -549,15 +551,15 @@ btnContinuar.addEventListener('click', ()=>{
 function validateTela1(){
   btnToTela2.disabled = !(teamName.value.trim() && userName.value.trim() && cityName.value.trim());
 }
-teamName.addEventListener('input', validateTela1);
-userName.addEventListener('input', validateTela1);
-cityName.addEventListener('input', validateTela1);
+const inputsTela1 = [teamName, userName, cityName];
+inputsTela1.forEach(input => input.addEventListener('input', validateTela1));
 
 btnToTela2.addEventListener('click', ()=>{
+  validateTela1();
   if(btnToTela2.disabled) return;
   tela1.style.display='none';
   tela2.style.display='block';
-  marketStep = 1; // start at goleiros
+  marketStep = 1;
   marketMessage.textContent = steps[marketStep].msg;
   renderMarket(steps[marketStep].filter);
 });
