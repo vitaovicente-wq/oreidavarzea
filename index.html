@@ -20,11 +20,29 @@
   .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px}
   .muted{color:#666;font-size:13px}
   .bench{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto;padding:8px;border:1px dashed #ccc;border-radius:8px}
-  .player-card{padding:8px;border-radius:8px;background:#fff;border:1px solid #eee;margin-bottom:6px;cursor:grab;display:flex;justify-content:space-between;align-items:center}
+  .player-card{padding:8px;border-radius:8px;background:#fff;border:1px solid #eee;margin-bottom:6px;cursor:grab;display:flex;justify-content:space-between;align-items:center;position:relative}
   .player-card.locked{background:#ddd;cursor:not-allowed}
   .position-slot{width:90px;height:40px;border-radius:6px;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;cursor:pointer;margin:6px}
   .pitch{width:100%;height:420px;background:linear-gradient(#73c26b,#5eb95e);border-radius:12px;padding:12px;box-sizing:border-box}
   .notif{position:fixed;top:18px;right:18px;background:#ffefc2;color:#333;padding:10px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);border:1px solid #e6b800}
+  .tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    z-index: 10;
+    font-size: 12px;
+    display: none;
+    pointer-events: none;
+  }
+  .player-card:hover .tooltip {
+    display: block;
+  }
 </style>
 </head>
 <body>
@@ -34,7 +52,6 @@
 
 <div class="container">
 
-  <!-- TELA 1 -->
   <div id="tela1" class="card">
     <h2>Tela 1 — Cadastro</h2>
     <label>Nome do seu time
@@ -52,14 +69,13 @@
     </div>
   </div>
 
-  <!-- TELA 2 -->
   <div id="tela2" class="card" style="display:none">
     <h2>Tela 2 — Mercado de Jogadores</h2>
     <div id="marketMessage" style="font-weight:bold;margin-bottom:10px">Escolha no mínimo 2 goleiros para o seu time</div>
 
     <div style="margin-top:10px;overflow:auto;max-height:480px">
       <table id="playersTable">
-        <thead><tr><th>Nome</th><th>Posição</th><th>Pé</th><th>Idade</th><th>Salário</th><th>Contratar</th></tr></thead>
+        <thead><tr><th>Nome</th><th>Posição</th><th>Pé</th><th>Idade</th><th>Salário</th><th>Saúde</th><th>Contratar</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -75,7 +91,6 @@
     </div>
   </div>
 
-  <!-- TELA 3 -->
   <div id="tela3" class="card" style="display:none">
     <h2>Tela 3 — Escalação</h2>
     <div style="display:flex;gap:16px">
@@ -123,7 +138,6 @@
     </div>
   </div>
 
-  <!-- TELA 4 -->
   <div id="tela4" class="card" style="display:none">
     <h2>Partida em andamento</h2>
     <div style="display:flex;gap:16px">
@@ -202,9 +216,66 @@ function updateCash(){ cashDisplay.textContent = formatReal(CASH); }
 function updateSelectedCount(){ selectedCountEl.textContent = hired.length; }
 
 /* -------------------- Gerar jogadores -------------------- */
-const firsts = ["Marrentinho","Juscelino","Ronaldinho","Berg","Tico","Zeca","Xandão","Pedrinho","Claudinho","Sandro","Marollo","Ricardão"];
-const lastParts = ["Carioca","Paulista","Baiano","Gaucho","Mineiro","Nordestino","Pernambucano","Capixaba"];
+const firsts = ["Marrentinho","Juscelino","Ronaldinho","Berg","Tico","Zeca","Xandão","Pedrinho","Claudinho","Sandro","Marollo","Ricardão","Juninho","Baiano","Fumaça","Cascata","Tubarão","Gordão"];
+const lastParts = ["Carioca","Paulista","Baiano","Gaucho","Mineiro","Nordestino","Pernambucano","Capixaba","de Jesus","do Pneu","do Grau"];
+const professions = [
+    { name: "Pedreiro", salaryMod: 1, healthMod: 0.9, isSedentary: false },
+    { name: "Motorista de App", salaryMod: 1.1, healthMod: 1.1, isSedentary: true },
+    { name: "Analista de Sistemas", salaryMod: 1.5, healthMod: 1.5, isSedentary: true },
+    { name: "Gerente de Vendas", salaryMod: 1.8, healthMod: 1.6, isSedentary: true },
+    { name: "Entregador", salaryMod: 1.2, healthMod: 0.8, isSedentary: false },
+    { name: "Mecânico", salaryMod: 1.3, healthMod: 0.9, isSedentary: false },
+    { name: "Auxiliar de Escritório", salaryMod: 1.2, healthMod: 1.3, isSedentary: true },
+    { name: "Policial", salaryMod: 1.6, healthMod: 1, isSedentary: false },
+    { name: "Professor", salaryMod: 1.3, healthMod: 1.2, isSedentary: true },
+    { name: "Garçom", salaryMod: 1, healthMod: 0.9, isSedentary: false }
+];
 const distribution = { GK:4, ZAG:8, LAT:8, VOL:6, MEI:8, ATA:8 };
+
+const specialities = {
+    'Goleiro': [
+        { name: 'Pegador de Pênaltis', text: ["Pode bater, professor! Pênalti pra mim é como beija-flor no mel, eu pego!", "Na hora do pênalti, fecho o gol e abro o caixão do atacante. Não tem jeito!"] },
+        { name: 'Muralha', text: ["Dentro da pequena área, eu viro um paredão de concreto. Chuta que é meu!", "Tirou a bola da zaga? Não importa! De perto, ninguém me passa!"] },
+        { name: 'Goleiro-Líbero', text: ["Gosto de jogar com os pés, de dar uma ajuda na saída de bola, o time pode confiar em mim.", "Não sou um goleiro comum. Saio jogando, dou uns dribles e viro o jogo."] },
+        { name: 'Defensor de Faltas', text: ["A falta é a especialidade da casa. Pode cruzar, pode chutar, que eu tô pronto.", "O adversário pode ensaiar o escanteio à vontade, a bola parada é minha, eu resolvo!"] },
+        { name: 'Paredão', text: ["Não importa a distância, se a bola está vindo de longe, ela é minha, e o gol está seguro.", "De fora da área? Pode chutar! Eu consigo ver a bola de longe e sei pra onde ela vai."] }
+    ],
+    'Lateral': [
+        { name: 'Cavalinho', text: ["Sou o motorzinho da lateral! Subo e desço o jogo todo, sem parar, sem cansar!", "Sabe aqueles 90 minutos de jogo? Pra mim são 90 minutos de pique, correndo pra defender e pra atacar."] },
+        { name: 'Cruzamento Preciso', text: ["Pode pedir, atacante! Eu cruzo a bola na sua cabeça, é só empurrar pra dentro.", "Meu cruzamento é uma obra de arte. A bola vai na medida certa pra você botar pra dentro."] },
+        { name: 'De Ferro', text: ["Jogo de corpo, dividida... pode vir, meu joelho e minha canela são de aço.", "Não saio do jogo por uma pancada, sou duro na queda, pode vir quente que eu estou fervendo!"] },
+        { name: 'Apoio Ofensivo', text: ["Não vivo só de defesa! Gosto de ir pro ataque, de driblar, de fazer jogada na ponta.", "Sempre que posso, me aventuro no ataque, sou um problema a mais pra defesa do adversário."] },
+        { name: 'Marcador Implacável', text: ["Não dou espaço pra ninguém. Se o adversário é rápido, eu sou mais! Se ele dribla, eu roubo a bola!", "O atacante adversário pode pedir pra sair. Fico no pé dele o jogo todo, ele não toca na bola."] }
+    ],
+    'Zagueiro': [
+        { name: 'Cão de Guarda', text: ["Entrou na área, a bola é minha! O atacante pode até pensar que é dele, mas eu roubo fácil.", "Meu trabalho é um só: vigiar o atacante adversário. Se ele tiver um centímetro de espaço, eu fecho!"] },
+        { name: 'Cabeceador', text: ["Se a bola vem pelo alto, não tem pra ninguém! Eu sou o rei do ar, pode cruzar que eu meto de cabeça.", "Zagueiro que não sobe pra cabecear, não é zagueiro. Eu sou o melhor no jogo aéreo!"] },
+        { name: 'Senhor do Meio de Campo', text: ["Gosto de antecipar. Se a bola estiver no meio de campo, é minha, e eu desarmo o ataque deles!", "Eu resolvo a parada lá na frente. O contra-ataque do adversário para nos meus pés!"] },
+        { name: 'Zagueiro Artilheiro', text: ["Ninguém espera que eu chute, mas eu gosto de arriscar. Meu chute é forte, pode ser de longe que a bola vai no ângulo!", "Quando o juiz apita a falta, o artilheiro do time sou eu. Minha perna é pesada e o chute vai no gol!"] },
+        { name: 'De Ferro', text: ["Jogo de corpo, dividida... pode vir, meu joelho e minha canela são de aço.", "Não saio do jogo por uma pancada, sou duro na queda, pode vir quente que eu estou fervendo!"] }
+    ],
+    'Volante': [
+        { name: 'Motorzinho', text: ["Eu corro por mim e pelo time todo. No final do jogo, eu continuo com fôlego, sou incansável!", "Onde a bola está, eu estou. Sigo a bola por todo o campo, dou o sangue pela vitória."] },
+        { name: 'Carrinho Cirúrgico', text: ["Eu dou o carrinho certo na hora certa. O adversário não sente a minha chegada, só perde a bola.", "Não faço falta. Meu carrinho é limpo, perfeito, só para roubar a bola, nada mais!"] },
+        { name: 'Lançador', text: ["A bola tá aqui, o atacante já está correndo lá na frente. Dou um lançamento que a bola chega limpa nos pés dele!", "Quando recebo a bola, já tenho um plano. Gosto de virar o jogo, de dar uns lançamentos longos e de surpreender o adversário."] },
+        { name: 'Volante Agressivo', text: ["Quando o jogo fica difícil, eu chego mais forte. Dou umas chegadas pra roubar a bola, mas sem machucar.", "O adversário pode tentar sair tocando, mas eu pressiono a marcação. Minha missão é roubar a bola e já lançar o ataque."] },
+        { name: 'Líder', text: ["Eu sou a voz do time em campo. Grito, dou umas instruções e ajudo a equipe a se organizar.", "Quando o time está desorganizado, eu entro e coloco ordem na casa. A minha presença faz a diferença!"] }
+    ],
+    'Meia': [
+        { name: 'Maestro', text: ["O jogo passa pelos meus pés. Me chamam de maestro, porque eu dou ritmo ao jogo e dou umas assistências que surpreendem!", "Eu penso antes de tocar na bola. Meu passe é perfeito e a minha visão de jogo ajuda o time a fazer gols."] },
+        { name: 'Bola Parada', text: ["Se a falta é pra bater, é pra botar a bola no ângulo. Nos escanteios, eu coloco a bola na cabeça do atacante.", "A bola parada é o meu momento. Se a defesa adversária está fechada, eu crio uma oportunidade com a minha cobrança."] },
+        { name: 'Drible Curto', text: ["Me fecharam na marcação, mas eu saio com um drible, uma jogada, e a defesa adversária nem entende.", "Meu drible é curto, mas é preciso. Em um espacinho, eu passo por dois ou três, e a jogada acontece."] },
+        { name: 'Infiltrador', text: ["Eu não espero a bola chegar, eu vou atrás dela. Corro entre os zagueiros, e quando percebem, eu já estou na cara do gol.", "Minha função é simples: me infiltrar na defesa. Eu me desmarco, recebo a bola e o gol é quase certo."] },
+        { name: 'Chute de Longe', text: ["Gosto de chutar de longe. Se tiver espaço, chuto a gol e a bola vai no ângulo!", "Eles podem deixar o espaço, eu chuto a gol e a bola vai em alta velocidade, e o goleiro não pega!"] }
+    ],
+    'Atacante': [
+        { name: 'Matador', text: ["Se a bola chega no pé, eu chuto. Gosto de fazer gol, e a bola, em vez de bater na trave, entra na rede.", "Na frente do gol, não tem pra ninguém. Eu tenho precisão, e o gol é certo!"] },
+        { name: 'Cabeceador', text: ["Minha cabeça é a minha arma secreta. Em todo cruzamento, eu estou lá pra subir mais que o zagueiro e botar pra dentro!", "Eu sou alto, sou forte, e meu tempo de bola é perfeito. Pode cruzar, que a bola é minha, e o gol é nosso!"] },
+        { name: 'Puro Veneno', text: ["Sou rápido, professor. Se a bola está nos meus pés, eu saio em disparada e o zagueiro só me encontra na hora de comemorar o gol!", "Não me dão espaço, mas não precisam. Eu driblo rápido, e quando a defesa pensa em me marcar, eu já estou na cara do gol."] },
+        { name: 'Artilheiro da Área', text: ["Eu não dou passe. Minha missão é ficar na área, esperar a bola e fazer o gol!", "Não importa como a bola venha, eu me viro. Se é de calcanhar, eu faço. Se é de letra, eu faço. O importante é o gol."] },
+        { name: 'Batedor de Falta', text: ["O juiz apitou falta na frente da área? Pode deixar comigo. Meu chute é certeiro e vai no ângulo.", "Falta perto do gol é quase um pênalti. Sou o melhor batedor, minha bola tem um efeito que engana o goleiro e entra no gol."] }
+    ]
+};
 
 function pickFoot(){ const r=Math.random()*100; if(r<10) return 'Ambidestro'; if(r<70) return 'Direito'; return 'Esquerdo'; }
 function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
@@ -219,7 +290,13 @@ function generatePlayers(){
     const map = { GK:'Goleiro', ZAG:'Zagueiro', LAT:'Lateral', VOL:'Volante', MEI:'Meia', ATA:'Atacante' };
     const posLabel = map[posKey] || 'Meia';
     const name = firsts[i % firsts.length] + ' ' + lastParts[i % lastParts.length];
-    players.push({ id:'p'+i, name, pos: posLabel, foot: pickFoot(), age: randInt(16,45), salary: Math.round(randInt(50,200)/10)*10 });
+    const profession = professions[randInt(0, professions.length-1)];
+    const isParent = Math.random() < 0.2;
+    const salary = Math.round(randInt(50,200) * profession.salaryMod / 10)*10;
+    const health = randInt(80, 100);
+    const speciality = specialities[posLabel][randInt(0, specialities[posLabel].length - 1)];
+    const specialityText = speciality.text[randInt(0,1)];
+    players.push({ id:'p'+i, name, pos: posLabel, foot: pickFoot(), age: randInt(16,45), salary, health, profession, isParent, speciality, specialityText });
   }
 }
 
@@ -229,7 +306,7 @@ function renderMarket(filter){
   const list = players.filter(p => !filter || p.pos === filter);
   if(list.length === 0){
     const tr = document.createElement('tr');
-    tr.innerHTML = '<td colspan="6" class="muted">Nenhum jogador disponível para essa posição.</td>';
+    tr.innerHTML = '<td colspan="7" class="muted">Nenhum jogador disponível para essa posição.</td>';
     playersTbody.appendChild(tr);
     return;
   }
@@ -237,11 +314,16 @@ function renderMarket(filter){
     const tr = document.createElement('tr');
     const hiredAlready = hired.some(h=>h.id===p.id);
     tr.innerHTML = `
-      <td><strong>${p.name}</strong><div class="muted">${p.pos}</div></td>
+      <td>
+        <strong>${p.name}</strong>
+        <div class="muted">${p.pos}</div>
+        <div class="tooltip">${p.specialityText}</div>
+      </td>
       <td>${p.pos}</td>
       <td>${p.foot}</td>
       <td>${p.age}</td>
       <td>${formatReal(p.salary)}</td>
+      <td>${p.health}</td>
       <td style="width:120px"><input type="checkbox" data-id="${p.id}" ${hiredAlready?'checked':''}></td>
     `;
     playersTbody.appendChild(tr);
@@ -332,7 +414,16 @@ function populateBench(){
     div.draggable = true;
     div.dataset.pid = p.id;
     div.dataset.pos = p.pos;
-    div.innerHTML = `<div><strong>${p.name}</strong><div class="muted">${p.pos} • ${p.foot} • ${p.age} anos</div></div><div class="muted">${formatReal(p.salary)}</div>`;
+    div.innerHTML = `
+      <div>
+        <strong>${p.name}</strong>
+        <div class="muted">${p.pos} • ${p.foot} • ${p.age} anos</div>
+        <div class="muted"><strong>Profissão:</strong> ${p.profession.name} ${p.isParent ? ' • Pai' : ''}</div>
+        <div class="muted"><strong>Saúde:</strong> ${p.health}</div>
+        <div class="tooltip">${p.specialityText}</div>
+      </div>
+      <div class="muted">${formatReal(p.salary)}</div>
+    `;
     div.addEventListener('dragstart', dragStart);
     div.addEventListener('click', ()=>{
       const pid = div.dataset.pid;
@@ -409,6 +500,16 @@ btnPlayMatch.addEventListener('click', ()=>{
     "Bandeirinha levantou a bandeira sem motivo."
   ];
 
+  // Logic to decrease health after the game
+  const playersOnField = Array.from(document.querySelectorAll('.position-slot[data-assigned]')).map(slot => hired.find(p => p.id === slot.dataset.assigned));
+  playersOnField.forEach(player => {
+    let healthLoss = 10;
+    if (player.profession.isSedentary) {
+        healthLoss += 5;
+    }
+    player.health = Math.max(0, player.health - healthLoss);
+  });
+
   const intervalMs = 6000;
   const interval = setInterval(()=>{
     if(minuto >= 60){ clearInterval(interval); comentarios.innerHTML += '<p><strong>Fim de jogo!</strong></p>'; btnContinuar.style.display='inline-block'; return; }
@@ -430,6 +531,7 @@ btnContinuar.addEventListener('click', ()=>{
   tela4.style.display='none';
   tela3.style.display='block';
   btnPlayMatch.disabled = true;
+  populateBench(); // Update the bench display with new health values
 });
 
 /* -------------------- Tela1: validação e navegação -------------------- */
