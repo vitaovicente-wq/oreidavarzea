@@ -27,6 +27,8 @@
   .notif{position:fixed;top:18px;right:18px;background:#ffefc2;color:#333;padding:10px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);border:1px solid #e6b800}
   .tooltip {
     position: fixed;
+    top: 20px;
+    right: 20px;
     background: rgba(0,0,0,0.85);
     color: #fff;
     padding: 8px 12px;
@@ -38,7 +40,6 @@
     pointer-events: none;
     max-width: 250px;
     line-height: 1.4;
-    transform: translate(-50%, -110%);
   }
   .tooltip.active {
     display: block;
@@ -317,7 +318,7 @@ function renderMarket(filter){
     const tr = document.createElement('tr');
     const hiredAlready = hired.some(h=>h.id===p.id);
     tr.innerHTML = `
-      <td><strong class="player-name" data-id="${p.id}">${p.name}</strong><div class="muted">${p.pos}</div></td>
+      <td><strong class="player-name" data-id="${p.id}" onclick="showPlayerPresentation(event, '${p.specialityText.replace(/'/g, "\\'"}')">${p.name}</strong><div class="muted">${p.pos}</div></td>
       <td>${p.pos}</td>
       <td>${p.profession.name}</td>
       <td>${p.age}</td>
@@ -329,34 +330,20 @@ function renderMarket(filter){
   });
   // attach listeners
   playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb => cb.onchange = onToggleHire);
-  playersTbody.querySelectorAll('.player-name').forEach(nameEl => nameEl.addEventListener('click', onPlayerNameClick));
   // update disabled states
   updateCheckboxStates();
 }
 
-function onPlayerNameClick(e) {
-  const playerId = e.target.dataset.id;
-  const player = players.find(p => p.id === playerId);
-  if (player) {
-    showTooltip(e, player.specialityText);
-  }
-}
-
-function showTooltip(e, text) {
+function showPlayerPresentation(event, text) {
+  event.stopPropagation(); // Prevents the click from propagating to the document
   tooltip.textContent = text;
   tooltip.classList.add('active');
-  
-  const rect = e.target.getBoundingClientRect();
-  
-  tooltip.style.left = `${rect.left + rect.width / 2}px`;
-  tooltip.style.top = `${rect.top}px`;
-
-  document.addEventListener('click', hideTooltip, { once: true });
 }
 
 function hideTooltip() {
   tooltip.classList.remove('active');
 }
+document.addEventListener('click', hideTooltip);
 
 function updateCheckboxStates(){
   playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb => {
@@ -440,7 +427,7 @@ function populateBench(){
     div.dataset.pos = p.pos;
     div.innerHTML = `
       <div>
-        <strong class="player-name" data-id="${p.id}">${p.name}</strong>
+        <strong class="player-name" data-id="${p.id}" onclick="showPlayerPresentation(event, '${p.specialityText.replace(/'/g, "\\'"}')">${p.name}</strong>
         <div class="muted">${p.pos} • ${p.foot} • ${p.age} anos</div>
         <div class="muted"><strong>Profissão:</strong> ${p.profession.name} ${p.isParent ? ' • Pai' : ''}</div>
         <div class="muted"><strong>Saúde:</strong> ${p.health}</div>
@@ -448,7 +435,6 @@ function populateBench(){
       <div class="muted">${formatReal(p.salary)}</div>
     `;
     div.addEventListener('dragstart', dragStart);
-    div.querySelector('.player-name').addEventListener('click', onPlayerNameClick);
     div.addEventListener('click', (e)=>{
       if (e.target.classList.contains('player-name')) return;
       const pid = div.dataset.pid;
