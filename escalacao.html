@@ -27,17 +27,12 @@
   .modal-player-item { padding: 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; transition: background-color 0.2s; }
   .modal-player-item:hover { background-color: #f5f7fb; }
   a { text-decoration: none; }
-  
   .formation-line { display: flex; justify-content: center; align-items: center; gap: 10px; width: 100%; position: absolute; left: 0; padding: 0 10px; box-sizing: border-box;}
   .position-slot { width: 140px; height: 50px; border-radius: 8px; background: rgba(255, 255, 255, 0.95); display: flex; align-items: center; justify-content: center; cursor: pointer; margin: 4px; border: 2px dashed #ccc; transition: all 0.3s; font-size: 12px; text-align: center; flex-direction: column; padding: 5px; flex-shrink: 0;}
   .pitch { width: 100%; height: 600px; background: linear-gradient(#73c26b, #5eb95e); border-radius: 12px; padding: 10px; box-sizing: border-box; position: relative; }
-  
-  /* --- ESTILOS PARA O SELETOR DE FORMAÇÃO --- */
   .formation-controls { margin-bottom: 20px; display: flex; align-items: center; gap: 10px; background-color: #f0f4f8; padding: 10px; border-radius: 8px; }
   .formation-controls label { margin: 0; font-weight: bold; }
   #formationSelect { padding: 8px; border-radius: 6px; border: 1px solid #ddd; font-size: 14px; }
-  
-  /* --- ESTILOS PARA A RESENHA (TOOLTIP) --- */
   .player-with-tooltip { position: relative; display: inline-block; cursor: help; }
   .tooltip-text { visibility: hidden; width: 220px; background-color: #555; color: #fff; text-align: center; border-radius: 6px; padding: 8px; position: absolute; z-index: 10; top: 50%; left: 105%; transform: translateY(-50%); opacity: 0; transition: opacity 0.3s; font-style: italic; font-size: 12px; }
   .tooltip-text::after { content: ""; position: absolute; top: 50%; right: 100%; margin-top: -5px; border-width: 5px; border-style: solid; border-color: transparent #555 transparent transparent; }
@@ -48,11 +43,9 @@
 <header>
   <div class="container"><h1 id="headerTitle">O Rei da Várzea</h1></div>
 </header>
-
 <div class="container">
   <div id="tela3" class="card">
     <h2>Tela 3 — Escalação</h2>
-    
     <div class="formation-controls">
       <label for="formationSelect">Escolha a sua formação:</label>
       <select id="formationSelect">
@@ -63,19 +56,15 @@
         <option value="5-4-1">5-4-1 (Retranca)</option>
       </select>
     </div>
-    
     <div class="card">
       <h3>Escalação Principal</h3>
-      <div class="pitch" id="pitch">
-        </div>
+      <div class="pitch" id="pitch"></div>
     </div>
-
     <div class="card" style="margin-top: 20px;">
       <h3>Banco de Reservas</h3>
       <div class="bench" id="bench"></div>
       <div class="muted" style="margin-top:8px">Passe o mouse sobre o nome do jogador para ver sua resenha.</div>
     </div>
-
     <div class="controls">
         <a id="linkTela4" href="partida.html">
             <button id="btnPlayMatch" disabled>Jogar partida</button>
@@ -83,7 +72,6 @@
     </div>
   </div>
 </div>
-
 <div id="playerModal" class="modal">
   <div class="modal-content">
     <span class="close">&times;</span>
@@ -92,269 +80,22 @@
     <div id="playerList" class="player-list-modal"></div>
   </div>
 </div>
-
 <script>
-// ========== CONFIGURAÇÕES E ESTADO DO JOGO ==========
-let hired = [];
-let userData = {};
-
-// ========== DEFINIÇÃO DAS FORMAÇÕES TÁTICAS ==========
-const formations = {
-    '4-4-2': [
-        { top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] },
-        { top: '25%', slots: [{ pos: 'Lateral', text: '⬅️ Lateral Esq.' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Lateral', text: '➡️ Lateral Dir.' }] },
-        { top: '55%', slots: [{ pos: 'Meia', text: '🎯 Meia Esq.' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Meia', text: '🎯 Meia Dir.' }] },
-        { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Atacante' }, { pos: 'Atacante', text: '⚽ Atacante' }] }
-    ],
-    '4-3-3': [
-        { top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] },
-        { top: '25%', slots: [{ pos: 'Lateral', text: '⬅️ Lateral Esq.' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Lateral', text: '➡️ Lateral Dir.' }] },
-        { top: '55%', slots: [{ pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Meia', text: '🎯 Meia' }, { pos: 'Meia', text: '🎯 Meia' }] },
-        { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Ponta Esq.' }, { pos: 'Atacante', text: '⚽ Centroavante' }, { pos: 'Atacante', text: '⚽ Ponta Dir.' }] }
-    ],
-    '3-5-2': [
-        { top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] },
-        { top: '25%', slots: [{ pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Líbero' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }] },
-        { top: '55%', slots: [{ pos: 'Lateral', text: '🏃 Ala Esq.' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Meia', text: '🎯 Meia Central' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Lateral', text: '🏃 Ala Dir.' }] },
-        { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Atacante' }, { pos: 'Atacante', text: '⚽ Atacante' }] }
-    ],
-    '4-2-4': [
-        { top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] },
-        { top: '25%', slots: [{ pos: 'Lateral', text: '⬅️ Lateral Esq.' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Lateral', text: '➡️ Lateral Dir.' }] },
-        { top: '55%', slots: [{ pos: 'Meia', text: '🎯 Meia' }, { pos: 'Meia', text: '🎯 Meia' }] },
-        { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Ponta Esq.' }, { pos: 'Atacante', text: '⚽ Atacante' }, { pos: 'Atacante', text: '⚽ Atacante' }, { pos: 'Atacante', text: '⚽ Ponta Dir.' }] }
-    ],
-    '5-4-1': [
-        { top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] },
-        { top: '25%', slots: [{ pos: 'Lateral', text: '⬅️ Lateral Esq.' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Líbero' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Lateral', text: '➡️ Lateral Dir.' }] },
-        { top: '55%', slots: [{ pos: 'Meia', text: '🎯 Meia Esq.' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Meia', text: '🎯 Meia Dir.' }] },
-        { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Centroavante' }] }
-    ]
-};
-
-// ========== ELEMENTOS DOM ==========
-const elements = {
-  headerTitle: document.getElementById('headerTitle'),
-  bench: document.getElementById('bench'),
-  btnPlayMatch: document.getElementById('btnPlayMatch'),
-  linkTela4: document.getElementById('linkTela4'),
-  playerModal: document.getElementById('playerModal'),
-  modalTitle: document.getElementById('modalTitle'),
-  modalSubtitle: document.getElementById('modalSubtitle'),
-  playerList: document.getElementById('playerList'),
-  modalClose: document.querySelector('.modal .close'),
-  formationSelect: document.getElementById('formationSelect'),
-  pitch: document.getElementById('pitch')
-};
-
-// ========== FUNÇÕES AUXILIARES ==========
-function showNotif(text, time = 3000) { /* ...código da função... */ }
-// (As outras funções auxiliares como renderHealthBar, formatReal, etc. também estão aqui)
-function showNotif(text, time = 3000) {
-  const box = document.createElement('div');
-  box.className = 'notif';
-  box.textContent = text;
-  document.body.appendChild(box);
-  setTimeout(() => box.remove(), time);
-}
-function renderHealthBar(health) {
-  const color = health >= 80 ? '#4CAF50' : health >= 50 ? '#ff9800' : '#f44336';
-  return `<div class="health-bar"><div class="health-fill" style="width: ${health}%; background: ${color}"></div></div>`;
-}
-function renderSkillBar(skill) {
-  const color = skill >= 80 ? '#9c27b0' : skill >= 60 ? '#673ab7' : skill >= 40 ? '#3f51b5' : '#2196f3';
-  return `<div class="skill-bar"><div class="skill-fill" style="width: ${skill}%; background: ${color}"></div></div>`;
-}
-function formatReal(n) {
-  return 'R$ ' + n.toLocaleString('pt-BR');
-}
-
-// ========== LÓGICA DA ESCALAÇÃO ==========
-function drawPitch(formationName) {
-    elements.pitch.innerHTML = '';
-    const layout = formations[formationName];
-    if (!layout) return;
-
-    let slotCounter = 0;
-    layout.forEach(line => {
-        const lineDiv = document.createElement('div');
-        lineDiv.className = 'formation-line';
-        lineDiv.style.top = line.top;
-
-        line.slots.forEach(slotInfo => {
-            const slotDiv = document.createElement('div');
-            slotDiv.className = 'position-slot';
-            slotDiv.id = `slot-${slotCounter++}`;
-            slotDiv.dataset.pos = slotInfo.pos;
-            slotDiv.innerHTML = `<div>${slotInfo.text}</div><div class="muted">Clique para escalar</div>`;
-            lineDiv.appendChild(slotDiv);
-        });
-        elements.pitch.appendChild(lineDiv);
-    });
-    addSlotClickListeners();
-}
-
-function addSlotClickListeners() {
-    document.querySelectorAll('.position-slot').forEach(slot => {
-        slot.addEventListener('click', () => {
-            openPlayerModal(slot);
-        });
-    });
-}
-
-function unassignAllPlayers() {
-    document.querySelectorAll('.position-slot[data-assigned]').forEach(slot => {
-        delete slot.dataset.assigned;
-        slot.classList.remove('assigned');
-        // A reconstrução do campo pelo drawPitch já vai resetar o texto.
-    });
-    populateBench();
-    elements.btnPlayMatch.disabled = true;
-}
-
-function openPlayerModal(slotElement) {
-  const posicao = slotElement.dataset.pos;
-  elements.modalTitle.textContent = `Escalar ${posicao}`;
-  elements.modalSubtitle.textContent = `Selecione um jogador`;
-  elements.playerList.innerHTML = '';
-
-  const jogadoresDisponiveis = hired.filter(jogador => 
-    jogador.pos === posicao && !document.querySelector(`[data-assigned="${jogador.id}"]`)
-  );
-  
-  if (jogadoresDisponiveis.length === 0) {
-    elements.playerList.innerHTML = '<p class="muted">Nenhum jogador disponível para esta posição</p>';
-  } else {
-    jogadoresDisponiveis.forEach(jogador => {
-      const item = document.createElement('div');
-      item.className = 'modal-player-item';
-      item.innerHTML = `
-        <div>
-            <div class="player-with-tooltip">
-                <strong>${jogador.name}</strong>
-                <span class="tooltip-text">"${jogador.apresentacao}"</span>
-            </div>
-            • ${jogador.pos}
-        </div>
-        <div class="muted">${jogador.age} anos • ${jogador.foot} • Habilidade: ${jogador.skill}% • Saúde: ${jogador.health}%</div>
-        <div>${renderSkillBar(jogador.skill)} ${renderHealthBar(jogador.health)}</div>
-      `;
-      item.addEventListener('click', (e) => {
-        if (e.target.classList.contains('tooltip-text')) return;
-        assignPlayerToSlot(jogador, slotElement);
-        elements.playerModal.style.display = 'none';
-      });
-      elements.playerList.appendChild(item);
-    });
-  }
-  
-  elements.playerModal.style.display = 'block';
-}
-
-function assignPlayerToSlot(jogador, slotElement) {
-  const otherSlot = document.querySelector(`.position-slot[data-assigned="${jogador.id}"]`);
-  if(otherSlot) {
-    const originalText = otherSlot.querySelector('div').innerHTML; // Simplificação, pode melhorar
-    delete otherSlot.dataset.assigned;
-    otherSlot.classList.remove('assigned');
-    otherSlot.innerHTML = `<div>${originalText}</div><div class="muted">Clique para escalar</div>`;
-  }
-    
-  const previousPlayerId = slotElement.dataset.assigned;
-  if (previousPlayerId) {}
-
-  slotElement.dataset.assigned = jogador.id;
-  slotElement.innerHTML = `
-    <div><strong>${jogador.name}</strong></div>
-    <div>${jogador.pos}</div>
-    <div class="muted">Habilidade: ${jogador.skill}%</div>
-  `;
-  slotElement.classList.add('assigned');
-  
-  populateBench();
-  
-  const assignedCount = document.querySelectorAll('.position-slot.assigned').length;
-  elements.btnPlayMatch.disabled = assignedCount < 11;
-  
-  showNotif(`${jogador.name} escalado!`);
-}
-
-function populateBench() {
-  elements.bench.innerHTML = '';
-  
-  const jogadoresNoBanco = hired.filter(jogador => 
-    !document.querySelector(`[data-assigned="${jogador.id}"]`)
-  );
-  
-  if (jogadoresNoBanco.length === 0) {
-    elements.bench.innerHTML = '<p class="muted">Todos os jogadores estão escalados</p>';
-    return;
-  }
-  
-  jogadoresNoBanco.forEach(jogador => {
-    const div = document.createElement('div');
-    div.className = 'player-card';
-    div.innerHTML = `
-      <div>
-        <div class="player-with-tooltip">
-            <strong>${jogador.name}</strong>
-            <span class="tooltip-text">"${jogador.apresentacao}"</span>
-        </div>
-        <div class="muted">${jogador.pos} • ${jogador.foot} • ${jogador.age} anos</div>
-        <div>${renderSkillBar(jogador.skill)} ${renderHealthBar(jogador.health)}</div>
-        <div class="muted">Contrato: ${jogador.contrato}</div>
-      </div>
-      <div class="muted">${formatReal(jogador.salarioJogo)}/jogo</div>
-    `;
-    elements.bench.appendChild(div);
-  });
-}
-
-// ========== INICIALIZAÇÃO DA PÁGINA ==========
-function init() {
-  hired = JSON.parse(localStorage.getItem('elencoDoTime')) || [];
-  userData = JSON.parse(localStorage.getItem('userData')) || {};
-
-  if(hired.length < 22) {
-      alert("Elenco incompleto! Volte ao mercado e contrate 22 jogadores.");
-      window.location.href = 'mercado.html';
-      return;
-  }
-  
-  elements.headerTitle.textContent = userData.teamName || 'O Rei da Várzea';
-
-  // Configura os eventos da página
-  elements.modalClose.onclick = () => elements.playerModal.style.display = 'none';
-  window.onclick = (event) => {
-    if (event.target === elements.playerModal) {
-      elements.playerModal.style.display = 'none';
-    }
-  };
-
-  elements.linkTela4.addEventListener('click', (event) => {
-      if(elements.btnPlayMatch.disabled) {
-          event.preventDefault();
-          showNotif("Você precisa escalar 11 jogadores para a partida!");
-          return;
-      }
-      const lineup = {};
-      document.querySelectorAll('.position-slot[data-assigned]').forEach(slot => {
-          lineup[slot.id] = slot.dataset.assigned;
-      });
-      localStorage.setItem('escalacaoFinal', JSON.stringify(lineup));
-  });
-
-  elements.formationSelect.addEventListener('change', (e) => {
-      unassignAllPlayers();
-      drawPitch(e.target.value);
-  });
-  
-  // Desenha o campo inicial e popula o banco
-  drawPitch('4-4-2');
-  populateBench();
-}
-
-// Roda o jogo!
+// ... (script completo da escalação)
+  let hired = []; let userData = {};
+const formations = { '4-4-2': [{ top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] }, { top: '25%', slots: [{ pos: 'Lateral', text: '⬅️ Lateral Esq.' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Lateral', text: '➡️ Lateral Dir.' }] }, { top: '55%', slots: [{ pos: 'Meia', text: '🎯 Meia Esq.' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Meia', text: '🎯 Meia Dir.' }] }, { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Atacante' }, { pos: 'Atacante', text: '⚽ Atacante' }] }], '4-3-3': [{ top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] }, { top: '25%', slots: [{ pos: 'Lateral', text: '⬅️ Lateral Esq.' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Lateral', text: '➡️ Lateral Dir.' }] }, { top: '55%', slots: [{ pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Meia', text: '🎯 Meia' }, { pos: 'Meia', text: '🎯 Meia' }] }, { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Ponta Esq.' }, { pos: 'Atacante', text: '⚽ Centroavante' }, { pos: 'Atacante', text: '⚽ Ponta Dir.' }] }], '3-5-2': [{ top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] }, { top: '25%', slots: [{ pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Líbero' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }] }, { top: '55%', slots: [{ pos: 'Lateral', text: '🏃 Ala Esq.' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Meia', text: '🎯 Meia Central' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Lateral', text: '🏃 Ala Dir.' }] }, { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Atacante' }, { pos: 'Atacante', text: '⚽ Atacante' }] }], '4-2-4': [{ top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] }, { top: '25%', slots: [{ pos: 'Lateral', text: '⬅️ Lateral Esq.' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Lateral', text: '➡️ Lateral Dir.' }] }, { top: '55%', slots: [{ pos: 'Meia', text: '🎯 Meia' }, { pos: 'Meia', text: '🎯 Meia' }] }, { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Ponta Esq.' }, { pos: 'Atacante', text: '⚽ Atacante' }, { pos: 'Atacante', text: '⚽ Atacante' }, { pos: 'Atacante', text: '⚽ Ponta Dir.' }] }], '5-4-1': [{ top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] }, { top: '25%', slots: [{ pos: 'Lateral', text: '⬅️ Lateral Esq.' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Líbero' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Lateral', text: '➡️ Lateral Dir.' }] }, { top: '55%', slots: [{ pos: 'Meia', text: '🎯 Meia Esq.' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Meia', text: '🎯 Meia Dir.' }] }, { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Centroavante' }] }] };
+const elements = { headerTitle: document.getElementById('headerTitle'), bench: document.getElementById('bench'), btnPlayMatch: document.getElementById('btnPlayMatch'), linkTela4: document.getElementById('linkTela4'), playerModal: document.getElementById('playerModal'), modalTitle: document.getElementById('modalTitle'), modalSubtitle: document.getElementById('modalSubtitle'), playerList: document.getElementById('playerList'), modalClose: document.querySelector('.modal .close'), formationSelect: document.getElementById('formationSelect'), pitch: document.getElementById('pitch') };
+function showNotif(text, time = 3000) { const box = document.createElement('div'); box.className = 'notif'; box.textContent = text; document.body.appendChild(box); setTimeout(() => box.remove(), time); }
+function renderSkillBar(skill) { return `<div style="width:80px;height:8px;background:#eee;border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle"><div style="height:100%;background:#9c27b0;width:${skill}%"></div></div>`; }
+function renderHealthBar(health) { return `<div style="width:60px;height:8px;background:#eee;border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle"><div style="height:100%;background:#4CAF50;width:${health}%"></div></div>`; }
+function formatReal(n) { return 'R$ ' + n.toLocaleString('pt-BR'); }
+function drawPitch(formationName) { elements.pitch.innerHTML = ''; const layout = formations[formationName]; if (!layout) return; let slotCounter = 0; layout.forEach(line => { const lineDiv = document.createElement('div'); lineDiv.className = 'formation-line'; lineDiv.style.top = line.top; line.slots.forEach(slotInfo => { const slotDiv = document.createElement('div'); slotDiv.className = 'position-slot'; slotDiv.id = `slot-${slotCounter++}`; slotDiv.dataset.pos = slotInfo.pos; slotDiv.innerHTML = `<div>${slotInfo.text}</div><div class="muted">Clique para escalar</div>`; lineDiv.appendChild(slotDiv); }); elements.pitch.appendChild(lineDiv); }); addSlotClickListeners(); }
+function addSlotClickListeners() { document.querySelectorAll('.position-slot').forEach(slot => { slot.addEventListener('click', () => { openPlayerModal(slot); }); }); }
+function unassignAllPlayers() { document.querySelectorAll('.position-slot[data-assigned]').forEach(slot => { delete slot.dataset.assigned; slot.classList.remove('assigned'); }); populateBench(); elements.btnPlayMatch.disabled = true; }
+function openPlayerModal(slotElement) { const posicao = slotElement.dataset.pos; elements.modalTitle.textContent = `Escalar ${posicao}`; elements.modalSubtitle.textContent = `Selecione um jogador`; elements.playerList.innerHTML = ''; const posicoesValidas = { 'Goleiro': ['Goleiro'], 'Lateral': ['Lateral'], 'Zagueiro': ['Zagueiro'], 'Volante': ['Volante'], 'Meia': ['Meia'], 'Atacante': ['Atacante'] }; const posicoesAceitas = posicoesValidas[posicao] || [posicao]; const jogadoresDisponiveis = hired.filter(jogador => posicoesAceitas.includes(jogador.pos) && !document.querySelector(`[data-assigned="${jogador.id}"]`)); if (jogadoresDisponiveis.length === 0) { elements.playerList.innerHTML = '<p class="muted">Nenhum jogador disponível para esta posição</p>'; } else { jogadoresDisponiveis.forEach(jogador => { const item = document.createElement('div'); item.className = 'modal-player-item'; item.innerHTML = `<div><div class="player-with-tooltip"><strong>${jogador.name}</strong><span class="tooltip-text">"${jogador.apresentacao}"</span></div> • ${jogador.pos}</div><div class="muted">${jogador.age} anos • ${jogador.foot} • Habilidade: ${jogador.skill}% • Saúde: ${jogador.health}%</div><div>${renderSkillBar(jogador.skill)} ${renderHealthBar(jogador.health)}</div>`; item.addEventListener('click', (e) => { if (e.target.classList.contains('tooltip-text')) return; assignPlayerToSlot(jogador, slotElement); elements.playerModal.style.display = 'none'; }); elements.playerList.appendChild(item); }); } elements.playerModal.style.display = 'block'; }
+function assignPlayerToSlot(jogador, slotElement) { const otherSlot = document.querySelector(`.position-slot[data-assigned="${jogador.id}"]`); if (otherSlot) { otherSlot.innerHTML = otherSlot.querySelector('div').innerHTML + '<div class="muted">Clique para escalar</div>'; delete otherSlot.dataset.assigned; otherSlot.classList.remove('assigned'); } const previousPlayerId = slotElement.dataset.assigned; if (previousPlayerId) {} slotElement.dataset.assigned = jogador.id; slotElement.innerHTML = `<div><strong>${jogador.name}</strong></div><div>${jogador.pos}</div><div class="muted">Habilidade: ${jogador.skill}%</div>`; slotElement.classList.add('assigned'); populateBench(); const assignedCount = document.querySelectorAll('.position-slot.assigned').length; elements.btnPlayMatch.disabled = assignedCount < 11; showNotif(`${jogador.name} escalado!`); }
+function populateBench() { elements.bench.innerHTML = ''; const jogadoresNoBanco = hired.filter(jogador => !document.querySelector(`[data-assigned="${jogador.id}"]`)); if (jogadoresNoBanco.length === 0) { elements.bench.innerHTML = '<p class="muted">Todos os jogadores estão escalados</p>'; return; } jogadoresNoBanco.forEach(jogador => { const div = document.createElement('div'); div.className = 'player-card'; div.innerHTML = `<div><div class="player-with-tooltip"><strong>${jogador.name}</strong><span class="tooltip-text">"${jogador.apresentacao}"</span></div><div class="muted">${jogador.pos} • ${jogador.foot} • ${jogador.age} anos</div><div>${renderSkillBar(jogador.skill)} ${renderHealthBar(jogador.health)}</div><div class="muted">Contrato: ${jogador.contrato}</div></div><div class="muted">${formatReal(jogador.salarioJogo)}/jogo</div>`; elements.bench.appendChild(div); }); }
+function init() { hired = JSON.parse(localStorage.getItem('elencoDoTime')) || []; userData = JSON.parse(localStorage.getItem('userData')) || {}; if(hired.length < 22) { alert("Elenco incompleto! Volte ao mercado e contrate 22 jogadores."); window.location.href = 'mercado.html'; return; } elements.headerTitle.textContent = userData.teamName || 'O Rei da Várzea'; elements.modalClose.onclick = () => elements.playerModal.style.display = 'none'; window.onclick = (event) => { if (event.target === elements.playerModal) { elements.playerModal.style.display = 'none'; } }; elements.linkTela4.addEventListener('click', (event) => { if(elements.btnPlayMatch.disabled) { event.preventDefault(); showNotif("Você precisa escalar 11 jogadores para a partida!"); return; } const lineup = {}; document.querySelectorAll('.position-slot[data-assigned]').forEach(slot => { lineup[slot.id] = slot.dataset.assigned; }); localStorage.setItem('escalacaoFinal', JSON.stringify(lineup)); }); elements.formationSelect.addEventListener('change', (e) => { unassignAllPlayers(); drawPitch(e.target.value); }); drawPitch('4-4-2'); populateBench(); }
 init();
 </script>
 </body>
