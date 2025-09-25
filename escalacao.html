@@ -41,15 +41,18 @@
   .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); }
   .modal-content { background-color: #fff; margin: 5% auto; padding: 20px; border-radius: 10px; width: 80%; max-width: 500px; }
   .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-  /* Estilos Postinho */
+  
+  /* --- AJUSTES NO POSTINHO --- */
   .postinho-modal-content { max-width: 800px; display: flex; gap: 20px; }
-  .player-list-column, .treatment-column { flex: 1; }
-  .player-list-column { height: 450px; overflow-y: auto; border-right: 1px solid #eee; padding-right: 20px; }
+  .player-list-column { flex: 1; height: 450px; overflow-y: auto; border-right: 1px solid #eee; padding-right: 20px; } /* SCROLL ADICIONADO AQUI */
+  .treatment-column { flex: 1; }
   .postinho-player-item { padding: 10px; border-radius: 6px; cursor: pointer; margin-bottom: 8px; border: 1px solid #ddd; }
   .postinho-player-item.selected { background-color: #e0f3ff; border-color: #0b6bd6; }
   .diagnosis-box { background: #fff9e6; border: 1px solid #ffecb3; padding: 15px; border-radius: 8px; margin-top: 10px; font-style: italic; }
   .treatment-list { margin-top: 20px; }
   .treatment-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid #eee; border-radius: 6px; margin-bottom: 8px; }
+  
+  /* (outros estilos de modal) */
   .zap-modal-content { max-width: 450px; padding: 0; }
   .zap-header { background: #075e54; color: white; padding: 15px; border-radius: 10px 10px 0 0; }
   .chat-container { background-image: url('https://user-images.githubusercontent.com/15075759/28719134-447aae62-73c1-11e7-911d-60d70fcded21.png'); padding: 15px; height: 400px; overflow-y: auto; }
@@ -102,10 +105,6 @@
   </div>
 </div>
 
-<div id="financeModal" class="modal">
-    </div>
-<div id="zapModal" class="modal">
-    </div>
 <div id="postinhoModal" class="modal">
     <div class="modal-content postinho-modal-content">
         <div class="player-list-column">
@@ -121,80 +120,148 @@
         </div>
     </div>
 </div>
-<div id="playerModal" class="modal">
-    </div>
+<div id="financeModal" class="modal">...</div>
+<div id="zapModal" class="modal">...</div>
+<div id="playerModal" class="modal">...</div>
 
 <script>
 // ========== ESTADO DO JOGO ==========
 let hired = []; let userData = {}; let financas = {}; let zapMessages = [];
 
-// ========== DADOS DOS TRATAMENTOS ==========
-const treatments = [
-    { id: 'gelol', name: 'Massagem com Gelol', cost: 10, cost_type: 'fixed', health_gain: 8 },
-    { id: 'reza', name: 'Reza da Dona Maria', cost: 5, cost_type: 'fixed', health_gain: 15 },
-    { id: 'mocoto', name: 'Caldo de Mocotó', cost: 15, cost_type: 'fixed', health_gain: 18 },
-    { id: 'pregacao', name: 'Pregação do Pastor Elias', cost: 0.10, cost_type: 'percentage', health_gain: 13 },
-    { id: 'garrafada', name: 'Garrafada Misteriosa', cost: 20, cost_type: 'fixed', health_gain: () => Math.floor(Math.random() * 21) + 5 }, // 5 a 25
-    { id: 'salgrosso', name: 'Banho de Sal Grosso', cost: 2, cost_type: 'fixed', health_gain: 5 },
-    { id: 'benzetacil', name: 'Benzetacil', cost: 30, cost_type: 'fixed', health_gain: 20 }
-];
-
-// ========== FALAS DO DR. TAIRO (ATUALIZADO) ==========
+// ========== DADOS (FORMAÇÕES, TRATAMENTOS, FALAS) ==========
+const treatments = [ { id: 'gelol', name: 'Massagem com Gelol', cost: 10, cost_type: 'fixed', health_gain: 8 }, { id: 'reza', name: 'Reza da Dona Maria', cost: 5, cost_type: 'fixed', health_gain: 15 }, { id: 'mocoto', name: 'Caldo de Mocotó', cost: 15, cost_type: 'fixed', health_gain: 18 }, { id: 'pregacao', name: 'Pregação do Pastor Elias', cost: 0.10, cost_type: 'percentage', health_gain: 13 }, { id: 'garrafada', name: 'Garrafada Misteriosa', cost: 20, cost_type: 'fixed', health_gain: () => Math.floor(Math.random() * 21) + 5 }, { id: 'salgrosso', name: 'Banho de Sal Grosso', cost: 2, cost_type: 'fixed', health_gain: 5 }, { id: 'benzetacil', name: 'Benzetacil', cost: 30, cost_type: 'fixed', health_gain: 20 } ];
 const tairoQuotes = {
-    low: [
-        "Chefe, esse aqui tá na UTI do Postinho. Se botar pra jogar, ele desmonta. O caso é grave e pede o tratamento de choque: uma <strong>Benzetacil</strong>.",
-        "A conta chegou pra esse guerreiro. É o seguinte: ou a gente aplica a artilharia pesada, uma <strong>Benzetacil</strong> pra ontem, ou ele vai estourar um músculo e ficar 3 meses parado.",
-        "Não tem massagem que resolva isso aqui, professor. Isso não é cansaço, é quase um pedido de aposentadoria. Sem conversa, o protocolo é <strong>Benzetacil</strong>."
-    ],
-    medium: [
-        "O motor desse aqui tá fadigado, tá batendo pino. Tá precisando de sustância. Um <strong>Caldo de Mocotó do Seu Zé</strong> ajeita a máquina e enche o tanque.",
-        "Esse aqui tá com o corpo pesado, parece que tem 'olho gordo' em cima. A gente trata o físico, mas tem que tratar o espírito também. Leva ele na <strong>Dona Maria pra uma reza forte</strong>, é o melhor remédio pra tirar essa zica.",
-        "A lesão dele não é só no músculo, é na confiança. Tá cabisbaixo, sem vontade. Precisa de uma palavra de incentivo. A <strong>Pregação do Pastor Elias</strong> vai levantar a moral desse rapaz e botar ele de pé de novo."
-    ],
-    high: [
-        "Isso aí é manha de jogador querendo fugir do treino. Manda uma <strong>Massagem com Gelol</strong> que essa frescura passa rapidinho.",
-        "Esse aí tá com a lataria arranhada, coisa de jogo. Nada que uma boa <strong>Massagem com Gelol</strong> não resolva. Deixa o músculo tinindo pra próxima pancadaria.",
-        "Diagnóstico: dorzinha de cabeça de zagueiro. O protocolo aqui é claro: <strong>Massagem com Gelol</strong> e um esporro pra parar de chorar. Próximo!"
-    ]
+    low: [ "Chefe, esse aqui tá na UTI do Postinho. Se botar pra jogar, ele desmonta. O caso é grave e pede o tratamento de choque: uma <strong>Benzetacil</strong>.", "A conta chegou pra esse guerreiro. É o seguinte: ou a gente aplica a artilharia pesada, uma <strong>Benzetacil</strong> pra ontem, ou ele vai estourar um músculo e ficar 3 meses parado.", "Não tem massagem que resolva isso aqui, professor. Isso não é cansaço, é quase um pedido de aposentadoria. Sem conversa, o protocolo é <strong>Benzetacil</strong>." ],
+    medium: [ "O motor desse aqui tá fadigado, tá batendo pino. Tá precisando de sustância. Um <strong>Caldo de Mocotó do Seu Zé</strong> ajeita a máquina e enche o tanque.", "Esse aqui tá com o corpo pesado, parece que tem 'olho gordo' em cima. Leva ele na <strong>Dona Maria pra uma reza forte</strong>, é o melhor remédio pra tirar essa zica.", "A lesão dele não é só no músculo, é na confiança. Tá cabisbaixo. A <strong>Pregação do Pastor Elias</strong> vai levantar a moral desse rapaz e botar ele de pé de novo." ],
+    high: [ "Isso aí é manha de jogador querendo fugir do treino. Manda uma <strong>Massagem com Gelol</strong> que essa frescura passa rapidinho.", "Esse aí tá com a lataria arranhada, coisa de jogo. Nada que uma boa <strong>Massagem com Gelol</strong> não resolva.", "Diagnóstico: dorzinha de cabeça de zagueiro. Protocolo: <strong>Massagem com Gelol</strong> e um esporro pra parar de chorar. Próximo!" ]
 };
+const formations = { /* ... (código das formações) ... */ };
 
-// ... (Restante do JavaScript completo)
-const elements = {
-  headerTitle: document.getElementById('headerTitle'), bench: document.getElementById('bench'), btnPlayMatch: document.getElementById('btnPlayMatch'),
-  linkTela4: document.getElementById('linkTela4'), formationSelect: document.getElementById('formationSelect'), pitch: document.getElementById('pitch'),
-  cashDisplay: document.getElementById('cashDisplay'), financeBox: document.getElementById('financeBox'), financeModal: document.getElementById('financeModal'),
-  financeModalClose: document.getElementById('financeModalClose'), playerModal: document.getElementById('playerModal'), playerModalClose: document.getElementById('playerModalClose'),
-  modalTitle: document.getElementById('modalTitle'), modalSubtitle: document.getElementById('modalSubtitle'), playerList: document.getElementById('playerList'),
-  modalCash: document.getElementById('modalCash'), modalRevenueMatches: document.getElementById('modalRevenueMatches'),
-  modalRevenueSponsors: document.getElementById('modalRevenueSponsors'), modalExpenseSignings: document.getElementById('modalExpenseSignings'),
-  modalExpenseSalaries: document.getElementById('modalExpenseSalaries'), modalExpenseBonus: document.getElementById('modalExpenseBonus'),
-  modalBalance: document.getElementById('modalBalance'), zapButton: document.getElementById('zapButton'),
-  zapNotification: document.getElementById('zapNotification'), zapModal: document.getElementById('zapModal'),
-  zapModalClose: document.getElementById('zapModalClose'), chatContainer: document.getElementById('chatContainer'),
-  postinhoButton: document.getElementById('postinhoButton'), postinhoModal: document.getElementById('postinhoModal'),
-  postinhoModalClose: document.getElementById('postinhoModalClose'), postinhoPlayerList: document.getElementById('postinhoPlayerList'),
-  treatmentPanel: document.getElementById('treatmentPanel')
-};
+const elements = { /* ... (todos os elementos) ... */ };
+
+// ========== FUNÇÕES ==========
+function showNotif(text, time = 3000) { /* ...código... */ }
+function formatReal(n) { /* ...código... */ }
+function renderSkillBar(skill) { /* ...código... */ }
+function renderHealthBar(health) { /* ...código... */ }
+function openFinanceModal() { /* ...código... */ }
+function openZapModal() { /* ...código... */ }
+function markMessagesAsRead() { /* ...código... */ }
+function checkZapNotifications() { /* ...código... */ }
+function drawPitch(formationName) { /* ...código... */ }
+function addSlotClickListeners() { /* ...código... */ }
+function unassignAllPlayers() { /* ...código... */ }
+function openPlayerModal(slotElement) { /* ...código... */ }
+function assignPlayerToSlot(jogador, slotElement) { /* ...código... */ }
+function populateBench() { /* ...código... */ }
+function openPostinhoModal() { /* ...código... */ }
+function populatePostinhoPlayerList() { /* ...código... */ }
+function selectPlayerForTreatment(playerId) { /* ...código... */ }
+function applyTreatment(playerId, treatmentId) { /* ...código... */ }
+
+// VERSÃO SIMPLIFICADA PARA REATRIBUIR JOGADORES AO CARREGAR A PÁGINA
+function reassignPlayerToSlot(player, slotElement) {
+    if (!player || !slotElement) return;
+    slotElement.dataset.assigned = player.id;
+    slotElement.innerHTML = `<div><strong>${player.name}</strong></div><div>${player.pos}</div><div class="muted">Habilidade: ${player.skill}%</div>`;
+    slotElement.classList.add('assigned');
+}
+
+function init() {
+  hired = JSON.parse(localStorage.getItem('elencoDoTime')) || [];
+  userData = JSON.parse(localStorage.getItem('userData')) || {};
+  financas = JSON.parse(localStorage.getItem('financasDoTime')) || {
+      caixaAtual: 5000, gastosContratacoes: 0, gastosSalarios: 0, 
+      gastosBicho: 0, receitaPartidas: 0, receitaPremiosPatrocinios: 0
+  };
+  zapMessages = JSON.parse(localStorage.getItem('zapMessages')) || [];
+
+  if(hired.length < 22) {
+      alert("Elenco incompleto! Volte ao mercado e contrate 22 jogadores.");
+      window.location.href = 'mercado.html';
+      return;
+  }
+  
+  elements.headerTitle.textContent = userData.teamName || 'O Rei da Várzea';
+  elements.cashDisplay.textContent = formatReal(financas.caixaAtual);
+  checkZapNotifications();
+
+  // ----- LÓGICA ATUALIZADA PARA LEMBRAR A ESCALAÇÃO -----
+  const savedFormation = localStorage.getItem('formacaoAtual') || '4-4-2';
+  const savedLineup = JSON.parse(localStorage.getItem('escalacaoFinal')) || {};
+
+  elements.formationSelect.value = savedFormation;
+  drawPitch(savedFormation);
+
+  if (Object.keys(savedLineup).length > 0) {
+      Object.keys(savedLineup).forEach(slotId => {
+          const playerId = savedLineup[slotId];
+          const slotElement = document.getElementById(slotId);
+          const player = hired.find(p => p.id === playerId);
+          reassignPlayerToSlot(player, slotElement);
+      });
+      elements.btnPlayMatch.disabled = document.querySelectorAll('.position-slot.assigned').length < 11;
+  }
+  // ----- FIM DA LÓGICA ATUALIZADA -----
+
+  populateBench(); // Popula o banco depois de restaurar a escalação
+
+  // Configura os eventos
+  elements.financeBox.onclick = openFinanceModal;
+  elements.zapButton.onclick = openZapModal;
+  elements.postinhoButton.onclick = openPostinhoModal;
+  elements.financeModalClose.onclick = () => elements.financeModal.style.display = 'none';
+  elements.playerModalClose.onclick = () => elements.playerModal.style.display = 'none';
+  elements.zapModalClose.onclick = () => elements.zapModal.style.display = 'none';
+  elements.postinhoModalClose.onclick = () => elements.postinhoModal.style.display = 'none';
+  
+  window.onclick = (event) => {
+    if (event.target.classList.contains('modal')) {
+      event.target.style.display = 'none';
+    }
+  };
+  
+  elements.linkTela4.addEventListener('click', (event) => {
+      if(elements.btnPlayMatch.disabled) {
+          event.preventDefault();
+          showNotif("Você precisa escalar 11 jogadores para a partida!");
+          return;
+      }
+      const lineup = {};
+      document.querySelectorAll('.position-slot[data-assigned]').forEach(slot => {
+          lineup[slot.id] = slot.dataset.assigned;
+      });
+      localStorage.setItem('escalacaoFinal', JSON.stringify(lineup));
+      localStorage.setItem('formacaoAtual', elements.formationSelect.value); // Salva a formação atual
+      localStorage.setItem('financasDoTime', JSON.stringify(financas));
+  });
+  
+  elements.formationSelect.addEventListener('change', (e) => {
+      unassignAllPlayers();
+      drawPitch(e.target.value);
+  });
+}
+
+// (Cole as funções completas aqui)
 function showNotif(text, time = 3000) { const box = document.createElement('div'); box.className = 'notif'; box.textContent = text; document.body.appendChild(box); setTimeout(() => box.remove(), time); }
 function formatReal(n) { return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-function renderSkillBar(skill) { return `<div class="skill-bar"><div class="skill-fill" style="width: ${skill}%"></div></div>`; }
+function renderSkillBar(skill) { return `<div class="skill-bar" style="width:80px;height:8px;background:#eee;border-radius:4px;overflow:hidden;display:inline-block;"><div style="height:100%;background:#9c27b0;width:${skill}%"></div></div>`; }
 function renderHealthBar(health) { const color = health > 70 ? '#28a745' : health > 40 ? '#ffc107' : '#dc3545'; return `<div class="health-bar"><div class="health-fill" style="width: ${health}%; background-color: ${color};"></div></div>`; }
-
-function openFinanceModal() { /* ...código da função... */ }
-function openZapModal() { /* ...código da função... */ }
-function markMessagesAsRead() { /* ...código da função... */ }
-function checkZapNotifications() { /* ...código da função... */ }
-function drawPitch(formationName) { /* ...código da função... */ }
-function addSlotClickListeners() { /* ...código da função... */ }
-function unassignAllPlayers() { /* ...código da função... */ }
-function openPlayerModal(slotElement) { /* ...código da função... */ }
-function assignPlayerToSlot(jogador, slotElement) { /* ...código da função... */ }
-function populateBench() { /* ...código da função... */ }
+function openFinanceModal() { elements.modalCash.textContent = formatReal(financas.caixaAtual); elements.modalRevenueMatches.textContent = `+ ${formatReal(financas.receitaPartidas)}`; elements.modalRevenueSponsors.textContent = `+ ${formatReal(financas.receitaPremiosPatrocinios)}`; elements.modalExpenseSignings.textContent = `- ${formatReal(financas.gastosContratacoes)}`; elements.modalExpenseSalaries.textContent = `- ${formatReal(financas.gastosSalarios)}`; elements.modalExpenseBonus.textContent = `- ${formatReal(financas.gastosBicho)}`; const totalReceitas = financas.receitaPartidas + financas.receitaPremiosPatrocinios; const totalDespesas = financas.gastosContratacoes + financas.gastosSalarios + financas.gastosBicho; const balanco = totalReceitas - totalDespesas; elements.modalBalance.textContent = formatReal(balanco); elements.modalBalance.style.color = balanco >= 0 ? 'green' : 'red'; elements.financeModal.style.display = 'block'; }
+function openZapModal() { elements.chatContainer.innerHTML = ''; if (zapMessages.length === 0) { elements.chatContainer.innerHTML = '<p class="muted" style="text-align: center; padding-top: 20px;">Nenhuma mensagem nova.</p>'; } else { zapMessages.sort((a, b) => new Date(b.date) - new Date(a.date)); zapMessages.forEach(msg => { const messageDiv = document.createElement('div'); messageDiv.className = 'chat-message'; messageDiv.innerHTML = `<div class="message-bubble"><div class="message-sender">${msg.from}</div><div>${msg.text}</div></div>`; elements.chatContainer.appendChild(messageDiv); }); } elements.zapModal.style.display = 'block'; elements.zapNotification.style.display = 'none'; markMessagesAsRead(); }
+function markMessagesAsRead() { zapMessages.forEach(msg => msg.read = true); localStorage.setItem('zapMessages', JSON.stringify(zapMessages)); }
+function checkZapNotifications() { const unreadCount = zapMessages.filter(m => !m.read).length; elements.zapNotification.style.display = unreadCount > 0 ? 'block' : 'none'; if(unreadCount > 0) elements.zapNotification.textContent = unreadCount; }
+function drawPitch(formationName) { elements.pitch.innerHTML = ''; const layout = formations[formationName]; if (!layout) return; let slotCounter = 0; layout.forEach(line => { const lineDiv = document.createElement('div'); lineDiv.className = 'formation-line'; lineDiv.style.top = line.top; line.slots.forEach(slotInfo => { const slotDiv = document.createElement('div'); slotDiv.className = 'position-slot'; slotDiv.id = `slot-${slotCounter++}`; slotDiv.dataset.pos = slotInfo.pos; slotDiv.innerHTML = `<div>${slotInfo.text}</div><div class="muted">Clique para escalar</div>`; lineDiv.appendChild(slotDiv); }); elements.pitch.appendChild(lineDiv); }); addSlotClickListeners(); }
+function addSlotClickListeners() { document.querySelectorAll('.position-slot').forEach(slot => { slot.addEventListener('click', () => { openPlayerModal(slot); }); }); }
+function unassignAllPlayers() { document.querySelectorAll('.position-slot[data-assigned]').forEach(slot => { const textDiv = slot.querySelector('div:first-child'); if(textDiv) { const originalText = textDiv.innerHTML; slot.innerHTML = `<div>${originalText}</div><div class="muted">Clique para escalar</div>`; } delete slot.dataset.assigned; slot.classList.remove('assigned'); }); populateBench(); elements.btnPlayMatch.disabled = true; }
+function openPlayerModal(slotElement) { const posicao = slotElement.dataset.pos; document.getElementById('modalTitle').textContent = `Escalar ${posicao}`; document.getElementById('modalSubtitle').textContent = `Selecione um jogador`; const playerList = document.getElementById('playerList'); playerList.innerHTML = ''; const posicoesValidas = { 'Goleiro': ['Goleiro'], 'Lateral': ['Lateral'], 'Zagueiro': ['Zagueiro'], 'Volante': ['Volante'], 'Meia': ['Meia'], 'Atacante': ['Atacante'] }; const posicoesAceitas = posicoesValidas[posicao] || [posicao]; const jogadoresDisponiveis = hired.filter(jogador => posicoesAceitas.includes(jogador.pos) && !document.querySelector(`[data-assigned="${jogador.id}"]`)); if (jogadoresDisponiveis.length === 0) { playerList.innerHTML = '<p class="muted">Nenhum jogador disponível</p>'; } else { jogadoresDisponiveis.forEach(jogador => { const item = document.createElement('div'); item.className = 'modal-player-item'; item.innerHTML = `<div><div class="player-with-tooltip"><strong>${jogador.name}</strong><span class="tooltip-text">"${jogador.apresentacao}"</span></div> • ${jogador.pos}</div><div class="muted">${jogador.age} anos • ${jogador.foot} • Habilidade: ${jogador.skill}% • Saúde: ${jogador.health}%</div><div>${renderSkillBar(jogador.skill)} ${renderHealthBar(jogador.health)}</div>`; item.addEventListener('click', (e) => { if (e.target.classList.contains('tooltip-text')) return; assignPlayerToSlot(jogador, slotElement); elements.playerModal.style.display = 'none'; }); playerList.appendChild(item); }); } elements.playerModal.style.display = 'block'; }
+function assignPlayerToSlot(jogador, slotElement) { const otherSlot = document.querySelector(`.position-slot[data-assigned="${jogador.id}"]`); if (otherSlot) { const originalText = otherSlot.querySelector('div:first-child').innerHTML; delete otherSlot.dataset.assigned; otherSlot.classList.remove('assigned'); otherSlot.innerHTML = `<div>${originalText}</div><div class="muted">Clique para escalar</div>`; } slotElement.dataset.assigned = jogador.id; slotElement.innerHTML = `<div><strong>${jogador.name}</strong></div><div>${jogador.pos}</div><div class="muted">Habilidade: ${jogador.skill}%</div>`; slotElement.classList.add('assigned'); populateBench(); const assignedCount = document.querySelectorAll('.position-slot.assigned').length; elements.btnPlayMatch.disabled = assignedCount < 11; showNotif(`${jogador.name} escalado!`); }
+function populateBench() { elements.bench.innerHTML = ''; const jogadoresNoBanco = hired.filter(jogador => !document.querySelector(`[data-assigned="${jogador.id}"]`)); if (jogadoresNoBanco.length === 0) { elements.bench.innerHTML = '<p class="muted">Todos escalados</p>'; return; } jogadoresNoBanco.forEach(jogador => { const div = document.createElement('div'); div.className = 'player-card'; div.innerHTML = `<div><div class="player-with-tooltip"><strong>${jogador.name}</strong><span class="tooltip-text">"${jogador.apresentacao}"</span></div><div class="muted">${jogador.pos} • ${jogador.foot} • ${jogador.age} anos</div></div><div class="muted">${formatReal(jogador.salarioJogo)}/jogo</div>`; elements.bench.appendChild(div); }); }
 function openPostinhoModal() { populatePostinhoPlayerList(); elements.treatmentPanel.innerHTML = `<p class="muted" style="text-align: center; margin-top: 50px;">Selecione um jogador à esquerda para o diagnóstico.</p>`; elements.postinhoModal.style.display = 'block'; }
-function populatePostinhoPlayerList() { elements.postinhoPlayerList.innerHTML = ''; hired.forEach(p => { const item = document.createElement('div'); item.className = 'postinho-player-item'; item.dataset.playerId = p.id; const healthPercentage = p.health; let healthColor = '#28a745'; if (healthPercentage <= 70) healthColor = '#ffc107'; if (healthPercentage < 50) healthColor = '#dc3545'; item.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center;"><strong>${p.name}</strong><span class="muted">${healthPercentage}%</span></div><div class="health-bar"><div class="health-fill" style="width: ${healthPercentage}%; background-color: ${healthColor};"></div></div>`; item.onclick = () => selectPlayerForTreatment(p.id); elements.postinhoPlayerList.appendChild(item); }); }
+function populatePostinhoPlayerList() { elements.postinhoPlayerList.innerHTML = ''; hired.forEach(p => { const item = document.createElement('div'); item.className = 'postinho-player-item'; item.dataset.playerId = p.id; const healthPercentage = p.health; item.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center;"><strong>${p.name}</strong><span class="muted">${healthPercentage}%</span></div>${renderHealthBar(p.health)}`; item.onclick = () => selectPlayerForTreatment(p.id); elements.postinhoPlayerList.appendChild(item); }); }
 function selectPlayerForTreatment(playerId) { const player = hired.find(p => p.id === playerId); if (!player) return; document.querySelectorAll('.postinho-player-item').forEach(el => { el.classList.toggle('selected', el.dataset.playerId === playerId); }); let diagnosisKey = 'high'; if (player.health <= 70) diagnosisKey = 'medium'; if (player.health < 50) diagnosisKey = 'low'; const diagnosisText = tairoQuotes[diagnosisKey][Math.floor(Math.random() * 3)]; let treatmentHTML = `<h3>Diagnóstico de ${player.name}</h3><p class="muted">Saúde Atual: ${player.health}%</p><div class="diagnosis-box">“${diagnosisText}”</div><div class="treatment-list"><h4>Tratamentos Disponíveis</h4>`; treatments.forEach(t => { let costText = ''; if (t.cost_type === 'percentage') { costText = `${t.cost * 100}% do Salário (${formatReal(player.salarioJogo * t.cost)})`; } else { costText = formatReal(t.cost); } treatmentHTML += `<div class="treatment-item"><div><strong>${t.name}</strong><div class="muted">Custo: ${costText}</div></div><button onclick="applyTreatment('${player.id}', '${t.id}')">Aplicar</button></div>`; }); treatmentHTML += `</div>`; elements.treatmentPanel.innerHTML = treatmentHTML; }
 function applyTreatment(playerId, treatmentId) { const player = hired.find(p => p.id === playerId); const treatment = treatments.find(t => t.id === treatmentId); if (!player || !treatment) return; let cost = 0; if (treatment.cost_type === 'percentage') { cost = player.salarioJogo * treatment.cost; } else { cost = treatment.cost; } if (financas.caixaAtual < cost) { showNotif("Dinheiro em caixa insuficiente!"); return; } financas.caixaAtual -= cost; let healthGained = (typeof treatment.health_gain === 'function') ? treatment.health_gain() : treatment.health_gain; player.health = Math.min(100, player.health + healthGained); localStorage.setItem('financasDoTime', JSON.stringify(financas)); localStorage.setItem('elencoDoTime', JSON.stringify(hired)); showNotif(`${player.name} recebeu ${treatment.name}. Saúde agora é ${player.health}%.`); elements.cashDisplay.textContent = formatReal(financas.caixaAtual); selectPlayerForTreatment(playerId); populatePostinhoPlayerList(); populateBench(); }
-function init() { hired = JSON.parse(localStorage.getItem('elencoDoTime')) || []; userData = JSON.parse(localStorage.getItem('userData')) || {}; financas = JSON.parse(localStorage.getItem('financasDoTime')) || { caixaAtual: 5000, gastosContratacoes: 0, gastosSalarios: 0, gastosBicho: 0, receitaPartidas: 0, receitaPremiosPatrocinios: 0 }; zapMessages = JSON.parse(localStorage.getItem('zapMessages')) || []; if(hired.length < 22) { alert("Elenco incompleto! Volte ao mercado."); window.location.href = 'mercado.html'; return; } elements.headerTitle.textContent = userData.teamName || 'O Rei da Várzea'; elements.cashDisplay.textContent = formatReal(financas.caixaAtual); checkZapNotifications(); elements.financeBox.onclick = openFinanceModal; elements.zapButton.onclick = openZapModal; elements.postinhoButton.onclick = openPostinhoModal; elements.financeModalClose.onclick = () => elements.financeModal.style.display = 'none'; elements.playerModalClose.onclick = () => elements.playerModal.style.display = 'none'; elements.zapModalClose.onclick = () => elements.zapModal.style.display = 'none'; elements.postinhoModalClose.onclick = () => elements.postinhoModal.style.display = 'none'; window.onclick = (event) => { if (event.target.classList.contains('modal')) { event.target.style.display = 'none'; } }; elements.linkTela4.addEventListener('click', (event) => { if(elements.btnPlayMatch.disabled) { event.preventDefault(); showNotif("Você precisa escalar 11 jogadores para a partida!"); return; } const lineup = {}; document.querySelectorAll('.position-slot[data-assigned]').forEach(slot => { lineup[slot.id] = slot.dataset.assigned; }); localStorage.setItem('escalacaoFinal', JSON.stringify(lineup)); localStorage.setItem('financasDoTime', JSON.stringify(financas)); }); elements.formationSelect.addEventListener('change', (e) => { unassignAllPlayers(); drawPitch(e.target.value); }); drawPitch('4-4-2'); populateBench(); }
+// Carrega o jogo
 init();
 </script>
 </body>
