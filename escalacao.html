@@ -10,8 +10,6 @@
   header{background:#0b6bd6;color:#fff;padding:14px 18px}
   .container{max-width:1100px;margin:18px auto;padding:10px}
   .card{background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);padding:16px;margin-bottom:16px;}
-  label{display:block;margin-top:8px}
-  input[type=text]{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px}
   button{background:#0b6bd6;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
   button[disabled]{opacity:0.45;cursor:default}
   .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:20px}
@@ -33,12 +31,6 @@
   .modal-player-item { padding: 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; transition: background-color 0.2s; }
   .modal-player-item:hover { background-color: #f5f7fb; }
   a { text-decoration: none; }
-
-  /* --- ESTILOS DA CAIXA DE DIÁLOGO --- */
-  .player-speech-box { position: relative; background: #fff9c4; border: 2px solid #ffd54f; border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); min-height: 50px; display: flex; align-items: center; font-style: italic; }
-  .player-name-highlight { font-weight: bold; color: #0b6bd6; cursor: pointer; text-decoration: underline dotted; padding: 2px 4px; border-radius: 3px; transition: background-color 0.2s; }
-  .player-name-highlight:hover { background-color: #f0f8ff; }
-  /* --- FIM DOS ESTILOS DA CAIXA DE DIÁLOGO --- */
   
   .formation-line { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 15px 0; }
   .position-slot { width: 140px; height: 50px; border-radius: 8px; background: rgba(255, 255, 255, 0.95); display: flex; align-items: center; justify-content: center; cursor: pointer; margin: 4px; border: 2px dashed #ccc; transition: all 0.3s; font-size: 12px; text-align: center; flex-direction: column; padding: 5px; }
@@ -47,6 +39,46 @@
   .defense-line { margin-top: 60px; }
   .midfield-line { margin-top: 80px; }
   .attack-line { margin-top: 80px; }
+
+  /* --- NOVOS ESTILOS PARA A RESENHA (TOOLTIP) --- */
+  .player-with-tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+  }
+  .tooltip-text {
+    visibility: hidden;
+    width: 220px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; /* Posição acima do nome */
+    left: 50%;
+    margin-left: -110px; /* Metade da largura para centralizar */
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-style: italic;
+    font-size: 12px;
+  }
+  .tooltip-text::after { /* Flechinha do balão */
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+  }
+  .player-with-tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+  }
+  /* --- FIM DOS NOVOS ESTILOS --- */
 </style>
 </head>
 <body>
@@ -57,10 +89,6 @@
 <div class="container">
   <div id="tela3" class="card">
     <h2>Tela 3 — Escalação (Formação 4-4-2)</h2>
-    
-    <div id="playerSpeechBox" class="player-speech-box">
-      💬 Passe o mouse sobre o nome de um jogador para ouvir sua resenha!
-    </div>
     
     <div class="card">
       <h3>Escalação Principal</h3>
@@ -112,7 +140,7 @@
     <div class="card" style="margin-top: 20px;">
       <h3>Banco de Reservas</h3>
       <div class="bench" id="bench"></div>
-      <div class="muted" style="margin-top:8px">Jogadores disponíveis para escalação</div>
+      <div class="muted" style="margin-top:8px">Passe o mouse sobre o nome do jogador para ver sua resenha.</div>
     </div>
 
     <div class="controls">
@@ -148,7 +176,6 @@ const elements = {
   modalSubtitle: document.getElementById('modalSubtitle'),
   playerList: document.getElementById('playerList'),
   modalClose: document.querySelector('.modal .close'),
-  playerSpeechBox: document.getElementById('playerSpeechBox') // Adicionado
 };
 
 // ========== FUNÇÕES AUXILIARES ==========
@@ -170,11 +197,6 @@ function renderSkillBar(skill) {
 function formatReal(n) {
   return 'R$ ' + n.toLocaleString('pt-BR');
 }
-// Função para mostrar a fala do jogador (adicionada)
-function showPlayerSpeech(playerName, speech) {
-  elements.playerSpeechBox.innerHTML = `💬 <span class="player-name-highlight">${playerName}</span>: "${speech}"`;
-}
-
 
 // ========== LÓGICA DA ESCALAÇÃO ==========
 function openPlayerModal(slotElement) {
@@ -200,12 +222,21 @@ function openPlayerModal(slotElement) {
     jogadoresDisponiveis.forEach(jogador => {
       const item = document.createElement('div');
       item.className = 'modal-player-item';
+      // ATUALIZADO: Adiciona a estrutura do tooltip no nome do jogador
       item.innerHTML = `
-        <div><strong>${jogador.name}</strong> • ${jogador.pos}</div>
+        <div>
+            <div class="player-with-tooltip">
+                <strong>${jogador.name}</strong>
+                <span class="tooltip-text">"${jogador.apresentacao}"</span>
+            </div>
+            • ${jogador.pos}
+        </div>
         <div class="muted">${jogador.age} anos • ${jogador.foot} • Habilidade: ${jogador.skill}% • Saúde: ${jogador.health}%</div>
         <div>${renderSkillBar(jogador.skill)} ${renderHealthBar(jogador.health)}</div>
       `;
-      item.addEventListener('click', () => {
+      item.addEventListener('click', (e) => {
+        // Impede que o clique no tooltip feche o modal se ele estiver sobreposto
+        if (e.target.classList.contains('tooltip-text')) return;
         assignPlayerToSlot(jogador, slotElement);
         elements.playerModal.style.display = 'none';
       });
@@ -229,16 +260,11 @@ function assignPlayerToSlot(jogador, slotElement) {
 
   slotElement.dataset.assigned = jogador.id;
   slotElement.innerHTML = `
-    <div><strong class="player-name-highlight">${jogador.name}</strong></div>
+    <div><strong>${jogador.name}</strong></div>
     <div>${jogador.pos}</div>
     <div class="muted">Habilidade: ${jogador.skill}%</div>
   `;
   slotElement.classList.add('assigned');
-  
-  // Adiciona o evento de mouse ao nome do jogador recém-escalado
-  slotElement.querySelector('.player-name-highlight').addEventListener('mouseenter', () => {
-    showPlayerSpeech(jogador.name, jogador.apresentacao);
-  });
   
   populateBench();
   
@@ -263,21 +289,19 @@ function populateBench() {
   jogadoresNoBanco.forEach(jogador => {
     const div = document.createElement('div');
     div.className = 'player-card';
+    // ATUALIZADO: Adiciona a estrutura do tooltip no nome do jogador
     div.innerHTML = `
       <div>
-        <strong><span class="player-name-highlight">${jogador.name}</span></strong>
+        <div class="player-with-tooltip">
+            <strong>${jogador.name}</strong>
+            <span class="tooltip-text">"${jogador.apresentacao}"</span>
+        </div>
         <div class="muted">${jogador.pos} • ${jogador.foot} • ${jogador.age} anos</div>
         <div>${renderSkillBar(jogador.skill)} ${renderHealthBar(jogador.health)}</div>
         <div class="muted">Contrato: ${jogador.contrato}</div>
       </div>
       <div class="muted">${formatReal(jogador.salarioJogo)}/jogo</div>
     `;
-    
-    // Adiciona o evento de mouse ao nome do jogador no banco
-    div.querySelector('.player-name-highlight').addEventListener('mouseenter', () => {
-        showPlayerSpeech(jogador.name, jogador.apresentacao);
-    });
-
     elements.bench.appendChild(div);
   });
 }
@@ -327,7 +351,6 @@ function init() {
   setupEscalacao();
 }
 
-// Roda o jogo!
 init();
 </script>
 </body>
