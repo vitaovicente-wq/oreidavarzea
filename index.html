@@ -23,7 +23,6 @@
 <header>
   <div class="container"><h1>O Rei da Várzea — Protótipo</h1></div>
 </header>
-
 <div class="container">
   <div id="tela1" class="card">
     <h2>Tela 1 — Crie seu Time</h2>
@@ -44,7 +43,6 @@
     </div>
   </div>
 </div>
-
 <script>
   const teamNameInput = document.getElementById('teamName');
   const userNameInput = document.getElementById('userName');
@@ -52,48 +50,31 @@
   const btnToTela2 = document.getElementById('btnToTela2');
   const linkTela2 = document.getElementById('linkTela2');
 
-  // Função para validar se todos os campos estão preenchidos
   function validateForm() {
     const teamName = teamNameInput.value.trim();
     const userName = userNameInput.value.trim();
     const cityName = cityNameInput.value.trim();
-
-    // Habilita ou desabilita o botão baseado na validação
-    if (teamName && userName && cityName) {
-      btnToTela2.disabled = false;
-    } else {
-      btnToTela2.disabled = true;
-    }
+    btnToTela2.disabled = !(teamName && userName && cityName);
   }
 
-  // Adiciona um "ouvinte" para cada campo de input
   teamNameInput.addEventListener('input', validateForm);
   userNameInput.addEventListener('input', validateForm);
   cityNameInput.addEventListener('input', validateForm);
 
-  // Função para salvar os dados e ir para a próxima página
   linkTela2.addEventListener('click', function(event) {
-    // Se o botão estiver desabilitado, impede a navegação
     if (btnToTela2.disabled) {
       event.preventDefault();
       return;
     }
-
-    // Salva os dados no localStorage
     const userData = {
       teamName: teamNameInput.value.trim(),
       userName: userNameInput.value.trim(),
       cityName: cityNameInput.value.trim()
     };
-    
-    // Converte o objeto para texto e salva
     localStorage.setItem('userData', JSON.stringify(userData));
-    
-    // Zera o dinheiro e o elenco para um novo jogo
     localStorage.setItem('dinheiroEmCaixa', 5000);
-    localStorage.removeItem('elencoDoTime'); // Garante que não há elenco antigo
+    localStorage.removeItem('elencoDoTime');
   });
-
 </script>
 </body>
 </html>
