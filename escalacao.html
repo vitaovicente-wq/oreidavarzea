@@ -34,53 +34,19 @@
   .modal-player-item:hover { background-color: #f5f7fb; }
   a { text-decoration: none; }
 
-  /* --- AJUSTES DE ESPAÇAMENTO NO CAMPO --- */
-  .formation-line {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px; /* Reduzido */
-    margin: 15px 0;
-  }
-  .position-slot {
-    width: 140px;
-    height: 50px;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.95);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    margin: 4px; /* Reduzido */
-    border: 2px dashed #ccc;
-    transition: all 0.3s;
-    font-size: 12px;
-    text-align: center;
-    flex-direction: column;
-    padding: 5px;
-  }
-  .pitch { 
-    width: 100%;
-    height: 600px; 
-    background: linear-gradient(#73c26b, #5eb95e); 
-    border-radius: 12px; 
-    padding: 30px; 
-    box-sizing: border-box; 
-    position: relative; 
-  }
-  .goalkeeper-line {
-    margin-top: 10px; 
-  }
-  .defense-line {
-    margin-top: 60px; /* Ajustado */
-  }
-  .midfield-line {
-    margin-top: 80px; /* Ajustado */
-  }
-  .attack-line {
-    margin-top: 80px; /* Ajustado */
-  }
-  /* --- FIM DOS AJUSTES --- */
+  /* --- ESTILOS DA CAIXA DE DIÁLOGO --- */
+  .player-speech-box { position: relative; background: #fff9c4; border: 2px solid #ffd54f; border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); min-height: 50px; display: flex; align-items: center; font-style: italic; }
+  .player-name-highlight { font-weight: bold; color: #0b6bd6; cursor: pointer; text-decoration: underline dotted; padding: 2px 4px; border-radius: 3px; transition: background-color 0.2s; }
+  .player-name-highlight:hover { background-color: #f0f8ff; }
+  /* --- FIM DOS ESTILOS DA CAIXA DE DIÁLOGO --- */
+  
+  .formation-line { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 15px 0; }
+  .position-slot { width: 140px; height: 50px; border-radius: 8px; background: rgba(255, 255, 255, 0.95); display: flex; align-items: center; justify-content: center; cursor: pointer; margin: 4px; border: 2px dashed #ccc; transition: all 0.3s; font-size: 12px; text-align: center; flex-direction: column; padding: 5px; }
+  .pitch { width: 100%; height: 600px; background: linear-gradient(#73c26b, #5eb95e); border-radius: 12px; padding: 30px; box-sizing: border-box; position: relative; }
+  .goalkeeper-line { margin-top: 10px; }
+  .defense-line { margin-top: 60px; }
+  .midfield-line { margin-top: 80px; }
+  .attack-line { margin-top: 80px; }
 </style>
 </head>
 <body>
@@ -91,6 +57,10 @@
 <div class="container">
   <div id="tela3" class="card">
     <h2>Tela 3 — Escalação (Formação 4-4-2)</h2>
+    
+    <div id="playerSpeechBox" class="player-speech-box">
+      💬 Passe o mouse sobre o nome de um jogador para ouvir sua resenha!
+    </div>
     
     <div class="card">
       <h3>Escalação Principal</h3>
@@ -177,7 +147,8 @@ const elements = {
   modalTitle: document.getElementById('modalTitle'),
   modalSubtitle: document.getElementById('modalSubtitle'),
   playerList: document.getElementById('playerList'),
-  modalClose: document.querySelector('.modal .close')
+  modalClose: document.querySelector('.modal .close'),
+  playerSpeechBox: document.getElementById('playerSpeechBox') // Adicionado
 };
 
 // ========== FUNÇÕES AUXILIARES ==========
@@ -199,6 +170,11 @@ function renderSkillBar(skill) {
 function formatReal(n) {
   return 'R$ ' + n.toLocaleString('pt-BR');
 }
+// Função para mostrar a fala do jogador (adicionada)
+function showPlayerSpeech(playerName, speech) {
+  elements.playerSpeechBox.innerHTML = `💬 <span class="player-name-highlight">${playerName}</span>: "${speech}"`;
+}
+
 
 // ========== LÓGICA DA ESCALAÇÃO ==========
 function openPlayerModal(slotElement) {
@@ -208,20 +184,14 @@ function openPlayerModal(slotElement) {
   elements.playerList.innerHTML = '';
 
   const posicoesValidas = {
-    'Goleiro': ['Goleiro'],
-    'Lateral Esquerdo': ['Lateral'],
-    'Lateral Direito': ['Lateral'],
-    'Zagueiro': ['Zagueiro'],
-    'Volante': ['Volante'],
-    'Meia Atacante': ['Meia'],
-    'Atacante': ['Atacante']
+    'Goleiro': ['Goleiro'], 'Lateral Esquerdo': ['Lateral'], 'Lateral Direito': ['Lateral'],
+    'Zagueiro': ['Zagueiro'], 'Volante': ['Volante'], 'Meia Atacante': ['Meia'], 'Atacante': ['Atacante']
   };
 
   const posicoesAceitas = posicoesValidas[posicao] || [posicao];
   
   const jogadoresDisponiveis = hired.filter(jogador => 
-    posicoesAceitas.includes(jogador.pos) && 
-    !document.querySelector(`[data-assigned="${jogador.id}"]`)
+    posicoesAceitas.includes(jogador.pos) && !document.querySelector(`[data-assigned="${jogador.id}"]`)
   );
   
   if (jogadoresDisponiveis.length === 0) {
@@ -247,7 +217,6 @@ function openPlayerModal(slotElement) {
 }
 
 function assignPlayerToSlot(jogador, slotElement) {
-  // Des-assinalar este jogador de qualquer outro slot em que ele possa estar
   const otherSlot = document.querySelector(`.position-slot[data-assigned="${jogador.id}"]`);
   if(otherSlot) {
       delete otherSlot.dataset.assigned;
@@ -256,17 +225,20 @@ function assignPlayerToSlot(jogador, slotElement) {
   }
     
   const previousPlayerId = slotElement.dataset.assigned;
-  if (previousPlayerId) {
-      // (Opcional) Logica para tratar o jogador que foi substituido
-  }
+  if (previousPlayerId) {}
 
   slotElement.dataset.assigned = jogador.id;
   slotElement.innerHTML = `
-    <div><strong>${jogador.name}</strong></div>
+    <div><strong class="player-name-highlight">${jogador.name}</strong></div>
     <div>${jogador.pos}</div>
     <div class="muted">Habilidade: ${jogador.skill}%</div>
   `;
   slotElement.classList.add('assigned');
+  
+  // Adiciona o evento de mouse ao nome do jogador recém-escalado
+  slotElement.querySelector('.player-name-highlight').addEventListener('mouseenter', () => {
+    showPlayerSpeech(jogador.name, jogador.apresentacao);
+  });
   
   populateBench();
   
@@ -293,13 +265,19 @@ function populateBench() {
     div.className = 'player-card';
     div.innerHTML = `
       <div>
-        <strong>${jogador.name}</strong>
+        <strong><span class="player-name-highlight">${jogador.name}</span></strong>
         <div class="muted">${jogador.pos} • ${jogador.foot} • ${jogador.age} anos</div>
         <div>${renderSkillBar(jogador.skill)} ${renderHealthBar(jogador.health)}</div>
         <div class="muted">Contrato: ${jogador.contrato}</div>
       </div>
       <div class="muted">${formatReal(jogador.salarioJogo)}/jogo</div>
     `;
+    
+    // Adiciona o evento de mouse ao nome do jogador no banco
+    div.querySelector('.player-name-highlight').addEventListener('mouseenter', () => {
+        showPlayerSpeech(jogador.name, jogador.apresentacao);
+    });
+
     elements.bench.appendChild(div);
   });
 }
@@ -315,7 +293,6 @@ function setupEscalacao() {
 
 // ========== INICIALIZAÇÃO DA PÁGINA ==========
 function init() {
-  // 1. Carrega os dados do localStorage
   hired = JSON.parse(localStorage.getItem('elencoDoTime')) || [];
   userData = JSON.parse(localStorage.getItem('userData')) || {};
 
@@ -325,10 +302,8 @@ function init() {
       return;
   }
   
-  // 2. Atualiza a interface
   elements.headerTitle.textContent = userData.teamName || 'O Rei da Várzea';
 
-  // 3. Configura os eventos da página
   elements.modalClose.onclick = () => elements.playerModal.style.display = 'none';
   window.onclick = (event) => {
     if (event.target === elements.playerModal) {
@@ -342,16 +317,13 @@ function init() {
           showNotif("Você precisa escalar 11 jogadores para a partida!");
           return;
       }
-
-      // Salva a escalação final para a tela da partida
       const lineup = {};
       document.querySelectorAll('.position-slot[data-assigned]').forEach(slot => {
           lineup[slot.id] = slot.dataset.assigned;
       });
       localStorage.setItem('escalacaoFinal', JSON.stringify(lineup));
   });
-
-  // 4. Inicia a lógica da tela
+  
   setupEscalacao();
 }
 
