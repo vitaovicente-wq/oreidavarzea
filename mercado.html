@@ -50,6 +50,7 @@
         <thead><tr>
           <th>Nome</th>
           <th>Posição</th>
+          <th>Pé</th>
           <th>Idade</th>
           <th>Passe</th>
           <th>Salário/Jogo</th>
@@ -216,6 +217,7 @@ function renderMarket(filter) {
     tr.innerHTML = `
       <td><span class="player-name-highlight">${p.name}</span><div class="muted">${p.pos}</div></td>
       <td>${p.pos}</td>
+      <td>${p.foot}</td>
       <td>${p.age}</td>
       <td>${formatReal(p.passe)}</td>
       <td>${formatReal(p.salarioJogo)}</td>
