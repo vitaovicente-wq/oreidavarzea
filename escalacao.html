@@ -55,10 +55,13 @@
     border-radius: 6px;
     padding: 8px;
     position: absolute;
-    z-index: 1;
-    bottom: 125%; /* Posição acima do nome */
-    left: 50%;
-    margin-left: -110px; /* Metade da largura para centralizar */
+    z-index: 10;
+
+    /* Alterado para posicionar ao lado direito */
+    top: 50%;
+    left: 105%; /* Coloca o tooltip à direita do nome */
+    transform: translateY(-50%); /* Centraliza o tooltip verticalmente com o nome */
+    
     opacity: 0;
     transition: opacity 0.3s;
     font-style: italic;
@@ -67,12 +70,14 @@
   .tooltip-text::after { /* Flechinha do balão */
     content: "";
     position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -5px;
+
+    /* Alterado para apontar para a esquerda */
+    top: 50%;
+    right: 100%; /* Coloca a flecha no lado esquerdo do tooltip */
+    margin-top: -5px; /* Centraliza a flecha na vertical */
     border-width: 5px;
     border-style: solid;
-    border-color: #555 transparent transparent transparent;
+    border-color: transparent #555 transparent transparent; /* Faz a flecha apontar para o nome */
   }
   .player-with-tooltip:hover .tooltip-text {
     visibility: visible;
@@ -222,7 +227,6 @@ function openPlayerModal(slotElement) {
     jogadoresDisponiveis.forEach(jogador => {
       const item = document.createElement('div');
       item.className = 'modal-player-item';
-      // ATUALIZADO: Adiciona a estrutura do tooltip no nome do jogador
       item.innerHTML = `
         <div>
             <div class="player-with-tooltip">
@@ -235,7 +239,6 @@ function openPlayerModal(slotElement) {
         <div>${renderSkillBar(jogador.skill)} ${renderHealthBar(jogador.health)}</div>
       `;
       item.addEventListener('click', (e) => {
-        // Impede que o clique no tooltip feche o modal se ele estiver sobreposto
         if (e.target.classList.contains('tooltip-text')) return;
         assignPlayerToSlot(jogador, slotElement);
         elements.playerModal.style.display = 'none';
@@ -289,7 +292,6 @@ function populateBench() {
   jogadoresNoBanco.forEach(jogador => {
     const div = document.createElement('div');
     div.className = 'player-card';
-    // ATUALIZADO: Adiciona a estrutura do tooltip no nome do jogador
     div.innerHTML = `
       <div>
         <div class="player-with-tooltip">
