@@ -267,11 +267,31 @@ function endGame() {
     addComentario('FIM', '⏱️ Apita o árbitro! Fim de jogo!', 'evento');
     elements.btnContinuar.style.display = 'inline-block';
     elements.btnSubstituicao.disabled = true;
+    
+    // Atualiza saúde dos jogadores que participaram
     const playersInMatch = Object.values(lineup);
     hired.forEach(jogador => { if (playersInMatch.includes(jogador.id)) { let desgaste = 8 + Math.floor(Math.random() * 5); if (jogador.isPai) desgaste += 3; jogador.health = Math.max(0, jogador.health - desgaste); } });
-    let currentCash = parseInt(localStorage.getItem('dinheiroEmCaixa')) || 5000;
-    currentCash += matchRevenue;
-    localStorage.setItem('dinheiroEmCaixa', currentCash);
+    localStorage.setItem('elencoDoTime', JSON.stringify(hired));
+
+    // --- LÓGICA FINANCEIRA E HISTÓRICO CORRIGIDA ---
+    // 1. Carrega o livro-caixa ATUAL
+    let financas = JSON.parse(localStorage.getItem('financasDoTime')) || { caixaAtual: 5000, gastosContratacoes: 0, gastosSalarios: 0, gastosBicho: 0, receitaPartidas: 0, receitaPremiosPatrocinios: 0 };
+    
+    // 2. Adiciona a renda da partida
+    financas.caixaAtual += matchRevenue;
+    financas.receitaPartidas += matchRevenue;
+    showNotif(`${formatReal(matchRevenue)} de renda da partida adicionado ao caixa!`);
+
+    // 3. Calcula e PAGA os salários
+    const folhaSalarial = hired.reduce((total, player) => total + player.salarioJogo, 0);
+    financas.caixaAtual -= folhaSalarial;
+    financas.gastosSalarios += folhaSalarial;
+    showNotif(`${formatReal(folhaSalarial)} pagos em salários.`, 3500);
+
+    // 4. Salva o livro-caixa COMPLETO de volta
+    localStorage.setItem('financasDoTime', JSON.stringify(financas));
+
+    // 5. Atualiza o histórico de vitórias/derrotas
     const history = JSON.parse(localStorage.getItem('teamHistory')) || { wins: 0, losses: 0, draws: 0 };
     const golsCasa = parseInt(elements.scoreDisplay.textContent.split('x')[0]);
     const golsVisitante = parseInt(elements.scoreDisplay.textContent.split('x')[1]);
@@ -279,13 +299,13 @@ function endGame() {
     else if (golsVisitante > golsCasa) history.losses++;
     else history.draws++;
     localStorage.setItem('teamHistory', JSON.stringify(history));
-    localStorage.setItem('elencoDoTime', JSON.stringify(hired));
-    showNotif(`${formatReal(matchRevenue)} adicionado ao caixa do time!`);
+
+    // 6. Limpa o save da partida em andamento
     localStorage.removeItem('matchInProgress');
 }
 
 function pickPlayerForEvent(positions, team) { if (team === 'user') { const playersInPosition = hired.filter(p => Object.values(lineup).includes(p.id) && positions.includes(p.pos)); if (playersInPosition.length > 0) { return playersInPosition[Math.floor(Math.random() * playersInPosition.length)]; } return hired.find(p => Object.values(lineup).includes(p.id)); } else { const playersInPosition = vilaFreitasSquad.titulares.filter(p => positions.includes(p.pos)); if (playersInPosition.length > 0) { return playersInPosition[Math.floor(Math.random() * playersInPosition.length)]; } return vilaFreitasSquad.titulares[Math.floor(Math.random() * vilaFreitasSquad.titulares.length)]; } }
-function addEventIcon(playerIdentifier, icon, team) { const selector = (team === 'user') ? `li[data-player-id="${playerIdentifier}"]` : `li[data-player-name="${playerIdentifier}"]`; const playerLi = document.querySelector(selector); if (playerLi) { const eventSpan = playerLi.querySelector('.player-events'); eventSpan.textContent = icon; } } // Changed to = to not stack icons on resume
+function addEventIcon(playerIdentifier, icon, team) { const selector = (team === 'user') ? `li[data-player-id="${playerIdentifier}"]` : `li[data-player-name="${playerIdentifier}"]`; const playerLi = document.querySelector(selector); if (playerLi) { const eventSpan = playerLi.querySelector('.player-events'); eventSpan.textContent = icon; } }
 function openSubstitutionModal(isMidGame) { pauseGame(); if (isMidGame) { elements.substitutionModalTitle.textContent = "Pausa para Substituição"; addComentario(minuto, `⏱️ Jogo pausado para substituição.`, 'evento'); } else { elements.substitutionModalTitle.textContent = "Intervalo - Faça suas substituições"; addComentario('45', `⏱️ Fim do primeiro tempo! Intervalo de jogo.`, 'evento'); } elements.substitutionModal.style.display = 'block'; elements.btnConfirmSubs.textContent = isMidGame ? "Confirmar e Voltar ao Jogo" : "Iniciar 2º Tempo"; elements.btnConfirmSubs.dataset.isMidGame = isMidGame; updateSubstitutionModal(); }
 function updateSubstitutionModal() { elements.subPitchPlayers.innerHTML = ''; elements.subBenchPlayers.innerHTML = ''; elements.subsCount.textContent = `Substituições: ${subsMade}/${MAX_SUBS}`; const titularesIds = Object.values(lineup); const titulares = hired.filter(j => titularesIds.includes(j.id)); const reservas = hired.filter(j => !titularesIds.includes(j.id)); titulares.forEach(p => { const item = document.createElement('div'); item.className = 'sub-player-item'; item.textContent = `${p.name} (${p.pos})`; item.dataset.playerId = p.id; item.onclick = () => handleSubPlayerClick(p.id, true); elements.subPitchPlayers.appendChild(item); }); reservas.forEach(p => { const item = document.createElement('div'); item.className = 'sub-player-item'; item.textContent = `${p.name} (${p.pos})`; item.dataset.playerId = p.id; item.onclick = () => handleSubPlayerClick(p.id, false); if (subsMade >= MAX_SUBS) item.classList.add('disabled'); elements.subBenchPlayers.appendChild(item); }); }
 function handleSubPlayerClick(playerId, isTitular) { if (isTitular) { if (selectedPlayerOutId === playerId) { selectedPlayerOutId = null; } else { selectedPlayerOutId = playerId; } document.querySelectorAll('#subPitchPlayers .sub-player-item').forEach(el => { el.classList.toggle('selected', el.dataset.playerId === selectedPlayerOutId); }); } else { if (!selectedPlayerOutId) { showNotif("Primeiro, selecione um jogador em campo para substituir."); return; } if (subsMade >= MAX_SUBS) { showNotif("Você já usou todas as 5 substituições!"); return; } performSubstitution(selectedPlayerOutId, playerId); } }
@@ -313,11 +333,7 @@ function init() {
             if(elements[elementId]) elements[elementId].textContent = state.revenueDetails[key];
         });
         populateLists();
-        Object.keys(state.playerEvents).forEach(pId => {
-            const icons = state.playerEvents[pId];
-            const isUser = pId.startsWith('p');
-            addEventIcon(pId, icons, isUser ? 'user' : 'opponent');
-        });
+        Object.keys(state.playerEvents).forEach(pId => { const icons = state.playerEvents[pId]; const isUser = pId.startsWith('p'); addEventIcon(pId, icons, isUser ? 'user' : 'opponent'); });
         resumeGame();
     } else {
         if (Object.keys(lineup).length < 11) { alert("Nenhuma escalação encontrada! Escale seu time primeiro."); window.location.href = 'escalacao.html'; return; }
