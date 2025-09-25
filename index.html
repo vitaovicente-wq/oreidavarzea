@@ -22,8 +22,10 @@
   .bench{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto;padding:8px;border:1px dashed #ccc;border-radius:8px}
   .player-card{padding:8px;border-radius:8px;background:#fff;border:1px solid #eee;margin-bottom:6px;cursor:grab;display:flex;justify-content:space-between;align-items:center}
   .player-card.locked{background:#ddd;cursor:not-allowed}
-  .position-slot{width:90px;height:40px;border-radius:6px;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;cursor:pointer;margin:6px}
-  .pitch{width:100%;height:420px;background:linear-gradient(#73c26b,#5eb95e);border-radius:12px;padding:12px;box-sizing:border-box}
+  .position-slot{width:140px;height:50px;border-radius:8px;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;cursor:pointer;margin:8px;border:2px dashed #ccc;transition:all 0.3s;font-size:12px;text-align:center;flex-direction:column;padding:5px}
+  .position-slot:hover{background:rgba(255,255,255,0.8);border-color:#0b6bd6}
+  .position-slot.assigned{background:#e8f5e8;border:2px solid #4CAF50}
+  .pitch{width:100%;height:500px;background:linear-gradient(#73c26b,#5eb95e);border-radius:12px;padding:20px;box-sizing:border-box;position:relative}
   .notif{position:fixed;top:18px;right:18px;background:#ffefc2;color:#333;padding:10px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);border:1px solid #e6b800}
   .health-bar{width:60px;height:8px;background:#eee;border-radius:4px;overflow:hidden;display:inline-block;margin-left:8px;vertical-align:middle}
   .health-fill{height:100%;background:#4CAF50;transition:width 0.3s}
@@ -70,6 +72,71 @@
   }
   .btn-voltar:hover {
     background: #5a6268;
+  }
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+  }
+  .modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 20px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .close:hover {
+    color: #000;
+  }
+  .player-list-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 15px;
+  }
+  .modal-player-item {
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .modal-player-item:hover {
+    background-color: #f5f7fb;
+  }
+  .formation-line {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin: 15px 0;
+  }
+  .goalkeeper-line {
+    margin-top: 30px;
+  }
+  .defense-line {
+    margin-top: 60px;
+  }
+  .midfield-line {
+    margin-top: 90px;
+  }
+  .attack-line {
+    margin-top: 120px;
   }
 </style>
 </head>
@@ -136,43 +203,83 @@
 
   <!-- TELA 3 -->
   <div id="tela3" class="card" style="display:none">
-    <h2>Tela 3 — Escalação</h2>
-    <div style="display:flex;gap:16px">
-      <div style="flex:1">
-        <div class="card">
-          <h3>Escalação (arraste do banco para a posição)</h3>
-          <div class="pitch" id="pitch">
-            <div style="display:flex;flex-wrap:wrap;justify-content:center">
-              <div class="position-slot" data-pos="GK" id="slot-GK">GK</div>
-            </div>
-            <div style="display:flex;justify-content:space-between;margin-top:12px">
-              <div class="position-slot" data-pos="LB" id="slot-LB">LB</div>
-              <div class="position-slot" data-pos="CB1" id="slot-CB1">CB</div>
-              <div class="position-slot" data-pos="CB2" id="slot-CB2">CB</div>
-              <div class="position-slot" data-pos="RB" id="slot-RB">RB</div>
-            </div>
-            <div style="display:flex;justify-content:space-around;margin-top:12px">
-              <div class="position-slot" data-pos="DM" id="slot-DM">VOL</div>
-              <div class="position-slot" data-pos="CM1" id="slot-CM1">MEI</div>
-              <div class="position-slot" data-pos="CM2" id="slot-CM2">MEI</div>
-            </div>
-            <div style="display:flex;justify-content:space-between;margin-top:12px">
-              <div class="position-slot" data-pos="LW" id="slot-LW">AE</div>
-              <div class="position-slot" data-pos="ST" id="slot-ST">ATA</div>
-              <div class="position-slot" data-pos="RW" id="slot-RW">AD</div>
-            </div>
+    <h2>Tela 3 — Escalação (Formação 4-4-2)</h2>
+    
+    <!-- Campo de Futebol -->
+    <div class="card">
+      <h3>Escalação Principal</h3>
+      <div class="pitch" id="pitch">
+        <!-- Goleiro -->
+        <div class="formation-line goalkeeper-line">
+          <div class="position-slot" data-pos="Goleiro" id="slot-GK">
+            <div>🧤 Goleiro</div>
+            <div class="muted">Clique para escalar</div>
           </div>
         </div>
-        <div class="controls" style="margin-top:10px">
-          <button id="btnPlayMatch" disabled>Jogar partida</button>
+
+        <!-- Defesa (4) -->
+        <div class="formation-line defense-line">
+          <div class="position-slot" data-pos="Lateral Esquerdo" id="slot-LB">
+            <div>⬅️ Lateral Esquerdo</div>
+            <div class="muted">Clique para escalar</div>
+          </div>
+          <div class="position-slot" data-pos="Zagueiro" id="slot-CB1">
+            <div>🛡️ Zagueiro</div>
+            <div class="muted">Clique para escalar</div>
+          </div>
+          <div class="position-slot" data-pos="Zagueiro" id="slot-CB2">
+            <div>🛡️ Zagueiro</div>
+            <div class="muted">Clique para escalar</div>
+          </div>
+          <div class="position-slot" data-pos="Lateral Direito" id="slot-RB">
+            <div>➡️ Lateral Direito</div>
+            <div class="muted">Clique para escalar</div>
+          </div>
+        </div>
+
+        <!-- Meio-Campo (4) -->
+        <div class="formation-line midfield-line">
+          <div class="position-slot" data-pos="Volante" id="slot-DM1">
+            <div>⚔️ Volante</div>
+            <div class="muted">Clique para escalar</div>
+          </div>
+          <div class="position-slot" data-pos="Volante" id="slot-DM2">
+            <div>⚔️ Volante</div>
+            <div class="muted">Clique para escalar</div>
+          </div>
+          <div class="position-slot" data-pos="Meia Atacante" id="slot-CM1">
+            <div>🎯 Meia Atacante</div>
+            <div class="muted">Clique para escalar</div>
+          </div>
+          <div class="position-slot" data-pos="Meia Atacante" id="slot-CM2">
+            <div>🎯 Meia Atacante</div>
+            <div class="muted">Clique para escalar</div>
+          </div>
+        </div>
+
+        <!-- Ataque (2) -->
+        <div class="formation-line attack-line">
+          <div class="position-slot" data-pos="Atacante" id="slot-ST1">
+            <div>⚽ Atacante</div>
+            <div class="muted">Clique para escalar</div>
+          </div>
+          <div class="position-slot" data-pos="Atacante" id="slot-ST2">
+            <div>⚽ Atacante</div>
+            <div class="muted">Clique para escalar</div>
+          </div>
         </div>
       </div>
-      <div style="width:320px">
-        <div class="card">
-          <h3>Banco / Jogadores contratados</h3>
-          <div class="bench" id="bench"></div>
-        </div>
-      </div>
+    </div>
+
+    <!-- Banco de Reservas (EM BAIXO) -->
+    <div class="card" style="margin-top: 20px;">
+      <h3>Banco de Reservas</h3>
+      <div class="bench" id="bench"></div>
+      <div class="muted" style="margin-top:8px">Jogadores disponíveis para escalação</div>
+    </div>
+
+    <div class="controls" style="margin-top:20px">
+      <button id="btnPlayMatch" disabled>Jogar partida</button>
     </div>
   </div>
 
@@ -197,6 +304,16 @@
   </div>
 </div>
 
+<!-- Modal para seleção de jogadores -->
+<div id="playerModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h3 id="modalTitle">Selecionar Jogador</h3>
+    <div id="modalSubtitle" class="muted"></div>
+    <div id="playerList" class="player-list-modal"></div>
+  </div>
+</div>
+
 <script>
 // ========== CONFIGURAÇÕES ==========
 const MAX_PLAYERS = 22;
@@ -205,6 +322,7 @@ let CASH = 5000;
 let players = [];
 let hired = [];
 let marketStep = 1;
+let currentSlot = null; // Para o modal saber qual posição está sendo escalada
 
 const steps = [
   { msg: "Hora de montar o seu time, escolha 22 jogadores para iniciar", filter: null, min: 0 },
@@ -236,8 +354,103 @@ const elements = {
   bench: document.getElementById('bench'),
   btnPlayMatch: document.getElementById('btnPlayMatch'),
   playerSpeechBox: document.getElementById('playerSpeechBox'),
-  btnContinuar: document.getElementById('btnContinuar')
+  btnContinuar: document.getElementById('btnContinuar'),
+  playerModal: document.getElementById('playerModal'),
+  modalTitle: document.getElementById('modalTitle'),
+  modalSubtitle: document.getElementById('modalSubtitle'),
+  playerList: document.getElementById('playerList')
 };
+
+// ========== MODAL DE SELEÇÃO ==========
+const modalClose = document.querySelector('.close');
+modalClose.onclick = () => elements.playerModal.style.display = 'none';
+window.onclick = (event) => {
+  if (event.target === elements.playerModal) {
+    elements.playerModal.style.display = 'none';
+  }
+};
+
+function openPlayerModal(slotElement) {
+  currentSlot = slotElement;
+  const posicao = slotElement.dataset.pos;
+  
+  elements.modalTitle.textContent = `Escalar ${posicao}`;
+  elements.modalSubtitle.textContent = `Selecione um jogador para a posição de ${posicao}`;
+  
+  // Limpar lista anterior
+  elements.playerList.innerHTML = '';
+  
+  // Filtrar jogadores pela posição
+  let jogadoresDisponiveis = [];
+  
+  // Mapear posições do campo para posições dos jogadores
+  const posicoesValidas = {
+    'Goleiro': ['Goleiro'],
+    'Lateral Esquerdo': ['Lateral'],
+    'Lateral Direito': ['Lateral'],
+    'Zagueiro': ['Zagueiro'],
+    'Volante': ['Volante'],
+    'Meia Atacante': ['Meia'],
+    'Atacante': ['Atacante']
+  };
+  
+  const posicoesAceitas = posicoesValidas[posicao] || [posicao];
+  
+  jogadoresDisponiveis = hired.filter(jogador => 
+    posicoesAceitas.includes(jogador.pos) && 
+    !document.querySelector(`[data-assigned="${jogador.id}"]`)
+  );
+  
+  if (jogadoresDisponiveis.length === 0) {
+    elements.playerList.innerHTML = '<p class="muted">Nenhum jogador disponível para esta posição</p>';
+  } else {
+    jogadoresDisponiveis.forEach(jogador => {
+      const item = document.createElement('div');
+      item.className = 'modal-player-item';
+      item.innerHTML = `
+        <div><strong>${jogador.name}</strong> • ${jogador.pos}</div>
+        <div class="muted">${jogador.age} anos • ${jogador.foot} • Habilidade: ${jogador.skill}% • Saúde: ${jogador.health}%</div>
+        <div>${renderSkillBar(jogador.skill)} ${renderHealthBar(jogador.health)}</div>
+      `;
+      item.addEventListener('click', () => {
+        assignPlayerToSlot(jogador, slotElement);
+        elements.playerModal.style.display = 'none';
+      });
+      elements.playerList.appendChild(item);
+    });
+  }
+  
+  elements.playerModal.style.display = 'block';
+}
+
+function assignPlayerToSlot(jogador, slotElement) {
+  // Remover jogador anterior se existir
+  const previousPlayerId = slotElement.dataset.assigned;
+  if (previousPlayerId) {
+    const previousCard = document.getElementById('bench-' + previousPlayerId);
+    if (previousCard) {
+      previousCard.classList.remove('locked');
+    }
+  }
+  
+  // Atribuir novo jogador
+  slotElement.dataset.assigned = jogador.id;
+  slotElement.innerHTML = `
+    <div><strong>${jogador.name}</strong></div>
+    <div>${jogador.pos}</div>
+    <div class="muted">Habilidade: ${jogador.skill}%</div>
+  `;
+  slotElement.classList.add('assigned');
+  
+  // Atualizar banco
+  populateBench();
+  
+  // Verificar se time está completo
+  const assignedCount = document.querySelectorAll('.position-slot.assigned').length;
+  elements.btnPlayMatch.disabled = assignedCount < 11;
+  
+  showNotif(`${jogador.name} escalado como ${slotElement.dataset.pos}!`);
+}
 
 // ========== FUNÇÕES AUXILIARES ==========
 function showNotif(text, time = 3000) {
@@ -264,53 +477,37 @@ function renderHealthBar(health) {
   const color = health >= 80 ? '#4CAF50' : health >= 50 ? '#ff9800' : '#f44336';
   return `<div class="health-bar">
     <div class="health-fill" style="width: ${health}%; background: ${color}"></div>
-  </div> ${health}%`;
+  </div>`;
 }
 
 function renderSkillBar(skill) {
   const color = skill >= 80 ? '#9c27b0' : skill >= 60 ? '#673ab7' : skill >= 40 ? '#3f51b5' : '#2196f3';
   return `<div class="skill-bar">
     <div class="skill-fill" style="width: ${skill}%; background: ${color}"></div>
-  </div> ${skill}%`;
+  </div>`;
 }
 
 function showPlayerSpeech(playerName, speech) {
   elements.playerSpeechBox.innerHTML = `💬 <span class="player-name-highlight">${playerName}</span>: "${speech}"`;
 }
 
-// ========== GERAR HABILIDADE COM DISTRIBUIÇÃO ESPECÍFICA ==========
+// ========== GERAR HABILIDADE ==========
 function generateSkillDistribution() {
-  const skills = [];
-  
-  // Garantir um jogador com habilidade 100
-  skills.push(100);
-  
-  // Distribuição mais realista para várzea
+  const skills = [100]; // Jogador com habilidade 100
   for (let i = 1; i < TOTAL_MARKET; i++) {
     let skill;
-    // Maioria entre 25-45, alguns acima e abaixo
     const rand = Math.random();
-    if (rand < 0.6) {
-      skill = Math.round(Math.random() * 20) + 25; // 25-45 (60%)
-    } else if (rand < 0.85) {
-      skill = Math.round(Math.random() * 15) + 46; // 46-60 (25%)
-    } else if (rand < 0.95) {
-      skill = Math.round(Math.random() * 10) + 15; // 15-24 (10%)
-    } else {
-      skill = Math.round(Math.random() * 15) + 61; // 61-75 (5%)
-    }
+    if (rand < 0.6) skill = Math.round(Math.random() * 20) + 25;
+    else if (rand < 0.85) skill = Math.round(Math.random() * 15) + 46;
+    else if (rand < 0.95) skill = Math.round(Math.random() * 10) + 15;
+    else skill = Math.round(Math.random() * 15) + 61;
     skills.push(Math.min(100, skill));
   }
-  
   return skills.sort(() => Math.random() - 0.5);
 }
 
-// ========== CALCULAR PASSE E SALÁRIO MAIS REALISTA ==========
 function calculatePlayerValue(skill, age) {
-  // PASSE MAIS BARATO - Permitir contratar 22 jogadores com ~R$ 3.000
-  let basePasse = skill * 5; // Reduzido de 10 para 5 (R$ 500 por ponto de habilidade)
-  
-  // Ajuste por idade: jovens valem mais, veteranos menos
+  let basePasse = skill * 5;
   let ageMultiplier = 1;
   if (age <= 20) ageMultiplier = 1.8;
   else if (age <= 25) ageMultiplier = 1.5;
@@ -319,18 +516,16 @@ function calculatePlayerValue(skill, age) {
   else ageMultiplier = 0.5;
   
   const passe = Math.round(basePasse * ageMultiplier / 10) * 10;
-  
-  // Salário por jogo mais realista
-  const baseSalario = 30 + (skill * 0.8); // Reduzido também
+  const baseSalario = 30 + (skill * 0.8);
   const salario = Math.round((baseSalario + Math.random() * 20) / 5) * 5;
   
   return {
-    passe: Math.max(50, Math.min(800, passe)), // Limites: R$ 50 a R$ 800
-    salarioJogo: Math.max(30, Math.min(120, salario)) // Limites: R$ 30 a R$ 120
+    passe: Math.max(50, Math.min(800, passe)),
+    salarioJogo: Math.max(30, Math.min(120, salario))
   };
 }
 
-// ========== VALIDAÇÃO TELA 1 ==========
+// ========== TELA 1 ==========
 function validateTela1() {
   const isValid = elements.teamName.value.trim() && 
                  elements.userName.value.trim() && 
@@ -347,7 +542,7 @@ elements.btnToTela2.addEventListener('click', () => {
   elements.tela1.style.display = 'none';
   elements.tela2.style.display = 'block';
   marketStep = 1;
-  updateButtonStates(); // Atualizar visibilidade do botão voltar
+  updateButtonStates();
   elements.marketMessage.textContent = steps[marketStep].msg;
   renderMarket(steps[marketStep].filter);
 });
@@ -402,7 +597,7 @@ function generatePlayers() {
         skill: skill,
         passe: valores.passe,
         salarioJogo: valores.salarioJogo,
-        contrato: '6 meses', // Default
+        contrato: '6 meses',
         health: health,
         profissao: { nome: ['Pedreiro', 'Eletricista', 'Professor', 'Vendedor', 'Gerente', 'Entregador'][Math.floor(Math.random() * 6)], tipo: 'manual' },
         isPai: isPai,
@@ -413,7 +608,7 @@ function generatePlayers() {
   });
 }
 
-// ========== MERCADO COM CONTRATO ==========
+// ========== MERCADO ==========
 function renderMarket(filter) {
   elements.playersTbody.innerHTML = '';
   const list = filter ? players.filter(p => p.pos === filter) : players;
@@ -430,48 +625,30 @@ function renderMarket(filter) {
     const hiredAlready = hired.some(h => h.id === p.id);
     
     tr.innerHTML = `
-      <td>
-        <span class="player-name-highlight">${p.name}</span>
-        <div class="muted">${p.pos}</div>
-      </td>
-      <td>${p.pos}</td>
-      <td>${p.foot}</td>
-      <td>${p.age}</td>
-      <td>${formatReal(p.passe)}</td>
-      <td>${formatReal(p.salarioJogo)}</td>
-      <td>
-        <select class="contrato-select" data-id="${p.id}" ${hiredAlready ? 'disabled' : ''}>
-          <option value="3 meses">3 meses</option>
-          <option value="6 meses" selected>6 meses</option>
-          <option value="1 ano">1 ano</option>
-        </select>
-      </td>
-      <td>${renderSkillBar(p.skill)}</td>
-      <td>${renderHealthBar(p.health)}</td>
+      <td><span class="player-name-highlight">${p.name}</span><div class="muted">${p.pos}</div></td>
+      <td>${p.pos}</td><td>${p.foot}</td><td>${p.age}</td>
+      <td>${formatReal(p.passe)}</td><td>${formatReal(p.salarioJogo)}</td>
+      <td><select class="contrato-select" data-id="${p.id}" ${hiredAlready ? 'disabled' : ''}>
+        <option value="3 meses">3 meses</option><option value="6 meses" selected>6 meses</option><option value="1 ano">1 ano</option>
+      </select></td>
+      <td>${renderSkillBar(p.skill)} ${p.skill}%</td>
+      <td>${renderHealthBar(p.health)} ${p.health}%</td>
       <td>${p.profissao.nome}${p.isPai ? ' <span class="badge-pai">Pai</span>' : ''}</td>
       <td><input type="checkbox" data-id="${p.id}" ${hiredAlready ? 'checked' : ''}></td>
     `;
     
-    // Evento de hover para apresentação
-    const nomeSpan = tr.querySelector('.player-name-highlight');
-    nomeSpan.addEventListener('mouseenter', () => {
+    tr.querySelector('.player-name-highlight').addEventListener('mouseenter', () => {
       showPlayerSpeech(p.name, p.apresentacao);
     });
     
-    // Evento para seleção de contrato
-    const selectContrato = tr.querySelector('.contrato-select');
-    selectContrato.addEventListener('change', (e) => {
-      const playerId = e.target.dataset.id;
-      const player = players.find(p => p.id === playerId);
-      if (player) {
-        player.contrato = e.target.value;
-      }
+    tr.querySelector('.contrato-select').addEventListener('change', (e) => {
+      const player = players.find(pl => pl.id === e.target.dataset.id);
+      if (player) player.contrato = e.target.value;
     });
     
     elements.playersTbody.appendChild(tr);
   });
   
-  // Event listeners para checkboxes
   elements.playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb => {
     cb.addEventListener('change', onToggleHire);
   });
@@ -496,7 +673,7 @@ function onToggleHire(e) {
       return;
     }
     CASH -= ply.passe;
-    hired.push({...ply}); // Copia o jogador com o contrato atual
+    hired.push({...ply});
   } else {
     CASH += ply.passe;
     hired = hired.filter(h => h.id !== pid);
@@ -522,13 +699,9 @@ function countHiredByPos(pos) {
 }
 
 function updateButtonStates() {
-  // Botão Voltar (mostrar apenas a partir do passo 2)
   elements.btnVoltarStep.style.display = marketStep > 1 ? 'inline-block' : 'none';
-  
-  // Botão Escalar
   elements.btnEscalar.disabled = hired.length !== MAX_PLAYERS;
   
-  // Botão Próximo
   if (marketStep >= 1 && marketStep < steps.length) {
     const current = steps[marketStep];
     const have = countHiredByPos(current.filter);
@@ -572,90 +745,65 @@ elements.btnEscalar.addEventListener('click', () => {
     return;
   }
   
-  // Calcular custo total dos 22 jogadores
   const custoTotal = hired.reduce((total, jogador) => total + jogador.passe, 0);
   console.log('Custo total da equipe:', formatReal(custoTotal));
   
   elements.tela2.style.display = 'none';
   elements.tela3.style.display = 'block';
-  populateBench();
+  setupEscalacao();
 });
 
-// ========== RESTANTE DO CÓDIGO (ESCALAÇÃO E PARTIDA) ==========
+// ========== ESCALAÇÃO ==========
+function setupEscalacao() {
+  // Configurar eventos de clique para as posições
+  document.querySelectorAll('.position-slot').forEach(slot => {
+    slot.addEventListener('click', () => {
+      openPlayerModal(slot);
+    });
+  });
+  
+  populateBench();
+}
+
+<!-- Continuação do código a partir da função populateBench() -->
 function populateBench() {
   elements.bench.innerHTML = '';
-  hired.forEach(p => {
+  
+  // Jogadores não escalados
+  const jogadoresNoBanco = hired.filter(jogador => 
+    !document.querySelector(`[data-assigned="${jogador.id}"]`)
+  );
+  
+  if (jogadoresNoBanco.length === 0) {
+    elements.bench.innerHTML = '<p class="muted">Todos os jogadores estão escalados</p>';
+    return;
+  }
+  
+  jogadoresNoBanco.forEach(jogador => {
     const div = document.createElement('div');
     div.className = 'player-card';
-    div.id = 'bench-' + p.id;
-    div.draggable = true;
-    div.dataset.pid = p.id;
     div.innerHTML = `
       <div>
-        <strong>${p.name}</strong>
-        <div class="muted">${p.pos} • ${p.foot} • ${p.age} anos</div>
-        <div>${renderSkillBar(p.skill)} ${renderHealthBar(p.health)}</div>
-        <div class="muted">Contrato: ${p.contrato}</div>
+        <strong>${jogador.name}</strong>
+        <div class="muted">${jogador.pos} • ${jogador.foot} • ${jogador.age} anos</div>
+        <div>${renderSkillBar(jogador.skill)} ${renderHealthBar(jogador.health)}</div>
+        <div class="muted">Contrato: ${jogador.contrato}</div>
       </div>
-      <div class="muted">${formatReal(p.salarioJogo)}/jogo</div>
+      <div class="muted">${formatReal(jogador.salarioJogo)}/jogo</div>
     `;
-    
-    div.addEventListener('dragstart', dragStart);
     elements.bench.appendChild(div);
   });
-  
-  document.querySelectorAll('.position-slot').forEach(slot => {
-    slot.addEventListener('dragover', allowDrop);
-    slot.addEventListener('drop', dropHandler);
-  });
 }
 
-function allowDrop(ev) {
-  ev.preventDefault();
-}
-
-function dragStart(ev) {
-  ev.dataTransfer.setData('text/plain', ev.target.dataset.pid);
-}
-
-function dropHandler(ev) {
-  ev.preventDefault();
-  const pid = ev.dataTransfer.getData('text/plain');
-  const slot = ev.currentTarget;
-  const p = hired.find(h => h.id === pid);
-  
-  if (!p) return;
-  if (document.querySelector(`[data-assigned="${pid}"]`)) {
-    showNotif(`${p.name} já está escalado!`);
-    return;
-  }
-  
-  const slotPos = slot.dataset.pos;
-  const validPositions = {
-    'GK': ['Goleiro'], 'LB': ['Lateral', 'Zagueiro'], 'RB': ['Lateral', 'Zagueiro'],
-    'CB1': ['Zagueiro', 'Lateral'], 'CB2': ['Zagueiro', 'Lateral'], 'DM': ['Volante'],
-    'CM1': ['Meia'], 'CM2': ['Meia'], 'LW': ['Meia'], 'RW': ['Meia'], 'ST': ['Atacante']
-  };
-  
-  if (!validPositions[slotPos]?.includes(p.pos)) {
-    showNotif(`${p.name} não joga como ${slotPos}!`);
-    return;
-  }
-  
-  slot.dataset.assigned = pid;
-  slot.textContent = p.name;
-  
-  const card = document.getElementById('bench-' + pid);
-  if (card) {
-    card.classList.add('locked');
-    card.draggable = false;
-  }
-  
-  const assignedCount = document.querySelectorAll('.position-slot[data-assigned]').length;
-  elements.btnPlayMatch.disabled = assignedCount < 11;
-}
-
+// ========== PARTIDA ==========
 elements.btnPlayMatch.addEventListener('click', () => {
+  // Verificar se time está completo
+  const assignedCount = document.querySelectorAll('.position-slot.assigned').length;
+  if (assignedCount < 11) {
+    showNotif('Escale todos os 11 jogadores antes de jogar!');
+    return;
+  }
+  
   elements.tela3.style.display = 'none';
   elements.tela4.style.display = 'block';
   elements.userTeamName.textContent = elements.teamName.value || 'Meu Time';
@@ -665,6 +813,36 @@ elements.btnPlayMatch.addEventListener('click', () => {
 function simulateMatch() {
   elements.placar.textContent = '0 x 0';
   elements.comentarios.innerHTML = '<p><em>Apito inicial da partida!</em></p>';
+  
+  // Mostrar jogadores escalados
+  const jogadoresUsuario = document.getElementById('jogadoresUsuario');
+  jogadoresUsuario.innerHTML = '';
+  
+  document.querySelectorAll('.position-slot.assigned').forEach(slot => {
+    const jogadorId = slot.dataset.assigned;
+    const jogador = hired.find(j => j.id === jogadorId);
+    if (jogador) {
+      const li = document.createElement('li');
+      li.innerHTML = `<strong>${jogador.name}</strong> - ${slot.dataset.pos}`;
+      jogadoresUsuario.appendChild(li);
+    }
+  });
+  
+  // Time adversário fixo
+  const jogadoresVila = document.getElementById('jogadoresVila');
+  jogadoresVila.innerHTML = '';
+  const vilaFreitas = [
+    "Tadeu - Goleiro", "Joãozinho - Lateral Esquerdo", "Bira - Zagueiro", 
+    "Marcão - Zagueiro", "Nego - Lateral Direito", "Léo - Volante", 
+    "Careca - Volante", "Tico - Meia Atacante", "Juninho - Meia Atacante", 
+    "Beto - Atacante", "Formiga - Atacante"
+  ];
+  
+  vilaFreitas.forEach(jogador => {
+    const li = document.createElement('li');
+    li.textContent = jogador;
+    jogadoresVila.appendChild(li);
+  });
   
   let golsCasa = 0;
   let golsVisitante = 0;
@@ -684,18 +862,26 @@ function simulateMatch() {
         jogador.health = Math.max(0, jogador.health - desgaste);
       });
       
+      showNotif('Saúde dos jogadores atualizada após a partida!');
       return;
     }
     
     const lances = [
-      "Jogada de perigo! Quase gol!", "Falta cometida no meio-campo",
-      "Escanteio para o time da casa", "Contra-ataque perigoso!",
-      "Chute de longa distância!", "Defesa difícil do goleiro!"
+      "Jogada de perigo! Quase gol!", 
+      "Falta cometida no meio-campo",
+      "Escanteio para o time da casa", 
+      "Contra-ataque perigoso!",
+      "Chute de longa distância!", 
+      "Defesa difícil do goleiro!",
+      "Cartão amarelo mostrado pelo árbitro",
+      "Jogador recebe assistência médica",
+      "Substituição sendo preparada"
     ];
     
     let lance = lances[Math.floor(Math.random() * lances.length)];
     
-    if (Math.random() < 0.1) {
+    // Chance de gol (aumentada para teste)
+    if (Math.random() < 0.15) {
       if (Math.random() < 0.5) {
         golsCasa++;
         lance = "⚽ GOOOOL DO " + (elements.teamName.value || "TIME DA CASA") + "!";
@@ -709,7 +895,7 @@ function simulateMatch() {
     elements.comentarios.innerHTML += `<p>${minuto}min - ${lance}</p>`;
     elements.comentarios.scrollTop = elements.comentarios.scrollHeight;
     minuto++;
-  }, 500);
+  }, 800); // Velocidade reduzida para melhor visualização
 }
 
 elements.btnContinuar.addEventListener('click', () => {
@@ -735,8 +921,8 @@ function init() {
   console.log('Jogador mais caro:', formatReal(Math.max(...players.map(p => p.passe))));
 }
 
+// Iniciar o jogo
 init();
 </script>
 </body>
 </html>
-
