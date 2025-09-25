@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>O Rei da Várzea — Partida</title>
+<style>
+  :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+  body{margin:0;background:#f5f7fb;color:#111}
+  header{background:#0b6bd6;color:#fff;padding:14px 18px}
+  .container{max-width:1100px;margin:18px auto;padding:10px}
+  .card{background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);padding:16px;margin-bottom:16px;}
+  button{background:#0b6bd6;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
+  button[disabled]{opacity:0.45;cursor:default}
+  .muted{color:#666;font-size:13px}
+  .notif{position:fixed;top:18px;right:18px;background:#ffefc2;color:#333;padding:10px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);border:1px solid #e6b800}
+  a { text-decoration: none; }
+  ul { list-style-type: none; padding-left: 0; }
+  li { padding: 4px; border-bottom: 1px solid #f0f0f0; }
+</style>
+</head>
+<body>
+<header>
+  <div class="container"><h1 id="headerTitle">O Rei da Várzea</h1></div>
+</header>
+
+<div class="container">
+  <div id="tela4" class="card">
+    <h2>Partida em andamento</h2>
+    <div style="display:flex;gap:16px; align-items: flex-start;">
+      <div style="flex:1; text-align: center;">
+        <h3 id="userTeamName">Meu Time</h3>
+        <ul id="jogadoresUsuario"></ul>
+      </div>
+      <div style="flex:2;text-align:center">
+        <h2 id="placar" style="font-size: 2.5em; margin: 20px 0;">0 x 0</h2>
+        <div id="comentarios" style="text-align:left;height:300px;overflow-y:auto;border:1px solid #ddd;border-radius:6px;padding:10px; margin-bottom: 10px;"></div>
+        <a id="linkVoltar" href="escalacao.html">
+            <button id="btnContinuar" style="display:none;">Continuar</button>
+        </a>
+      </div>
+      <div style="flex:1; text-align: center;">
+        <h3>Vila Freitas</h3>
+        <ul id="jogadoresVila"></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== ESTADO DO JOGO (CARREGADO) ==========
+let hired = [];
+let userData = {};
+let lineup = {};
+
+// ========== ELEMENTOS DOM ==========
+const elements = {
+  headerTitle: document.getElementById('headerTitle'),
+  userTeamName: document.getElementById('userTeamName'),
+  jogadoresUsuario: document.getElementById('jogadoresUsuario'),
+  jogadoresVila: document.getElementById('jogadoresVila'),
+  placar: document.getElementById('placar'),
+  comentarios: document.getElementById('comentarios'),
+  btnContinuar: document.getElementById('btnContinuar'),
+  linkVoltar: document.getElementById('linkVoltar')
+};
+
+// ========== FUNÇÕES AUXILIARES ==========
+function showNotif(text, time = 3000) {
+  const box = document.createElement('div');
+  box.className = 'notif';
+  box.textContent = text;
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), time);
+}
+
+// ========== LÓGICA DA PARTIDA (DO SEU CÓDIGO ORIGINAL) ==========
+function simulateMatch() {
+  elements.placar.textContent = '0 x 0';
+  elements.comentarios.innerHTML = '<p><em>Apito inicial da partida! Bola rolando...</em></p>';
+  
+  // Time adversário fixo
+  const vilaFreitas = [ "Tadeu (Goleiro)", "Joãozinho (Lateral)", "Bira (Zagueiro)", "Marcão (Zagueiro)", "Nego (Lateral)", "Léo (Volante)", "Careca (Volante)", "Tico (Meia)", "Juninho (Meia)", "Beto (Atacante)", "Formiga (Atacante)" ];
+  vilaFreitas.forEach(jogador => {
+    const li = document.createElement('li');
+    li.textContent = jogador;
+    elements.jogadoresVila.appendChild(li);
+  });
+  
+  let golsCasa = 0;
+  let golsVisitante = 0;
+  let minuto = 1;
+  
+  const interval = setInterval(() => {
+    if (minuto > 90) {
+      clearInterval(interval);
+      elements.comentarios.innerHTML += '<p style="font-weight: bold; color: green;">Fim de jogo!</p>';
+      elements.btnContinuar.style.display = 'inline-block';
+      
+      // Aplicar desgaste de saúde
+      hired.forEach(jogador => {
+        // Verifica se o jogador estava na escalação final para aplicar o desgaste
+        const isTitular = Object.values(lineup).includes(jogador.id);
+        if(isTitular) {
+            let desgaste = 8 + Math.floor(Math.random() * 5); // Desgaste entre 8 e 12
+            if (jogador.isPai) desgaste += 3; // Pai de família cansa mais
+            jogador.health = Math.max(0, jogador.health - desgaste);
+        }
+      });
+      
+      // Salva o elenco com a saúde atualizada
+      localStorage.setItem('elencoDoTime', JSON.stringify(hired));
+      
+      showNotif('Saúde dos jogadores titulares foi atualizada!');
+      return;
+    }
+    
+    const lances = [ "Jogada de perigo! Quase gol!", "Falta cometida no meio-campo", "Escanteio para o time da casa", "Contra-ataque perigoso!", "Chute de longa distância!", "Defesa difícil do goleiro!", "Cartão amarelo mostrado pelo árbitro", "Torcida vaia o juiz!", "Bandeirinha marca impedimento duvidoso." ];
+    
+    let lance = lances[Math.floor(Math.random() * lances.length)];
+    
+    // Chance de gol
+    if (Math.random() < 0.12) {
+      if (Math.random() < 0.55) { // Aumenta a chance do time do usuário
+        golsCasa++;
+        const autorDoGol = hired.find(j => j.pos === 'Atacante' || j.pos === 'Meia');
+        lance = `⚽ GOOOOL DO ${userData.teamName.toUpperCase()}! Golaço de ${autorDoGol ? autorDoGol.name : 'um craque'}!`;
+      } else {
+        golsVisitante++;
+        lance = `⚽ GOOOOL DA VILA FREITAS! Falha da zaga!`;
+      }
+      elements.placar.textContent = `${golsCasa} x ${golsVisitante}`;
+    }
+    
+    elements.comentarios.innerHTML += `<p><strong>${minuto}'</strong> - ${lance}</p>`;
+    elements.comentarios.scrollTop = elements.comentarios.scrollHeight; // Rola pra baixo
+    minuto += Math.floor(Math.random() * 4) + 1; // Passagem de tempo mais dinâmica
+  }, 600); 
+}
+
+
+// ========== INICIALIZAÇÃO DA PÁGINA ==========
+function init() {
+  // 1. Carrega todos os dados necessários do localStorage
+  hired = JSON.parse(localStorage.getItem('elencoDoTime')) || [];
+  userData = JSON.parse(localStorage.getItem('userData')) || {};
+  lineup = JSON.parse(localStorage.getItem('escalacaoFinal')) || {};
+
+  // 2. Validação: se não tiver escalação, volta pra tela anterior
+  if (Object.keys(lineup).length < 11) {
+      alert("Nenhuma escalação encontrada! Escale seu time primeiro.");
+      window.location.href = 'escalacao.html';
+      return;
+  }
+  
+  // 3. Atualiza a interface com os nomes
+  elements.headerTitle.textContent = `${userData.teamName || 'Seu Time'} em Campo`;
+  elements.userTeamName.textContent = userData.teamName || 'Meu Time';
+
+  // Popula a lista de jogadores do usuário baseado na escalação salva
+  const posicoesOrdenadas = ['slot-GK', 'slot-LB', 'slot-CB1', 'slot-CB2', 'slot-RB', 'slot-DM1', 'slot-CM1', 'slot-CM2', 'slot-DM2', 'slot-ST1', 'slot-ST2'];
+  
+  for (const slotId of Object.keys(lineup)) {
+      const jogadorId = lineup[slotId];
+      const jogador = hired.find(j => j.id === jogadorId);
+      if (jogador) {
+          const li = document.createElement('li');
+          li.textContent = `${jogador.name} (${jogador.pos})`;
+          elements.jogadoresUsuario.appendChild(li);
+      }
+  }
+
+  // 4. Inicia a simulação
+  simulateMatch();
+}
+
+// Roda o jogo!
+init();
+</script>
+</body>
+</html>
