@@ -1,590 +1,99 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>O Rei da Várzea — Escalação</title>
-    <style>
-        :root {
-            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-            --primary-color: #0b6bd6;
-            --success-color: #4CAF50;
-            --warning-color: #ff9800;
-            --danger-color: #f44336;
-        }
-        
-        body {
-            margin: 0;
-            background: #f5f7fb;
-            color: #111;
-        }
-        
-        header {
-            background: var(--primary-color);
-            color: #fff;
-            padding: 14px 18px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .container {
-            max-width: 1100px;
-            margin: 18px auto;
-            padding: 10px;
-        }
-        
-        .card {
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-        
-        .controls {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-        
-        button {
-            background: var(--primary-color);
-            color: #fff;
-            border: none;
-            padding: 10px 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-        
-        button:hover {
-            background: #095bb5;
-            transform: translateY(-2px);
-        }
-        
-        button[disabled] {
-            opacity: 0.45;
-            cursor: default;
-            transform: none;
-        }
-        
-        .muted {
-            color: #666;
-            font-size: 13px;
-        }
-        
-        /* Campo de futebol maior */
-        .pitch {
-            width: 100%;
-            height: 650px;
-            background: linear-gradient(#73c26b, #5eb95e);
-            border-radius: 12px;
-            padding: 40px;
-            box-sizing: border-box;
-            position: relative;
-            background-image: 
-                linear-gradient(transparent 24%, rgba(255,255,255,0.3) 24%, rgba(255,255,255,0.3) 26%, transparent 26%),
-                linear-gradient(transparent 49%, rgba(255,255,255,0.3) 49%, rgba(255,255,255,0.3) 51%, transparent 51%),
-                linear-gradient(transparent 74%, rgba(255,255,255,0.3) 74%, rgba(255,255,255,0.3) 76%, transparent 76%);
-            background-size: 100% 25%;
-            border: 3px solid #5a8c5a;
-        }
-        
-        /* Linhas de formação com posicionamento absoluto */
-        .formation-line {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 25px;
-            position: absolute;
-            left: 0;
-            right: 0;
-        }
-        
-        /* Posicionamento vertical das linhas */
-        .goalkeeper-line {
-            top: 520px;
-        }
-        
-        .defense-line {
-            top: 390px;
-        }
-        
-        .midfield-line {
-            top: 260px;
-        }
-        
-        .attack-line {
-            top: 130px;
-        }
-        
-        /* Slots de posição */
-        .position-slot {
-            width: 150px;
-            height: 60px;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.95);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border: 2px dashed #ccc;
-            transition: all 0.3s;
-            font-size: 13px;
-            text-align: center;
-            flex-direction: column;
-            padding: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .position-slot:hover {
-            background: rgba(255,255,255,0.8);
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        
-        .position-slot.assigned {
-            background: #e8f5e8;
-            border: 2px solid var(--success-color);
-            border-style: solid;
-        }
-        
-        /* Banco de reservas */
-        .bench {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 10px;
-            max-height: 300px;
-            overflow-y: auto;
-            padding: 10px;
-            border: 1px dashed #ccc;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-        
-        .player-card {
-            padding: 10px;
-            border-radius: 6px;
-            background: #fff;
-            border: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .player-card.locked {
-            background: #ddd;
-            cursor: not-allowed;
-        }
-        
-        /* Barras de status */
-        .health-bar, .skill-bar {
-            width: 60px;
-            height: 8px;
-            background: #eee;
-            border-radius: 4px;
-            overflow: hidden;
-            display: inline-block;
-            margin-left: 8px;
-            vertical-align: middle;
-        }
-        
-        .health-fill, .skill-fill {
-            height: 100%;
-            transition: width 0.3s;
-        }
-        
-        .health-fill {
-            background: var(--success-color);
-        }
-        
-        .skill-fill {
-            background: #9c27b0;
-        }
-        
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        
-        .modal-content {
-            background-color: #fff;
-            margin: 5% auto;
-            padding: 20px;
-            border-radius: 10px;
-            width: 80%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        .close:hover {
-            color: #000;
-        }
-        
-        .player-list-modal {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 15px;
-        }
-        
-        .modal-player-item {
-            padding: 12px;
-            border: 1px solid #eee;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .modal-player-item:hover {
-            background-color: #f5f7fb;
-            border-color: var(--primary-color);
-        }
-        
-        .badge-pai {
-            background: #fff59d;
-            color: #000;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 10px;
-            margin-left: 4px;
-        }
-        
-        .formation-title {
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 18px;
-            color: #333;
-            font-weight: bold;
-        }
-    </style>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>O Rei da Várzea — Cadastro</title>
+<style>
+  :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+  body{margin:0;background:#f5f7fb;color:#111}
+  header{background:#0b6bd6;color:#fff;padding:14px 18px}
+  .container{max-width:1100px;margin:18px auto;padding:10px}
+  .card{background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);padding:16px;margin-bottom:16px;}
+  label{display:block;margin-top:8px}
+  input[type=text]{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing: border-box;}
+  button{background:#0b6bd6;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer; width: 100%; font-size: 16px;}
+  button[disabled]{opacity:0.45;cursor:default}
+  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .muted{color:#666;font-size:13px}
+  a { text-decoration: none; display: block; width: 100%;}
+</style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1>O Rei da Várzea — Escalação</h1>
-        </div>
-    </header>
+<header>
+  <div class="container"><h1>O Rei da Várzea — Protótipo</h1></div>
+</header>
 
-    <div class="container">
-        <!-- TELA 3 - ESCALAÇÃO -->
-        <div id="tela3" class="card">
-            <h2>Tela 3 — Escalação (Formação 4-4-2)</h2>
-            
-            <!-- Campo de Futebol -->
-            <div class="card">
-                <h3>Escalação Principal</h3>
-                <div class="formation-title">Formação 4-4-2 | Clique em cada posição para escalar</div>
-                <div class="pitch" id="pitch">
-                    <!-- Ataque (2) -->
-                    <div class="formation-line attack-line">
-                        <div class="position-slot" data-pos="Atacante" id="slot-ST1">
-                            <div>⚽ Atacante</div>
-                            <div class="muted">Clique para escalar</div>
-                        </div>
-                        <div class="position-slot" data-pos="Atacante" id="slot-ST2">
-                            <div>⚽ Atacante</div>
-                            <div class="muted">Clique para escalar</div>
-                        </div>
-                    </div>
-
-                    <!-- Meio-Campo (4) -->
-                    <div class="formation-line midfield-line">
-                        <div class="position-slot" data-pos="Meia Atacante" id="slot-CM1">
-                            <div>🎯 Meia Esquerdo</div>
-                            <div class="muted">Clique para escalar</div>
-                        </div>
-                        <div class="position-slot" data-pos="Volante" id="slot-DM1">
-                            <div>⚔️ Volante</div>
-                            <div class="muted">Clique para escalar</div>
-                        </div>
-                        <div class="position-slot" data-pos="Volante" id="slot-DM2">
-                            <div>⚔️ Volante</div>
-                            <div class="muted">Clique para escalar</div>
-                        </div>
-                        <div class="position-slot" data-pos="Meia Atacante" id="slot-CM2">
-                            <div>🎯 Meia Direito</div>
-                            <div class="muted">Clique para escalar</div>
-                        </div>
-                    </div>
-
-                    <!-- Defesa (4) -->
-                    <div class="formation-line defense-line">
-                        <div class="position-slot" data-pos="Lateral Esquerdo" id="slot-LB">
-                            <div>⬅️ Lateral Esquerdo</div>
-                            <div class="muted">Clique para escalar</div>
-                        </div>
-                        <div class="position-slot" data-pos="Zagueiro" id="slot-CB1">
-                            <div>🛡️ Zagueiro</div>
-                            <div class="muted">Clique para escalar</div>
-                        </div>
-                        <div class="position-slot" data-pos="Zagueiro" id="slot-CB2">
-                            <div>🛡️ Zagueiro</div>
-                            <div class="muted">Clique para escalar</div>
-                        </div>
-                        <div class="position-slot" data-pos="Lateral Direito" id="slot-RB">
-                            <div>➡️ Lateral Direito</div>
-                            <div class="muted">Clique para escalar</div>
-                        </div>
-                    </div>
-
-                    <!-- Goleiro -->
-                    <div class="formation-line goalkeeper-line">
-                        <div class="position-slot" data-pos="Goleiro" id="slot-GK">
-                            <div>🧤 Goleiro</div>
-                            <div class="muted">Clique para escalar</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Banco de Reservas (EM BAIXO) -->
-            <div class="card" style="margin-top: 20px;">
-                <h3>Banco de Reservas</h3>
-                <div class="bench" id="bench">
-                    <!-- Jogadores aparecerão aqui -->
-                </div>
-                <div class="muted" style="margin-top:8px">Jogadores disponíveis para escalação</div>
-            </div>
-
-            <div class="controls" style="margin-top:20px">
-                <button id="btnPlayMatch" disabled>▶️ Jogar Partida</button>
-                <div class="muted" id="escalationStatus">Escale 11 jogadores para habilitar a partida</div>
-            </div>
-        </div>
+<div class="container">
+  <div id="tela1" class="card">
+    <h2>Tela 1 — Crie seu Time</h2>
+    <label>Nome do seu time
+      <input id="teamName" type="text" placeholder="Ex: Os Meninos da Rua" />
+    </label>
+    <label>Seu nome (Manager)
+      <input id="userName" type="text" placeholder="Seu nome" />
+    </label>
+    <label>Cidade
+      <input id="cityName" type="text" placeholder="Cidade" />
+    </label>
+    <div class="controls">
+      <a id="linkTela2" href="mercado.html">
+        <button id="btnToTela2" disabled>Contratar jogadores</button>
+      </a>
+      <div class="muted">Preencha todos os campos para habilitar.</div>
     </div>
+  </div>
+</div>
 
-    <!-- Modal para seleção de jogadores -->
-    <div id="playerModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3 id="modalTitle">Selecionar Jogador</h3>
-            <div id="modalSubtitle" class="muted"></div>
-            <div id="playerList" class="player-list-modal"></div>
-        </div>
-    </div>
+<script>
+  const teamNameInput = document.getElementById('teamName');
+  const userNameInput = document.getElementById('userName');
+  const cityNameInput = document.getElementById('cityName');
+  const btnToTela2 = document.getElementById('btnToTela2');
+  const linkTela2 = document.getElementById('linkTela2');
 
-    <script>
-        // Dados de exemplo - jogadores contratados
-        const hired = [
-            { id: 'p1', name: 'Marrentinho Carioca', pos: 'Goleiro', age: 28, skill: 78, health: 95, foot: 'Direito', salarioJogo: 85, contrato: '6 meses', profissao: { nome: 'Pedreiro' }, isPai: true },
-            { id: 'p2', name: 'Juscelino Paulista', pos: 'Lateral', age: 24, skill: 82, health: 88, foot: 'Direito', salarioJogo: 92, contrato: '1 ano', profissao: { nome: 'Eletricista' }, isPai: false },
-            { id: 'p3', name: 'Ronaldinho Baiano', pos: 'Zagueiro', age: 32, skill: 75, health: 82, foot: 'Direito', salarioJogo: 78, contrato: '3 meses', profissao: { nome: 'Professor' }, isPai: true },
-            { id: 'p4', name: 'Berg Gaucho', pos: 'Zagueiro', age: 26, skill: 79, health: 90, foot: 'Esquerdo', salarioJogo: 85, contrato: '6 meses', profissao: { nome: 'Vendedor' }, isPai: false },
-            { id: 'p5', name: 'Tico Mineiro', pos: 'Lateral', age: 29, skill: 81, health: 87, foot: 'Direito', salarioJogo: 89, contrato: '1 ano', profissao: { nome: 'Gerente' }, isPai: true },
-            { id: 'p6', name: 'Zeca Nordestino', pos: 'Volante', age: 25, skill: 84, health: 92, foot: 'Direito', salarioJogo: 95, contrato: '1 ano', profissao: { nome: 'Entregador' }, isPai: false },
-            { id: 'p7', name: 'Xandão Pernambucano', pos: 'Volante', age: 31, skill: 77, health: 85, foot: 'Direito', salarioJogo: 82, contrato: '6 meses', profissao: { nome: 'Pedreiro' }, isPai: true },
-            { id: 'p8', name: 'Pedrinho Capixaba', pos: 'Meia', age: 22, skill: 88, health: 96, foot: 'Ambidestro', salarioJogo: 105, contrato: '1 ano', profissao: { nome: 'Estudante' }, isPai: false },
-            { id: 'p9', name: 'Claudinho Carioca', pos: 'Meia', age: 27, skill: 85, health: 89, foot: 'Esquerdo', salarioJogo: 98, contrato: '6 meses', profissao: { nome: 'Professor' }, isPai: false },
-            { id: 'p10', name: 'Sandro Paulista', pos: 'Atacante', age: 23, skill: 90, health: 94, foot: 'Direito', salarioJogo: 112, contrato: '1 ano', profissao: { nome: 'Vendedor' }, isPai: false },
-            { id: 'p11', name: 'Marollo Baiano', pos: 'Atacante', age: 30, skill: 83, health: 86, foot: 'Direito', salarioJogo: 96, contrato: '6 meses', profissao: { nome: 'Eletricista' }, isPai: true },
-            { id: 'p12', name: 'Ricardão Gaucho', pos: 'Goleiro', age: 35, skill: 72, health: 78, foot: 'Direito', salarioJogo: 68, contrato: '3 meses', profissao: { nome: 'Gerente' }, isPai: true }
-        ];
+  // Função para validar se todos os campos estão preenchidos
+  function validateForm() {
+    const teamName = teamNameInput.value.trim();
+    const userName = userNameInput.value.trim();
+    const cityName = cityNameInput.value.trim();
 
-        // Elementos DOM
-        const elements = {
-            playerModal: document.getElementById('playerModal'),
-            modalTitle: document.getElementById('modalTitle'),
-            modalSubtitle: document.getElementById('modalSubtitle'),
-            playerList: document.getElementById('playerList'),
-            bench: document.getElementById('bench'),
-            btnPlayMatch: document.getElementById('btnPlayMatch'),
-            escalationStatus: document.getElementById('escalationStatus')
-        };
+    // Habilita ou desabilita o botão baseado na validação
+    if (teamName && userName && cityName) {
+      btnToTela2.disabled = false;
+    } else {
+      btnToTela2.disabled = true;
+    }
+  }
 
-        let currentSlot = null;
+  // Adiciona um "ouvinte" para cada campo de input
+  teamNameInput.addEventListener('input', validateForm);
+  userNameInput.addEventListener('input', validateForm);
+  cityNameInput.addEventListener('input', validateForm);
 
-        // Fechar modal
-        const modalClose = document.querySelector('.close');
-        modalClose.onclick = () => elements.playerModal.style.display = 'none';
-        
-        window.onclick = (event) => {
-            if (event.target === elements.playerModal) {
-                elements.playerModal.style.display = 'none';
-            }
-        };
+  // Função para salvar os dados e ir para a próxima página
+  linkTela2.addEventListener('click', function(event) {
+    // Se o botão estiver desabilitado, impede a navegação
+    if (btnToTela2.disabled) {
+      event.preventDefault();
+      return;
+    }
 
-        // Função para renderizar barras de status
-        function renderStatusBar(value, type) {
-            const color = type === 'health' ? 
-                (value >= 80 ? '#4CAF50' : value >= 50 ? '#ff9800' : '#f44336') :
-                (value >= 80 ? '#9c27b0' : value >= 60 ? '#673ab7' : value >= 40 ? '#3f51b5' : '#2196f3');
-            
-            return `<div class="${type}-bar">
-                <div class="${type}-fill" style="width: ${value}%; background: ${color}"></div>
-            </div>`;
-        }
+    // Salva os dados no localStorage
+    const userData = {
+      teamName: teamNameInput.value.trim(),
+      userName: userNameInput.value.trim(),
+      cityName: cityNameInput.value.trim()
+    };
+    
+    // Converte o objeto para texto e salva
+    localStorage.setItem('userData', JSON.stringify(userData));
+    
+    // Zera o dinheiro e o elenco para um novo jogo
+    localStorage.setItem('dinheiroEmCaixa', 5000);
+    localStorage.removeItem('elencoDoTime'); // Garante que não há elenco antigo
+  });
 
-        // Abrir modal de seleção de jogadores
-        function openPlayerModal(slotElement) {
-            currentSlot = slotElement;
-            const posicao = slotElement.dataset.pos;
-            
-            elements.modalTitle.textContent = `Escalar ${posicao}`;
-            elements.modalSubtitle.textContent = `Selecione um jogador para a posição de ${posicao}`;
-            
-            // Limpar lista anterior
-            elements.playerList.innerHTML = '';
-            
-            // Filtrar jogadores pela posição
-            const posicoesValidas = {
-                'Goleiro': ['Goleiro'],
-                'Lateral Esquerdo': ['Lateral'],
-                'Lateral Direito': ['Lateral'],
-                'Zagueiro': ['Zagueiro'],
-                'Volante': ['Volante'],
-                'Meia Esquerdo': ['Meia'],
-                'Meia Direito': ['Meia'],
-                'Atacante': ['Atacante']
-            };
-            
-            const posicoesAceitas = posicoesValidas[posicao] || [posicao];
-            
-            const jogadoresDisponiveis = hired.filter(jogador => 
-                posicoesAceitas.includes(jogador.pos) && 
-                !document.querySelector(`[data-assigned="${jogador.id}"]`)
-            );
-            
-            if (jogadoresDisponiveis.length === 0) {
-                elements.playerList.innerHTML = '<p class="muted">Nenhum jogador disponível para esta posição</p>';
-            } else {
-                jogadoresDisponiveis.forEach(jogador => {
-                    const item = document.createElement('div');
-                    item.className = 'modal-player-item';
-                    item.innerHTML = `
-                        <div><strong>${jogador.name}</strong> • ${jogador.pos} ${jogador.isPai ? '<span class="badge-pai">Pai</span>' : ''}</div>
-                        <div class="muted">${jogador.age} anos • ${jogador.foot} • ${jogador.profissao.nome}</div>
-                        <div style="margin-top: 5px;">
-                            Habilidade: ${jogador.skill}% ${renderStatusBar(jogador.skill, 'skill')}
-                            Saúde: ${jogador.health}% ${renderStatusBar(jogador.health, 'health')}
-                        </div>
-                        <div class="muted" style="margin-top: 3px;">Salário: R$ ${jogador.salarioJogo}/jogo • Contrato: ${jogador.contrato}</div>
-                    `;
-                    item.addEventListener('click', () => {
-                        assignPlayerToSlot(jogador, slotElement);
-                        elements.playerModal.style.display = 'none';
-                    });
-                    elements.playerList.appendChild(item);
-                });
-            }
-            
-            elements.playerModal.style.display = 'block';
-        }
-
-        // Atribuir jogador à posição
-        function assignPlayerToSlot(jogador, slotElement) {
-            // Remover jogador anterior se existir
-            const previousPlayerId = slotElement.dataset.assigned;
-            if (previousPlayerId) {
-                const previousCard = document.getElementById('bench-' + previousPlayerId);
-                if (previousCard) {
-                    previousCard.classList.remove('locked');
-                }
-            }
-            
-            // Atribuir novo jogador
-            slotElement.dataset.assigned = jogador.id;
-            slotElement.innerHTML = `
-                <div><strong>${jogador.name}</strong></div>
-                <div>${jogador.pos}</div>
-                <div class="muted">Habilidade: ${jogador.skill}%</div>
-            `;
-            slotElement.classList.add('assigned');
-            
-            // Atualizar banco
-            populateBench();
-            
-            // Verificar se time está completo
-            const assignedCount = document.querySelectorAll('.position-slot.assigned').length;
-            elements.btnPlayMatch.disabled = assignedCount < 11;
-            elements.escalationStatus.textContent = assignedCount >= 11 ? 
-                'Time completo! Pronto para a partida!' : 
-                `Escale ${11 - assignedCount} jogadores restantes para habilitar a partida`;
-            
-            // Feedback visual
-            slotElement.style.animation = 'pulse 0.5s';
-            setTimeout(() => slotElement.style.animation = '', 500);
-        }
-
-        // Popular banco de reservas
-        function populateBench() {
-            elements.bench.innerHTML = '';
-            
-            // Jogadores não escalados
-            const jogadoresNoBanco = hired.filter(jogador => 
-                !document.querySelector(`[data-assigned="${jogador.id}"]`)
-            );
-            
-            if (jogadoresNoBanco.length === 0) {
-                elements.bench.innerHTML = '<p class="muted">Todos os jogadores estão escalados</p>';
-                return;
-            }
-            
-            jogadoresNoBanco.forEach(jogador => {
-                const div = document.createElement('div');
-                div.className = 'player-card';
-                div.id = 'bench-' + jogador.id;
-                div.innerHTML = `
-                    <div>
-                        <strong>${jogador.name}</strong>
-                        <div class="muted">${jogador.pos} • ${jogador.foot} • ${jogador.age} anos</div>
-                        <div style="margin-top: 5px;">
-                            ${renderStatusBar(jogador.skill, 'skill')} ${renderStatusBar(jogador.health, 'health')}
-                        </div>
-                        <div class="muted">Contrato: ${jogador.contrato}</div>
-                    </div>
-                    <div class="muted">R$ ${jogador.salarioJogo}/jogo</div>
-                `;
-                elements.bench.appendChild(div);
-            });
-        }
-
-        // Configurar eventos de clique para as posições
-        document.querySelectorAll('.position-slot').forEach(slot => {
-            slot.addEventListener('click', () => {
-                openPlayerModal(slot);
-            });
-        });
-
-        // Botão jogar partida
-        elements.btnPlayMatch.addEventListener('click', () => {
-            alert('Partida iniciada! Em uma versão completa, aqui começaria a simulação do jogo.');
-            // Em uma implementação completa, aqui iria para a tela de partida
-        });
-
-        // Inicializar
-        populateBench();
-
-        // Adicionar animação de pulso
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes pulse {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.05); }
-                100% { transform: scale(1); }
-            }
-        `;
-        document.head.appendChild(style);
-    </script>
+</script>
 </body>
 </html>
