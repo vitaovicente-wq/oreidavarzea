@@ -11,12 +11,23 @@
   .container{max-width:1100px;margin:18px auto;padding:10px}
   .card{background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);padding:16px;margin-bottom:16px;}
   button{background:#0b6bd6;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
+  button:hover{opacity:0.9;}
   button[disabled]{opacity:0.45;cursor:default}
   .muted{color:#666;font-size:13px}
   .notif{position:fixed;top:18px;right:18px;background:#ffefc2;color:#333;padding:10px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);border:1px solid #e6b800}
   a { text-decoration: none; }
   ul { list-style-type: none; padding-left: 0; }
-  li { padding: 4px; border-bottom: 1px solid #f0f0f0; }
+  li { padding: 4px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+  h4 { color: #666; font-size: 0.8em; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 20px;}
+  /* Estilos do Modal de Substituição */
+  .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
+  .modal-content { background-color: #fff; margin: 10% auto; padding: 20px; border-radius: 10px; width: 80%; max-width: 700px; }
+  .sub-container { display: flex; gap: 20px; margin-top: 15px; }
+  .sub-column { flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 10px; height: 300px; overflow-y: auto; }
+  .sub-player-item { padding: 8px; border-radius: 6px; cursor: pointer; margin-bottom: 5px; border: 1px solid #eee; }
+  .sub-player-item:hover { background-color: #f0f8ff; }
+  .sub-player-item.selected { background-color: #ffc107; color: #000; border-color: #e0a800; }
+  .sub-player-item.disabled { background-color: #e9ecef; color: #6c757d; cursor: not-allowed; opacity: 0.6; }
 </style>
 </head>
 <body>
@@ -30,151 +41,287 @@
     <div style="display:flex;gap:16px; align-items: flex-start;">
       <div style="flex:1; text-align: center;">
         <h3 id="userTeamName">Meu Time</h3>
+        <h4>Titulares</h4>
         <ul id="jogadoresUsuario"></ul>
+        <h4>Reservas</h4>
+        <ul id="jogadoresUsuarioBanco"></ul>
       </div>
       <div style="flex:2;text-align:center">
         <h2 id="placar" style="font-size: 2.5em; margin: 20px 0;">0 x 0</h2>
         <div id="comentarios" style="text-align:left;height:300px;overflow-y:auto;border:1px solid #ddd;border-radius:6px;padding:10px; margin-bottom: 10px;"></div>
         <a id="linkVoltar" href="escalacao.html">
-            <button id="btnContinuar" style="display:none;">Continuar</button>
+            <button id="btnContinuar" style="display:none;">Voltar para Escalação</button>
         </a>
       </div>
       <div style="flex:1; text-align: center;">
         <h3>Vila Freitas</h3>
+        <h4>Titulares</h4>
         <ul id="jogadoresVila"></ul>
+        <h4>Reservas</h4>
+        <ul id="jogadoresVilaBanco"></ul>
       </div>
     </div>
   </div>
 </div>
 
+<div id="substitutionModal" class="modal">
+  <div class="modal-content">
+    <h2>Intervalo - Faça suas substituições</h2>
+    <p>Selecione um jogador em campo e um no banco para trocar. <strong id="subsCount">Substituições: 0/5</strong></p>
+    <div class="sub-container">
+      <div class="sub-column">
+        <h3>Em Campo</h3>
+        <div id="subPitchPlayers"></div>
+      </div>
+      <div class="sub-column">
+        <h3>No Banco</h3>
+        <div id="subBenchPlayers"></div>
+      </div>
+    </div>
+    <button id="btnConfirmSubs" style="margin-top: 20px;">Iniciar 2º Tempo</button>
+  </div>
+</div>
+
 <script>
-// ========== ESTADO DO JOGO (CARREGADO) ==========
+// ========== ESTADO DO JOGO ==========
 let hired = [];
 let userData = {};
 let lineup = {};
+let minuto = 1;
+let gameInterval = null;
+let subsMade = 0;
+const MAX_SUBS = 5;
+let selectedPlayerOutId = null;
+
+const vilaFreitasSquad = {
+    titulares: [
+        { nome: "Tadeu", pos: "Goleiro" }, { nome: "Joãozinho", pos: "Lateral" }, { nome: "Bira", pos: "Zagueiro" },
+        { nome: "Marcão", pos: "Zagueiro" }, { nome: "Nego", pos: "Lateral" }, { nome: "Léo", pos: "Volante" },
+        { nome: "Careca", pos: "Volante" }, { nome: "Tico", pos: "Meia" }, { nome: "Juninho", pos: "Meia" },
+        { nome: "Beto", pos: "Atacante" }, { nome: "Formiga", pos: "Atacante" }
+    ],
+    reservas: [
+        { nome: "Gilsão", pos: "Goleiro" }, { nome: "Paulinho", pos: "Lateral" }, { nome: "Tonhão", pos: "Zagueiro" },
+        { nome: "Gerson", pos: "Volante" }, { nome: "Didi", pos: "Meia" }, { nome: "Chico", pos: "Atacante" },
+        { nome: "Zé Bala", pos: "Atacante" }
+    ]
+};
 
 // ========== ELEMENTOS DOM ==========
 const elements = {
   headerTitle: document.getElementById('headerTitle'),
   userTeamName: document.getElementById('userTeamName'),
   jogadoresUsuario: document.getElementById('jogadoresUsuario'),
+  jogadoresUsuarioBanco: document.getElementById('jogadoresUsuarioBanco'),
   jogadoresVila: document.getElementById('jogadoresVila'),
+  jogadoresVilaBanco: document.getElementById('jogadoresVilaBanco'),
   placar: document.getElementById('placar'),
   comentarios: document.getElementById('comentarios'),
   btnContinuar: document.getElementById('btnContinuar'),
-  linkVoltar: document.getElementById('linkVoltar')
+  substitutionModal: document.getElementById('substitutionModal'),
+  subsCount: document.getElementById('subsCount'),
+  subPitchPlayers: document.getElementById('subPitchPlayers'),
+  subBenchPlayers: document.getElementById('subBenchPlayers'),
+  btnConfirmSubs: document.getElementById('btnConfirmSubs'),
 };
 
 // ========== FUNÇÕES AUXILIARES ==========
 function showNotif(text, time = 3000) {
-  const box = document.createElement('div');
-  box.className = 'notif';
-  box.textContent = text;
-  document.body.appendChild(box);
-  setTimeout(() => box.remove(), time);
+  const box = document.createElement('div'); box.className = 'notif'; box.textContent = text;
+  document.body.appendChild(box); setTimeout(() => box.remove(), time);
 }
 
-// ========== LÓGICA DA PARTIDA (DO SEU CÓDIGO ORIGINAL) ==========
-function simulateMatch() {
-  elements.placar.textContent = '0 x 0';
-  elements.comentarios.innerHTML = '<p><em>Apito inicial da partida! Bola rolando...</em></p>';
-  
-  // Time adversário fixo
-  const vilaFreitas = [ "Tadeu (Goleiro)", "Joãozinho (Lateral)", "Bira (Zagueiro)", "Marcão (Zagueiro)", "Nego (Lateral)", "Léo (Volante)", "Careca (Volante)", "Tico (Meia)", "Juninho (Meia)", "Beto (Atacante)", "Formiga (Atacante)" ];
-  vilaFreitas.forEach(jogador => {
-    const li = document.createElement('li');
-    li.textContent = jogador;
-    elements.jogadoresVila.appendChild(li);
-  });
-  
-  let golsCasa = 0;
-  let golsVisitante = 0;
-  let minuto = 1;
-  
-  const interval = setInterval(() => {
-    if (minuto > 90) {
-      clearInterval(interval);
-      elements.comentarios.innerHTML += '<p style="font-weight: bold; color: green;">Fim de jogo!</p>';
-      elements.btnContinuar.style.display = 'inline-block';
-      
-      // Aplicar desgaste de saúde
-      hired.forEach(jogador => {
-        // Verifica se o jogador estava na escalação final para aplicar o desgaste
-        const isTitular = Object.values(lineup).includes(jogador.id);
-        if(isTitular) {
-            let desgaste = 8 + Math.floor(Math.random() * 5); // Desgaste entre 8 e 12
-            if (jogador.isPai) desgaste += 3; // Pai de família cansa mais
+const addComentario = (min, texto) => {
+    elements.comentarios.innerHTML += `<p><strong>${min}'</strong> - ${texto}</p>`;
+    elements.comentarios.scrollTop = elements.comentarios.scrollHeight;
+}
+
+// ========== LÓGICA DA PARTIDA ==========
+function runHalf(startMin, endMin, onComplete) {
+    minuto = startMin;
+    const stoppageTime = endMin + Math.floor(Math.random() * 5) + 1;
+    addComentario(endMin, `O juiz indica ${stoppageTime - endMin} minutos de acréscimo.`);
+
+    gameInterval = setInterval(() => {
+        if (minuto > stoppageTime) {
+            clearInterval(gameInterval);
+            onComplete(); // Chama a proxima fase do jogo (intervalo ou fim)
+            return;
+        }
+
+        const lances = [ "Jogada de perigo!", "Falta no meio-campo", "Escanteio", "Contra-ataque perigoso!", "Chute de longa distância!", "Defesa difícil do goleiro!", "Cartão amarelo", "Torcida vaia o juiz!", "Impedimento duvidoso." ];
+        let lance = lances[Math.floor(Math.random() * lances.length)];
+        
+        if (Math.random() < 0.12) {
+            let golsCasa = parseInt(elements.placar.textContent.split('x')[0]);
+            let golsVisitante = parseInt(elements.placar.textContent.split('x')[1]);
+            if (Math.random() < 0.55) {
+                golsCasa++;
+                lance = `⚽ GOOOOL DO ${userData.teamName.toUpperCase()}!`;
+            } else {
+                golsVisitante++;
+                lance = `⚽ GOOOOL DA VILA FREITAS!`;
+            }
+            elements.placar.textContent = `${golsCasa} x ${golsVisitante}`;
+        }
+        
+        addComentario(minuto, lance);
+        minuto += Math.floor(Math.random() * 4) + 1;
+    }, 800);
+}
+
+function endGame() {
+    addComentario('FIM', 'Apita o árbitro! Fim de jogo!');
+    elements.btnContinuar.style.display = 'inline-block';
+    
+    const playersInMatch = Object.values(lineup);
+    hired.forEach(jogador => {
+        if (playersInMatch.includes(jogador.id)) {
+            let desgaste = 8 + Math.floor(Math.random() * 5);
+            if (jogador.isPai) desgaste += 3;
             jogador.health = Math.max(0, jogador.health - desgaste);
         }
-      });
-      
-      // Salva o elenco com a saúde atualizada
-      localStorage.setItem('elencoDoTime', JSON.stringify(hired));
-      
-      showNotif('Saúde dos jogadores titulares foi atualizada!');
-      return;
+    });
+    
+    localStorage.setItem('elencoDoTime', JSON.stringify(hired));
+    showNotif('Saúde dos jogadores foi atualizada!');
+}
+
+// ========== LÓGICA DE SUBSTITUIÇÃO ==========
+function openSubstitutionModal() {
+    clearInterval(gameInterval);
+    addComentario('45\'', 'Fim do primeiro tempo! Intervalo de jogo.');
+    elements.substitutionModal.style.display = 'block';
+    updateSubstitutionModal();
+}
+
+function updateSubstitutionModal() {
+    elements.subPitchPlayers.innerHTML = '';
+    elements.subBenchPlayers.innerHTML = '';
+    elements.subsCount.textContent = `Substituições: ${subsMade}/${MAX_SUBS}`;
+
+    const titularesIds = Object.values(lineup);
+    const titulares = hired.filter(j => titularesIds.includes(j.id));
+    const reservas = hired.filter(j => !titularesIds.includes(j.id));
+
+    titulares.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'sub-player-item';
+        item.textContent = `${p.name} (${p.pos})`;
+        item.dataset.playerId = p.id;
+        item.onclick = () => handleSubPlayerClick(p.id, true);
+        elements.subPitchPlayers.appendChild(item);
+    });
+
+    reservas.forEach(p => {
+        const item = document.createElement('div');
+        item.className = 'sub-player-item';
+        item.textContent = `${p.name} (${p.pos})`;
+        item.dataset.playerId = p.id;
+        item.onclick = () => handleSubPlayerClick(p.id, false);
+        if (subsMade >= MAX_SUBS) item.classList.add('disabled');
+        elements.subBenchPlayers.appendChild(item);
+    });
+}
+
+function handleSubPlayerClick(playerId, isTitular) {
+    if (isTitular) {
+        if (selectedPlayerOutId === playerId) {
+            selectedPlayerOutId = null; // Desseleciona
+        } else {
+            selectedPlayerOutId = playerId;
+        }
+        // Atualiza a aparencia
+        document.querySelectorAll('#subPitchPlayers .sub-player-item').forEach(el => {
+            el.classList.toggle('selected', el.dataset.playerId === selectedPlayerOutId);
+        });
+    } else { // Clicou num reserva
+        if (!selectedPlayerOutId) {
+            showNotif("Primeiro, selecione um jogador em campo para substituir.");
+            return;
+        }
+        if (subsMade >= MAX_SUBS) {
+            showNotif("Você já usou todas as 5 substituições!");
+            return;
+        }
+        performSubstitution(selectedPlayerOutId, playerId);
     }
-    
-    const lances = [ "Jogada de perigo! Quase gol!", "Falta cometida no meio-campo", "Escanteio para o time da casa", "Contra-ataque perigoso!", "Chute de longa distância!", "Defesa difícil do goleiro!", "Cartão amarelo mostrado pelo árbitro", "Torcida vaia o juiz!", "Bandeirinha marca impedimento duvidoso." ];
-    
-    let lance = lances[Math.floor(Math.random() * lances.length)];
-    
-    // Chance de gol
-    if (Math.random() < 0.12) {
-      if (Math.random() < 0.55) { // Aumenta a chance do time do usuário
-        golsCasa++;
-        const autorDoGol = hired.find(j => j.pos === 'Atacante' || j.pos === 'Meia');
-        lance = `⚽ GOOOOL DO ${userData.teamName.toUpperCase()}! Golaço de ${autorDoGol ? autorDoGol.name : 'um craque'}!`;
-      } else {
-        golsVisitante++;
-        lance = `⚽ GOOOOL DA VILA FREITAS! Falha da zaga!`;
-      }
-      elements.placar.textContent = `${golsCasa} x ${golsVisitante}`;
+}
+
+function performSubstitution(playerOutId, playerInId) {
+    const playerOut = hired.find(j => j.id === playerOutId);
+    const playerIn = hired.find(j => j.id === playerInId);
+
+    if (playerOut.pos !== playerIn.pos) {
+        if (!confirm(`Atenção! ${playerIn.name} (${playerIn.pos}) vai entrar no lugar de ${playerOut.name} (${playerOut.pos}) de forma improvisada. Deseja continuar?`)) {
+            return;
+        }
     }
-    
-    elements.comentarios.innerHTML += `<p><strong>${minuto}'</strong> - ${lance}</p>`;
-    elements.comentarios.scrollTop = elements.comentarios.scrollHeight; // Rola pra baixo
-    minuto += Math.floor(Math.random() * 4) + 1; // Passagem de tempo mais dinâmica
-  }, 600); 
+
+    // Encontra o slot do jogador que vai sair
+    const slotId = Object.keys(lineup).find(key => lineup[key] === playerOutId);
+    // Realiza a troca na escalação
+    lineup[slotId] = playerInId;
+    subsMade++;
+    selectedPlayerOutId = null;
+
+    addComentario(' intervalo', `Substituição: Sai ${playerOut.name} e entra ${playerIn.name}.`);
+    updateSubstitutionModal(); // Redesenha o modal
+    populateUserTeamLists(); // Atualiza as listas principais
 }
 
 
 // ========== INICIALIZAÇÃO DA PÁGINA ==========
+function populateUserTeamLists() {
+    elements.jogadoresUsuario.innerHTML = '';
+    elements.jogadoresUsuarioBanco.innerHTML = '';
+    const titularesIds = Object.values(lineup);
+    
+    hired.forEach(p => {
+        const li = document.createElement('li');
+        li.textContent = `${p.name} (${p.pos})`;
+        if (titularesIds.includes(p.id)) {
+            elements.jogadoresUsuario.appendChild(li);
+        } else {
+            elements.jogadoresUsuarioBanco.appendChild(li);
+        }
+    });
+}
+
 function init() {
-  // 1. Carrega todos os dados necessários do localStorage
   hired = JSON.parse(localStorage.getItem('elencoDoTime')) || [];
   userData = JSON.parse(localStorage.getItem('userData')) || {};
   lineup = JSON.parse(localStorage.getItem('escalacaoFinal')) || {};
 
-  // 2. Validação: se não tiver escalação, volta pra tela anterior
   if (Object.keys(lineup).length < 11) {
       alert("Nenhuma escalação encontrada! Escale seu time primeiro.");
       window.location.href = 'escalacao.html';
       return;
   }
   
-  // 3. Atualiza a interface com os nomes
   elements.headerTitle.textContent = `${userData.teamName || 'Seu Time'} em Campo`;
   elements.userTeamName.textContent = userData.teamName || 'Meu Time';
-
-  // Popula a lista de jogadores do usuário baseado na escalação salva
-  const posicoesOrdenadas = ['slot-GK', 'slot-LB', 'slot-CB1', 'slot-CB2', 'slot-RB', 'slot-DM1', 'slot-CM1', 'slot-CM2', 'slot-DM2', 'slot-ST1', 'slot-ST2'];
   
-  for (const slotId of Object.keys(lineup)) {
-      const jogadorId = lineup[slotId];
-      const jogador = hired.find(j => j.id === jogadorId);
-      if (jogador) {
-          const li = document.createElement('li');
-          li.textContent = `${jogador.name} (${jogador.pos})`;
-          elements.jogadoresUsuario.appendChild(li);
-      }
-  }
+  populateUserTeamLists();
+  
+  vilaFreitasSquad.titulares.forEach(p => {
+      const li = document.createElement('li'); li.textContent = `${p.nome} (${p.pos})`;
+      elements.jogadoresVila.appendChild(li);
+  });
+  vilaFreitasSquad.reservas.forEach(p => {
+      const li = document.createElement('li'); li.textContent = `${p.nome} (${p.pos})`;
+      elements.jogadoresVilaBanco.appendChild(li);
+  });
 
-  // 4. Inicia a simulação
-  simulateMatch();
+  elements.btnConfirmSubs.onclick = () => {
+      elements.substitutionModal.style.display = 'none';
+      runHalf(46, 90, endGame);
+  };
+  
+  // Inicia o jogo
+  runHalf(1, 45, openSubstitutionModal);
 }
 
-// Roda o jogo!
 init();
 </script>
 </body>
