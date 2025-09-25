@@ -13,131 +13,43 @@
   label{display:block;margin-top:8px}
   input[type=text]{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px}
   button{background:#0b6bd6;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
-  button[disabled]{opacity:0.45;cursor:default}
+  button:hover{opacity:0.9}
+  button[disabled]{opacity:0.45;cursor:default;background:#aaa}
   table{width:100%;border-collapse:collapse;font-size:14px}
   th,td{padding:8px;border-bottom:1px solid #eee;text-align:left}
   th{background:#fafafa}
   .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px}
   .muted{color:#666;font-size:13px}
-  .bench{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto;padding:8px;border:1px dashed #ccc;border-radius:8px}
-  .player-card{padding:8px;border-radius:8px;background:#fff;border:1px solid #eee;margin-bottom:6px;cursor:grab;display:flex;justify-content:space-between;align-items:center}
-  .player-card.locked{background:#ddd;cursor:not-allowed}
+  .bench{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow:auto;padding:8px;border:1px dashed #ccc;border-radius:8px}
+  .player-card{padding:8px;border-radius:8px;background:#fff;border:1px solid #eee;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
   .position-slot{width:140px;height:50px;border-radius:8px;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;cursor:pointer;margin:8px;border:2px dashed #ccc;transition:all 0.3s;font-size:12px;text-align:center;flex-direction:column;padding:5px}
   .position-slot:hover{background:rgba(255,255,255,0.8);border-color:#0b6bd6}
   .position-slot.assigned{background:#e8f5e8;border:2px solid #4CAF50}
-  .pitch{width:100%;height:500px;background:linear-gradient(#73c26b,#5eb95e);border-radius:12px;padding:20px;box-sizing:border-box;position:relative}
-  .notif{position:fixed;top:18px;right:18px;background:#ffefc2;color:#333;padding:10px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);border:1px solid #e6b800}
+  .pitch{width:100%;min-height:500px;background:linear-gradient(#73c26b,#5eb95e);border-radius:12px;padding:20px;box-sizing:border-box;position:relative}
+  .notif{position:fixed;top:18px;right:18px;background:#ffefc2;color:#333;padding:10px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);border:1px solid #e6b800;z-index:2000}
   .health-bar{width:60px;height:8px;background:#eee;border-radius:4px;overflow:hidden;display:inline-block;margin-left:8px;vertical-align:middle}
   .health-fill{height:100%;background:#4CAF50;transition:width 0.3s}
   .skill-bar{width:80px;height:8px;background:#eee;border-radius:4px;overflow:hidden;display:inline-block;margin-left:8px;vertical-align:middle}
   .skill-fill{height:100%;background:#9c27b0;transition:width 0.3s}
-  .player-speech-box {
-    position: sticky;
-    top: 0;
-    background: #fff9c4;
-    border: 2px solid #ffd54f;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    z-index: 100;
-    min-height: 60px;
-    display: flex;
-    align-items: center;
-    font-style: italic;
-  }
-  .player-name-highlight {
-    font-weight: bold;
-    color: #0b6bd6;
-    cursor: pointer;
-    text-decoration: underline dotted;
-    padding: 2px 4px;
-    border-radius: 3px;
-    transition: background-color 0.2s;
-  }
-  .player-name-highlight:hover {
-    background-color: #f0f8ff;
-  }
+  .player-speech-box {position: sticky; top: 0; background: #fff9c4; border: 2px solid #ffd54f; border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; min-height: 60px; display: flex; align-items: center; font-style: italic;}
+  .player-name-highlight {font-weight: bold; color: #0b6bd6; cursor: pointer; text-decoration: underline dotted; padding: 2px 4px; border-radius: 3px; transition: background-color 0.2s;}
+  .player-name-highlight:hover {background-color: #f0f8ff;}
   .badge-pai{background:#fff59d;color:#000;padding:2px 6px;border-radius:10px;font-size:10px;margin-left:4px}
-  .contrato-select {
-    padding: 4px 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 12px;
-    width: 100px;
-  }
-  .btn-voltar {
-    background: #6c757d;
-    margin-right: 10px;
-  }
-  .btn-voltar:hover {
-    background: #5a6268;
-  }
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-  }
-  .modal-content {
-    background-color: #fff;
-    margin: 5% auto;
-    padding: 20px;
-    border-radius: 10px;
-    width: 80%;
-    max-width: 600px;
-    max-height: 80vh;
-    overflow-y: auto;
-  }
-  .close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  .close:hover {
-    color: #000;
-  }
-  .player-list-modal {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 15px;
-  }
-  .modal-player-item {
-    padding: 10px;
-    border: 1px solid #eee;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  .modal-player-item:hover {
-    background-color: #f5f7fb;
-  }
-  .formation-line {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    margin: 15px 0;
-  }
-  .goalkeeper-line {
-    margin-top: 30px;
-  }
-  .defense-line {
-    margin-top: 60px;
-  }
-  .midfield-line {
-    margin-top: 90px;
-  }
-  .attack-line {
-    margin-top: 120px;
-  }
+  .contrato-select {padding: 4px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; width: 100px;}
+  .btn-voltar {background: #6c757d; margin-right: 10px;}
+  .btn-voltar:hover {background: #5a6268;}
+  .modal {display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);}
+  .modal-content {background-color: #fff; margin: 5% auto; padding: 20px; border-radius: 10px; width: 80%; max-width: 600px; max-height: 80vh; overflow-y: auto;}
+  .close {color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;}
+  .close:hover {color: #000;}
+  .player-list-modal {display: flex; flex-direction: column; gap: 8px; margin-top: 15px;}
+  .modal-player-item {padding: 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; transition: background-color 0.2s;}
+  .modal-player-item:hover {background-color: #f5f7fb;}
+  .formation-line {display: flex; justify-content: center; align-items: center; gap: 20px; margin: 15px 0;}
+  .goalkeeper-line { margin-top: 5px; }
+  .defense-line { margin-top: 20px; }
+  .midfield-line { margin-top: 20px; }
+  .attack-line { margin-top: 20px; }
 </style>
 </head>
 <body>
@@ -146,25 +58,17 @@
 </header>
 
 <div class="container">
-  <!-- TELA 1 -->
   <div id="tela1" class="card">
     <h2>Tela 1 — Cadastro</h2>
-    <label>Nome do seu time
-      <input id="teamName" type="text" placeholder="Ex: Os Meninos da Rua" />
-    </label>
-    <label>Seu nome
-      <input id="userName" type="text" placeholder="Seu nome" />
-    </label>
-    <label>Cidade
-      <input id="cityName" type="text" placeholder="Cidade" />
-    </label>
+    <label>Nome do seu time<input id="teamName" type="text" placeholder="Ex: Os Meninos da Rua" /></label>
+    <label>Seu nome<input id="userName" type="text" placeholder="Seu nome" /></label>
+    <label>Cidade<input id="cityName" type="text" placeholder="Cidade" /></label>
     <div class="controls">
       <button id="btnToTela2" disabled>Contratar jogadores</button>
       <div class="muted">Preencha todos os campos para habilitar.</div>
     </div>
   </div>
 
-  <!-- TELA 2 -->
   <div id="tela2" class="card" style="display:none">
     <h2>Tela 2 — Mercado de Jogadores</h2>
     <div id="playerSpeechBox" class="player-speech-box">
@@ -174,17 +78,9 @@
     <div style="margin-top:10px;overflow:auto;max-height:480px">
       <table id="playersTable">
         <thead><tr>
-          <th>Nome</th>
-          <th>Posição</th>
-          <th>Pé</th>
-          <th>Idade</th>
-          <th>Passe</th>
-          <th>Salário/Jogo</th>
-          <th>Tempo Contrato</th>
-          <th>Habilidade</th>
-          <th>Saúde</th>
-          <th>Profissão</th>
-          <th>Contratar</th>
+          <th>Nome</th><th>Posição</th><th>Pé</th><th>Idade</th>
+          <th>Passe</th><th>Salário/Jogo</th><th>Tempo Contrato</th><th>Habilidade</th>
+          <th>Saúde</th><th>Profissão</th><th>Contratar</th>
         </tr></thead>
         <tbody></tbody>
       </table>
@@ -201,89 +97,64 @@
     </div>
   </div>
 
-  <!-- TELA 3 -->
   <div id="tela3" class="card" style="display:none">
     <h2>Tela 3 — Escalação (Formação 4-4-2)</h2>
-    
-    <!-- Campo de Futebol -->
     <div class="card">
       <h3>Escalação Principal</h3>
       <div class="pitch" id="pitch">
-        <!-- Goleiro -->
         <div class="formation-line goalkeeper-line">
           <div class="position-slot" data-pos="Goleiro" id="slot-GK">
-            <div>🧤 Goleiro</div>
-            <div class="muted">Clique para escalar</div>
+            <div>🧤 Goleiro</div><div class="muted">Clique para escalar</div>
           </div>
         </div>
-
-        <!-- Defesa (4) -->
         <div class="formation-line defense-line">
-          <div class="position-slot" data-pos="Lateral Esquerdo" id="slot-LB">
-            <div>⬅️ Lateral Esquerdo</div>
-            <div class="muted">Clique para escalar</div>
+          <div class="position-slot" data-pos="Lateral" id="slot-LB">
+            <div>⬅️ Lateral Esquerdo</div><div class="muted">Clique para escalar</div>
           </div>
           <div class="position-slot" data-pos="Zagueiro" id="slot-CB1">
-            <div>🛡️ Zagueiro</div>
-            <div class="muted">Clique para escalar</div>
+            <div>🛡️ Zagueiro</div><div class="muted">Clique para escalar</div>
           </div>
           <div class="position-slot" data-pos="Zagueiro" id="slot-CB2">
-            <div>🛡️ Zagueiro</div>
-            <div class="muted">Clique para escalar</div>
+            <div>🛡️ Zagueiro</div><div class="muted">Clique para escalar</div>
           </div>
-          <div class="position-slot" data-pos="Lateral Direito" id="slot-RB">
-            <div>➡️ Lateral Direito</div>
-            <div class="muted">Clique para escalar</div>
+          <div class="position-slot" data-pos="Lateral" id="slot-RB">
+            <div>➡️ Lateral Direito</div><div class="muted">Clique para escalar</div>
           </div>
         </div>
-
-        <!-- Meio-Campo (4) -->
         <div class="formation-line midfield-line">
           <div class="position-slot" data-pos="Volante" id="slot-DM1">
-            <div>⚔️ Volante</div>
-            <div class="muted">Clique para escalar</div>
+            <div>⚔️ Volante</div><div class="muted">Clique para escalar</div>
           </div>
-          <div class="position-slot" data-pos="Volante" id="slot-DM2">
-            <div>⚔️ Volante</div>
-            <div class="muted">Clique para escalar</div>
+          <div class="position-slot" data-pos="Meia" id="slot-CM1">
+            <div>🎯 Meia</div><div class="muted">Clique para escalar</div>
           </div>
-          <div class="position-slot" data-pos="Meia Atacante" id="slot-CM1">
-            <div>🎯 Meia Atacante</div>
-            <div class="muted">Clique para escalar</div>
+          <div class="position-slot" data-pos="Meia" id="slot-CM2">
+             <div>🎯 Meia</div><div class="muted">Clique para escalar</div>
           </div>
-          <div class="position-slot" data-pos="Meia Atacante" id="slot-CM2">
-            <div>🎯 Meia Atacante</div>
-            <div class="muted">Clique para escalar</div>
+           <div class="position-slot" data-pos="Volante" id="slot-DM2">
+            <div>⚔️ Volante</div><div class="muted">Clique para escalar</div>
           </div>
         </div>
-
-        <!-- Ataque (2) -->
         <div class="formation-line attack-line">
           <div class="position-slot" data-pos="Atacante" id="slot-ST1">
-            <div>⚽ Atacante</div>
-            <div class="muted">Clique para escalar</div>
+            <div>⚽ Atacante</div><div class="muted">Clique para escalar</div>
           </div>
           <div class="position-slot" data-pos="Atacante" id="slot-ST2">
-            <div>⚽ Atacante</div>
-            <div class="muted">Clique para escalar</div>
+            <div>⚽ Atacante</div><div class="muted">Clique para escalar</div>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Banco de Reservas (EM BAIXO) -->
     <div class="card" style="margin-top: 20px;">
       <h3>Banco de Reservas</h3>
       <div class="bench" id="bench"></div>
       <div class="muted" style="margin-top:8px">Jogadores disponíveis para escalação</div>
     </div>
-
     <div class="controls" style="margin-top:20px">
       <button id="btnPlayMatch" disabled>Jogar partida</button>
     </div>
   </div>
 
-  <!-- TELA 4 -->
   <div id="tela4" class="card" style="display:none">
     <h2>Partida em andamento</h2>
     <div style="display:flex;gap:16px">
@@ -304,7 +175,6 @@
   </div>
 </div>
 
-<!-- Modal para seleção de jogadores -->
 <div id="playerModal" class="modal">
   <div class="modal-content">
     <span class="close">&times;</span>
@@ -317,12 +187,11 @@
 <script>
 // ========== CONFIGURAÇÕES ==========
 const MAX_PLAYERS = 22;
-const TOTAL_MARKET = 42;
 let CASH = 5000;
 let players = [];
 let hired = [];
 let marketStep = 1;
-let currentSlot = null; // Para o modal saber qual posição está sendo escalada
+let currentSlot = null;
 
 const steps = [
   { msg: "Hora de montar o seu time, escolha 22 jogadores para iniciar", filter: null, min: 0 },
@@ -358,7 +227,12 @@ const elements = {
   playerModal: document.getElementById('playerModal'),
   modalTitle: document.getElementById('modalTitle'),
   modalSubtitle: document.getElementById('modalSubtitle'),
-  playerList: document.getElementById('playerList')
+  playerList: document.getElementById('playerList'),
+  userTeamName: document.getElementById('userTeamName'),
+  placar: document.getElementById('placar'),
+  comentarios: document.getElementById('comentarios'),
+  jogadoresUsuario: document.getElementById('jogadoresUsuario'),
+  jogadoresVila: document.getElementById('jogadoresVila'),
 };
 
 // ========== MODAL DE SELEÇÃO ==========
@@ -375,29 +249,11 @@ function openPlayerModal(slotElement) {
   const posicao = slotElement.dataset.pos;
   
   elements.modalTitle.textContent = `Escalar ${posicao}`;
-  elements.modalSubtitle.textContent = `Selecione um jogador para a posição de ${posicao}`;
-  
-  // Limpar lista anterior
+  elements.modalSubtitle.textContent = `Selecione um jogador para a posição`;
   elements.playerList.innerHTML = '';
   
-  // Filtrar jogadores pela posição
-  let jogadoresDisponiveis = [];
-  
-  // Mapear posições do campo para posições dos jogadores
-  const posicoesValidas = {
-    'Goleiro': ['Goleiro'],
-    'Lateral Esquerdo': ['Lateral'],
-    'Lateral Direito': ['Lateral'],
-    'Zagueiro': ['Zagueiro'],
-    'Volante': ['Volante'],
-    'Meia Atacante': ['Meia'],
-    'Atacante': ['Atacante']
-  };
-  
-  const posicoesAceitas = posicoesValidas[posicao] || [posicao];
-  
-  jogadoresDisponiveis = hired.filter(jogador => 
-    posicoesAceitas.includes(jogador.pos) && 
+  const jogadoresDisponiveis = hired.filter(jogador => 
+    jogador.pos === posicao && 
     !document.querySelector(`[data-assigned="${jogador.id}"]`)
   );
   
@@ -412,10 +268,10 @@ function openPlayerModal(slotElement) {
         <div class="muted">${jogador.age} anos • ${jogador.foot} • Habilidade: ${jogador.skill}% • Saúde: ${jogador.health}%</div>
         <div>${renderSkillBar(jogador.skill)} ${renderHealthBar(jogador.health)}</div>
       `;
-      item.addEventListener('click', () => {
+      item.onclick = () => {
         assignPlayerToSlot(jogador, slotElement);
         elements.playerModal.style.display = 'none';
-      });
+      };
       elements.playerList.appendChild(item);
     });
   }
@@ -424,32 +280,40 @@ function openPlayerModal(slotElement) {
 }
 
 function assignPlayerToSlot(jogador, slotElement) {
-  // Remover jogador anterior se existir
   const previousPlayerId = slotElement.dataset.assigned;
   if (previousPlayerId) {
-    const previousCard = document.getElementById('bench-' + previousPlayerId);
-    if (previousCard) {
-      previousCard.classList.remove('locked');
+    const previousSlot = document.querySelector(`[data-assigned="${previousPlayerId}"]`);
+    if(previousSlot && previousSlot !== slotElement) {
+       resetSlot(previousSlot);
     }
   }
   
-  // Atribuir novo jogador
   slotElement.dataset.assigned = jogador.id;
   slotElement.innerHTML = `
     <div><strong>${jogador.name}</strong></div>
-    <div>${jogador.pos}</div>
+    <div class="muted">${jogador.pos}</div>
     <div class="muted">Habilidade: ${jogador.skill}%</div>
   `;
   slotElement.classList.add('assigned');
   
-  // Atualizar banco
   populateBench();
-  
-  // Verificar se time está completo
-  const assignedCount = document.querySelectorAll('.position-slot.assigned').length;
-  elements.btnPlayMatch.disabled = assignedCount < 11;
-  
+  checkTeamComplete();
   showNotif(`${jogador.name} escalado como ${slotElement.dataset.pos}!`);
+}
+
+function resetSlot(slotElement) {
+    const originalPos = slotElement.dataset.pos;
+    const icons = { 'Goleiro': '🧤', 'Lateral': '⬅️', 'Zagueiro': '🛡️', 'Volante': '⚔️', 'Meia': '🎯', 'Atacante': '⚽' };
+    let posText = originalPos;
+    if(slotElement.id === 'slot-LB') posText = "Lateral Esquerdo";
+    if(slotElement.id === 'slot-RB') posText = "Lateral Direito";
+
+    slotElement.innerHTML = `
+        <div>${icons[originalPos] || '⚽'} ${posText}</div>
+        <div class="muted">Clique para escalar</div>
+    `;
+    slotElement.classList.remove('assigned');
+    delete slotElement.dataset.assigned;
 }
 
 // ========== FUNÇÕES AUXILIARES ==========
@@ -461,467 +325,328 @@ function showNotif(text, time = 3000) {
   setTimeout(() => box.remove(), time);
 }
 
-function formatReal(n) {
-  return 'R$ ' + n.toLocaleString('pt-BR');
-}
-
-function updateCash() {
-  elements.cashDisplay.textContent = formatReal(CASH);
-}
-
-function updateSelectedCount() {
-  elements.selectedCountEl.textContent = hired.length;
-}
+function formatReal(n) { return 'R$ ' + n.toLocaleString('pt-BR'); }
+function updateCash() { elements.cashDisplay.textContent = formatReal(CASH); }
+function updateSelectedCount() { elements.selectedCountEl.textContent = hired.length; }
 
 function renderHealthBar(health) {
   const color = health >= 80 ? '#4CAF50' : health >= 50 ? '#ff9800' : '#f44336';
-  return `<div class="health-bar">
-    <div class="health-fill" style="width: ${health}%; background: ${color}"></div>
-  </div>`;
+  return `<div class="health-bar"><div class="health-fill" style="width: ${health}%; background: ${color}"></div></div>`;
 }
 
 function renderSkillBar(skill) {
-  const color = skill >= 80 ? '#9c27b0' : skill >= 60 ? '#673ab7' : skill >= 40 ? '#3f51b5' : '#2196f3';
-  return `<div class="skill-bar">
-    <div class="skill-fill" style="width: ${skill}%; background: ${color}"></div>
-  </div>`;
+  const color = skill >= 80 ? '#9c27b0' : skill >= 60 ? '#673ab7' : '#2196f3';
+  return `<div class="skill-bar"><div class="skill-fill" style="width: ${skill}%; background: ${color}"></div></div>`;
 }
 
 function showPlayerSpeech(playerName, speech) {
   elements.playerSpeechBox.innerHTML = `💬 <span class="player-name-highlight">${playerName}</span>: "${speech}"`;
 }
 
-// ========== GERAR HABILIDADE ==========
-function generateSkillDistribution() {
-  const skills = [100]; // Jogador com habilidade 100
-  for (let i = 1; i < TOTAL_MARKET; i++) {
-    let skill;
-    const rand = Math.random();
-    if (rand < 0.6) skill = Math.round(Math.random() * 20) + 25;
-    else if (rand < 0.85) skill = Math.round(Math.random() * 15) + 46;
-    else if (rand < 0.95) skill = Math.round(Math.random() * 10) + 15;
-    else skill = Math.round(Math.random() * 15) + 61;
-    skills.push(Math.min(100, skill));
-  }
-  return skills.sort(() => Math.random() - 0.5);
-}
-
-function calculatePlayerValue(skill, age) {
-  let basePasse = skill * 5;
-  let ageMultiplier = 1;
-  if (age <= 20) ageMultiplier = 1.8;
-  else if (age <= 25) ageMultiplier = 1.5;
-  else if (age <= 30) ageMultiplier = 1.2;
-  else if (age <= 35) ageMultiplier = 0.8;
-  else ageMultiplier = 0.5;
-  
-  const passe = Math.round(basePasse * ageMultiplier / 10) * 10;
-  const baseSalario = 30 + (skill * 0.8);
-  const salario = Math.round((baseSalario + Math.random() * 20) / 5) * 5;
-  
-  return {
-    passe: Math.max(50, Math.min(800, passe)),
-    salarioJogo: Math.max(30, Math.min(120, salario))
-  };
-}
-
-// ========== TELA 1 ==========
-function validateTela1() {
-  const isValid = elements.teamName.value.trim() && 
-                 elements.userName.value.trim() && 
-                 elements.cityName.value.trim();
-  elements.btnToTela2.disabled = !isValid;
-}
-
-elements.teamName.addEventListener('input', validateTela1);
-elements.userName.addEventListener('input', validateTela1);
-elements.cityName.addEventListener('input', validateTela1);
-
-elements.btnToTela2.addEventListener('click', () => {
-  if (elements.btnToTela2.disabled) return;
-  elements.tela1.style.display = 'none';
-  elements.tela2.style.display = 'block';
-  marketStep = 1;
-  updateButtonStates();
-  elements.marketMessage.textContent = steps[marketStep].msg;
-  renderMarket(steps[marketStep].filter);
-});
-
-// ========== BOTÃO VOLTAR ==========
-elements.btnVoltarStep.addEventListener('click', () => {
-  if (marketStep > 1) {
-    marketStep--;
-    elements.marketMessage.textContent = steps[marketStep].msg;
-    renderMarket(steps[marketStep].filter);
-    updateButtonStates();
-  }
-});
-
 // ========== GERAÇÃO DE JOGADORES ==========
 function generatePlayers() {
-  players = [];
-  const firsts = ["Marrentinho","Juscelino","Ronaldinho","Berg","Tico","Zeca","Xandão","Pedrinho","Claudinho","Sandro","Marollo","Ricardão"];
-  const lastParts = ["Carioca","Paulista","Baiano","Gaucho","Mineiro","Nordestino","Pernambucano","Capixaba"];
-  
-  const positions = ['Goleiro', 'Lateral', 'Zagueiro', 'Volante', 'Meia', 'Atacante'];
-  const counts = { 'Goleiro': 6, 'Lateral': 8, 'Zagueiro': 8, 'Volante': 6, 'Meia': 8, 'Atacante': 6 };
-  
-  const skills = generateSkillDistribution();
-  
-  let id = 0;
-  positions.forEach(pos => {
-    for (let i = 0; i < counts[pos]; i++) {
-      const name = `${firsts[id % firsts.length]} ${lastParts[id % lastParts.length]}`;
-      const age = Math.floor(Math.random() * 25) + 16;
-      const skill = skills[id];
-      const health = Math.random() > 0.3 ? 100 : 80;
-      const isPai = Math.random() < 0.2;
-      
-      const valores = calculatePlayerValue(skill, age);
-      
-      const apresentacoes = {
-        Goleiro: ["Pode bater, professor! Pênalti pra mim é como beija-flor no mel, eu pego!", "Na hora do pênalti, fecho o gol!"],
-        Lateral: ["Sou o motorzinho da lateral! Subo e desço o jogo todo!", "Meu cruzamento é na medida!"],
-        Zagueiro: ["Entrou na área, a bola é minha!", "Sou o rei do jogo aéreo!"],
-        Volante: ["Eu corro por mim e pelo time todo!", "Meu carrinho é cirúrgico!"],
-        Meia: ["O jogo passa pelos meus pés!", "Minha visão de jogo é diferenciada!"],
-        Atacante: ["Na frente do gol, não tem pra ninguém!", "Gosto de fazer gol, é minha especialidade!"]
-      };
-      
-      players.push({
-        id: 'p' + id,
-        name: name,
-        pos: pos,
-        foot: Math.random() < 0.7 ? 'Direito' : Math.random() < 0.8 ? 'Esquerdo' : 'Ambidestro',
-        age: age,
-        skill: skill,
-        passe: valores.passe,
-        salarioJogo: valores.salarioJogo,
-        contrato: '6 meses',
-        health: health,
-        profissao: { nome: ['Pedreiro', 'Eletricista', 'Professor', 'Vendedor', 'Gerente', 'Entregador'][Math.floor(Math.random() * 6)], tipo: 'manual' },
-        isPai: isPai,
-        apresentacao: apresentacoes[pos][Math.floor(Math.random() * 2)]
-      });
-      id++;
+    players = [];
+    const firsts = ["Marrentinho", "Juscelino", "Ronaldinho", "Berg", "Tico", "Zeca", "Xandão", "Pedrinho", "Claudinho", "Sandro", "Marollo", "Ricardão", "Beto", "Formiga", "Juninho", "Careca", "Léo"];
+    const lastParts = ["Carioca", "Paulista", "Baiano", "Gaucho", "Mineiro", "Nordestino", "Pernambucano", "Capixaba", "da Silva", "Souza"];
+    
+    const positions = { 'Goleiro': 6, 'Lateral': 8, 'Zagueiro': 8, 'Volante': 6, 'Meia': 8, 'Atacante': 6 };
+    let id = 0;
+
+    for (const [pos, count] of Object.entries(positions)) {
+        for (let i = 0; i < count; i++) {
+            const name = `${firsts[id % firsts.length]} ${lastParts[id % lastParts.length]}`;
+            const age = Math.floor(Math.random() * 25) + 16;
+            const skill = Math.floor(Math.random() * 70) + 30;
+            const isPai = Math.random() < 0.2;
+
+            let basePasse = skill * 5;
+            let ageMultiplier = age <= 25 ? 1.5 : age <= 32 ? 1.0 : 0.6;
+            const passe = Math.round(basePasse * ageMultiplier / 10) * 10;
+            const salarioJogo = Math.round((30 + (skill * 0.8)) / 5) * 5;
+            
+            const apresentacoes = {
+                Goleiro: "Pode chutar que eu pego tudo!", Lateral: "Sou o motorzinho da lateral!", Zagueiro: "Aqui na zaga, ninguém passa!",
+                Volante: "Corro por mim e pelo time todo!", Meia: "O jogo passa pelos meus pés!", Atacante: "Na frente do gol, eu não perdoo!"
+            };
+
+            players.push({
+                id: 'p' + id, name, pos, age, skill, isPai, passe: Math.max(50, passe), salarioJogo: Math.max(30, salarioJogo),
+                foot: Math.random() < 0.7 ? 'Direito' : 'Esquerdo',
+                health: 100, contrato: '6 meses',
+                profissao: { nome: ['Pedreiro', 'Eletricista', 'Professor', 'Vendedor', 'Entregador'][Math.floor(Math.random() * 5)] },
+                apresentacao: apresentacoes[pos]
+            });
+            id++;
+        }
     }
-  });
 }
 
 // ========== MERCADO ==========
 function renderMarket(filter) {
-  elements.playersTbody.innerHTML = '';
-  const list = filter ? players.filter(p => p.pos === filter) : players;
-  
-  if (list.length === 0) {
-    const tr = document.createElement('tr');
-    tr.innerHTML = '<td colspan="11" class="muted">Nenhum jogador disponível</td>';
-    elements.playersTbody.appendChild(tr);
-    return;
-  }
-  
-  list.forEach(p => {
-    const tr = document.createElement('tr');
-    const hiredAlready = hired.some(h => h.id === p.id);
-    
-    tr.innerHTML = `
-      <td><span class="player-name-highlight">${p.name}</span><div class="muted">${p.pos}</div></td>
-      <td>${p.pos}</td><td>${p.foot}</td><td>${p.age}</td>
-      <td>${formatReal(p.passe)}</td><td>${formatReal(p.salarioJogo)}</td>
-      <td><select class="contrato-select" data-id="${p.id}" ${hiredAlready ? 'disabled' : ''}>
-        <option value="3 meses">3 meses</option><option value="6 meses" selected>6 meses</option><option value="1 ano">1 ano</option>
-      </select></td>
-      <td>${renderSkillBar(p.skill)} ${p.skill}%</td>
-      <td>${renderHealthBar(p.health)} ${p.health}%</td>
-      <td>${p.profissao.nome}${p.isPai ? ' <span class="badge-pai">Pai</span>' : ''}</td>
-      <td><input type="checkbox" data-id="${p.id}" ${hiredAlready ? 'checked' : ''}></td>
-    `;
-    
-    tr.querySelector('.player-name-highlight').addEventListener('mouseenter', () => {
-      showPlayerSpeech(p.name, p.apresentacao);
+    elements.playersTbody.innerHTML = '';
+    const list = filter ? players.filter(p => p.pos === filter) : players;
+
+    list.forEach(p => {
+        const tr = document.createElement('tr');
+        const hiredAlready = hired.some(h => h.id === p.id);
+        
+        tr.innerHTML = `
+            <td><span class="player-name-highlight">${p.name}</span><div class="muted">${p.pos}</div></td>
+            <td>${p.pos}</td><td>${p.foot}</td><td>${p.age}</td>
+            <td>${formatReal(p.passe)}</td><td>${formatReal(p.salarioJogo)}</td>
+            <td><select class="contrato-select" data-id="${p.id}" ${hiredAlready ? 'disabled' : ''}>
+                <option value="3 meses">3 meses</option><option value="6 meses" selected>6 meses</option><option value="1 ano">1 ano</option>
+            </select></td>
+            <td>${renderSkillBar(p.skill)} ${p.skill}%</td>
+            <td>${renderHealthBar(p.health)} ${p.health}%</td>
+            <td>${p.profissao.nome}${p.isPai ? ' <span class="badge-pai">Pai</span>' : ''}</td>
+            <td><input type="checkbox" data-id="${p.id}" ${hiredAlready ? 'checked' : ''}></td>
+        `;
+        
+        tr.querySelector('.player-name-highlight').onmouseenter = () => showPlayerSpeech(p.name, p.apresentacao);
+        tr.querySelector('.contrato-select').onchange = (e) => {
+            const player = players.find(pl => pl.id === e.target.dataset.id);
+            if (player) player.contrato = e.target.value;
+        };
+        tr.querySelector('input[type=checkbox]').onchange = onToggleHire;
+
+        elements.playersTbody.appendChild(tr);
     });
-    
-    tr.querySelector('.contrato-select').addEventListener('change', (e) => {
-      const player = players.find(pl => pl.id === e.target.dataset.id);
-      if (player) player.contrato = e.target.value;
-    });
-    
-    elements.playersTbody.appendChild(tr);
-  });
-  
-  elements.playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb => {
-    cb.addEventListener('change', onToggleHire);
-  });
-  
-  updateCheckboxStates();
+    updateCheckboxStates();
 }
 
 function onToggleHire(e) {
-  const cb = e.target;
-  const pid = cb.dataset.id;
-  const ply = players.find(p => p.id === pid);
-  
-  if (cb.checked) {
-    if (hired.length >= MAX_PLAYERS) {
-      showNotif('Limite de 22 jogadores!');
-      cb.checked = false;
-      return;
+    const cb = e.target;
+    const pid = cb.dataset.id;
+    const ply = players.find(p => p.id === pid);
+
+    if (cb.checked) {
+        if (hired.length >= MAX_PLAYERS) {
+            showNotif('Limite de 22 jogadores!');
+            return cb.checked = false;
+        }
+        if (CASH - ply.passe < 0) {
+            showNotif('Saldo insuficiente!');
+            return cb.checked = false;
+        }
+        CASH -= ply.passe;
+        hired.push({...ply});
+    } else {
+        CASH += ply.passe;
+        hired = hired.filter(h => h.id !== pid);
+        // Remove jogador da escalação se ele for demitido
+        const assignedSlot = document.querySelector(`.position-slot[data-assigned="${pid}"]`);
+        if (assignedSlot) resetSlot(assignedSlot);
     }
-    if (CASH - ply.passe < 0) {
-      showNotif('Saldo insuficiente!');
-      cb.checked = false;
-      return;
-    }
-    CASH -= ply.passe;
-    hired.push({...ply});
-  } else {
-    CASH += ply.passe;
-    hired = hired.filter(h => h.id !== pid);
-  }
-  
-  updateCash();
-  updateSelectedCount();
-  updateCheckboxStates();
-  updateButtonStates();
+    
+    updateCash();
+    updateSelectedCount();
+    updateCheckboxStates();
+    updateButtonStates();
 }
 
 function updateCheckboxStates() {
-  elements.playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb => {
-    const pid = cb.dataset.id;
-    const ply = players.find(p => p.id === pid);
-    cb.disabled = !cb.checked && (hired.length >= MAX_PLAYERS || CASH - ply.passe < 0);
-  });
+    elements.playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb => {
+        const pid = cb.dataset.id;
+        const ply = players.find(p => p.id === pid);
+        cb.disabled = !cb.checked && (hired.length >= MAX_PLAYERS || CASH - ply.passe < 0);
+    });
 }
 
 // ========== CONTROLES DE NAVEGAÇÃO ==========
-function countHiredByPos(pos) {
-  return hired.filter(h => h.pos === pos).length;
-}
+function countHiredByPos(pos) { return hired.filter(h => h.pos === pos).length; }
 
 function updateButtonStates() {
-  elements.btnVoltarStep.style.display = marketStep > 1 ? 'inline-block' : 'none';
-  elements.btnEscalar.disabled = hired.length !== MAX_PLAYERS;
-  
-  if (marketStep >= 1 && marketStep < steps.length) {
+    elements.btnVoltarStep.style.display = marketStep > 1 ? 'inline-block' : 'none';
+    elements.btnEscalar.disabled = hired.length !== MAX_PLAYERS;
+    
     const current = steps[marketStep];
-    const have = countHiredByPos(current.filter);
-    elements.btnNextStep.disabled = have < current.min;
-  }
-  
-  updateSelectedCount();
-  updateCash();
+    if (current && current.filter) {
+        const have = countHiredByPos(current.filter);
+        elements.btnNextStep.disabled = have < current.min;
+    } else {
+        elements.btnNextStep.disabled = false;
+    }
+
+    updateSelectedCount();
+    updateCash();
 }
 
 elements.btnNextStep.addEventListener('click', () => {
-  const current = steps[marketStep];
-  if (current && current.filter) {
-    const have = countHiredByPos(current.filter);
-    if (have < current.min) {
-      showNotif(`Escolha no mínimo ${current.min} ${current.filter}(s)! Você tem ${have}.`);
-      return;
+    const current = steps[marketStep];
+    if (current && current.filter && countHiredByPos(current.filter) < current.min) {
+        return showNotif(`Escolha no mínimo ${current.min} ${current.filter}(s)!`);
     }
-  }
-  
-  marketStep++;
-  if (marketStep >= steps.length) {
-    if (hired.length === MAX_PLAYERS) {
-      elements.btnEscalar.click();
-    } else {
-      marketStep = steps.length - 1;
-      elements.marketMessage.textContent = "Complete seu elenco com 22 jogadores!";
-      renderMarket(null);
+    
+    marketStep++;
+    if (marketStep >= steps.length) {
+        if (hired.length === MAX_PLAYERS) {
+            elements.btnEscalar.click();
+        } else {
+            marketStep = steps.length - 1;
+            elements.marketMessage.textContent = "Complete seu elenco com 22 jogadores!";
+            renderMarket(null);
+        }
+        return;
     }
-    return;
-  }
-  
-  elements.marketMessage.textContent = steps[marketStep].msg;
-  renderMarket(steps[marketStep].filter);
-  updateButtonStates();
+    
+    elements.marketMessage.textContent = steps[marketStep].msg;
+    renderMarket(steps[marketStep].filter);
+    updateButtonStates();
+});
+
+elements.btnVoltarStep.addEventListener('click', () => {
+    if (marketStep > 1) {
+        marketStep--;
+        elements.marketMessage.textContent = steps[marketStep].msg;
+        renderMarket(steps[marketStep].filter);
+        updateButtonStates();
+    }
 });
 
 elements.btnEscalar.addEventListener('click', () => {
-  if (hired.length !== MAX_PLAYERS) {
-    showNotif(`Contrate exatamente 22 jogadores! Você tem ${hired.length}.`);
-    return;
-  }
-  
-  const custoTotal = hired.reduce((total, jogador) => total + jogador.passe, 0);
-  console.log('Custo total da equipe:', formatReal(custoTotal));
-  
-  elements.tela2.style.display = 'none';
-  elements.tela3.style.display = 'block';
-  setupEscalacao();
+    if (hired.length !== MAX_PLAYERS) {
+        return showNotif(`Contrate exatamente 22 jogadores! Você tem ${hired.length}.`);
+    }
+    elements.tela2.style.display = 'none';
+    elements.tela3.style.display = 'block';
+    setupEscalacao();
 });
 
 // ========== ESCALAÇÃO ==========
 function setupEscalacao() {
-  // Configurar eventos de clique para as posições
-  document.querySelectorAll('.position-slot').forEach(slot => {
-    slot.addEventListener('click', () => {
-      openPlayerModal(slot);
+    document.querySelectorAll('.position-slot').forEach(slot => {
+        slot.onclick = () => openPlayerModal(slot);
     });
-  });
-  
-  populateBench();
+    populateBench();
 }
 
-<!-- Continuação do código a partir da função populateBench() -->
 function populateBench() {
-  elements.bench.innerHTML = '';
-  
-  // Jogadores não escalados
-  const jogadoresNoBanco = hired.filter(jogador => 
-    !document.querySelector(`[data-assigned="${jogador.id}"]`)
-  );
-  
-  if (jogadoresNoBanco.length === 0) {
-    elements.bench.innerHTML = '<p class="muted">Todos os jogadores estão escalados</p>';
-    return;
-  }
-  
-  jogadoresNoBanco.forEach(jogador => {
-    const div = document.createElement('div');
-    div.className = 'player-card';
-    div.innerHTML = `
-      <div>
-        <strong>${jogador.name}</strong>
-        <div class="muted">${jogador.pos} • ${jogador.foot} • ${jogador.age} anos</div>
-        <div>${renderSkillBar(jogador.skill)} ${renderHealthBar(jogador.health)}</div>
-        <div class="muted">Contrato: ${jogador.contrato}</div>
-      </div>
-      <div class="muted">${formatReal(jogador.salarioJogo)}/jogo</div>
-    `;
-    elements.bench.appendChild(div);
-  });
+    elements.bench.innerHTML = '';
+    const jogadoresNoBanco = hired.filter(j => !document.querySelector(`[data-assigned="${j.id}"]`));
+
+    if (jogadoresNoBanco.length === 0) {
+        return elements.bench.innerHTML = '<p class="muted">Todos os jogadores estão escalados</p>';
+    }
+    
+    jogadoresNoBanco.forEach(jogador => {
+        const div = document.createElement('div');
+        div.className = 'player-card';
+        div.innerHTML = `
+            <div>
+                <strong>${jogador.name}</strong>
+                <div class="muted">${jogador.pos} • ${jogador.foot} • ${jogador.age} anos</div>
+                <div>${renderSkillBar(jogador.skill)} ${renderHealthBar(jogador.health)}</div>
+            </div>
+            <div class="muted">${formatReal(jogador.salarioJogo)}/jogo</div>
+        `;
+        elements.bench.appendChild(div);
+    });
+}
+
+function checkTeamComplete() {
+    const assignedCount = document.querySelectorAll('.position-slot.assigned').length;
+    elements.btnPlayMatch.disabled = assignedCount < 11;
 }
 
 // ========== PARTIDA ==========
 elements.btnPlayMatch.addEventListener('click', () => {
-  // Verificar se time está completo
-  const assignedCount = document.querySelectorAll('.position-slot.assigned').length;
-  if (assignedCount < 11) {
-    showNotif('Escale todos os 11 jogadores antes de jogar!');
-    return;
-  }
-  
-  elements.tela3.style.display = 'none';
-  elements.tela4.style.display = 'block';
-  elements.userTeamName.textContent = elements.teamName.value || 'Meu Time';
-  simulateMatch();
+    if (document.querySelectorAll('.position-slot.assigned').length < 11) {
+        return showNotif('Escale todos os 11 jogadores antes de jogar!');
+    }
+    elements.tela3.style.display = 'none';
+    elements.tela4.style.display = 'block';
+    elements.userTeamName.textContent = elements.teamName.value || 'Meu Time';
+    simulateMatch();
 });
 
 function simulateMatch() {
-  elements.placar.textContent = '0 x 0';
-  elements.comentarios.innerHTML = '<p><em>Apito inicial da partida!</em></p>';
-  
-  // Mostrar jogadores escalados
-  const jogadoresUsuario = document.getElementById('jogadoresUsuario');
-  jogadoresUsuario.innerHTML = '';
-  
-  document.querySelectorAll('.position-slot.assigned').forEach(slot => {
-    const jogadorId = slot.dataset.assigned;
-    const jogador = hired.find(j => j.id === jogadorId);
-    if (jogador) {
-      const li = document.createElement('li');
-      li.innerHTML = `<strong>${jogador.name}</strong> - ${slot.dataset.pos}`;
-      jogadoresUsuario.appendChild(li);
-    }
-  });
-  
-  // Time adversário fixo
-  const jogadoresVila = document.getElementById('jogadoresVila');
-  jogadoresVila.innerHTML = '';
-  const vilaFreitas = [
-    "Tadeu - Goleiro", "Joãozinho - Lateral Esquerdo", "Bira - Zagueiro", 
-    "Marcão - Zagueiro", "Nego - Lateral Direito", "Léo - Volante", 
-    "Careca - Volante", "Tico - Meia Atacante", "Juninho - Meia Atacante", 
-    "Beto - Atacante", "Formiga - Atacante"
-  ];
-  
-  vilaFreitas.forEach(jogador => {
-    const li = document.createElement('li');
-    li.textContent = jogador;
-    jogadoresVila.appendChild(li);
-  });
-  
-  let golsCasa = 0;
-  let golsVisitante = 0;
-  let minuto = 1;
-  
-  const interval = setInterval(() => {
-    if (minuto > 90) {
-      clearInterval(interval);
-      elements.comentarios.innerHTML += '<p><strong>Fim de jogo!</strong></p>';
-      elements.btnContinuar.style.display = 'block';
-      
-      // Aplicar desgaste de saúde
-      hired.forEach(jogador => {
-        let desgaste = 5;
-        if (jogador.profissao.tipo === 'executivo') desgaste += 3;
-        if (jogador.isPai) desgaste += 2;
-        jogador.health = Math.max(0, jogador.health - desgaste);
-      });
-      
-      showNotif('Saúde dos jogadores atualizada após a partida!');
-      return;
-    }
-    
-    const lances = [
-      "Jogada de perigo! Quase gol!", 
-      "Falta cometida no meio-campo",
-      "Escanteio para o time da casa", 
-      "Contra-ataque perigoso!",
-      "Chute de longa distância!", 
-      "Defesa difícil do goleiro!",
-      "Cartão amarelo mostrado pelo árbitro",
-      "Jogador recebe assistência médica",
-      "Substituição sendo preparada"
-    ];
-    
-    let lance = lances[Math.floor(Math.random() * lances.length)];
-    
-    // Chance de gol (aumentada para teste)
-    if (Math.random() < 0.15) {
-      if (Math.random() < 0.5) {
-        golsCasa++;
-        lance = "⚽ GOOOOL DO " + (elements.teamName.value || "TIME DA CASA") + "!";
-      } else {
-        golsVisitante++;
-        lance = "⚽ GOOOOL DA VILA FREITAS!";
-      }
-      elements.placar.textContent = `${golsCasa} x ${golsVisitante}`;
-    }
-    
-    elements.comentarios.innerHTML += `<p>${minuto}min - ${lance}</p>`;
-    elements.comentarios.scrollTop = elements.comentarios.scrollHeight;
-    minuto++;
-  }, 800); // Velocidade reduzida para melhor visualização
+    elements.placar.textContent = '0 x 0';
+    elements.comentarios.innerHTML = '<p><em>Apito inicial da partida!</em></p>';
+    elements.jogadoresUsuario.innerHTML = '';
+
+    document.querySelectorAll('.position-slot.assigned').forEach(slot => {
+        const jogador = hired.find(j => j.id === slot.dataset.assigned);
+        if (jogador) {
+            const li = document.createElement('li');
+            li.innerHTML = `<strong>${jogador.name}</strong>`;
+            elements.jogadoresUsuario.appendChild(li);
+        }
+    });
+
+    elements.jogadoresVila.innerHTML = '';
+    ["Tadeu", "Joãozinho", "Bira", "Marcão", "Nego", "Léo", "Careca", "Tico", "Juninho", "Beto", "Formiga"]
+        .forEach(nome => {
+            const li = document.createElement('li');
+            li.textContent = nome;
+            elements.jogadoresVila.appendChild(li);
+        });
+
+    let golsCasa = 0, golsVisitante = 0, minuto = 1;
+    const interval = setInterval(() => {
+        if (minuto > 90) {
+            clearInterval(interval);
+            elements.comentarios.innerHTML += '<p><strong>Fim de jogo!</strong></p>';
+            elements.btnContinuar.style.display = 'block';
+            
+            hired.forEach(j => j.health = Math.max(0, j.health - (5 + (j.isPai ? 2 : 0))));
+            showNotif('Saúde dos jogadores atualizada após a partida!');
+            return;
+        }
+        
+        const lances = ["Jogada de perigo!", "Falta no meio-campo", "Escanteio", "Contra-ataque perigoso!", "Chute de longa distância!", "Defesa difícil do goleiro!"];
+        let lance = lances[Math.floor(Math.random() * lances.length)];
+        
+        if (Math.random() < 0.1) {
+            if (Math.random() < 0.5) {
+                golsCasa++;
+                lance = "⚽ GOOOOL DO " + (elements.teamName.value || "TIME DA CASA") + "!";
+            } else {
+                golsVisitante++;
+                lance = "⚽ GOOOOL DA VILA FREITAS!";
+            }
+            elements.placar.textContent = `${golsCasa} x ${golsVisitante}`;
+        }
+        
+        elements.comentarios.innerHTML += `<p>${minuto}min - ${lance}</p>`;
+        elements.comentarios.scrollTop = elements.comentarios.scrollHeight;
+        minuto += Math.floor(Math.random() * 5) + 1;
+    }, 500);
 }
 
 elements.btnContinuar.addEventListener('click', () => {
-  elements.tela4.style.display = 'none';
-  elements.tela3.style.display = 'block';
-  elements.btnContinuar.style.display = 'none';
-  populateBench(); // Atualizar saúde no banco
+    elements.tela4.style.display = 'none';
+    elements.tela3.style.display = 'block';
+    elements.btnContinuar.style.display = 'none';
+    populateBench();
+    checkTeamComplete();
 });
 
 // ========== INICIALIZAÇÃO ==========
 function init() {
-  console.log('Iniciando jogo...');
-  generatePlayers();
-  updateCash();
-  updateSelectedCount();
-  validateTela1();
-  elements.marketMessage.textContent = steps[marketStep].msg;
-  
-  // Debug dos valores
-  const totalPasse = players.reduce((sum, p) => sum + p.passe, 0);
-  const mediaPasse = totalPasse / players.length;
-  console.log('Valores realistas - Média de passe:', formatReal(mediaPasse));
-  console.log('Jogador mais caro:', formatReal(Math.max(...players.map(p => p.passe))));
+    generatePlayers();
+    updateCash();
+    updateSelectedCount();
+    
+    ['teamName', 'userName', 'cityName'].forEach(id => {
+        document.getElementById(id).oninput = () => {
+            elements.btnToTela2.disabled = !(elements.teamName.value.trim() && elements.userName.value.trim() && elements.cityName.value.trim());
+        };
+    });
+
+    elements.btnToTela2.onclick = () => {
+        if (elements.btnToTela2.disabled) return;
+        elements.tela1.style.display = 'none';
+        elements.tela2.style.display = 'block';
+        marketStep = 1;
+        updateButtonStates();
+        elements.marketMessage.textContent = steps[marketStep].msg;
+        renderMarket(steps[marketStep].filter);
+    };
+
+    updateButtonStates();
 }
 
-// Iniciar o jogo
 init();
 </script>
 </body>
