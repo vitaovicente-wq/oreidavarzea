@@ -10,8 +10,6 @@
   header{background:#0b6bd6;color:#fff;padding:14px 18px}
   .container{max-width:1100px;margin:18px auto;padding:10px}
   .card{background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);padding:16px;margin-bottom:16px;}
-  label{display:block;margin-top:8px}
-  input[type=text]{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px}
   button{background:#0b6bd6;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
   button[disabled]{opacity:0.45;cursor:default}
   table{width:100%;border-collapse:collapse;font-size:14px}
@@ -19,10 +17,6 @@
   th{background:#fafafa}
   .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px}
   .muted{color:#666;font-size:13px}
-  .health-bar{width:60px;height:8px;background:#eee;border-radius:4px;overflow:hidden;display:inline-block;margin-left:8px;vertical-align:middle}
-  .health-fill{height:100%;background:#4CAF50;transition:width 0.3s}
-  .skill-bar{width:80px;height:8px;background:#eee;border-radius:4px;overflow:hidden;display:inline-block;margin-left:8px;vertical-align:middle}
-  .skill-fill{height:100%;background:#9c27b0;transition:width 0.3s}
   .player-speech-box { position: sticky; top: 0; background: #fff9c4; border: 2px solid #ffd54f; border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; min-height: 60px; display: flex; align-items: center; font-style: italic; }
   .player-name-highlight { font-weight: bold; color: #0b6bd6; cursor: pointer; text-decoration: underline dotted; padding: 2px 4px; border-radius: 3px; transition: background-color 0.2s; }
   .player-name-highlight:hover { background-color: #f0f8ff; }
@@ -37,7 +31,6 @@
 <header>
   <div class="container"><h1 id="headerTitle">O Rei da Várzea</h1></div>
 </header>
-
 <div class="container">
   <div id="tela2" class="card">
     <h2>Tela 2 — Mercado de Jogadores</h2>
@@ -48,17 +41,7 @@
     <div style="margin-top:10px;overflow:auto;max-height:480px">
       <table id="playersTable">
         <thead><tr>
-          <th>Nome</th>
-          <th>Posição</th>
-          <th>Pé</th>
-          <th>Idade</th>
-          <th>Passe</th>
-          <th>Salário/Jogo</th>
-          <th>Tempo Contrato</th>
-          <th>Habilidade</th>
-          <th>Saúde</th>
-          <th>Profissão</th>
-          <th>Contratar</th>
+          <th>Nome</th><th>Posição</th><th>Pé</th><th>Idade</th><th>Passe</th><th>Salário/Jogo</th><th>Tempo Contrato</th><th>Habilidade</th><th>Saúde</th><th>Profissão</th><th>Contratar</th>
         </tr></thead>
         <tbody></tbody>
       </table>
@@ -77,27 +60,23 @@
     </div>
   </div>
 </div>
-
 <script>
-// ========== CONFIGURAÇÕES ==========
-const MAX_PLAYERS = 22;
+// ... (script completo do mercado)
+  const MAX_PLAYERS = 22;
 const TOTAL_MARKET = 42;
 let CASH = 5000;
 let players = [];
 let hired = [];
 let marketStep = 1;
-
 const steps = [
   { msg: "Hora de montar o seu time, escolha 22 jogadores para iniciar", filter: null, min: 0 },
-  { msg: "Escolha no mínimo 2 goleiros para o seu time", filter: "Goleiro", min: 2 },
-  { msg: "Escolha no mínimo 3 laterais para o seu time", filter: "Lateral", min: 3 },
-  { msg: "Escolha no mínimo 3 zagueiros para o seu time", filter: "Zagueiro", min: 3 },
-  { msg: "Escolha no mínimo 3 volantes para o seu time", filter: "Volante", min: 3 },
-  { msg: "Escolha no mínimo 6 meias para o seu time", filter: "Meia", min: 6 },
-  { msg: "Escolha no mínimo 4 atacantes para o seu time", filter: "Atacante", min: 4 }
+  { msg: "Escolha no mínimo 2 goleiros para o seu time.", filter: "Goleiro", min: 2 },
+  { msg: "Escolha no mínimo 3 laterais para o seu time.", filter: "Lateral", min: 3 },
+  { msg: "Escolha no mínimo 3 zagueiros para o seu time.", filter: "Zagueiro", min: 3 },
+  { msg: "Escolha no mínimo 3 volantes para o seu time.", filter: "Volante", min: 3 },
+  { msg: "Escolha no mínimo 6 meias para o seu time.", filter: "Meia", min: 6 },
+  { msg: "Escolha no mínimo 4 atacantes para o seu time.", filter: "Atacante", min: 4 }
 ];
-
-// ========== ELEMENTOS DOM ==========
 const elements = {
   headerTitle: document.getElementById('headerTitle'),
   marketMessage: document.getElementById('marketMessage'),
@@ -110,232 +89,25 @@ const elements = {
   selectedCountEl: document.getElementById('selectedCount'),
   playerSpeechBox: document.getElementById('playerSpeechBox')
 };
-
-// ========== FUNÇÕES AUXILIARES ==========
-function showNotif(text, time = 3000) {
-  const box = document.createElement('div');
-  box.className = 'notif';
-  box.style.position = 'fixed'; box.style.top = '18px'; box.style.right = '18px'; box.style.background = '#ffefc2'; box.style.color = '#333'; box.style.padding = '10px 14px'; box.style.borderRadius = '8px'; box.style.boxShadow = '0 6px 18px rgba(0,0,0,.12)'; box.style.border = '1px solid #e6b800'; box.style.zIndex = '1001';
-  box.textContent = text;
-  document.body.appendChild(box);
-  setTimeout(() => box.remove(), time);
-}
+function showNotif(text, time = 3000) { const box = document.createElement('div'); box.className = 'notif'; box.style.position = 'fixed'; box.style.top = '18px'; box.style.right = '18px'; box.style.background = '#ffefc2'; box.style.color = '#333'; box.style.padding = '10px 14px'; box.style.borderRadius = '8px'; box.style.boxShadow = '0 6px 18px rgba(0,0,0,.12)'; box.style.border = '1px solid #e6b800'; box.style.zIndex = '1001'; box.textContent = text; document.body.appendChild(box); setTimeout(() => box.remove(), time); }
 function formatReal(n) { return 'R$ ' + n.toLocaleString('pt-BR'); }
 function updateCash() { elements.cashDisplay.textContent = formatReal(CASH); }
 function updateSelectedCount() { elements.selectedCountEl.textContent = hired.length; }
-function renderHealthBar(health) {
-  const color = health >= 80 ? '#4CAF50' : health >= 50 ? '#ff9800' : '#f44336';
-  return `<div class="health-bar"><div class="health-fill" style="width: ${health}%; background: ${color}"></div></div>`;
-}
-function renderSkillBar(skill) {
-  const color = skill >= 80 ? '#9c27b0' : skill >= 60 ? '#673ab7' : skill >= 40 ? '#3f51b5' : '#2196f3';
-  return `<div class="skill-bar"><div class="skill-fill" style="width: ${skill}%; background: ${color}"></div></div>`;
-}
-function showPlayerSpeech(playerName, speech) {
-  elements.playerSpeechBox.innerHTML = `💬 <span class="player-name-highlight">${playerName}</span>: "${speech}"`;
-}
-
-// ========== GERAÇÃO DE JOGADORES (LÓGICA ORIGINAL COMPLETA E INTOCADA) ==========
-function generateSkillDistribution() {
-  const skills = [100];
-  for (let i = 1; i < TOTAL_MARKET; i++) {
-    let skill;
-    const rand = Math.random();
-    if (rand < 0.6) skill = Math.round(Math.random() * 20) + 25;
-    else if (rand < 0.85) skill = Math.round(Math.random() * 15) + 46;
-    else if (rand < 0.95) skill = Math.round(Math.random() * 10) + 15;
-    else skill = Math.round(Math.random() * 15) + 61;
-    skills.push(Math.min(100, skill));
-  }
-  return skills.sort(() => Math.random() - 0.5);
-}
-
-function calculatePlayerValue(skill, age) {
-  let basePasse = skill * 5;
-  let ageMultiplier = 1;
-  if (age <= 20) ageMultiplier = 1.8;
-  else if (age <= 25) ageMultiplier = 1.5;
-  else if (age <= 30) ageMultiplier = 1.2;
-  else if (age <= 35) ageMultiplier = 0.8;
-  else ageMultiplier = 0.5;
-  const passe = Math.round(basePasse * ageMultiplier / 10) * 10;
-  const baseSalario = 30 + (skill * 0.8);
-  const salario = Math.round((baseSalario + Math.random() * 20) / 5) * 5;
-  return {
-    passe: Math.max(50, Math.min(800, passe)),
-    salarioJogo: Math.max(30, Math.min(120, salario))
-  };
-}
-
-function generatePlayers() {
-  players = [];
-  const firsts = ["Marrentinho","Juscelino","Ronaldinho","Berg","Tico","Zeca","Xandão","Pedrinho","Claudinho","Sandro","Marollo","Ricardão"];
-  const lastParts = ["Carioca","Paulista","Baiano","Gaucho","Mineiro","Nordestino","Pernambucano","Capixaba"];
-  const positions = ['Goleiro', 'Lateral', 'Zagueiro', 'Volante', 'Meia', 'Atacante'];
-  const counts = { 'Goleiro': 6, 'Lateral': 8, 'Zagueiro': 8, 'Volante': 6, 'Meia': 8, 'Atacante': 6 };
-  const skills = generateSkillDistribution();
-  let id = 0;
-  positions.forEach(pos => {
-    for (let i = 0; i < counts[pos]; i++) {
-      const name = `${firsts[id % firsts.length]} ${lastParts[id % lastParts.length]}`;
-      const age = Math.floor(Math.random() * 25) + 16;
-      const skill = skills[id];
-      const health = Math.random() > 0.3 ? 100 : 80;
-      const isPai = Math.random() < 0.2;
-      const valores = calculatePlayerValue(skill, age);
-      const apresentacoes = {
-        Goleiro: ["Pode bater, professor! Pênalti pra mim é como beija-flor no mel, eu pego!", "Na hora do pênalti, fecho o gol!"],
-        Lateral: ["Sou o motorzinho da lateral! Subo e desço o jogo todo!", "Meu cruzamento é na medida!"],
-        Zagueiro: ["Entrou na área, a bola é minha!", "Sou o rei do jogo aéreo!"],
-        Volante: ["Eu corro por mim e pelo time todo!", "Meu carrinho é cirúrgico!"],
-        Meia: ["O jogo passa pelos meus pés!", "Minha visão de jogo é diferenciada!"],
-        Atacante: ["Na frente do gol, não tem pra ninguém!", "Gosto de fazer gol, é minha especialidade!"]
-      };
-      players.push({
-        id: 'p' + id, name, pos,
-        foot: Math.random() < 0.7 ? 'Direito' : Math.random() < 0.8 ? 'Esquerdo' : 'Ambidestro',
-        age, skill, health, isPai,
-        passe: valores.passe,
-        salarioJogo: valores.salarioJogo,
-        contrato: '6 meses',
-        profissao: { nome: ['Pedreiro', 'Eletricista', 'Professor', 'Vendedor', 'Gerente', 'Entregador'][Math.floor(Math.random() * 6)], tipo: 'manual' },
-        apresentacao: apresentacoes[pos][Math.floor(Math.random() * 2)]
-      });
-      id++;
-    }
-  });
-}
-
-// ========== LÓGICA DO MERCADO ==========
-function renderMarket(filter) {
-  elements.playersTbody.innerHTML = '';
-  const list = filter ? players.filter(p => p.pos === filter) : players;
-  
-  list.forEach(p => {
-    const tr = document.createElement('tr');
-    const isHired = hired.some(h => h.id === p.id);
-    tr.innerHTML = `
-      <td><span class="player-name-highlight">${p.name}</span><div class="muted">${p.pos}</div></td>
-      <td>${p.pos}</td>
-      <td>${p.foot}</td>
-      <td>${p.age}</td>
-      <td>${formatReal(p.passe)}</td>
-      <td>${formatReal(p.salarioJogo)}</td>
-      <td><select class="contrato-select" data-id="${p.id}" ${isHired ? 'disabled' : ''}>
-        <option value="3 meses">3 meses</option><option value="6 meses" selected>6 meses</option><option value="1 ano">1 ano</option>
-      </select></td>
-      <td>${renderSkillBar(p.skill)} ${p.skill}%</td>
-      <td>${renderHealthBar(p.health)} ${p.health}%</td>
-      <td>${p.profissao.nome}${p.isPai ? ' <span class="badge-pai">Pai</span>' : ''}</td>
-      <td><input type="checkbox" data-id="${p.id}" ${isHired ? 'checked' : ''}></td>
-    `;
-    tr.querySelector('.player-name-highlight').addEventListener('mouseenter', () => showPlayerSpeech(p.name, p.apresentacao));
-    tr.querySelector('.contrato-select').addEventListener('change', (e) => {
-        const player = players.find(pl => pl.id === e.target.dataset.id);
-        if (player) player.contrato = e.target.value;
-    });
-    tr.querySelector('input[type=checkbox]').addEventListener('change', onToggleHire);
-    elements.playersTbody.appendChild(tr);
-  });
-  updateCheckboxStates();
-}
-
-function onToggleHire(e) {
-  const cb = e.target;
-  const ply = players.find(p => p.id === cb.dataset.id);
-  if (cb.checked) {
-    if (hired.length >= MAX_PLAYERS) { showNotif('Limite de 22 jogadores!'); cb.checked = false; return; }
-    if (CASH - ply.passe < 0) { showNotif('Saldo insuficiente!'); cb.checked = false; return; }
-    CASH -= ply.passe;
-    hired.push({...ply});
-  } else {
-    CASH += ply.passe;
-    hired = hired.filter(h => h.id !== ply.id);
-  }
-  updateCash();
-  updateSelectedCount();
-  updateCheckboxStates();
-  updateButtonStates();
-}
-
-function updateCheckboxStates() {
-  elements.playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb => {
-    const ply = players.find(p => p.id === cb.dataset.id);
-    cb.disabled = !cb.checked && (hired.length >= MAX_PLAYERS || CASH - ply.passe < 0);
-  });
-}
-
+function renderSkillBar(skill) { return `<div style="width:80px;height:8px;background:#eee;border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle"><div style="height:100%;background:#9c27b0;width:${skill}%"></div></div>`; }
+function renderHealthBar(health) { return `<div style="width:60px;height:8px;background:#eee;border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle"><div style="height:100%;background:#4CAF50;width:${health}%"></div></div>`; }
+function showPlayerSpeech(playerName, speech) { elements.playerSpeechBox.innerHTML = `💬 <span class="player-name-highlight">${playerName}</span>: "${speech}"`; }
+function generateSkillDistribution() { const skills = [100]; for (let i = 1; i < TOTAL_MARKET; i++) { let skill; const rand = Math.random(); if (rand < 0.6) skill = Math.round(Math.random() * 20) + 25; else if (rand < 0.85) skill = Math.round(Math.random() * 15) + 46; else if (rand < 0.95) skill = Math.round(Math.random() * 10) + 15; else skill = Math.round(Math.random() * 15) + 61; skills.push(Math.min(100, skill)); } return skills.sort(() => Math.random() - 0.5); }
+function calculatePlayerValue(skill, age) { let basePasse = skill * 5; let ageMultiplier = 1; if (age <= 20) ageMultiplier = 1.8; else if (age <= 25) ageMultiplier = 1.5; else if (age <= 30) ageMultiplier = 1.2; else if (age <= 35) ageMultiplier = 0.8; else ageMultiplier = 0.5; const passe = Math.round(basePasse * ageMultiplier / 10) * 10; const baseSalario = 30 + (skill * 0.8); const salario = Math.round((baseSalario + Math.random() * 20) / 5) * 5; return { passe: Math.max(50, passe), salarioJogo: Math.max(30, salario) }; }
+function generatePlayers() { players = []; const firsts = ["Marrentinho","Juscelino","Ronaldinho","Berg","Tico","Zeca","Xandão","Pedrinho","Claudinho","Sandro","Marollo","Ricardão"]; const lastParts = ["Carioca","Paulista","Baiano","Gaucho","Mineiro","Nordestino","Pernambucano","Capixaba"]; const positions = ['Goleiro', 'Lateral', 'Zagueiro', 'Volante', 'Meia', 'Atacante']; const counts = { 'Goleiro': 6, 'Lateral': 8, 'Zagueiro': 8, 'Volante': 6, 'Meia': 8, 'Atacante': 6 }; const specializations = { 'Goleiro': 'Pega-Pênalti 🧤', 'Zagueiro': 'Xerife 🛡️', 'Lateral': 'Velocista ⚡', 'Volante': 'Motorzinho 🔋', 'Meia': 'Armador 🧠', 'Atacante': 'Finalizador 🎯' }; const skills = generateSkillDistribution(); let id = 0; positions.forEach(pos => { for (let i = 0; i < counts[pos]; i++) { const name = `${firsts[id % firsts.length]} ${lastParts[id % lastParts.length]}`; const age = Math.floor(Math.random() * 25) + 16; const skill = skills[id]; const health = Math.random() > 0.3 ? 100 : 80; const isPai = Math.random() < 0.2; const valores = calculatePlayerValue(skill, age); const apresentacoes = { Goleiro: "Pode bater, professor! Pênalti pra mim é doce!", Lateral: "Sou o motorzinho da lateral!", Zagueiro: "Aqui na zaga, ninguém passa!", Volante: "Corro por mim e pelo time todo!", Meia: "O jogo passa pelos meus pés!", Atacante: "Na frente do gol, eu não perdoo!" }; players.push({ id: 'p' + id, name, pos, foot: Math.random() < 0.7 ? 'Direito' : Math.random() < 0.8 ? 'Esquerdo' : 'Ambidestro', age, skill, health, isPai, passe: valores.passe, salarioJogo: valores.salarioJogo, contrato: '6 meses', profissao: { nome: ['Pedreiro', 'Eletricista', 'Professor', 'Vendedor', 'Gerente', 'Entregador'][Math.floor(Math.random() * 6)] }, apresentacao: apresentacoes[pos], specialization: specializations[pos] }); id++; } }); }
+function renderMarket(filter) { elements.playersTbody.innerHTML = ''; const list = filter ? players.filter(p => p.pos === filter) : players; list.forEach(p => { const tr = document.createElement('tr'); const isHired = hired.some(h => h.id === p.id); tr.innerHTML = `<td><span class="player-name-highlight">${p.name}</span><div class="muted">${p.pos}</div></td><td>${p.pos}</td><td>${p.foot}</td><td>${p.age}</td><td>${formatReal(p.passe)}</td><td>${formatReal(p.salarioJogo)}</td><td><select class="contrato-select" data-id="${p.id}" ${isHired ? 'disabled' : ''}><option>3 meses</option><option selected>6 meses</option><option>1 ano</option></select></td><td>${renderSkillBar(p.skill)} ${p.skill}%</td><td>${renderHealthBar(p.health)} ${p.health}%</td><td>${p.profissao.nome}${p.isPai ? ' <span class="badge-pai">Pai</span>' : ''}</td><td><input type="checkbox" data-id="${p.id}" ${isHired ? 'checked' : ''}></td>`; tr.querySelector('.player-name-highlight').addEventListener('mouseenter', () => showPlayerSpeech(p.name, p.apresentacao)); tr.querySelector('.contrato-select').addEventListener('change', (e) => { const player = players.find(pl => pl.id === e.target.dataset.id); if (player) player.contrato = e.target.value; }); tr.querySelector('input[type=checkbox]').addEventListener('change', onToggleHire); elements.playersTbody.appendChild(tr); }); updateCheckboxStates(); }
+function onToggleHire(e) { const cb = e.target; const ply = players.find(p => p.id === cb.dataset.id); if (cb.checked) { if (hired.length >= MAX_PLAYERS) { showNotif('Limite de 22 jogadores!'); cb.checked = false; return; } if (CASH - ply.passe < 0) { showNotif('Saldo insuficiente!'); cb.checked = false; return; } CASH -= ply.passe; hired.push({...ply}); } else { CASH += ply.passe; hired = hired.filter(h => h.id !== ply.id); } updateCash(); updateSelectedCount(); updateCheckboxStates(); updateButtonStates(); }
+function updateCheckboxStates() { elements.playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb => { const ply = players.find(p => p.id === cb.dataset.id); cb.disabled = !cb.checked && (hired.length >= MAX_PLAYERS || CASH - ply.passe < 0); }); }
 function countHiredByPos(pos) { return hired.filter(h => h.pos === pos).length; }
-
-function updateButtonStates() {
-  elements.btnVoltarStep.style.display = marketStep > 1 ? 'inline-block' : 'none';
-  elements.btnEscalar.disabled = hired.length !== MAX_PLAYERS;
-  
-  if (marketStep >= 1 && marketStep < steps.length) {
-    const current = steps[marketStep];
-    elements.btnNextStep.disabled = countHiredByPos(current.filter) < current.min;
-  }
-  
-  updateSelectedCount();
-  updateCash();
-}
-
-// ========== NAVEGAÇÃO E INICIALIZAÇÃO ==========
-elements.btnNextStep.addEventListener('click', () => {
-  const current = steps[marketStep];
-  if (current && current.filter) {
-    if (countHiredByPos(current.filter) < current.min) {
-      return showNotif(`Escolha no mínimo ${current.min} ${current.filter}(s)! Você tem ${countHiredByPos(current.filter)}.`);
-    }
-  }
-  marketStep++;
-  if (marketStep >= steps.length) {
-      marketStep = 1; // Volta ao início dos filtros de posição
-  }
-  elements.marketMessage.textContent = steps[marketStep].msg;
-  renderMarket(steps[marketStep].filter);
-  updateButtonStates();
-});
-
-elements.btnVoltarStep.addEventListener('click', () => {
-  if (marketStep > 1) {
-    marketStep--;
-    elements.marketMessage.textContent = steps[marketStep].msg;
-    renderMarket(steps[marketStep].filter);
-    updateButtonStates();
-  }
-});
-
-elements.linkTela3.addEventListener('click', (event) => {
-  if (elements.btnEscalar.disabled) {
-    event.preventDefault();
-    showNotif('Você precisa contratar exatamente 22 jogadores para escalar o time!');
-    return;
-  }
-  // Salva o estado atual antes de navegar
-  localStorage.setItem('elencoDoTime', JSON.stringify(hired));
-  localStorage.setItem('dinheiroEmCaixa', CASH);
-});
-
-function init() {
-  // Carrega os dados salvos da tela anterior
-  const userData = JSON.parse(localStorage.getItem('userData')) || {};
-  CASH = parseInt(localStorage.getItem('dinheiroEmCaixa')) || 5000;
-  hired = JSON.parse(localStorage.getItem('elencoDoTime')) || [];
-
-  // Atualiza a interface com os dados do time
-  elements.headerTitle.textContent = userData.teamName || 'O Rei da Várzea';
-  
-  // Prepara o mercado
-  generatePlayers();
-  elements.marketMessage.textContent = steps[marketStep].msg;
-  renderMarket(steps[marketStep].filter);
-  updateCash();
-  updateSelectedCount();
-  updateButtonStates();
-}
-
-// Inicia a página
+function updateButtonStates() { elements.btnVoltarStep.style.display = marketStep > 1 ? 'inline-block' : 'none'; elements.btnEscalar.disabled = hired.length !== MAX_PLAYERS; if (marketStep >= 1 && marketStep < steps.length) { const current = steps[marketStep]; elements.btnNextStep.disabled = countHiredByPos(current.filter) < current.min; } updateSelectedCount(); updateCash(); }
+elements.btnNextStep.addEventListener('click', () => { const current = steps[marketStep]; if (current && current.filter) { if (countHiredByPos(current.filter) < current.min) { return showNotif(`Escolha no mínimo ${current.min} ${current.filter}(s)!`); } } marketStep++; if (marketStep >= steps.length) { marketStep = 1; } elements.marketMessage.textContent = steps[marketStep].msg; renderMarket(steps[marketStep].filter); updateButtonStates(); });
+elements.btnVoltarStep.addEventListener('click', () => { if (marketStep > 1) { marketStep--; elements.marketMessage.textContent = steps[marketStep].msg; renderMarket(steps[marketStep].filter); updateButtonStates(); } });
+elements.linkTela3.addEventListener('click', (event) => { if (elements.btnEscalar.disabled) { event.preventDefault(); showNotif('Você precisa contratar exatamente 22 jogadores!'); return; } localStorage.setItem('elencoDoTime', JSON.stringify(hired)); localStorage.setItem('dinheiroEmCaixa', CASH); });
+function init() { const userData = JSON.parse(localStorage.getItem('userData')) || {}; CASH = parseInt(localStorage.getItem('dinheiroEmCaixa')) || 5000; hired = JSON.parse(localStorage.getItem('elencoDoTime')) || []; elements.headerTitle.textContent = userData.teamName || 'O Rei da Várzea'; generatePlayers(); elements.marketMessage.textContent = steps[marketStep].msg; renderMarket(steps[marketStep].filter); updateCash(); updateSelectedCount(); updateButtonStates(); }
 init();
 </script>
 </body>
