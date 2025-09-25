@@ -18,7 +18,6 @@
   .muted{color:#666;font-size:13px}
   .bench{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto;padding:8px;border:1px dashed #ccc;border-radius:8px}
   .player-card{padding:8px;border-radius:8px;background:#fff;border:1px solid #eee;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
-  .position-slot{width:140px;height:50px;border-radius:8px;background:rgba(255,255,255,0.95);display:flex;align-items:center;justify-content:center;cursor:pointer;margin:8px;border:2px dashed #ccc;transition:all 0.3s;font-size:12px;text-align:center;flex-direction:column;padding:5px}
   .position-slot:hover{background:rgba(255,255,255,0.8);border-color:#0b6bd6}
   .position-slot.assigned{background:#e8f5e8;border:2px solid #4CAF50}
   .notif{position:fixed;top:18px;right:18px;background:#ffefc2;color:#333;padding:10px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);border:1px solid #e6b800}
@@ -33,13 +32,55 @@
   .player-list-modal { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
   .modal-player-item { padding: 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; transition: background-color 0.2s; }
   .modal-player-item:hover { background-color: #f5f7fb; }
-  .formation-line { display: flex; justify-content: center; align-items: center; gap: 20px; margin: 15px 0; }
-  .pitch { width: 100%; height: 600px; background: linear-gradient(#73c26b, #5eb95e); border-radius: 12px; padding: 30px; box-sizing: border-box; position: relative; }
-  .attack-line { margin-top: 150px; }
-  .midfield-line { margin-top: 100px; }
-  .defense-line { margin-top: 50px; }
-  .goalkeeper-line { margin-top: 10px; }
   a { text-decoration: none; }
+
+  /* --- AJUSTES DE ESPAÇAMENTO NO CAMPO --- */
+  .formation-line {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px; /* Reduzido */
+    margin: 15px 0;
+  }
+  .position-slot {
+    width: 140px;
+    height: 50px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin: 4px; /* Reduzido */
+    border: 2px dashed #ccc;
+    transition: all 0.3s;
+    font-size: 12px;
+    text-align: center;
+    flex-direction: column;
+    padding: 5px;
+  }
+  .pitch { 
+    width: 100%;
+    height: 600px; 
+    background: linear-gradient(#73c26b, #5eb95e); 
+    border-radius: 12px; 
+    padding: 30px; 
+    box-sizing: border-box; 
+    position: relative; 
+  }
+  .goalkeeper-line {
+    margin-top: 10px; 
+  }
+  .defense-line {
+    margin-top: 60px; /* Ajustado */
+  }
+  .midfield-line {
+    margin-top: 80px; /* Ajustado */
+  }
+  .attack-line {
+    margin-top: 80px; /* Ajustado */
+  }
+  /* --- FIM DOS AJUSTES --- */
 </style>
 </head>
 <body>
@@ -123,7 +164,6 @@
 
 <script>
 // ========== CONFIGURAÇÕES E ESTADO DO JOGO ==========
-// Essas variáveis serão populadas com os dados do localStorage
 let hired = [];
 let userData = {};
 
@@ -140,7 +180,7 @@ const elements = {
   modalClose: document.querySelector('.modal .close')
 };
 
-// ========== FUNÇÕES AUXILIARES (INTOCADAS) ==========
+// ========== FUNÇÕES AUXILIARES ==========
 function showNotif(text, time = 3000) {
   const box = document.createElement('div');
   box.className = 'notif';
@@ -160,7 +200,7 @@ function formatReal(n) {
   return 'R$ ' + n.toLocaleString('pt-BR');
 }
 
-// ========== LÓGICA DA ESCALAÇÃO (INTOCADA DO SEU CÓDIGO ORIGINAL) ==========
+// ========== LÓGICA DA ESCALAÇÃO ==========
 function openPlayerModal(slotElement) {
   const posicao = slotElement.dataset.pos;
   elements.modalTitle.textContent = `Escalar ${posicao}`;
@@ -215,7 +255,6 @@ function assignPlayerToSlot(jogador, slotElement) {
       otherSlot.innerHTML = `<div>${otherSlot.dataset.pos.includes('Lateral') ? '⬅️' : '🛡️'} ${otherSlot.dataset.pos}</div><div class="muted">Clique para escalar</div>`;
   }
     
-  // Limpa o slot atual caso tenha um jogador
   const previousPlayerId = slotElement.dataset.assigned;
   if (previousPlayerId) {
       // (Opcional) Logica para tratar o jogador que foi substituido
@@ -280,9 +319,8 @@ function init() {
   hired = JSON.parse(localStorage.getItem('elencoDoTime')) || [];
   userData = JSON.parse(localStorage.getItem('userData')) || {};
 
-  // Se não houver elenco, impede o usuário de ficar na página (opcional, mas bom)
-  if(hired.length === 0) {
-      alert("Nenhum elenco encontrado! Contrate jogadores no mercado primeiro.");
+  if(hired.length < 22) {
+      alert("Elenco incompleto! Volte ao mercado e contrate 22 jogadores.");
       window.location.href = 'mercado.html';
       return;
   }
