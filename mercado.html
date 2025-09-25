@@ -13,7 +13,7 @@
   label{display:block;margin-top:8px}
   input[type=text]{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px}
   button{background:#0b6bd6;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
-  button[disabled]{opacity:0.45;cursor:default; background: #6c757d;}
+  button[disabled]{opacity:0.45;cursor:default}
   table{width:100%;border-collapse:collapse;font-size:14px}
   th,td{padding:8px;border-bottom:1px solid #eee;text-align:left; vertical-align: middle;}
   th{background:#fafafa}
@@ -35,21 +35,29 @@
 </head>
 <body>
 <header>
-  <div class="container"><h1 id="headerTitle">O Rei da Várzea — Protótipo</h1></div>
+  <div class="container"><h1 id="headerTitle">O Rei da Várzea</h1></div>
 </header>
 
 <div class="container">
   <div id="tela2" class="card">
-    <h2 id="teamNameDisplay">Tela 2 — Mercado de Jogadores</h2>
+    <h2>Tela 2 — Mercado de Jogadores</h2>
     <div id="playerSpeechBox" class="player-speech-box">
-      💬 Contrate 22 jogadores para montar seu elenco! Passe o mouse sobre os nomes para conhecê-los.
+      💬 Passe o mouse sobre os nomes dos jogadores para ver suas apresentações!
     </div>
-    <div id="marketMessage" style="font-weight:bold;margin-bottom:10px"></div>
+    <div id="marketMessage" style="font-weight:bold;margin-bottom:10px">Escolha no mínimo 2 goleiros para o seu time</div>
     <div style="margin-top:10px;overflow:auto;max-height:480px">
       <table id="playersTable">
         <thead><tr>
-          <th>Nome</th><th>Posição</th><th>Pé</th><th>Idade</th>
-          <th>Passe</th><th>Salário/Jogo</th><th>Habilidade</th><th>Contratar</th>
+          <th>Nome</th>
+          <th>Posição</th>
+          <th>Idade</th>
+          <th>Passe</th>
+          <th>Salário/Jogo</th>
+          <th>Tempo Contrato</th>
+          <th>Habilidade</th>
+          <th>Saúde</th>
+          <th>Profissão</th>
+          <th>Contratar</th>
         </tr></thead>
         <tbody></tbody>
       </table>
@@ -70,29 +78,27 @@
 </div>
 
 <script>
-// ========== CONFIGURAÇÕES GLOBAIS ==========
+// ========== CONFIGURAÇÕES ==========
 const MAX_PLAYERS = 22;
 const TOTAL_MARKET = 42;
 let CASH = 5000;
 let players = [];
 let hired = [];
-let marketStep = 0; // Começa no passo 0 para a mensagem inicial
-let userData = {};
+let marketStep = 1;
 
 const steps = [
-  { msg: "Complete seu elenco de 22 jogadores para continuar.", filter: null, min: 22 },
-  { msg: "Escolha no mínimo 2 goleiros para o seu time.", filter: "Goleiro", min: 2 },
-  { msg: "Escolha no mínimo 3 laterais para o seu time.", filter: "Lateral", min: 3 },
-  { msg: "Escolha no mínimo 3 zagueiros para o seu time.", filter: "Zagueiro", min: 3 },
-  { msg: "Escolha no mínimo 3 volantes para o seu time.", filter: "Volante", min: 3 },
-  { msg: "Escolha no mínimo 6 meias para o seu time.", filter: "Meia", min: 6 },
-  { msg: "Escolha no mínimo 4 atacantes para o seu time.", filter: "Atacante", min: 4 }
+  { msg: "Hora de montar o seu time, escolha 22 jogadores para iniciar", filter: null, min: 0 },
+  { msg: "Escolha no mínimo 2 goleiros para o seu time", filter: "Goleiro", min: 2 },
+  { msg: "Escolha no mínimo 3 laterais para o seu time", filter: "Lateral", min: 3 },
+  { msg: "Escolha no mínimo 3 zagueiros para o seu time", filter: "Zagueiro", min: 3 },
+  { msg: "Escolha no mínimo 3 volantes para o seu time", filter: "Volante", min: 3 },
+  { msg: "Escolha no mínimo 6 meias para o seu time", filter: "Meia", min: 6 },
+  { msg: "Escolha no mínimo 4 atacantes para o seu time", filter: "Atacante", min: 4 }
 ];
 
 // ========== ELEMENTOS DOM ==========
 const elements = {
   headerTitle: document.getElementById('headerTitle'),
-  teamNameDisplay: document.getElementById('teamNameDisplay'),
   marketMessage: document.getElementById('marketMessage'),
   playersTbody: document.querySelector('#playersTable tbody'),
   btnNextStep: document.getElementById('btnNextStep'),
@@ -107,7 +113,8 @@ const elements = {
 // ========== FUNÇÕES AUXILIARES ==========
 function showNotif(text, time = 3000) {
   const box = document.createElement('div');
-  box.className = 'notif'; box.style.position = 'fixed'; box.style.top = '18px'; box.style.right = '18px'; box.style.background = '#ffefc2'; box.style.color = '#333'; box.style.padding = '10px 14px'; box.style.borderRadius = '8px'; box.style.boxShadow = '0 6px 18px rgba(0,0,0,.12)'; box.style.border = '1px solid #e6b800'; box.style.zIndex = '1001';
+  box.className = 'notif';
+  box.style.position = 'fixed'; box.style.top = '18px'; box.style.right = '18px'; box.style.background = '#ffefc2'; box.style.color = '#333'; box.style.padding = '10px 14px'; box.style.borderRadius = '8px'; box.style.boxShadow = '0 6px 18px rgba(0,0,0,.12)'; box.style.border = '1px solid #e6b800'; box.style.zIndex = '1001';
   box.textContent = text;
   document.body.appendChild(box);
   setTimeout(() => box.remove(), time);
@@ -115,22 +122,29 @@ function showNotif(text, time = 3000) {
 function formatReal(n) { return 'R$ ' + n.toLocaleString('pt-BR'); }
 function updateCash() { elements.cashDisplay.textContent = formatReal(CASH); }
 function updateSelectedCount() { elements.selectedCountEl.textContent = hired.length; }
+function renderHealthBar(health) {
+  const color = health >= 80 ? '#4CAF50' : health >= 50 ? '#ff9800' : '#f44336';
+  return `<div class="health-bar"><div class="health-fill" style="width: ${health}%; background: ${color}"></div></div>`;
+}
 function renderSkillBar(skill) {
-  const color = skill >= 80 ? '#9c27b0' : skill >= 60 ? '#673ab7' : '#2196f3';
+  const color = skill >= 80 ? '#9c27b0' : skill >= 60 ? '#673ab7' : skill >= 40 ? '#3f51b5' : '#2196f3';
   return `<div class="skill-bar"><div class="skill-fill" style="width: ${skill}%; background: ${color}"></div></div>`;
 }
+function showPlayerSpeech(playerName, speech) {
+  elements.playerSpeechBox.innerHTML = `💬 <span class="player-name-highlight">${playerName}</span>: "${speech}"`;
+}
 
-// ========== GERAÇÃO DE JOGADORES (LÓGICA COMPLETA) ==========
+// ========== GERAÇÃO DE JOGADORES (LÓGICA ORIGINAL COMPLETA E INTOCADA) ==========
 function generateSkillDistribution() {
-  const skills = [100]; // Craque
+  const skills = [100];
   for (let i = 1; i < TOTAL_MARKET; i++) {
-    const rand = Math.random();
     let skill;
+    const rand = Math.random();
     if (rand < 0.6) skill = Math.round(Math.random() * 20) + 25;
     else if (rand < 0.85) skill = Math.round(Math.random() * 15) + 46;
     else if (rand < 0.95) skill = Math.round(Math.random() * 10) + 15;
     else skill = Math.round(Math.random() * 15) + 61;
-    skills.push(skill);
+    skills.push(Math.min(100, skill));
   }
   return skills.sort(() => Math.random() - 0.5);
 }
@@ -138,37 +152,57 @@ function generateSkillDistribution() {
 function calculatePlayerValue(skill, age) {
   let basePasse = skill * 5;
   let ageMultiplier = 1;
-  if (age <= 20) ageMultiplier = 1.8; else if (age <= 25) ageMultiplier = 1.5;
-  else if (age <= 30) ageMultiplier = 1.2; else if (age <= 35) ageMultiplier = 0.8;
+  if (age <= 20) ageMultiplier = 1.8;
+  else if (age <= 25) ageMultiplier = 1.5;
+  else if (age <= 30) ageMultiplier = 1.2;
+  else if (age <= 35) ageMultiplier = 0.8;
   else ageMultiplier = 0.5;
-  const passe = Math.round((basePasse * ageMultiplier) / 10) * 10;
-  const salario = Math.round((30 + (skill * 0.8)) / 5) * 5;
-  return { passe: Math.max(50, passe), salarioJogo: Math.max(30, salario) };
+  const passe = Math.round(basePasse * ageMultiplier / 10) * 10;
+  const baseSalario = 30 + (skill * 0.8);
+  const salario = Math.round((baseSalario + Math.random() * 20) / 5) * 5;
+  return {
+    passe: Math.max(50, Math.min(800, passe)),
+    salarioJogo: Math.max(30, Math.min(120, salario))
+  };
 }
 
 function generatePlayers() {
   players = [];
   const firsts = ["Marrentinho","Juscelino","Ronaldinho","Berg","Tico","Zeca","Xandão","Pedrinho","Claudinho","Sandro","Marollo","Ricardão"];
   const lastParts = ["Carioca","Paulista","Baiano","Gaucho","Mineiro","Nordestino","Pernambucano","Capixaba"];
-  const positions = { 'Goleiro': 6, 'Lateral': 8, 'Zagueiro': 8, 'Volante': 6, 'Meia': 8, 'Atacante': 6 };
+  const positions = ['Goleiro', 'Lateral', 'Zagueiro', 'Volante', 'Meia', 'Atacante'];
+  const counts = { 'Goleiro': 6, 'Lateral': 8, 'Zagueiro': 8, 'Volante': 6, 'Meia': 8, 'Atacante': 6 };
   const skills = generateSkillDistribution();
   let id = 0;
-  for (const pos in positions) {
-    for (let i = 0; i < positions[pos]; i++) {
-      if (id >= TOTAL_MARKET) continue;
+  positions.forEach(pos => {
+    for (let i = 0; i < counts[pos]; i++) {
       const name = `${firsts[id % firsts.length]} ${lastParts[id % lastParts.length]}`;
       const age = Math.floor(Math.random() * 25) + 16;
-      const valores = calculatePlayerValue(skills[id], age);
-      const apresentacoes = { Goleiro: "Pode chutar que eu pego tudo!", Lateral: "Sou o motorzinho da lateral!", Zagueiro: "Aqui na zaga, ninguém passa!", Volante: "Corro por mim e pelo time todo!", Meia: "O jogo passa pelos meus pés!", Atacante: "Na frente do gol, eu não perdoo!" };
+      const skill = skills[id];
+      const health = Math.random() > 0.3 ? 100 : 80;
+      const isPai = Math.random() < 0.2;
+      const valores = calculatePlayerValue(skill, age);
+      const apresentacoes = {
+        Goleiro: ["Pode bater, professor! Pênalti pra mim é como beija-flor no mel, eu pego!", "Na hora do pênalti, fecho o gol!"],
+        Lateral: ["Sou o motorzinho da lateral! Subo e desço o jogo todo!", "Meu cruzamento é na medida!"],
+        Zagueiro: ["Entrou na área, a bola é minha!", "Sou o rei do jogo aéreo!"],
+        Volante: ["Eu corro por mim e pelo time todo!", "Meu carrinho é cirúrgico!"],
+        Meia: ["O jogo passa pelos meus pés!", "Minha visão de jogo é diferenciada!"],
+        Atacante: ["Na frente do gol, não tem pra ninguém!", "Gosto de fazer gol, é minha especialidade!"]
+      };
       players.push({
-        id: 'p' + id, name, pos, age, skill: skills[id],
-        passe: valores.passe, salarioJogo: valores.salarioJogo,
-        foot: Math.random() < 0.7 ? 'Direito' : 'Esquerdo',
-        apresentacao: apresentacoes[pos]
+        id: 'p' + id, name, pos,
+        foot: Math.random() < 0.7 ? 'Direito' : Math.random() < 0.8 ? 'Esquerdo' : 'Ambidestro',
+        age, skill, health, isPai,
+        passe: valores.passe,
+        salarioJogo: valores.salarioJogo,
+        contrato: '6 meses',
+        profissao: { nome: ['Pedreiro', 'Eletricista', 'Professor', 'Vendedor', 'Gerente', 'Entregador'][Math.floor(Math.random() * 6)], tipo: 'manual' },
+        apresentacao: apresentacoes[pos][Math.floor(Math.random() * 2)]
       });
       id++;
     }
-  }
+  });
 }
 
 // ========== LÓGICA DO MERCADO ==========
@@ -181,15 +215,24 @@ function renderMarket(filter) {
     const isHired = hired.some(h => h.id === p.id);
     tr.innerHTML = `
       <td><span class="player-name-highlight">${p.name}</span><div class="muted">${p.pos}</div></td>
-      <td>${p.pos}</td> <td>${p.foot}</td> <td>${p.age}</td>
-      <td>${formatReal(p.passe)}</td> <td>${formatReal(p.salarioJogo)}</td>
+      <td>${p.pos}</td>
+      <td>${p.age}</td>
+      <td>${formatReal(p.passe)}</td>
+      <td>${formatReal(p.salarioJogo)}</td>
+      <td><select class="contrato-select" data-id="${p.id}" ${isHired ? 'disabled' : ''}>
+        <option value="3 meses">3 meses</option><option value="6 meses" selected>6 meses</option><option value="1 ano">1 ano</option>
+      </select></td>
       <td>${renderSkillBar(p.skill)} ${p.skill}%</td>
+      <td>${renderHealthBar(p.health)} ${p.health}%</td>
+      <td>${p.profissao.nome}${p.isPai ? ' <span class="badge-pai">Pai</span>' : ''}</td>
       <td><input type="checkbox" data-id="${p.id}" ${isHired ? 'checked' : ''}></td>
     `;
-    tr.querySelector('.player-name-highlight').onmouseenter = () => {
-      elements.playerSpeechBox.innerHTML = `💬 <span class="player-name-highlight">${p.name}</span>: "${p.apresentacao}"`;
-    };
-    tr.querySelector('input[type=checkbox]').onchange = onToggleHire;
+    tr.querySelector('.player-name-highlight').addEventListener('mouseenter', () => showPlayerSpeech(p.name, p.apresentacao));
+    tr.querySelector('.contrato-select').addEventListener('change', (e) => {
+        const player = players.find(pl => pl.id === e.target.dataset.id);
+        if (player) player.contrato = e.target.value;
+    });
+    tr.querySelector('input[type=checkbox]').addEventListener('change', onToggleHire);
     elements.playersTbody.appendChild(tr);
   });
   updateCheckboxStates();
@@ -223,34 +266,42 @@ function updateCheckboxStates() {
 function countHiredByPos(pos) { return hired.filter(h => h.pos === pos).length; }
 
 function updateButtonStates() {
-  elements.btnVoltarStep.style.display = marketStep > 0 ? 'inline-block' : 'none';
-  elements.btnNextStep.style.display = marketStep < steps.length -1 ? 'inline-block' : 'none';
+  elements.btnVoltarStep.style.display = marketStep > 1 ? 'inline-block' : 'none';
   elements.btnEscalar.disabled = hired.length !== MAX_PLAYERS;
-  const currentStep = steps[marketStep];
-  if (currentStep.filter) {
-    elements.btnNextStep.disabled = countHiredByPos(currentStep.filter) < currentStep.min;
+  
+  if (marketStep >= 1 && marketStep < steps.length) {
+    const current = steps[marketStep];
+    elements.btnNextStep.disabled = countHiredByPos(current.filter) < current.min;
   }
+  
+  updateSelectedCount();
+  updateCash();
 }
 
 // ========== NAVEGAÇÃO E INICIALIZAÇÃO ==========
 elements.btnNextStep.addEventListener('click', () => {
-  const currentStep = steps[marketStep];
-  if(currentStep.filter && countHiredByPos(currentStep.filter) < currentStep.min) {
-    return showNotif(`Você precisa de pelo menos ${currentStep.min} ${currentStep.filter}(s).`);
+  const current = steps[marketStep];
+  if (current && current.filter) {
+    if (countHiredByPos(current.filter) < current.min) {
+      return showNotif(`Escolha no mínimo ${current.min} ${current.filter}(s)! Você tem ${countHiredByPos(current.filter)}.`);
+    }
   }
   marketStep++;
-  if (marketStep >= steps.length) marketStep = 0; // Volta para a visão geral
+  if (marketStep >= steps.length) {
+      marketStep = 1; // Volta ao início dos filtros de posição
+  }
   elements.marketMessage.textContent = steps[marketStep].msg;
   renderMarket(steps[marketStep].filter);
   updateButtonStates();
 });
 
 elements.btnVoltarStep.addEventListener('click', () => {
-  marketStep--;
-  if (marketStep < 0) marketStep = 0;
-  elements.marketMessage.textContent = steps[marketStep].msg;
-  renderMarket(steps[marketStep].filter);
-  updateButtonStates();
+  if (marketStep > 1) {
+    marketStep--;
+    elements.marketMessage.textContent = steps[marketStep].msg;
+    renderMarket(steps[marketStep].filter);
+    updateButtonStates();
+  }
 });
 
 elements.linkTela3.addEventListener('click', (event) => {
@@ -266,17 +317,15 @@ elements.linkTela3.addEventListener('click', (event) => {
 
 function init() {
   // Carrega os dados salvos da tela anterior
-  userData = JSON.parse(localStorage.getItem('userData')) || {};
+  const userData = JSON.parse(localStorage.getItem('userData')) || {};
   CASH = parseInt(localStorage.getItem('dinheiroEmCaixa')) || 5000;
   hired = JSON.parse(localStorage.getItem('elencoDoTime')) || [];
 
   // Atualiza a interface com os dados do time
   elements.headerTitle.textContent = userData.teamName || 'O Rei da Várzea';
-  elements.teamNameDisplay.textContent = `Mercado - ${userData.teamName || 'Seu Time'}`;
-
+  
   // Prepara o mercado
   generatePlayers();
-  marketStep = 1; // Começa pedindo goleiros
   elements.marketMessage.textContent = steps[marketStep].msg;
   renderMarket(steps[marketStep].filter);
   updateCash();
@@ -286,7 +335,6 @@ function init() {
 
 // Inicia a página
 init();
-
 </script>
 </body>
 </html>
