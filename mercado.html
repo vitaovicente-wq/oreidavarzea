@@ -17,6 +17,9 @@
   th{background:#fafafa}
   .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px}
   .muted{color:#666;font-size:13px}
+  .health-bar, .skill-bar { width: 60px; height: 6px; background: #eee; border-radius: 3px; overflow: hidden; display: inline-block; }
+  .health-fill { height: 100%; background: #28a745; }
+  .skill-fill { height: 100%; background: #9c27b0; }
   .player-speech-box { position: sticky; top: 0; background: #fff9c4; border: 2px solid #ffd54f; border-radius: 10px; padding: 15px; margin-bottom: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 100; min-height: 60px; display: flex; align-items: center; font-style: italic; }
   .player-name-highlight { font-weight: bold; color: #0b6bd6; cursor: pointer; text-decoration: underline dotted; padding: 2px 4px; border-radius: 3px; transition: background-color 0.2s; }
   .player-name-highlight:hover { background-color: #f0f8ff; }
@@ -49,8 +52,8 @@
     <div class="controls">
       <button id="btnVoltarStep" class="btn-voltar" style="display:none">← Voltar</button>
       <button id="btnNextStep">Próximo</button>
-      <a id="linkTela3" href="escalacao.html">
-        <button id="btnEscalar" disabled>Escalar time</button>
+      <a id="linkProximaTela" href="temporada.html">
+        <button id="btnEscalar" disabled>Ver Temporada</button>
       </a>
       <div style="margin-left:auto">
         <strong>Dinheiro em caixa:</strong>
@@ -61,15 +64,14 @@
   </div>
 </div>
 <script>
-// ... (script completo do mercado)
 // ========== ESTADO DO JOGO ==========
 const MAX_PLAYERS = 22;
 const TOTAL_MARKET = 42;
 let players = [];
 let hired = [];
 let marketStep = 1;
-let financas = {}; // Objeto financeiro que será carregado
-let initialCash = 0; // Para calcular o gasto da sessão
+let financas = {};
+let initialCash = 0;
 
 const steps = [
   { msg: "Hora de montar o seu time, escolha 22 jogadores para iniciar", filter: null, min: 0 },
@@ -88,44 +90,39 @@ const elements = {
   btnNextStep: document.getElementById('btnNextStep'),
   btnVoltarStep: document.getElementById('btnVoltarStep'),
   btnEscalar: document.getElementById('btnEscalar'),
-  linkTela3: document.getElementById('linkTela3'),
+  linkProximaTela: document.getElementById('linkProximaTela'),
   cashDisplay: document.getElementById('cashDisplay'),
   selectedCountEl: document.getElementById('selectedCount'),
   playerSpeechBox: document.getElementById('playerSpeechBox')
 };
 
-// ========== FUNÇÕES AUXILIARES ==========
 function showNotif(text, time = 3000) { const box = document.createElement('div'); box.className = 'notif'; box.style.position = 'fixed'; box.style.top = '18px'; box.style.right = '18px'; box.style.background = '#ffefc2'; box.style.color = '#333'; box.style.padding = '10px 14px'; box.style.borderRadius = '8px'; box.style.boxShadow = '0 6px 18px rgba(0,0,0,.12)'; box.style.border = '1px solid #e6b800'; box.style.zIndex = '1001'; box.textContent = text; document.body.appendChild(box); setTimeout(() => box.remove(), time); }
 function formatReal(n) { return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 function updateCash() { elements.cashDisplay.textContent = formatReal(financas.caixaAtual); }
 function updateSelectedCount() { elements.selectedCountEl.textContent = hired.length; }
-function renderSkillBar(skill) { return `<div style="width:80px;height:8px;background:#eee;border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle"><div style="height:100%;background:#9c27b0;width:${skill}%"></div></div>`; }
-function renderHealthBar(health) { return `<div style="width:60px;height:8px;background:#eee;border-radius:4px;overflow:hidden;display:inline-block;vertical-align:middle"><div style="height:100%;background:#4CAF50;width:${health}%"></div></div>`; }
+function renderSkillBar(skill) { return `<div class="skill-bar"><div class="skill-fill" style="width:${skill}%"></div></div>`; }
+function renderHealthBar(health) { return `<div class="health-bar"><div class="health-fill" style="width:${health}%"></div></div>`; }
 function showPlayerSpeech(playerName, speech) { elements.playerSpeechBox.innerHTML = `💬 <span class="player-name-highlight">${playerName}</span>: "${speech}"`; }
 
-// ========== GERAÇÃO DE JOGADORES ==========
 function generateSkillDistribution() { const skills = [100]; for (let i = 1; i < TOTAL_MARKET; i++) { let skill; const rand = Math.random(); if (rand < 0.6) skill = Math.round(Math.random() * 20) + 25; else if (rand < 0.85) skill = Math.round(Math.random() * 15) + 46; else if (rand < 0.95) skill = Math.round(Math.random() * 10) + 15; else skill = Math.round(Math.random() * 15) + 61; skills.push(Math.min(100, skill)); } return skills.sort(() => Math.random() - 0.5); }
 function calculatePlayerValue(skill, age) { let basePasse = skill * 5; let ageMultiplier = 1; if (age <= 20) ageMultiplier = 1.8; else if (age <= 25) ageMultiplier = 1.5; else if (age <= 30) ageMultiplier = 1.2; else if (age <= 35) ageMultiplier = 0.8; else ageMultiplier = 0.5; const passe = Math.round(basePasse * ageMultiplier / 10) * 10; const baseSalario = 30 + (skill * 0.8); const salario = Math.round((baseSalario + Math.random() * 20) / 5) * 5; return { passe: Math.max(50, passe), salarioJogo: Math.max(30, salario) }; }
 function generatePlayers() { players = []; const firsts = ["Marrentinho","Juscelino","Ronaldinho","Berg","Tico","Zeca","Xandão","Pedrinho","Claudinho","Sandro","Marollo","Ricardão"]; const lastParts = ["Carioca","Paulista","Baiano","Gaucho","Mineiro","Nordestino","Pernambucano","Capixaba"]; const positions = ['Goleiro', 'Lateral', 'Zagueiro', 'Volante', 'Meia', 'Atacante']; const counts = { 'Goleiro': 6, 'Lateral': 8, 'Zagueiro': 8, 'Volante': 6, 'Meia': 8, 'Atacante': 6 }; const specializations = { 'Goleiro': 'Pega-Pênalti 🧤', 'Zagueiro': 'Xerife 🛡️', 'Lateral': 'Velocista ⚡', 'Volante': 'Motorzinho 🔋', 'Meia': 'Armador 🧠', 'Atacante': 'Finalizador 🎯' }; const skills = generateSkillDistribution(); let id = 0; positions.forEach(pos => { for (let i = 0; i < counts[pos]; i++) { const name = `${firsts[id % firsts.length]} ${lastParts[id % lastParts.length]}`; const age = Math.floor(Math.random() * 25) + 16; const skill = skills[id]; const health = Math.random() > 0.3 ? 100 : 80; const isPai = Math.random() < 0.2; const valores = calculatePlayerValue(skill, age); const apresentacoes = { Goleiro: "Pode bater, professor! Pênalti pra mim é doce!", Lateral: "Sou o motorzinho da lateral!", Zagueiro: "Aqui na zaga, ninguém passa!", Volante: "Corro por mim e pelo time todo!", Meia: "O jogo passa pelos meus pés!", Atacante: "Na frente do gol, eu não perdoo!" }; players.push({ id: 'p' + id, name, pos, foot: Math.random() < 0.7 ? 'Direito' : Math.random() < 0.8 ? 'Esquerdo' : 'Ambidestro', age, skill, health, isPai, passe: valores.passe, salarioJogo: valores.salarioJogo, contrato: '6 meses', profissao: { nome: ['Pedreiro', 'Eletricista', 'Professor', 'Vendedor', 'Gerente', 'Entregador'][Math.floor(Math.random() * 6)] }, apresentacao: apresentacoes[pos], specialization: specializations[pos] }); id++; } }); }
 
-// ========== LÓGICA DO MERCADO ==========
-function renderMarket(filter) { elements.playersTbody.innerHTML = ''; const list = filter ? players.filter(p => p.pos === filter) : players; list.forEach(p => { const tr = document.createElement('tr'); const isHired = hired.some(h => h.id === p.id); tr.innerHTML = `<td><span class="player-name-highlight">${p.name}</span><div class="muted">${p.pos}</div></td><td>${p.pos}</td><td>${p.foot}</td><td>${p.age}</td><td>${formatReal(p.passe)}</td><td>${formatReal(p.salarioJogo)}</td><td><select class="contrato-select" data-id="${p.id}" ${isHired ? 'disabled' : ''}><option>3 meses</option><option selected>6 meses</option><option>1 ano</option></select></td><td>${renderSkillBar(p.skill)}</td><td>${renderHealthBar(p.health)}</td><td>${p.profissao.nome}${p.isPai ? ' <span class="badge-pai">Pai</span>' : ''}</td><td><input type="checkbox" data-id="${p.id}" ${isHired ? 'checked' : ''}></td>`; tr.querySelector('.player-name-highlight').addEventListener('mouseenter', () => showPlayerSpeech(p.name, p.apresentacao)); tr.querySelector('.contrato-select').addEventListener('change', (e) => { const player = players.find(pl => pl.id === e.target.dataset.id); if (player) player.contrato = e.target.value; }); tr.querySelector('input[type=checkbox]').addEventListener('change', onToggleHire); elements.playersTbody.appendChild(tr); }); updateCheckboxStates(); }
+function renderMarket(filter) { elements.playersTbody.innerHTML = ''; const list = filter ? players.filter(p => p.pos === filter) : players; list.forEach(p => { const tr = document.createElement('tr'); const isHired = hired.some(h => h.id === p.id); tr.innerHTML = `<td><span class="player-name-highlight">${p.name}</span><div class="muted">${p.pos}</div></td><td>${p.pos}</td><td>${p.foot}</td><td>${p.age}</td><td>${formatReal(p.passe)}</td><td>${formatReal(p.salarioJogo)}</td><td><select class="contrato-select" data-id="${p.id}" ${isHired ? 'disabled' : ''}><option>3 meses</option><option selected>6 meses</option><option>1 ano</option></select></td><td>${renderSkillBar(p.skill)} ${p.skill}%</td><td>${renderHealthBar(p.health)} ${p.health}%</td><td>${p.profissao.nome}${p.isPai ? ' <span class="badge-pai">Pai</span>' : ''}</td><td><input type="checkbox" data-id="${p.id}" ${isHired ? 'checked' : ''}></td>`; tr.querySelector('.player-name-highlight').addEventListener('mouseenter', () => showPlayerSpeech(p.name, p.apresentacao)); tr.querySelector('.contrato-select').addEventListener('change', (e) => { const player = players.find(pl => pl.id === e.target.dataset.id); if (player) player.contrato = e.target.value; }); tr.querySelector('input[type=checkbox]').addEventListener('change', onToggleHire); elements.playersTbody.appendChild(tr); }); updateCheckboxStates(); }
 function onToggleHire(e) { const cb = e.target; const ply = players.find(p => p.id === cb.dataset.id); if (cb.checked) { if (hired.length >= MAX_PLAYERS) { showNotif('Limite de 22 jogadores!'); cb.checked = false; return; } if (financas.caixaAtual - ply.passe < 0) { showNotif('Saldo insuficiente!'); cb.checked = false; return; } financas.caixaAtual -= ply.passe; hired.push({...ply}); } else { financas.caixaAtual += ply.passe; hired = hired.filter(h => h.id !== ply.id); } updateCash(); updateSelectedCount(); updateCheckboxStates(); updateButtonStates(); }
 function updateCheckboxStates() { elements.playersTbody.querySelectorAll('input[type=checkbox]').forEach(cb => { const ply = players.find(p => p.id === cb.dataset.id); cb.disabled = !cb.checked && (hired.length >= MAX_PLAYERS || financas.caixaAtual - ply.passe < 0); }); }
 function countHiredByPos(pos) { return hired.filter(h => h.pos === pos).length; }
 function updateButtonStates() { elements.btnVoltarStep.style.display = marketStep > 1 ? 'inline-block' : 'none'; elements.btnEscalar.disabled = hired.length !== MAX_PLAYERS; if (marketStep >= 1 && marketStep < steps.length) { const current = steps[marketStep]; elements.btnNextStep.disabled = countHiredByPos(current.filter) < current.min; } updateSelectedCount(); updateCash(); }
 
-// ========== NAVEGAÇÃO E INICIALIZAÇÃO ==========
 elements.btnNextStep.addEventListener('click', () => { const current = steps[marketStep]; if (current && current.filter) { if (countHiredByPos(current.filter) < current.min) { return showNotif(`Escolha no mínimo ${current.min} ${current.filter}(s)!`); } } marketStep++; if (marketStep >= steps.length) { marketStep = 1; } elements.marketMessage.textContent = steps[marketStep].msg; renderMarket(steps[marketStep].filter); updateButtonStates(); });
 elements.btnVoltarStep.addEventListener('click', () => { if (marketStep > 1) { marketStep--; elements.marketMessage.textContent = steps[marketStep].msg; renderMarket(steps[marketStep].filter); updateButtonStates(); } });
 
-elements.linkTela3.addEventListener('click', (event) => {
+elements.linkProximaTela.addEventListener('click', (event) => {
   if (elements.btnEscalar.disabled) {
     event.preventDefault();
     showNotif('Você precisa contratar exatamente 22 jogadores!');
     return;
   }
-  // LÓGICA FINANCEIRA ATUALIZADA
   const gastoNestaSessao = initialCash - financas.caixaAtual;
   financas.gastosContratacoes += gastoNestaSessao;
   
@@ -135,13 +132,11 @@ elements.linkTela3.addEventListener('click', (event) => {
 
 function init() {
   const userData = JSON.parse(localStorage.getItem('userData')) || {};
-  // CARREGA DO LIVRO-CAIXA CORRETO
   financas = JSON.parse(localStorage.getItem('financasDoTime')) || {
       caixaAtual: 5000, gastosContratacoes: 0, gastosSalarios: 0, 
       gastosBicho: 0, receitaPartidas: 0, receitaPremiosPatrocinios: 0
   };
-  initialCash = financas.caixaAtual; // Guarda o valor inicial para calcular o gasto depois
-  
+  initialCash = financas.caixaAtual;
   hired = JSON.parse(localStorage.getItem('elencoDoTime')) || [];
   
   elements.headerTitle.textContent = userData.teamName || 'O Rei da Várzea';
