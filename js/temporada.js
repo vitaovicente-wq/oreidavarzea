@@ -21,10 +21,10 @@ function createAISquad() {
     Object.keys(positions).forEach(pos => {
         for (let i = 0; i < positions[pos]; i++) {
             squad.push({
-                id: `ai_p${Math.round(Math.random()*10000)}_${idCounter++}`, // ID único
+                id: `ai_p${Math.round(Math.random()*10000)}_${idCounter++}`,
                 name: `${firsts[Math.floor(Math.random() * firsts.length)]} ${lastParts[Math.floor(Math.random() * lastParts.length)]}`,
                 pos: pos,
-                skill: Math.floor(Math.random() * 35) + 40 // Habilidade entre 40 e 74
+                skill: Math.floor(Math.random() * 35) + 40
             });
         }
     });
@@ -33,8 +33,7 @@ function createAISquad() {
 
 function createUniverse() {
     const teamNames = [ "Tsunami da ZL", "Galácticos do Grajaú", "Ajax da Vila Sônia", "Real Madruga", "Mulekes da Vila", "Fúria do Capão Redondo", "EC Beira-Rio", "Juventus da Mooca", "Parma da Augusta", "Boca do Lixo FC", "Manchester Paulista", "PSV - Pau Sem Vontade", "Borussia do Ipiranga", "Atlético do Jaçanã", "Inter de Limão", "Só Canelas FC", "Bayern do M'Boi Mirim", "Liverpool da Cantareira", "Chelsea do Cimento", "PSG do Povo" ];
-    const universe = teamNames.map(name => ({ name, squad: createAISquad() }));
-    return universe;
+    return teamNames.map(name => ({ name, squad: createAISquad() }));
 }
 
 function generateSeasonFixtures(universe, userTeamName) {
@@ -66,13 +65,12 @@ function generateSeasonFixtures(universe, userTeamName) {
             }
         }
     });
-    // Embaralha a ordem dos jogos para não ser sempre a mesma
-    schedule.sort(() => 0.5 - Math.random());
-    season.torneio.schedule = schedule.map((match, index) => ({ ...match, week: Math.floor(index / 4) + 1 })); // 4 jogos por semana (2 por grupo)
+    
+    schedule.sort(() => 0.5 - Math.random()); // Embaralha a ordem dos jogos
+    season.torneio.schedule = schedule.map((match, index) => ({ ...match, week: Math.floor(index / 4) + 1, played: false })); // 4 jogos por semana (2 por grupo)
     
     return season;
 }
-
 
 // ========== MOTOR DA TEMPORADA ==========
 function updateTableStats(result, table) {
@@ -103,6 +101,7 @@ function simulateAIMatch(homeTeamName, awayTeamName) {
     const skillDiff = avgSkillHome - avgSkillAway;
     const homeWinProb = 50 + (skillDiff * 1.5);
     const rand = Math.random() * 100;
+
     if (rand < homeWinProb - 15) {
         homeScore = Math.floor(Math.random() * 3) + 1;
         awayScore = Math.floor(Math.random() * 2);
@@ -124,12 +123,14 @@ function processLastMatchResult() {
 
     updateTableStats(result, seasonData.torneio.table);
     
-    const userMatch = seasonData.torneio.schedule.find(m => (m.home === result.homeTeam && m.away === result.awayTeam));
-    const weekOfLastMatch = userMatch ? userMatch.week : 0;
+    const matchIndex = seasonData.torneio.schedule.findIndex(m => m.home === result.homeTeam && m.away === result.awayTeam);
+    let weekOfLastMatch = 0;
+    if(matchIndex > -1) {
+        seasonData.torneio.schedule[matchIndex].played = true;
+        weekOfLastMatch = seasonData.torneio.schedule[matchIndex].week;
+    }
     
-    if(userMatch) userMatch.played = true;
-
-    const otherMatches = seasonData.torneio.schedule.filter(m => m.week === weekOfLastMatch && !m.played && m.home !== userData.teamName && m.away !== userData.teamName);
+    const otherMatches = seasonData.torneio.schedule.filter(m => m.week === weekOfLastMatch && !m.played);
     otherMatches.forEach(match => {
         const aiResult = simulateAIMatch(match.home, match.away);
         updateTableStats(aiResult, seasonData.torneio.table);
@@ -138,14 +139,13 @@ function processLastMatchResult() {
 
     const currentWeekMatches = seasonData.torneio.schedule.filter(m => m.week === seasonData.currentWeek);
     const allPlayed = currentWeekMatches.every(m => m.played);
-    if(allPlayed){
+    if(allPlayed && seasonData.currentWeek <= 6){
         seasonData.currentWeek++;
     }
 
     localStorage.setItem('seasonData', JSON.stringify(seasonData));
     localStorage.removeItem('lastMatchResult');
 }
-
 
 // ========== LÓGICA DE EXIBIÇÃO ==========
 function displayNextMatch() {
