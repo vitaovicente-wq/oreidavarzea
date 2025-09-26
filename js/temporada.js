@@ -1,3 +1,21 @@
+Partiu\! Hora de consertar nosso campeonato e botar a bola pra rolar de verdade.
+
+Como diagnosticamos, o problema todo estava no "gerador de calendário", que criava os jogos de forma desbalanceada. Eu reconstruí essa função do zero.
+
+**O que foi corrigido no script:**
+A nova lógica agora cria um calendário de **6 rodadas (turno e returno) perfeito**, onde todos os times jogam exatamente uma vez por semana, sem falhas. Isso garante que a fase de grupos aconteça por completo e a transição para o quadrangular final funcione corretamente.
+
+Abaixo está o script **`js/temporada.js`** corrigido e completo.
+
+### Instrução:
+
+Você só precisa substituir o conteúdo do seu arquivo `js/temporada.js` por este novo script. O arquivo `temporada.html` não precisa ser alterado.
+
+-----
+
+### Arquivo `js/temporada.js` (Completo e Corrigido)
+
+```javascript
 // ========== ESTADO DO JOGO ==========
 let userData = {};
 let varzeaUniverse = [];
@@ -40,24 +58,6 @@ function createUniverse() {
     return teamNames.map(name => ({ name, squad: createAISquad() }));
 }
 
-function generateRoundRobin(teams) {
-    const schedule = [];
-    const numRounds = teams.length - 1;
-    const half = teams.length / 2;
-    let localTeams = [...teams];
-
-    for (let round = 0; round < numRounds; round++) {
-        for (let i = 0; i < half; i++) {
-            const home = localTeams[i];
-            const away = localTeams[localTeams.length - 1 - i];
-            schedule.push({ home, away });
-        }
-        const last = localTeams.pop();
-        localTeams.splice(1, 0, last);
-    }
-    return schedule;
-}
-
 function generateSeasonFixtures(universe, userTeamName) {
     let season = {
         currentWeek: 1,
@@ -70,42 +70,25 @@ function generateSeasonFixtures(universe, userTeamName) {
     season.torneio.groups['A'] = shuffledTorneioTeams.slice(0, 4);
     season.torneio.groups['B'] = shuffledTorneioTeams.slice(4, 8);
     torneioTeams.forEach(name => { season.torneio.table[name] = { P: 0, J: 0, V: 0, E: 0, D: 0, GP: 0, GC: 0, SG: 0 }; });
-    
-    let fullSchedule = [];
-    let weekCounter = 1;
-    Object.values(season.torneio.groups).forEach(group => {
-        const turno = generateRoundRobin([...group]);
-        turno.forEach(match => {
-            fullSchedule.push({ ...match, week: weekCounter });
-            fullSchedule.push({ ...match, week: weekCounter + 1 });
-            fullSchedule.push({ ...match, week: weekCounter + 2 });
-            weekCounter += 3; // This logic is simplified and needs to be better
-        });
-    });
 
-    // CORREÇÃO DEFINITIVA DO CALENDÁRIO
-    let finalSchedule = [];
+    let fullSchedule = [];
     Object.values(season.torneio.groups).forEach(group => {
         const teams = group;
-        const groupMatches = [];
-        // Turno
-        for (let i = 0; i < teams.length; i++) {
-            for (let j = i + 1; j < teams.length; j++) {
-                groupMatches.push({ home: teams[i], away: teams[j] });
-            }
-        }
-        // Returno
-        for (let i = 0; i < teams.length; i++) {
-            for (let j = i + 1; j < teams.length; j++) {
-                groupMatches.push({ home: teams[j], away: teams[i] });
-            }
-        }
-        finalSchedule.push(...groupMatches);
+        const groupSchedule = [];
+        // Turno (3 rodadas)
+        groupSchedule.push({ week: 1, home: teams[0], away: teams[3] }, { week: 1, home: teams[1], away: teams[2] });
+        groupSchedule.push({ week: 2, home: teams[0], away: teams[2] }, { week: 2, home: teams[3], away: teams[1] });
+        groupSchedule.push({ week: 3, home: teams[0], away: teams[1] }, { week: 3, home: teams[2], away: teams[3] });
+        // Returno (3 rodadas)
+        groupSchedule.push({ week: 4, home: teams[3], away: teams[0] }, { week: 4, home: teams[2], away: teams[1] });
+        groupSchedule.push({ week: 5, home: teams[2], away: teams[0] }, { week: 5, home: teams[1], away: teams[3] });
+        groupSchedule.push({ week: 6, home: teams[1], away: teams[0] }, { week: 6, home: teams[3], away: teams[2] });
+        
+        fullSchedule.push(...groupSchedule);
     });
-
-    finalSchedule.sort(() => 0.5 - Math.random());
-    season.torneio.schedule = finalSchedule.map((match, index) => ({ ...match, week: Math.floor(index / 4) + 1, played: false }));
-
+    
+    season.torneio.schedule = fullSchedule.map(match => ({ ...match, played: false }));
+    
     return season;
 }
 
@@ -322,3 +305,4 @@ function init() {
 }
 
 init();
+```
