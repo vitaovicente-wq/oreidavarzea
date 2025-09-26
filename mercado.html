@@ -57,7 +57,7 @@
       </a>
       <div style="margin-left:auto">
         <strong>Dinheiro em caixa:</strong>
-        <span id="cashDisplay">R$ 5.000</span> |
+        <span id="cashDisplay">R$ 5.000,00</span> |
         <span class="muted">Elenco <span id="selectedCount">0</span>/22</span>
       </div>
     </div>
@@ -104,9 +104,57 @@ function renderSkillBar(skill) { return `<div class="skill-bar"><div class="skil
 function renderHealthBar(health) { return `<div class="health-bar"><div class="health-fill" style="width:${health}%"></div></div>`; }
 function showPlayerSpeech(playerName, speech) { elements.playerSpeechBox.innerHTML = `💬 <span class="player-name-highlight">${playerName}</span>: "${speech}"`; }
 
+// ===== NOVA FUNÇÃO PARA DISTRIBUIÇÃO DE PÉS =====
+function createFootDistribution(count) {
+    const feet = [];
+    const numLeft = Math.ceil(count * 0.20); // Garante pelo menos 20% de canhotos
+    const numAmbi = Math.floor(count * 0.05); // Cerca de 5% ambidestros
+    
+    for (let i = 0; i < numLeft; i++) feet.push('Esquerdo');
+    for (let i = 0; i < numAmbi; i++) feet.push('Ambidestro');
+    
+    const numRight = count - feet.length; // O resto é destro
+    for (let i = 0; i < numRight; i++) feet.push('Direito');
+    
+    // Embaralha o array para a distribuição ser aleatória entre os jogadores da posição
+    return feet.sort(() => 0.5 - Math.random());
+}
+
 function generateSkillDistribution() { const skills = [100]; for (let i = 1; i < TOTAL_MARKET; i++) { let skill; const rand = Math.random(); if (rand < 0.6) skill = Math.round(Math.random() * 20) + 25; else if (rand < 0.85) skill = Math.round(Math.random() * 15) + 46; else if (rand < 0.95) skill = Math.round(Math.random() * 10) + 15; else skill = Math.round(Math.random() * 15) + 61; skills.push(Math.min(100, skill)); } return skills.sort(() => Math.random() - 0.5); }
 function calculatePlayerValue(skill, age) { let basePasse = skill * 5; let ageMultiplier = 1; if (age <= 20) ageMultiplier = 1.8; else if (age <= 25) ageMultiplier = 1.5; else if (age <= 30) ageMultiplier = 1.2; else if (age <= 35) ageMultiplier = 0.8; else ageMultiplier = 0.5; const passe = Math.round(basePasse * ageMultiplier / 10) * 10; const baseSalario = 30 + (skill * 0.8); const salario = Math.round((baseSalario + Math.random() * 20) / 5) * 5; return { passe: Math.max(50, passe), salarioJogo: Math.max(30, salario) }; }
-function generatePlayers() { players = []; const firsts = ["Marrentinho","Juscelino","Ronaldinho","Berg","Tico","Zeca","Xandão","Pedrinho","Claudinho","Sandro","Marollo","Ricardão"]; const lastParts = ["Carioca","Paulista","Baiano","Gaucho","Mineiro","Nordestino","Pernambucano","Capixaba"]; const positions = ['Goleiro', 'Lateral', 'Zagueiro', 'Volante', 'Meia', 'Atacante']; const counts = { 'Goleiro': 6, 'Lateral': 8, 'Zagueiro': 8, 'Volante': 6, 'Meia': 8, 'Atacante': 6 }; const specializations = { 'Goleiro': 'Pega-Pênalti 🧤', 'Zagueiro': 'Xerife 🛡️', 'Lateral': 'Velocista ⚡', 'Volante': 'Motorzinho 🔋', 'Meia': 'Armador 🧠', 'Atacante': 'Finalizador 🎯' }; const skills = generateSkillDistribution(); let id = 0; positions.forEach(pos => { for (let i = 0; i < counts[pos]; i++) { const name = `${firsts[id % firsts.length]} ${lastParts[id % lastParts.length]}`; const age = Math.floor(Math.random() * 25) + 16; const skill = skills[id]; const health = Math.random() > 0.3 ? 100 : 80; const isPai = Math.random() < 0.2; const valores = calculatePlayerValue(skill, age); const apresentacoes = { Goleiro: "Pode bater, professor! Pênalti pra mim é doce!", Lateral: "Sou o motorzinho da lateral!", Zagueiro: "Aqui na zaga, ninguém passa!", Volante: "Corro por mim e pelo time todo!", Meia: "O jogo passa pelos meus pés!", Atacante: "Na frente do gol, eu não perdoo!" }; players.push({ id: 'p' + id, name, pos, foot: Math.random() < 0.7 ? 'Direito' : Math.random() < 0.8 ? 'Esquerdo' : 'Ambidestro', age, skill, health, isPai, passe: valores.passe, salarioJogo: valores.salarioJogo, contrato: '6 meses', profissao: { nome: ['Pedreiro', 'Eletricista', 'Professor', 'Vendedor', 'Gerente', 'Entregador'][Math.floor(Math.random() * 6)] }, apresentacao: apresentacoes[pos], specialization: specializations[pos] }); id++; } }); }
+function generatePlayers() {
+    players = [];
+    const firsts = ["Marrentinho","Juscelino","Ronaldinho","Berg","Tico","Zeca","Xandão","Pedrinho","Claudinho","Sandro","Marollo","Ricardão"];
+    const lastParts = ["Carioca","Paulista","Baiano","Gaucho","Mineiro","Nordestino","Pernambucano","Capixaba"];
+    const positions = ['Goleiro', 'Lateral', 'Zagueiro', 'Volante', 'Meia', 'Atacante'];
+    const counts = { 'Goleiro': 6, 'Lateral': 8, 'Zagueiro': 8, 'Volante': 6, 'Meia': 8, 'Atacante': 6 };
+    const specializations = { 'Goleiro': 'Pega-Pênalti 🧤', 'Zagueiro': 'Xerife 🛡️', 'Lateral': 'Velocista ⚡', 'Volante': 'Motorzinho 🔋', 'Meia': 'Armador 🧠', 'Atacante': 'Finalizador 🎯' };
+    const skills = generateSkillDistribution();
+    let id = 0;
+    positions.forEach(pos => {
+        const footBucket = createFootDistribution(counts[pos]); // Cria a distribuição para a posição
+        for (let i = 0; i < counts[pos]; i++) {
+            const name = `${firsts[id % firsts.length]} ${lastParts[id % lastParts.length]}`;
+            const age = Math.floor(Math.random() * 25) + 16;
+            const skill = skills[id];
+            const health = Math.random() > 0.3 ? 100 : 80;
+            const isPai = Math.random() < 0.2;
+            const valores = calculatePlayerValue(skill, age);
+            const apresentacoes = { Goleiro: "Pode bater, professor! Pênalti pra mim é doce!", Lateral: "Sou o motorzinho da lateral!", Zagueiro: "Aqui na zaga, ninguém passa!", Volante: "Corro por mim e pelo time todo!", Meia: "O jogo passa pelos meus pés!", Atacante: "Na frente do gol, eu não perdoo!" };
+            players.push({
+                id: 'p' + id, name, pos,
+                foot: footBucket.pop() || 'Direito', // ===== LÓGICA DO PÉ ATUALIZADA =====
+                age, skill, health, isPai,
+                passe: valores.passe, salarioJogo: valores.salarioJogo,
+                contrato: '6 meses',
+                profissao: { nome: ['Pedreiro', 'Eletricista', 'Professor', 'Vendedor', 'Gerente', 'Entregador'][Math.floor(Math.random() * 6)] },
+                apresentacao: apresentacoes[pos],
+                specialization: specializations[pos]
+            });
+            id++;
+        }
+    });
+}
 
 function renderMarket(filter) { elements.playersTbody.innerHTML = ''; const list = filter ? players.filter(p => p.pos === filter) : players; list.forEach(p => { const tr = document.createElement('tr'); const isHired = hired.some(h => h.id === p.id); tr.innerHTML = `<td><span class="player-name-highlight">${p.name}</span><div class="muted">${p.pos}</div></td><td>${p.pos}</td><td>${p.foot}</td><td>${p.age}</td><td>${formatReal(p.passe)}</td><td>${formatReal(p.salarioJogo)}</td><td><select class="contrato-select" data-id="${p.id}" ${isHired ? 'disabled' : ''}><option>3 meses</option><option selected>6 meses</option><option>1 ano</option></select></td><td>${renderSkillBar(p.skill)} ${p.skill}%</td><td>${renderHealthBar(p.health)} ${p.health}%</td><td>${p.profissao.nome}${p.isPai ? ' <span class="badge-pai">Pai</span>' : ''}</td><td><input type="checkbox" data-id="${p.id}" ${isHired ? 'checked' : ''}></td>`; tr.querySelector('.player-name-highlight').addEventListener('mouseenter', () => showPlayerSpeech(p.name, p.apresentacao)); tr.querySelector('.contrato-select').addEventListener('change', (e) => { const player = players.find(pl => pl.id === e.target.dataset.id); if (player) player.contrato = e.target.value; }); tr.querySelector('input[type=checkbox]').addEventListener('change', onToggleHire); elements.playersTbody.appendChild(tr); }); updateCheckboxStates(); }
 function onToggleHire(e) { const cb = e.target; const ply = players.find(p => p.id === cb.dataset.id); if (cb.checked) { if (hired.length >= MAX_PLAYERS) { showNotif('Limite de 22 jogadores!'); cb.checked = false; return; } if (financas.caixaAtual - ply.passe < 0) { showNotif('Saldo insuficiente!'); cb.checked = false; return; } financas.caixaAtual -= ply.passe; hired.push({...ply}); } else { financas.caixaAtual += ply.passe; hired = hired.filter(h => h.id !== ply.id); } updateCash(); updateSelectedCount(); updateCheckboxStates(); updateButtonStates(); }
@@ -132,12 +180,22 @@ elements.linkProximaTela.addEventListener('click', (event) => {
 
 function init() {
   const userData = JSON.parse(localStorage.getItem('userData')) || {};
-  financas = JSON.parse(localStorage.getItem('financasDoTime')) || {
+  
+  const isNewGame = !localStorage.getItem('elencoDoTime');
+  if(isNewGame){
+    financas = {
       caixaAtual: 5000, gastosContratacoes: 0, gastosSalarios: 0, 
       gastosBicho: 0, receitaPartidas: 0, receitaPremiosPatrocinios: 0
-  };
+    };
+    hired = [];
+    localStorage.setItem('financasDoTime', JSON.stringify(financas));
+    localStorage.setItem('elencoDoTime', JSON.stringify(hired));
+  } else {
+    financas = JSON.parse(localStorage.getItem('financasDoTime'));
+    hired = JSON.parse(localStorage.getItem('elencoDoTime'));
+  }
+
   initialCash = financas.caixaAtual;
-  hired = JSON.parse(localStorage.getItem('elencoDoTime')) || [];
   
   elements.headerTitle.textContent = userData.teamName || 'O Rei da Várzea';
   generatePlayers();
