@@ -9,6 +9,10 @@ const elements = {
     linkPlayMatch: document.getElementById('linkPlayMatch'),
     torneioTables: document.getElementById('torneioTables'),
     copaFixtures: document.getElementById('copaFixtures'),
+    calendarioButton: document.getElementById('calendarioButton'),
+    calendarioModal: document.getElementById('calendarioModal'),
+    calendarioModalClose: document.getElementById('calendarioModalClose'),
+    calendarioList: document.getElementById('calendarioList'),
 };
 
 // ========== LÓGICA DE CRIAÇÃO DO UNIVERSO ==========
@@ -40,7 +44,7 @@ function generateSeasonFixtures(universe, userTeamName) {
     let season = {
         currentWeek: 1,
         torneio: { 
-            phase: 'groups', // 'groups' ou 'final'
+            phase: 'groups',
             groups: {}, 
             schedule: [], 
             table: {},
@@ -60,14 +64,12 @@ function generateSeasonFixtures(universe, userTeamName) {
     let schedule = [];
     Object.values(season.torneio.groups).forEach(group => {
         const teams = group;
-        const groupSchedule = [];
         for (let i = 0; i < teams.length; i++) {
             for (let j = i + 1; j < teams.length; j++) {
-                groupSchedule.push({ home: teams[i], away: teams[j] }); // Turno
-                groupSchedule.push({ home: teams[j], away: teams[i] }); // Returno
+                schedule.push({ home: teams[i], away: teams[j] }); // Turno
+                schedule.push({ home: teams[j], away: teams[i] }); // Returno
             }
         }
-        schedule.push(...groupSchedule);
     });
     
     schedule.sort(() => 0.5 - Math.random());
@@ -127,10 +129,10 @@ function simulateAIMatch(homeTeamName, awayTeamName) {
 function setupQuadrangularFinal() {
     seasonData.torneio.phase = 'final';
     const table = seasonData.torneio.table;
-
-    const groupA = [...seasonData.torneio.groups.A].sort((a, b) => table[b].P - table[a].P || table[b].SG - table[a].SG);
-    const groupB = [...seasonData.torneio.groups.B].sort((a, b) => table[b].P - table[a].P || table[b].SG - table[a].SG);
-
+    const sortRule = (a, b) => table[b].P - table[a].P || table[b].SG - table[a].SG || table[b].GP - table[a].GP;
+    
+    const groupA = [...seasonData.torneio.groups.A].sort(sortRule);
+    const groupB = [...seasonData.torneio.groups.B].sort(sortRule);
     const finalists = [groupA[0], groupA[1], groupB[0], groupB[1]];
     seasonData.torneio.finalists = finalists;
     
@@ -144,7 +146,7 @@ function setupQuadrangularFinal() {
             finalSchedule.push({ home: finalists[i], away: finalists[j], played: false });
         }
     }
-    seasonData.torneio.finalSchedule = finalSchedule.map((match, index) => ({...match, week: 7 + index})); // Começa na semana 7
+    seasonData.torneio.finalSchedule = finalSchedule.map((match, index) => ({...match, week: 7 + index}));
     seasonData.currentWeek = 7;
 }
 
@@ -155,13 +157,14 @@ function processLastMatchResult() {
     const currentTable = seasonData.torneio.phase === 'groups' ? seasonData.torneio.table : seasonData.torneio.finalTable;
     updateTableStats(result, currentTable);
     
-    const schedule = seasonData.torneio.phase === 'groups' ? seasonData.torneio.schedule : seasonData.torneio.finalSchedule;
-    const matchIndex = schedule.findIndex(m => m.home === result.homeTeam && m.away === result.awayTeam);
+    const currentSchedule = seasonData.torneio.phase === 'groups' ? seasonData.torneio.schedule : seasonData.torneio.finalSchedule;
+    const matchIndex = currentSchedule.findIndex(m => m.home === result.homeTeam && m.away === result.awayTeam);
     
     let weekOfLastMatch = 0;
     if(matchIndex > -1) {
-        schedule[matchIndex].played = true;
-        weekOfLastMatch = schedule[matchIndex].week;
+        currentSchedule[matchIndex].played = true;
+        currentSchedule[matchIndex].score = `${result.homeScore} x ${result.awayScore}`;
+        weekOfLastMatch = currentSchedule[matchIndex].week;
     }
     
     if(seasonData.torneio.phase === 'groups'){
@@ -169,25 +172,28 @@ function processLastMatchResult() {
         otherMatches.forEach(match => {
             const aiResult = simulateAIMatch(match.home, match.away);
             updateTableStats(aiResult, seasonData.torneio.table);
-            match.played = true;
+            const aiMatchIndex = seasonData.torneio.schedule.findIndex(m => m.home === match.home && m.away === match.away && m.week === weekOfLastMatch);
+            if(aiMatchIndex > -1) {
+                seasonData.torneio.schedule[aiMatchIndex].played = true;
+                seasonData.torneio.schedule[aiMatchIndex].score = `${aiResult.homeScore} x ${aiResult.awayScore}`;
+            }
         });
     }
 
-    const allMatchesInWeekPlayed = schedule.filter(m => m.week === weekOfLastMatch).every(m => m.played);
-    if(allPlayedInWeek) {
-        seasonData.currentWeek++;
-    }
-    
-    // VERIFICA SE A FASE DE GRUPOS ACABOU PARA INICIAR A FINAL
     const allGroupMatchesPlayed = seasonData.torneio.schedule.every(m => m.played);
     if(allGroupMatchesPlayed && seasonData.torneio.phase === 'groups'){
         setupQuadrangularFinal();
+    } else {
+        const currentWeekMatches = currentSchedule.filter(m => m.week === seasonData.currentWeek);
+        if(currentWeekMatches.every(m => m.played)){
+            seasonData.currentWeek++;
+        }
     }
-
     localStorage.setItem('seasonData', JSON.stringify(seasonData));
     localStorage.removeItem('lastMatchResult');
 }
 
+// ========== LÓGICA DE EXIBIÇÃO ==========
 function displayNextMatch() {
     const userTeamName = userData.teamName;
     let nextMatch;
@@ -215,8 +221,12 @@ function displayNextMatch() {
         }));
         elements.linkPlayMatch.style.display = 'block';
     } else {
-        const champion = Object.keys(seasonData.torneio.finalTable).sort((a,b) => seasonData.torneio.finalTable[b].P - seasonData.torneio.finalTable[a].P)[0];
-        elements.nextMatchInfo.innerHTML = `<p style="font-weight:bold; font-size: 1.2em;">CAMPEÃO: ${champion || 'Fim do Torneio'}</p>`;
+        let endMessage = "Fim da Fase de Grupos!";
+        if(seasonData.torneio.phase === 'final') {
+            const champion = [...seasonData.torneio.finalists].sort((a,b) => seasonData.torneio.finalTable[b].P - seasonData.torneio.finalTable[a].P)[0];
+            endMessage = `🏆 CAMPEÃO: ${champion}! 🏆`;
+        }
+        elements.nextMatchInfo.innerHTML = `<p style="font-weight:bold; font-size: 1.2em;">${endMessage}</p>`;
         elements.linkPlayMatch.style.display = 'none';
     }
 }
@@ -227,33 +237,62 @@ function displayTorneioTables() {
         const group = seasonData.torneio.groups[groupKey];
         html += `<h4 class="group-title">Grupo ${groupKey}</h4>`;
         html += `<table><thead><tr><th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th></tr></thead><tbody>`;
-        group.sort((a, b) => {
-            const statsA = seasonData.torneio.table[a];
-            const statsB = seasonData.torneio.table[b];
-            if (statsB.P !== statsA.P) return statsB.P - statsA.P;
-            if (statsB.SG !== statsA.SG) return statsB.SG - statsA.SG;
-            if (statsB.GP !== statsA.GP) return statsB.GP - statsA.GP;
-            return 0;
-        });
+        const table = seasonData.torneio.table;
+        group.sort((a, b) => table[b].P - table[a].P || table[b].SG - table[a].SG || table[b].GP - table[a].GP);
         group.forEach((teamName, index) => {
-            const stats = seasonData.torneio.table[teamName];
+            const stats = table[teamName];
             html += `<tr><td>${index + 1}</td><td>${teamName}</td><td>${stats.P}</td><td>${stats.J}</td><td>${stats.V}</td><td>${stats.E}</td><td>${stats.D}</td><td>${stats.GP}</td><td>${stats.GC}</td><td>${stats.SG}</td></tr>`;
         });
         html += `</tbody></table>`;
     });
-    // Mostra a tabela do quadrangular se existir
     if (seasonData.torneio.phase === 'final') {
         html += `<h4 class="group-title">Quadrangular Final</h4>`;
         html += `<table><thead><tr><th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th></tr></thead><tbody>`;
         const finalists = [...seasonData.torneio.finalists];
-        finalists.sort((a,b) => seasonData.torneio.finalTable[b].P - seasonData.torneio.finalTable[a].P);
+        const finalTable = seasonData.torneio.finalTable;
+        finalists.sort((a,b) => finalTable[b].P - finalTable[a].P || finalTable[b].SG - finalTable[a].SG);
         finalists.forEach((teamName, index) => {
-            const stats = seasonData.torneio.finalTable[teamName];
+            const stats = finalTable[teamName];
             html += `<tr><td>${index + 1}</td><td>${teamName}</td><td>${stats.P}</td><td>${stats.J}</td><td>${stats.V}</td><td>${stats.E}</td><td>${stats.D}</td><td>${stats.GP}</td><td>${stats.GC}</td><td>${stats.SG}</td></tr>`;
         });
         html += `</tbody></table>`;
     }
     elements.torneioTables.innerHTML = html;
+}
+
+function openCalendarioModal() {
+    elements.calendarioList.innerHTML = '';
+    const userTeamName = userData.teamName;
+    const userSchedule = seasonData.torneio.schedule.filter(m => m.home === userTeamName || m.away === userTeamName);
+    userSchedule.sort((a,b) => a.week - b.week);
+
+    let html = '<h4>Fase de Grupos</h4>';
+    userSchedule.forEach(match => {
+        const score = match.played ? `<strong>${match.score}</strong>` : "vs";
+        html += `<div class="calendario-fixture ${match.played ? 'played' : ''}">
+            <span>(Rodada ${match.week})</span>
+            <span>${match.home}</span>
+            <span>${score}</span>
+            <span>${match.away}</span>
+        </div>`;
+    });
+
+    if(seasonData.torneio.phase === 'final' && seasonData.torneio.finalists.includes(userTeamName)) {
+        html += '<h4>Quadrangular Final</h4>';
+        const finalUserSchedule = seasonData.torneio.finalSchedule.filter(m => m.home === userTeamName || m.away === userTeamName);
+        finalUserSchedule.forEach(match => {
+            const score = match.played ? `<strong>${match.score}</strong>` : "vs";
+            html += `<div class="calendario-fixture ${match.played ? 'played' : ''}">
+                <span>(Final ${match.week - 6})</span>
+                <span>${match.home}</span>
+                <span>${score}</span>
+                <span>${match.away}</span>
+            </div>`;
+        });
+    }
+
+    elements.calendarioList.innerHTML = html;
+    elements.calendarioModal.style.display = 'block';
 }
 
 function init() {
@@ -278,6 +317,15 @@ function init() {
     displayNextMatch();
     displayTorneioTables();
     elements.copaFixtures.innerHTML = '<p class="muted">Aguardando início...</p>';
+
+    // Eventos
+    elements.calendarioButton.onclick = openCalendarioModal;
+    elements.calendarioModalClose.onclick = () => elements.calendarioModal.style.display = 'none';
+    window.onclick = (event) => {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+        }
+    };
 }
 
 init();
