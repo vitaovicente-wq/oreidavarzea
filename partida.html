@@ -4,35 +4,16 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>O Rei da Várzea — Partida</title>
+<link rel="stylesheet" href="css/style.css">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
-  :root{font-family:'Roboto Condensed', system-ui, -apple-system, Segoe UI, Roboto, Arial;}
-  body{margin:0;background:#f5f7fb;color:#111}
-  header{background:#0b6bd6;color:#fff;padding:14px 18px}
-  .container{max-width:1100px;margin:18px auto;padding:10px}
-  .card{background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);padding:16px;margin-bottom:16px;}
-  button{background:#0b6bd6;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer; transition: all 0.2s ease-in-out; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
-  button:hover:not(:disabled){opacity:0.9; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15);}
-  button[disabled]{opacity:0.45;cursor:not-allowed; background-color: #6c757d;}
-  .muted{color:#666;font-size:13px}
-  .notif{position:fixed;top:18px;right:18px;background:#ffefc2;color:#333;padding:10px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);border:1px solid #e6b800}
-  a { text-decoration: none; }
-  ul { list-style-type: none; padding-left: 0; }
   li { display: flex; justify-content: space-between; align-items: center; padding: 4px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
-  h4 { color: #666; font-size: 0.8em; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-top: 20px;}
   .player-events { font-size: 12px; margin-left: 5px;}
   .bench{display:flex;flex-direction:column;gap:6px;max-height:160px;overflow:auto;padding:8px;border:1px dashed #ccc;border-radius:8px}
-  .player-card{padding:8px;border-radius:8px;background:#fff;border:1px solid #eee;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
   .player-card-info { display: flex; align-items: center; gap: 8px; }
   .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
   .status-green { background-color: #28a745; }
   .status-yellow { background-color: #ffc107; }
   .spec-tag { background-color: #e9ecef; color: #495057; font-size: 10px; padding: 2px 6px; border-radius: 10px; }
-  .health-bar, .skill-bar { width: 60px; height: 6px; background: #eee; border-radius: 3px; overflow: hidden; display: inline-block; }
-  .health-fill { height: 100%; background: #28a745; }
-  .skill-fill { height: 100%; background: #9c27b0; }
-  .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); }
-  .modal-content { background-color: #fff; margin: 10% auto; padding: 20px; border-radius: 10px; width: 80%; max-width: 700px; }
   .sub-container { display: flex; gap: 20px; margin-top: 15px; }
   .sub-column { flex: 1; border: 1px solid #ddd; border-radius: 8px; padding: 10px; height: 300px; overflow-y: auto; }
   .sub-player-item { padding: 8px; border-radius: 6px; cursor: pointer; margin-bottom: 5px; border: 1px solid #eee; }
@@ -104,23 +85,22 @@
   </div>
 </div>
 <div id="substitutionModal" class="modal">
-  <div class="modal-content">
-    <h2 id="substitutionModalTitle">Intervalo - Faça suas substituições</h2>
-    <p>Selecione um jogador em campo e um no banco para trocar. <strong id="subsCount">Substituições: 0/5</strong></p>
-    <div class="sub-container">
-      <div class="sub-column">
-        <h3>Em Campo</h3>
-        <div id="subPitchPlayers"></div>
+    <div class="modal-content">
+      <h2 id="substitutionModalTitle">Intervalo - Faça suas substituições</h2>
+      <p>Selecione um jogador em campo e um no banco para trocar. <strong id="subsCount">Substituições: 0/5</strong></p>
+      <div class="sub-container">
+        <div class="sub-column">
+          <h3>Em Campo</h3>
+          <div id="subPitchPlayers"></div>
+        </div>
+        <div class="sub-column">
+          <h3>No Banco</h3>
+          <div id="subBenchPlayers"></div>
+        </div>
       </div>
-      <div class="sub-column">
-        <h3>No Banco</h3>
-        <div id="subBenchPlayers"></div>
-      </div>
+      <button id="btnConfirmSubs" style="margin-top: 20px;">Iniciar 2º Tempo</button>
     </div>
-    <button id="btnConfirmSubs" style="margin-top: 20px;">Iniciar 2º Tempo</button>
-  </div>
 </div>
-
 <script src="js/partida.js"></script>
 </body>
 </html>
