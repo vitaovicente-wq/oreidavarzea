@@ -1,269 +1,290 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>O Rei da Várzea — Escalação</title>
-<style>
-  :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;}
-  body{margin:0;background:#f5f7fb;color:#111}
-  header{background:#0b6bd6;color:#fff;padding:14px 18px}
-  .container{max-width:1100px;margin:18px auto;padding:10px}
-  .card{background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.06);padding:16px;margin-bottom:16px;}
-  button{background:#0b6bd6;color:#fff;border:none;padding:10px 14px;border-radius:8px;cursor:pointer}
-  button[disabled]{opacity:0.45;cursor:default}
-  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:20px}
-  .muted{color:#666;font-size:13px}
-  .bench{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow:auto;padding:8px;border:1px dashed #ccc;border-radius:8px}
-  .player-card{padding:8px;border-radius:8px;background:#fff;border:1px solid #eee;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
-  .position-slot:hover{background:rgba(255,255,255,0.8);border-color:#0b6bd6}
-  .position-slot.assigned{background:#e8f5e8;border:2px solid #4CAF50}
-  .notif{position:fixed;top:18px;right:18px;background:#ffefc2;color:#333;padding:10px 14px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.12);border:1px solid #e6b800; z-index: 1001;}
-  a { text-decoration: none; }
-  .formation-line { display: flex; justify-content: center; align-items: center; gap: 10px; width: 100%; position: absolute; left: 0; padding: 0 10px; box-sizing: border-box;}
-  .position-slot { width: 140px; height: 50px; border-radius: 8px; background: rgba(255, 255, 255, 0.95); display: flex; align-items: center; justify-content: center; cursor: pointer; margin: 4px; border: 2px dashed #ccc; transition: all 0.3s; font-size: 12px; text-align: center; flex-direction: column; padding: 5px; flex-shrink: 0;}
-  .pitch { width: 100%; height: 600px; background: linear-gradient(#73c26b, #5eb95e); border-radius: 12px; padding: 10px; box-sizing: border-box; position: relative; }
-  .formation-controls { margin-bottom: 20px; display: flex; align-items: center; gap: 10px; background-color: #f0f4f8; padding: 10px; border-radius: 8px; }
-  .formation-controls label { margin: 0; font-weight: bold; }
-  #formationSelect { padding: 8px; border-radius: 6px; border: 1px solid #ddd; font-size: 14px; }
-  .health-bar { width: 80px; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; display: inline-block; }
-  .health-fill { height: 100%; transition: width 0.3s; }
-  .skill-bar { width: 80px; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; display: inline-block; margin-left:8px; vertical-align:middle; }
-  .skill-fill { height: 100%; background: #9c27b0; transition:width 0.3s}
-  .player-with-tooltip { position: relative; display: inline-block; cursor: help; }
-  .tooltip-text { visibility: hidden; width: 220px; background-color: #555; color: #fff; text-align: center; border-radius: 6px; padding: 8px; position: absolute; z-index: 10; top: 50%; left: 105%; transform: translateY(-50%); opacity: 0; transition: opacity 0.3s; font-style: italic; font-size: 12px; }
-  .tooltip-text::after { content: ""; position: absolute; top: 50%; right: 100%; margin-top: -5px; border-width: 5px; border-style: solid; border-color: transparent #555 transparent transparent; }
-  .player-with-tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
-  .top-controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
-  .top-controls button, .top-controls div { flex: 1; color: white; padding: 12px 18px; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer; transition: background-color 0.2s; text-align: center; border: none; }
-  .finance-box { background-color: #28a745; } .finance-box:hover { background-color: #218838; }
-  #zapButton { background-color: #17a2b8; position: relative; } #zapButton:hover { background-color: #138496; }
-  #postinhoButton { background-color: #dc3545; } #postinhoButton:hover { background-color: #c82333; }
-  #treinoButton { background-color: #ffc107; color: #212529; } #treinoButton:hover { background-color: #e0a800; }
-  .notification-dot { height: 12px; width: 12px; background-color: red; border-radius: 50%; position: absolute; top: 8px; right: 8px; border: 2px solid white; display:flex; justify-content: center; align-items: center; font-size: 9px; }
-  .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); }
-  .modal-content { background-color: #fff; margin: 5% auto; padding: 20px; border-radius: 10px; width: 80%; max-width: 500px; }
-  .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-  .postinho-modal-content { max-width: 800px; display: flex; gap: 20px; }
-  .player-list-column, .treatment-column { flex: 1; }
-  .player-list-column { height: 450px; overflow-y: auto; border-right: 1px solid #eee; padding-right: 20px; }
-  .postinho-player-item { padding: 10px; border-radius: 6px; cursor: pointer; margin-bottom: 8px; border: 1px solid #ddd; }
-  .postinho-player-item.selected { background-color: #e0f3ff; border-color: #0b6bd6; }
-  .diagnosis-box { background: #fff9e6; border: 1px solid #ffecb3; padding: 15px; border-radius: 8px; margin-top: 10px; font-style: italic; }
-  .treatment-list { margin-top: 20px; }
-  .treatment-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border: 1px solid #eee; border-radius: 6px; margin-bottom: 8px; }
-  .zap-modal-content { max-width: 450px; padding: 0; }
-  .zap-header { background: #075e54; color: white; padding: 15px; border-radius: 10px 10px 0 0; }
-  .chat-container { background-image: url('https://user-images.githubusercontent.com/15075759/28719134-447aae62-73c1-11e7-911d-60d70fcded21.png'); padding: 15px; height: 400px; overflow-y: auto; }
-  .chat-message { display: flex; margin-bottom: 10px; }
-  .message-bubble { background-color: #fff; padding: 10px 15px; border-radius: 8px; max-width: 80%; box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
-  .message-sender { font-weight: bold; color: #0b6bd6; margin-bottom: 4px; }
-  .player-list-modal { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
-  .modal-player-item { padding: 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; }
-  .modal-player-item:hover { background-color: #f5f7fb; }
-  .treino-modal-content { max-width: 700px; }
-  .treino-list { height: 450px; overflow-y: auto; }
-  .treino-item { border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 10px; }
-  .treino-item h4 { margin-top: 0; }
-</style>
-</head>
-<body>
-<header>
-  <div class="container"><h1 id="headerTitle">O Rei da Várzea</h1></div>
-</header>
-<div class="container">
-  <div id="tela3" class="card">
-    <div class="top-controls">
-        <div id="financeBox" class="finance-box">Caixa: <span id="cashDisplay">--</span></div>
-        <button id="zapButton">Zap do Professor <span id="zapNotification" class="notification-dot" style="display: none;"></span></button>
-        <button id="postinhoButton">Postinho 🏥</button>
-        <button id="treinoButton">Treinamento 🏋️</button>
-    </div>
-    <h2>Tela 3 — Escalação</h2>
-    <div class="formation-controls">
-      <label for="formationSelect">Escolha a sua formação:</label>
-      <select id="formationSelect">
-        <option value="4-4-2">4-4-2 (Equilibrado)</option>
-        <option value="4-3-3">4-3-3 (Ofensivo)</option>
-        <option value="3-5-2">3-5-2 (Meio-Campo Forte)</option>
-        <option value="4-2-4">4-2-4 (Ultra Ofensivo)</option>
-        <option value="5-4-1">5-4-1 (Retranca)</option>
-      </select>
-    </div>
-    <div class="card">
-      <h3>Escalação Principal</h3>
-      <div class="pitch" id="pitch"></div>
-    </div>
-    <div class="card" style="margin-top: 20px;">
-      <h3>Banco de Reservas</h3>
-      <div class="bench" id="bench"></div>
-    </div>
-    <div class="controls">
-        <a id="linkTela4" href="partida.html">
-            <button id="btnPlayMatch" disabled>Jogar partida</button>
-        </a>
-    </div>
-  </div>
-</div>
-
-<div id="financeModal" class="modal">
-  <div class="modal-content">
-    <span id="financeModalClose" class="close">&times;</span>
-    <h2>Relatório Financeiro</h2>
-    <h3>Saldo em Caixa: <span id="modalCash">--</span></h3>
-    <hr><h4>Receitas</h4>
-    <p>Renda de Partidas: <span id="modalRevenueMatches" style="color: green;">--</span></p>
-    <p>Prêmios e Patrocínio: <span id="modalRevenueSponsors" style="color: green;">--</span></p>
-    <h4>Despesas</h4>
-    <p>Contratações (passes): <span id="modalExpenseSignings" style="color: red;">--</span></p>
-    <p>Salários Pagos: <span id="modalExpenseSalaries" style="color: red;">--</span></p>
-    <p>Bicho (Prêmio por vitória): <span id="modalExpenseBonus" style="color: red;">--</span></p>
-    <hr><h3>Balanço Geral: <span id="modalBalance">--</span></h3>
-  </div>
-</div>
-<div id="zapModal" class="modal">
-    <div class="modal-content zap-modal-content">
-        <div class="zap-header"><span id="zapModalClose" class="close">&times;</span><h2>Zap do Professor</h2></div>
-        <div id="chatContainer" class="chat-container"></div>
-    </div>
-</div>
-<div id="postinhoModal" class="modal">
-    <div class="modal-content postinho-modal-content">
-        <div class="player-list-column">
-            <h3>Elenco</h3><div id="postinhoPlayerList"></div>
-        </div>
-        <div class="treatment-column">
-            <span id="postinhoModalClose" class="close">&times;</span>
-            <h2>Sala do Dr. Tairo</h2>
-            <div id="treatmentPanel"><p class="muted" style="text-align: center; margin-top: 50px;">Selecione um jogador à esquerda para o diagnóstico.</p></div>
-        </div>
-    </div>
-</div>
-<div id="treinoModal" class="modal">
-    <div class="modal-content treino-modal-content">
-        <span id="treinoModalClose" class="close">&times;</span>
-        <h2>CT do Terrão - Treino da Semana</h2>
-        <p class="muted">Escolha um treino para o elenco. O treino só pode ser realizado uma vez por semana (entre as partidas).</p>
-        <div id="treinoList" class="treino-list"></div>
-    </div>
-</div>
-<div id="playerModal" class="modal">
-  <div class="modal-content">
-    <span class="close" id="playerModalClose">&times;</span>
-    <h3 id="modalTitle">Selecionar Jogador</h3>
-    <div id="modalSubtitle" class="muted"></div>
-    <div id="playerList" class="player-list-modal"></div>
-  </div>
-</div>
-
-<script>
 // ========== ESTADO DO JOGO ==========
-let hired = []; let userData = {}; let financas = {}; let zapMessages = []; let teamStats = {};
-
-// ========== DADOS GERAIS ==========
-const treatments = [ { id: 'gelol', name: 'Massagem com Gelol', cost: 10, cost_type: 'fixed', health_gain: 8 }, { id: 'reza', name: 'Reza da Dona Maria', cost: 5, cost_type: 'fixed', health_gain: 15 }, { id: 'mocoto', name: 'Caldo de Mocotó', cost: 15, cost_type: 'fixed', health_gain: 18 }, { id: 'pregacao', name: 'Pregação do Pastor Elias', cost: 0.10, cost_type: 'percentage', health_gain: 13 }, { id: 'garrafada', name: 'Garrafada Misteriosa', cost: 20, cost_type: 'fixed', health_gain: () => Math.floor(Math.random() * 21) + 5 }, { id: 'salgrosso', name: 'Banho de Sal Grosso', cost: 2, cost_type: 'fixed', health_gain: 5 }, { id: 'benzetacil', name: 'Benzetacil', cost: 30, cost_type: 'fixed', health_gain: 20 } ];
-const tairoQuotes = {
-    low: [ "Chefe, esse aqui tá na UTI do Postinho. Se botar pra jogar, ele desmonta. O caso é grave e pede o tratamento de choque: uma <strong>Benzetacil</strong>.", "A conta chegou pra esse guerreiro. É o seguinte: ou a gente aplica a artilharia pesada, uma <strong>Benzetacil</strong> pra ontem, ou ele vai estourar um músculo e ficar 3 meses parado.", "Não tem massagem que resolva isso aqui, professor. Isso não é cansaço, é quase um pedido de aposentadoria. Sem conversa, o protocolo é <strong>Benzetacil</strong>." ],
-    medium: [ "O motor desse aqui tá fadigado, tá batendo pino. Tá precisando de sustância. Um <strong>Caldo de Mocotó do Seu Zé</strong> ajeita a máquina e enche o tanque.", "Esse aqui tá com o corpo pesado, parece que tem 'olho gordo' em cima. Leva ele na <strong>Dona Maria pra uma reza forte</strong>, é o melhor remédio pra tirar essa zica.", "A lesão dele não é só no músculo, é na confiança. Tá cabisbaixo. A <strong>Pregação do Pastor Elias</strong> vai levantar a moral desse rapaz e botar ele de pé de novo." ],
-    high: [ "Isso aí é manha de jogador querendo fugir do treino. Manda uma <strong>Massagem com Gelol</strong> que essa frescura passa rapidinho.", "Esse aí tá com a lataria arranhada, coisa de jogo. Nada que uma boa <strong>Massagem com Gelol</strong> não resolva.", "Diagnóstico: dorzinha de cabeça de zagueiro. Protocolo: <strong>Massagem com Gelol</strong> e um esporro pra parar de chorar. Próximo!" ]
-};
-const formations = { '4-4-2': [ { top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] }, { top: '25%', slots: [{ pos: 'Lateral', text: '⬅️ Lateral Esq.' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Lateral', text: '➡️ Lateral Dir.' }] }, { top: '55%', slots: [{ pos: 'Meia', text: '🎯 Meia Esq.' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Meia', text: '🎯 Meia Dir.' }] }, { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Atacante' }, { pos: 'Atacante', text: '⚽ Atacante' }] } ], '4-3-3': [ { top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] }, { top: '25%', slots: [{ pos: 'Lateral', text: '⬅️ Lateral Esq.' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Lateral', text: '➡️ Lateral Dir.' }] }, { top: '55%', slots: [{ pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Meia', text: '🎯 Meia' }, { pos: 'Meia', text: '🎯 Meia' }] }, { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Ponta Esq.' }, { pos: 'Atacante', text: '⚽ Centroavante' }, { pos: 'Atacante', text: '⚽ Ponta Dir.' }] } ], '3-5-2': [ { top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] }, { top: '25%', slots: [{ pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Líbero' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }] }, { top: '55%', slots: [{ pos: 'Lateral', text: '🏃 Ala Esq.' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Meia', text: '🎯 Meia Central' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Lateral', text: '🏃 Ala Dir.' }] }, { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Atacante' }, { pos: 'Atacante', text: '⚽ Atacante' }] } ], '4-2-4': [ { top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] }, { top: '25%', slots: [{ pos: 'Lateral', text: '⬅️ Lateral Esq.' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Lateral', text: '➡️ Lateral Dir.' }] }, { top: '55%', slots: [{ pos: 'Meia', text: '🎯 Meia' }, { pos: 'Meia', text: '🎯 Meia' }] }, { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Ponta Esq.' }, { pos: 'Atacante', text: '⚽ Atacante' }, { pos: 'Atacante', text: '⚽ Atacante' }, { pos: 'Atacante', text: '⚽ Ponta Dir.' }] } ], '5-4-1': [ { top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] }, { top: '25%', slots: [{ pos: 'Lateral', text: '⬅️ Lateral Esq.' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Líbero' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Lateral', text: '➡️ Lateral Dir.' }] }, { top: '55%', slots: [{ pos: 'Meia', text: '🎯 Meia Esq.' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Meia', text: '🎯 Meia Dir.' }] }, { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Centroavante' }] } ] };
-const trainingSessions = [ { id: 'rachao', name: 'Rachão de Quinta 🥩', description: 'Coletivo pegado para melhorar o entrosamento e a habilidade geral de todos.', cost: 50, cost_health: 10, focus: 'all', reward_type: 'skill', reward_chance: 0.10, reward_value: 1 }, { id: 'dois_toques', name: 'Dois Toques ⚽', description: 'Treino técnico em campo reduzido para aprimorar o passe e a visão de jogo.', cost: 10, cost_health: 5, focus: ['Meia', 'Volante'], reward_type: 'skill', reward_chance: 0.25, reward_value: 1 }, { id: 'finalizacao', name: 'Finalização até o Sol se Por 🥅', description: 'Atacantes aprimoram a pontaria com chutes de todos os jeitos.', cost: 0, cost_health: 8, focus: ['Atacante'], reward_type: 'skill', reward_chance: 0.40, reward_value: 1 }, { id: 'muralha', name: 'Muralha Defensiva 🧱', description: 'Treino intenso de posicionamento e bote para zagueiros e laterais.', cost: 0, cost_health: 8, focus: ['Zagueiro', 'Lateral'], reward_type: 'skill', reward_chance: 0.40, reward_value: 1 }, { id: 'corrida_morro', name: 'Corrida no Morro 🏃', description: 'Preparo físico bruto para aumentar a resistência do elenco nas partidas.', cost: 20, cost_health: 15, focus: 'all', reward_type: 'stamina', reward_value: 5 }, { id: 'churrasco', name: 'Churrasco do Nelson 🍖', description: 'Não melhora a técnica, mas nada une mais o time que uma picanha na brasa.', cost: 100, cost_health: 0, focus: 'all', reward_type: 'entrosamento', reward_value: 5 } ];
+let userData = {};
+let varzeaUniverse = [];
+let seasonData = {};
 
 const elements = {
-  headerTitle: document.getElementById('headerTitle'), bench: document.getElementById('bench'), btnPlayMatch: document.getElementById('btnPlayMatch'),
-  linkTela4: document.getElementById('linkTela4'), formationSelect: document.getElementById('formationSelect'), pitch: document.getElementById('pitch'),
-  cashDisplay: document.getElementById('cashDisplay'), financeBox: document.getElementById('financeBox'), financeModal: document.getElementById('financeModal'),
-  financeModalClose: document.getElementById('financeModalClose'), playerModal: document.getElementById('playerModal'), playerModalClose: document.getElementById('playerModalClose'),
-  modalTitle: document.getElementById('modalTitle'), modalSubtitle: document.getElementById('modalSubtitle'), playerList: document.getElementById('playerList'),
-  modalCash: document.getElementById('modalCash'), modalRevenueMatches: document.getElementById('modalRevenueMatches'),
-  modalRevenueSponsors: document.getElementById('modalRevenueSponsors'), modalExpenseSignings: document.getElementById('modalExpenseSignings'),
-  modalExpenseSalaries: document.getElementById('modalExpenseSalaries'), modalExpenseBonus: document.getElementById('modalExpenseBonus'),
-  modalBalance: document.getElementById('modalBalance'), zapButton: document.getElementById('zapButton'),
-  zapNotification: document.getElementById('zapNotification'), zapModal: document.getElementById('zapModal'),
-  zapModalClose: document.getElementById('zapModalClose'), chatContainer: document.getElementById('chatContainer'),
-  postinhoButton: document.getElementById('postinhoButton'), postinhoModal: document.getElementById('postinhoModal'),
-  postinhoModalClose: document.getElementById('postinhoModalClose'), postinhoPlayerList: document.getElementById('postinhoPlayerList'),
-  treatmentPanel: document.getElementById('treatmentPanel'),
-  treinoButton: document.getElementById('treinoButton'), treinoModal: document.getElementById('treinoModal'),
-  treinoModalClose: document.getElementById('treinoModalClose'), treinoList: document.getElementById('treinoList')
+    headerTitle: document.getElementById('headerTitle'),
+    nextMatchInfo: document.getElementById('nextMatchInfo'),
+    linkPlayMatch: document.getElementById('linkPlayMatch'),
+    torneioTables: document.getElementById('torneioTables'),
+    copaFixtures: document.getElementById('copaFixtures'),
+    calendarioButton: document.getElementById('calendarioButton'),
+    calendarioModal: document.getElementById('calendarioModal'),
+    calendarioModalClose: document.getElementById('calendarioModalClose'),
+    calendarioList: document.getElementById('calendarioList'),
 };
 
-function showNotif(text, time = 3000) { const box = document.createElement('div'); box.className = 'notif'; box.textContent = text; document.body.appendChild(box); setTimeout(() => box.remove(), time); }
-function formatReal(n) { return 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
-function renderSkillBar(skill) { return `<div class="skill-bar"><div class="skill-fill" style="width: ${skill}%"></div></div>`; }
-function renderHealthBar(health) { const color = health > 70 ? '#28a745' : health > 40 ? '#ffc107' : '#dc3545'; return `<div class="health-bar"><div class="health-fill" style="width: ${health}%; background-color: ${color};"></div></div>`; }
+// ========== LÓGICA DE CRIAÇÃO DO UNIVERSO ==========
+function createAISquad() {
+    const firsts = ["Beto", "Formiga", "Tico", "Careca", "Juninho", "Nego", "Bira", "Léo", "Tadeu", "Marcão", "Zé", "Sandro"];
+    const lastParts = ["da Silva", "Souza", "Reis", "Gomes", "do Bairro", "da Padaria", "Paulista"];
+    const positions = { 'Goleiro': 2, 'Lateral': 4, 'Zagueiro': 4, 'Volante': 4, 'Meia': 4, 'Atacante': 4 };
+    let squad = [];
+    let idCounter = 0;
+    Object.keys(positions).forEach(pos => {
+        for (let i = 0; i < positions[pos]; i++) {
+            squad.push({
+                id: `ai_p${Math.round(Math.random()*10000)}_${idCounter++}`,
+                name: `${firsts[Math.floor(Math.random() * firsts.length)]} ${lastParts[Math.floor(Math.random() * lastParts.length)]}`,
+                pos: pos,
+                skill: Math.floor(Math.random() * 35) + 40
+            });
+        }
+    });
+    return squad;
+}
 
-function openFinanceModal() { elements.modalCash.textContent = formatReal(financas.caixaAtual); elements.modalRevenueMatches.textContent = `+ ${formatReal(financas.receitaPartidas)}`; elements.modalRevenueSponsors.textContent = `+ ${formatReal(financas.receitaPremiosPatrocinios)}`; elements.modalExpenseSignings.textContent = `- ${formatReal(financas.gastosContratacoes)}`; elements.modalExpenseSalaries.textContent = `- ${formatReal(financas.gastosSalarios)}`; elements.modalExpenseBonus.textContent = `- ${formatReal(financas.gastosBicho)}`; const totalReceitas = financas.receitaPartidas + financas.receitaPremiosPatrocinios; const totalDespesas = financas.gastosContratacoes + financas.gastosSalarios + financas.gastosBicho; const balanco = totalReceitas - totalDespesas; elements.modalBalance.textContent = formatReal(balanco); elements.modalBalance.style.color = balanco >= 0 ? 'green' : 'red'; elements.financeModal.style.display = 'block'; }
-function openZapModal() { elements.chatContainer.innerHTML = ''; if (zapMessages.length === 0) { elements.chatContainer.innerHTML = '<p class="muted" style="text-align: center; padding-top: 20px;">Nenhuma mensagem nova.</p>'; } else { zapMessages.sort((a, b) => new Date(b.date) - new Date(a.date)); zapMessages.forEach(msg => { const messageDiv = document.createElement('div'); messageDiv.className = 'chat-message'; messageDiv.innerHTML = `<div class="message-bubble"><div class="message-sender">${msg.from}</div><div>${msg.text}</div></div>`; elements.chatContainer.appendChild(messageDiv); }); } elements.zapModal.style.display = 'block'; elements.zapNotification.style.display = 'none'; markMessagesAsRead(); }
-function markMessagesAsRead() { zapMessages.forEach(msg => msg.read = true); localStorage.setItem('zapMessages', JSON.stringify(zapMessages)); }
-function checkZapNotifications() { const unreadCount = zapMessages.filter(m => !m.read).length; if (unreadCount > 0) { elements.zapNotification.style.display = 'flex'; elements.zapNotification.textContent = unreadCount; } else { elements.zapNotification.style.display = 'none'; } }
-function drawPitch(formationName) { elements.pitch.innerHTML = ''; const layout = formations[formationName]; if (!layout) return; let slotCounter = 0; layout.forEach(line => { const lineDiv = document.createElement('div'); lineDiv.className = 'formation-line'; lineDiv.style.top = line.top; line.slots.forEach(slotInfo => { const slotDiv = document.createElement('div'); slotDiv.className = 'position-slot'; slotDiv.id = `slot-${slotCounter++}`; slotDiv.dataset.pos = slotInfo.pos; slotDiv.innerHTML = `<div>${slotInfo.text}</div><div class="muted">Clique para escalar</div>`; lineDiv.appendChild(slotDiv); }); elements.pitch.appendChild(lineDiv); }); addSlotClickListeners(); }
-function addSlotClickListeners() { document.querySelectorAll('.position-slot').forEach(slot => { slot.addEventListener('click', () => { openPlayerModal(slot); }); }); }
-function unassignAllPlayers() { document.querySelectorAll('.position-slot[data-assigned]').forEach(slot => { const textDiv = slot.querySelector('div:first-child'); if(textDiv) { const originalText = textDiv.innerHTML; slot.innerHTML = `<div>${originalText}</div><div class="muted">Clique para escalar</div>`; } delete slot.dataset.assigned; slot.classList.remove('assigned'); }); populateBench(); elements.btnPlayMatch.disabled = true; }
-function openPlayerModal(slotElement) { const posicao = slotElement.dataset.pos; elements.playerModal.querySelector('#modalTitle').textContent = `Escalar ${posicao}`; elements.playerModal.querySelector('#modalSubtitle').textContent = `Selecione um jogador`; const playerList = elements.playerModal.querySelector('#playerList'); playerList.innerHTML = ''; const posicoesValidas = { 'Goleiro': ['Goleiro'], 'Lateral': ['Lateral'], 'Zagueiro': ['Zagueiro'], 'Volante': ['Volante'], 'Meia': ['Meia'], 'Atacante': ['Atacante'] }; const posicoesAceitas = posicoesValidas[posicao] || [posicao]; const jogadoresDisponiveis = hired.filter(jogador => posicoesAceitas.includes(jogador.pos) && !document.querySelector(`[data-assigned="${jogador.id}"]`)); if (jogadoresDisponiveis.length === 0) { playerList.innerHTML = '<p class="muted">Nenhum jogador disponível</p>'; } else { jogadoresDisponiveis.forEach(jogador => { const item = document.createElement('div'); item.className = 'modal-player-item'; item.innerHTML = `<div><div class="player-with-tooltip"><strong>${jogador.name}</strong><span class="tooltip-text">"${jogador.apresentacao}"</span></div> • ${jogador.pos}</div><div class="muted">${jogador.age} anos • ${jogador.foot} • Habilidade: ${jogador.skill}% • Saúde: ${jogador.health}%</div><div>${renderSkillBar(jogador.skill)} ${renderHealthBar(jogador.health)}</div>`; item.addEventListener('click', (e) => { if (e.target.classList.contains('tooltip-text')) return; assignPlayerToSlot(jogador, slotElement); elements.playerModal.style.display = 'none'; }); playerList.appendChild(item); }); } elements.playerModal.style.display = 'block'; }
-function assignPlayerToSlot(jogador, slotElement) { const otherSlot = document.querySelector(`.position-slot[data-assigned="${jogador.id}"]`); if (otherSlot) { const originalText = otherSlot.querySelector('div:first-child').innerHTML; delete otherSlot.dataset.assigned; otherSlot.classList.remove('assigned'); otherSlot.innerHTML = `<div>${originalText}</div><div class="muted">Clique para escalar</div>`; } slotElement.dataset.assigned = jogador.id; slotElement.innerHTML = `<div><strong>${jogador.name}</strong></div><div>${jogador.pos}</div><div class="muted">Habilidade: ${jogador.skill}%</div>`; slotElement.classList.add('assigned'); populateBench(); const assignedCount = document.querySelectorAll('.position-slot.assigned').length; elements.btnPlayMatch.disabled = assignedCount < 11; showNotif(`${jogador.name} escalado!`); }
-function populateBench() { elements.bench.innerHTML = ''; const jogadoresNoBanco = hired.filter(jogador => !document.querySelector(`[data-assigned="${jogador.id}"]`)); if (jogadoresNoBanco.length === 0) { elements.bench.innerHTML = '<p class="muted">Todos escalados</p>'; return; } jogadoresNoBanco.forEach(jogador => { const div = document.createElement('div'); div.className = 'player-card'; div.innerHTML = `<div><div class="player-with-tooltip"><strong>${jogador.name}</strong><span class="tooltip-text">"${jogador.apresentacao}"</span></div><div class="muted">${jogador.pos} • ${jogador.foot} • ${jogador.age} anos</div></div><div class="muted">${formatReal(jogador.salarioJogo)}/jogo</div>`; elements.bench.appendChild(div); }); }
-function openPostinhoModal() { populatePostinhoPlayerList(); elements.treatmentPanel.innerHTML = `<p class="muted" style="text-align: center; margin-top: 50px;">Selecione um jogador à esquerda para o diagnóstico.</p>`; elements.postinhoModal.style.display = 'block'; }
-function populatePostinhoPlayerList() { elements.postinhoPlayerList.innerHTML = ''; hired.sort((a,b) => a.health - b.health).forEach(p => { const item = document.createElement('div'); item.className = 'postinho-player-item'; item.dataset.playerId = p.id; item.innerHTML = `<div style="display: flex; justify-content: space-between; align-items: center;"><strong>${p.name}</strong><span class="muted">${p.health}%</span></div>${renderHealthBar(p.health)}`; item.onclick = () => selectPlayerForTreatment(p.id); elements.postinhoPlayerList.appendChild(item); }); }
-function selectPlayerForTreatment(playerId) { const player = hired.find(p => p.id === playerId); if (!player) return; document.querySelectorAll('.postinho-player-item').forEach(el => { el.classList.toggle('selected', el.dataset.playerId === playerId); }); let diagnosisKey = 'high'; if (player.health <= 70) diagnosisKey = 'medium'; if (player.health < 50) diagnosisKey = 'low'; const diagnosisText = tairoQuotes[diagnosisKey][Math.floor(Math.random() * 3)]; let treatmentHTML = `<h3>Diagnóstico de ${player.name}</h3><p class="muted">Saúde Atual: ${player.health}%</p><div class="diagnosis-box">“${diagnosisText}”</div><div class="treatment-list"><h4>Tratamentos Disponíveis</h4>`; treatments.forEach(t => { let costText = ''; if (t.cost_type === 'percentage') { costText = `${t.cost * 100}% do Salário (${formatReal(player.salarioJogo * t.cost)})`; } else { costText = formatReal(t.cost); } treatmentHTML += `<div class="treatment-item"><div><strong>${t.name}</strong><div class="muted">Custo: ${costText}</div></div><button onclick="applyTreatment('${player.id}', '${t.id}')">Aplicar</button></div>`; }); treatmentHTML += `</div>`; elements.treatmentPanel.innerHTML = treatmentHTML; }
-function applyTreatment(playerId, treatmentId) { const player = hired.find(p => p.id === playerId); const treatment = treatments.find(t => t.id === treatmentId); if (!player || !treatment) return; let cost = 0; if (treatment.cost_type === 'percentage') { cost = player.salarioJogo * treatment.cost; } else { cost = treatment.cost; } if (financas.caixaAtual < cost) { showNotif("Dinheiro em caixa insuficiente!"); return; } financas.caixaAtual -= cost; let healthGained = (typeof treatment.health_gain === 'function') ? treatment.health_gain() : treatment.health_gain; player.health = Math.min(100, player.health + healthGained); localStorage.setItem('financasDoTime', JSON.stringify(financas)); localStorage.setItem('elencoDoTime', JSON.stringify(hired)); showNotif(`${player.name} recebeu ${treatment.name}. Saúde agora é ${player.health}%.`); elements.cashDisplay.textContent = formatReal(financas.caixaAtual); selectPlayerForTreatment(playerId); populatePostinhoPlayerList(); populateBench(); }
-function reassignPlayerToSlot(player, slotElement) { if (!player || !slotElement) return; slotElement.dataset.assigned = player.id; slotElement.innerHTML = `<div><strong>${player.name}</strong></div><div>${player.pos}</div><div class="muted">Habilidade: ${player.skill}%</div>`; slotElement.classList.add('assigned'); }
-function openTreinoModal() { elements.treinoList.innerHTML = ''; const treinoRealizado = localStorage.getItem('treinoRealizado') === 'true'; trainingSessions.forEach(session => { const item = document.createElement('div'); item.className = 'treino-item'; let custoSaude = session.cost_health > 0 ? `<li>Custo de Saúde: -${session.cost_health}% para jogadores do foco</li>` : ''; item.innerHTML = `<h4>${session.name}</h4><p class="muted">${session.description}</p><ul><li>Custo: ${formatReal(session.cost)}</li>${custoSaude}</ul><button data-session-id="${session.id}" ${treinoRealizado ? 'disabled' : ''}>Realizar Treino</button>`; elements.treinoList.appendChild(item); }); if (treinoRealizado) { const info = document.createElement('p'); info.className = 'muted'; info.style.textAlign = 'center'; info.style.fontWeight = 'bold'; info.textContent = 'O treino da semana já foi realizado. Jogue uma partida para treinar novamente.'; elements.treinoList.appendChild(info); } elements.treinoList.querySelectorAll('button').forEach(button => { button.onclick = () => realizarTreino(button.dataset.sessionId); }); elements.treinoModal.style.display = 'block'; }
-function realizarTreino(sessionId) { const session = trainingSessions.find(s => s.id === sessionId); if (!session) return; if (financas.caixaAtual < session.cost) { showNotif("Dinheiro em caixa insuficiente para este treino!"); return; } financas.caixaAtual -= session.cost; hired.forEach(p => { let isFocusPlayer = session.focus === 'all' || session.focus.includes(p.pos); if (isFocusPlayer) { p.health = Math.max(0, p.health - session.cost_health); if (session.reward_type === 'skill') { const ageFactor = Math.max(0, (30 - p.age) * 0.01); const finalChance = session.reward_chance + ageFactor; if (Math.random() < finalChance) { p.skill = Math.min(100, p.skill + session.reward_value); showNotif(`${p.name} evoluiu sua habilidade!`, 1500); } } } }); if (session.reward_type === 'entrosamento') { teamStats.entrosamento = Math.min(100, teamStats.entrosamento + session.reward_value); showNotif(`O entrosamento do time aumentou para ${teamStats.entrosamento}!`); } if (session.reward_type === 'stamina') { showNotif(`A resistência do time melhorou!`); } localStorage.setItem('financasDoTime', JSON.stringify(financas)); localStorage.setItem('elencoDoTime', JSON.stringify(hired)); localStorage.setItem('teamStats', JSON.stringify(teamStats)); localStorage.setItem('treinoRealizado', 'true'); elements.cashDisplay.textContent = formatReal(financas.caixaAtual); populateBench(); elements.treinoModal.style.display = 'none'; showNotif(`Treino de "${session.name}" realizado com sucesso!`, 2500); }
+function createUniverse() {
+    const teamNames = [ "Tsunami da ZL", "Galácticos do Grajaú", "Ajax da Vila Sônia", "Real Madruga", "Mulekes da Vila", "Fúria do Capão Redondo", "EC Beira-Rio", "Juventus da Mooca", "Parma da Augusta", "Boca do Lixo FC", "Manchester Paulista", "PSV - Pau Sem Vontade", "Borussia do Ipiranga", "Atlético do Jaçanã", "Inter de Limão", "Só Canelas FC", "Bayern do M'Boi Mirim", "Liverpool da Cantareira", "Chelsea do Cimento", "PSG do Povo" ];
+    return teamNames.map(name => ({ name, squad: createAISquad() }));
+}
+
+function generateRoundRobin(teams) {
+    const schedule = [];
+    if (teams.length % 2 !== 0) teams.push('BYE');
+    const numRounds = teams.length - 1;
+    const half = teams.length / 2;
+    let localTeams = [...teams];
+    for (let round = 0; round < numRounds; round++) {
+        for (let i = 0; i < half; i++) {
+            const home = localTeams[i];
+            const away = localTeams[localTeams.length - 1 - i];
+            if(home !== 'BYE' && away !== 'BYE') {
+                schedule.push({ home, away });
+            }
+        }
+        const last = localTeams.pop();
+        localTeams.splice(1, 0, last);
+    }
+    return schedule;
+}
+
+function generateSeasonFixtures(universe, userTeamName) {
+    let season = {
+        currentWeek: 1,
+        torneio: { phase: 'groups', groups: {}, schedule: [], table: {}, finalists: [], finalSchedule: [], finalTable: {} },
+    };
+    const shuffledUniverse = [...universe].sort(() => 0.5 - Math.random());
+    const torneioTeams = [userTeamName, ...shuffledUniverse.slice(0, 7).map(t => t.name)];
+    const shuffledTorneioTeams = [...torneioTeams].sort(() => 0.5 - Math.random());
+    season.torneio.groups['A'] = shuffledTorneioTeams.slice(0, 4);
+    season.torneio.groups['B'] = shuffledTorneioTeams.slice(4, 8);
+    torneioTeams.forEach(name => { season.torneio.table[name] = { P: 0, J: 0, V: 0, E: 0, D: 0, GP: 0, GC: 0, SG: 0 }; });
+    let fullSchedule = [];
+    Object.values(season.torneio.groups).forEach(group => {
+        const turno = generateRoundRobin([...group]);
+        const returno = turno.map(match => ({ home: match.away, away: match.home }));
+        fullSchedule.push(...turno, ...returno);
+    });
+    season.torneio.schedule = fullSchedule.map((match, index) => ({ ...match, week: Math.floor(index / 4) + 1, played: false }));
+    return season;
+}
+
+// ========== MOTOR DA TEMPORADA ==========
+function updateTableStats(result, table) {
+    const { homeTeam, awayTeam, homeScore, awayScore } = result;
+    if (!table[homeTeam] || !table[awayTeam]) return;
+    table[homeTeam].J++; table[awayTeam].J++;
+    table[homeTeam].GP += homeScore; table[homeTeam].GC += awayScore;
+    table[awayTeam].GP += awayScore; table[awayTeam].GC += homeScore;
+    table[homeTeam].SG = table[homeTeam].GP - table[homeTeam].GC;
+    table[awayTeam].SG = table[awayTeam].GP - table[awayTeam].GC;
+    if (homeScore > awayScore) {
+        table[homeTeam].V++; table[awayTeam].D++; table[homeTeam].P += 3;
+    } else if (awayScore > homeScore) {
+        table[awayTeam].V++; table[homeTeam].D++; table[awayTeam].P += 3;
+    } else {
+        table[homeTeam].E++; table[awayTeam].E++; table[homeTeam].P += 1; table[awayTeam].P += 1;
+    }
+}
+
+function simulateAIMatch(homeTeamName, awayTeamName) {
+    const homeTeam = varzeaUniverse.find(t => t.name === homeTeamName);
+    const awayTeam = varzeaUniverse.find(t => t.name === awayTeamName);
+    if(!homeTeam || !awayTeam) return { homeTeam: homeTeamName, awayTeam: awayTeamName, homeScore: 0, awayScore: 0};
+    const avgSkillHome = homeTeam.squad.reduce((sum, p) => sum + p.skill, 0) / homeTeam.squad.length;
+    const avgSkillAway = awayTeam.squad.reduce((sum, p) => sum + p.skill, 0) / awayTeam.squad.length;
+    let homeScore = 0; let awayScore = 0;
+    const skillDiff = avgSkillHome - avgSkillAway;
+    const homeWinProb = 50 + (skillDiff * 1.5);
+    const rand = Math.random() * 100;
+    if (rand < homeWinProb - 15) { homeScore = Math.floor(Math.random() * 3) + 1; awayScore = Math.floor(Math.random() * 2); if(homeScore <= awayScore) homeScore = awayScore + 1;
+    } else if (rand < homeWinProb + 15) { homeScore = Math.floor(Math.random() * 3); awayScore = homeScore;
+    } else { awayScore = Math.floor(Math.random() * 3) + 1; homeScore = Math.floor(Math.random() * 2); if(homeScore >= awayScore) homeScore = awayScore - 1; }
+    return { homeTeam: homeTeamName, awayTeam: awayTeamName, homeScore: Math.max(0, homeScore), awayScore: Math.max(0, awayScore) };
+}
+
+function setupQuadrangularFinal() {
+    seasonData.torneio.phase = 'final';
+    const table = seasonData.torneio.table;
+    const sortRule = (a, b) => table[b].P - table[a].P || table[b].SG - table[a].SG || table[b].GP - table[a].GP;
+    const groupA = [...seasonData.torneio.groups.A].sort(sortRule);
+    const groupB = [...seasonData.torneio.groups.B].sort(sortRule);
+    const finalists = [groupA[0], groupA[1], groupB[0], groupB[1]];
+    seasonData.torneio.finalists = finalists;
+    finalists.forEach(name => { seasonData.torneio.finalTable[name] = { P: 0, J: 0, V: 0, E: 0, D: 0, GP: 0, GC: 0, SG: 0 }; });
+    let finalSchedule = generateRoundRobin([...finalists]);
+    seasonData.torneio.finalSchedule = finalSchedule.map((match, index) => ({...match, week: 7 + index, played: false }));
+    seasonData.currentWeek = 7;
+}
+
+function processLastMatchResult() {
+    const result = JSON.parse(localStorage.getItem('lastMatchResult'));
+    if (!result) return;
+    const currentTable = seasonData.torneio.phase === 'groups' ? seasonData.torneio.table : seasonData.torneio.finalTable;
+    updateTableStats(result, currentTable);
+    const currentSchedule = seasonData.torneio.phase === 'groups' ? seasonData.torneio.schedule : seasonData.torneio.finalSchedule;
+    const matchIndex = currentSchedule.findIndex(m => m.home === result.homeTeam && m.away === result.awayTeam);
+    let weekOfLastMatch = 0;
+    if(matchIndex > -1) {
+        currentSchedule[matchIndex].played = true;
+        currentSchedule[matchIndex].score = `${result.homeScore} x ${result.awayScore}`;
+        weekOfLastMatch = currentSchedule[matchIndex].week;
+    }
+    if(seasonData.torneio.phase === 'groups'){
+        const otherMatches = seasonData.torneio.schedule.filter(m => m.week === weekOfLastMatch && !m.played);
+        otherMatches.forEach(match => {
+            const aiResult = simulateAIMatch(match.home, match.away);
+            updateTableStats(aiResult, seasonData.torneio.table);
+            const aiMatchIndex = seasonData.torneio.schedule.findIndex(m => m.home === match.home && m.away === match.away && m.week === weekOfLastMatch);
+            if(aiMatchIndex > -1) {
+                seasonData.torneio.schedule[aiMatchIndex].played = true;
+                seasonData.torneio.schedule[aiMatchIndex].score = `${aiResult.homeScore} x ${aiResult.awayScore}`;
+            }
+        });
+    }
+    const allGroupMatchesPlayed = seasonData.torneio.schedule.every(m => m.played);
+    if(allGroupMatchesPlayed && seasonData.torneio.phase === 'groups'){
+        setupQuadrangularFinal();
+    }
+    localStorage.setItem('seasonData', JSON.stringify(seasonData));
+    localStorage.removeItem('lastMatchResult');
+}
+
+
+// ========== LÓGICA DE EXIBIÇÃO ==========
+function displayNextMatch() {
+    const userTeamName = userData.teamName;
+    let nextMatch;
+    let competitionName = "Torneio da Vila Freitas";
+
+    if(seasonData.torneio.phase === 'groups') {
+        nextMatch = seasonData.torneio.schedule.find(m => (m.home === userTeamName || m.away === userTeamName) && !m.played);
+    } else if (seasonData.torneio.finalists.includes(userTeamName)) {
+        competitionName += " - Quadrangular Final";
+        nextMatch = seasonData.torneio.finalSchedule.find(m => (m.home === userTeamName || m.away === userTeamName) && !m.played);
+    }
+    
+    if (nextMatch) {
+        const location = nextMatch.home === userTeamName ? 'Em Casa' : 'Fora de Casa';
+        elements.nextMatchInfo.innerHTML = `
+            <p class="match-details-small">${competitionName} - Rodada ${nextMatch.week}</p>
+            <div class="vs">${nextMatch.home} vs ${nextMatch.away}</div>
+            <p class="match-details-small">${location}</p>
+        `;
+        localStorage.setItem('currentMatchInfo', JSON.stringify({ homeTeam: nextMatch.home, awayTeam: nextMatch.away, competition: competitionName }));
+        elements.linkPlayMatch.style.display = 'block';
+    } else {
+        let endMessage = "Fim da Fase de Grupos!";
+        if(seasonData.torneio.phase === 'final') {
+            const champion = [...seasonData.torneio.finalists].sort((a,b) => seasonData.torneio.finalTable[b].P - seasonData.torneio.finalTable[a].P)[0];
+            endMessage = `🏆 CAMPEÃO: ${champion}! 🏆`;
+        }
+        elements.nextMatchInfo.innerHTML = `<p style="font-weight:bold; font-size: 1.2em;">${endMessage}</p>`;
+        elements.linkPlayMatch.style.display = 'none';
+    }
+}
+
+function displayTorneioTables() {
+    let html = '';
+    Object.keys(seasonData.torneio.groups).forEach(groupKey => {
+        const group = seasonData.torneio.groups[groupKey];
+        html += `<h4 class="group-title">Grupo ${groupKey}</h4>`;
+        html += `<table><thead><tr><th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th></tr></thead><tbody>`;
+        const table = seasonData.torneio.table;
+        group.sort((a, b) => {
+            const statsA = table[a];
+            const statsB = table[b];
+            if (statsB.P !== statsA.P) return statsB.P - statsA.P;
+            if (statsB.SG !== statsA.SG) return statsB.SG - statsA.SG;
+            if (statsB.GP !== statsA.GP) return statsB.GP - statsA.GP;
+            return 0;
+        });
+        group.forEach((teamName, index) => {
+            const stats = table[teamName];
+            html += `<tr><td>${index + 1}</td><td>${teamName}</td><td>${stats.P}</td><td>${stats.J}</td><td>${stats.V}</td><td>${stats.E}</td><td>${stats.D}</td><td>${stats.GP}</td><td>${stats.GC}</td><td>${stats.SG}</td></tr>`;
+        });
+        html += `</tbody></table>`;
+    });
+    if (seasonData.torneio.phase === 'final') {
+        html += `<h4 class="group-title">Quadrangular Final</h4>`;
+        html += `<table><thead><tr><th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th></tr></thead><tbody>`;
+        const finalists = [...seasonData.torneio.finalists];
+        const finalTable = seasonData.torneio.finalTable;
+        finalists.sort((a,b) => finalTable[b].P - finalTable[a].P || finalTable[b].SG - finalTable[a].SG);
+        finalists.forEach((teamName, index) => {
+            const stats = finalTable[teamName];
+            html += `<tr><td>${index + 1}</td><td>${teamName}</td><td>${stats.P}</td><td>${stats.J}</td><td>${stats.V}</td><td>${stats.E}</td><td>${stats.D}</td><td>${stats.GP}</td><td>${stats.GC}</td><td>${stats.SG}</td></tr>`;
+        });
+        html += `</tbody></table>`;
+    }
+    elements.torneioTables.innerHTML = html;
+}
+
+function openCalendarioModal() {
+    elements.calendarioList.innerHTML = '';
+    const userTeamName = userData.teamName;
+    const userSchedule = seasonData.torneio.schedule.filter(m => m.home === userTeamName || m.away === userTeamName);
+    userSchedule.sort((a,b) => a.week - b.week);
+    let html = '<h4>Fase de Grupos</h4>';
+    userSchedule.forEach(match => {
+        const score = match.played ? `<strong>${match.score}</strong>` : "vs";
+        html += `<div class="calendario-fixture ${match.played ? 'played' : ''}"><span>(Rodada ${match.week})</span><span>${match.home}</span><span>${score}</span><span>${match.away}</span></div>`;
+    });
+    if(seasonData.torneio.phase === 'final' && seasonData.torneio.finalists.includes(userTeamName)) {
+        html += '<h4>Quadrangular Final</h4>';
+        const finalUserSchedule = seasonData.torneio.finalSchedule.filter(m => m.home === userTeamName || m.away === userTeamName);
+        finalUserSchedule.sort((a,b) => a.week - b.week);
+        finalUserSchedule.forEach(match => {
+            const score = match.played ? `<strong>${match.score}</strong>` : "vs";
+            html += `<div class="calendario-fixture ${match.played ? 'played' : ''}"><span>(Final ${match.week - 6})</span><span>${match.home}</span><span>${score}</span><span>${match.away}</span></div>`;
+        });
+    }
+    elements.calendarioList.innerHTML = html;
+    elements.calendarioModal.style.display = 'block';
+}
 
 function init() {
-  hired = JSON.parse(localStorage.getItem('elencoDoTime')) || [];
-  userData = JSON.parse(localStorage.getItem('userData')) || {};
-  financas = JSON.parse(localStorage.getItem('financasDoTime')) || { caixaAtual: 5000, gastosContratacoes: 0, gastosSalarios: 0, gastosBicho: 0, receitaPartidas: 0, receitaPremiosPatrocinios: 0 };
-  zapMessages = JSON.parse(localStorage.getItem('zapMessages')) || [];
-  teamStats = JSON.parse(localStorage.getItem('teamStats')) || { entrosamento: 50 };
-  if(hired.length < 22) { alert("Elenco incompleto! Volte ao mercado."); window.location.href = 'mercado.html'; return; }
-  
-  elements.headerTitle.textContent = userData.teamName || 'O Rei da Várzea';
-  elements.cashDisplay.textContent = formatReal(financas.caixaAtual);
-  checkZapNotifications();
+    userData = JSON.parse(localStorage.getItem('userData')) || {};
+    elements.headerTitle.textContent = userData.teamName || 'O Rei da Várzea';
+    let storedSeason = localStorage.getItem('seasonData');
+    varzeaUniverse = JSON.parse(localStorage.getItem('varzeaUniverse')) || [];
+    
+    if (storedSeason) {
+        seasonData = JSON.parse(storedSeason);
+    } else {
+        if(varzeaUniverse.length === 0){
+            varzeaUniverse = createUniverse();
+            localStorage.setItem('varzeaUniverse', JSON.stringify(varzeaUniverse));
+        }
+        seasonData = generateSeasonFixtures(varzeaUniverse, userData.teamName);
+        localStorage.setItem('seasonData', JSON.stringify(seasonData));
+    }
 
-  const savedFormation = localStorage.getItem('formacaoAtual') || '4-4-2';
-  const savedLineup = JSON.parse(localStorage.getItem('escalacaoFinal')) || {};
-  elements.formationSelect.value = savedFormation;
-  drawPitch(savedFormation);
-  if (Object.keys(savedLineup).length > 0) {
-      Object.keys(savedLineup).forEach(slotId => {
-          const playerId = savedLineup[slotId];
-          const slotElement = document.getElementById(slotId);
-          const player = hired.find(p => p.id === playerId);
-          reassignPlayerToSlot(player, slotElement);
-      });
-      elements.btnPlayMatch.disabled = document.querySelectorAll('.position-slot.assigned').length < 11;
-  }
-  
-  populateBench();
+    processLastMatchResult();
+    displayNextMatch();
+    displayTorneioTables();
+    elements.copaFixtures.innerHTML = '<p class="muted">Aguardando início...</p>';
 
-  elements.financeBox.onclick = openFinanceModal;
-  elements.zapButton.onclick = openZapModal;
-  elements.postinhoButton.onclick = openPostinhoModal;
-  elements.treinoButton.onclick = openTreinoModal;
-  elements.financeModalClose.onclick = () => elements.financeModal.style.display = 'none';
-  elements.playerModalClose.onclick = () => elements.playerModal.style.display = 'none';
-  elements.zapModalClose.onclick = () => elements.zapModal.style.display = 'none';
-  elements.postinhoModalClose.onclick = () => elements.postinhoModal.style.display = 'none';
-  elements.treinoModalClose.onclick = () => elements.treinoModal.style.display = 'none';
-  window.onclick = (event) => { if (event.target.classList.contains('modal')) { event.target.style.display = 'none'; } };
-  
-  elements.linkTela4.addEventListener('click', (event) => {
-      if(elements.btnPlayMatch.disabled) { event.preventDefault(); showNotif("Você precisa escalar 11 jogadores para a partida!"); return; }
-      const lineup = {};
-      document.querySelectorAll('.position-slot[data-assigned]').forEach(slot => { lineup[slot.id] = slot.dataset.assigned; });
-      localStorage.setItem('escalacaoFinal', JSON.stringify(lineup));
-      localStorage.setItem('formacaoAtual', elements.formationSelect.value);
-      localStorage.setItem('financasDoTime', JSON.stringify(financas));
-  });
-  
-  elements.formationSelect.addEventListener('change', (e) => { unassignAllPlayers(); drawPitch(e.target.value); });
+    // Eventos
+    elements.calendarioButton.onclick = openCalendarioModal;
+    elements.calendarioModalClose.onclick = () => elements.calendarioModal.style.display = 'none';
+    window.onclick = (event) => {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+        }
+    };
 }
 
 init();
-</script>
-</body>
-</html>
