@@ -15,17 +15,20 @@
   button:hover:not(:disabled){opacity:0.9; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15);}
   .muted{color:#666;font-size:13px}
   a { text-decoration: none; }
-  .grid-container { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+  .grid-container { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; align-items: start;}
   .main-content { grid-column: 1 / 2; }
   .sidebar { grid-column: 2 / 3; }
   .next-match-card { background-color: #0b6bd6; color: white; text-align: center; }
   .next-match-card h3 { margin-top: 0; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 10px;}
   .vs { font-size: 2em; font-weight: bold; margin: 10px 0; }
-  .btn-play { background-color: #28a745; font-size: 1.2em; width: 100%; padding: 15px; }
-  table{width:100%;border-collapse:collapse;font-size:14px; margin-top: 10px;}
+  .match-details-small { font-size: 0.9em; opacity: 0.8; }
+  .btn-play { background-color: #28a745; font-size: 1.2em; width: 100%; padding: 15px; margin-top: 10px;}
+  table{width:100%;border-collapse:collapse;font-size:12px; margin-top: 10px;}
   th,td{padding:6px;border-bottom:1px solid #eee;text-align:center}
   th{background:#fafafa}
-  td:first-child { text-align: left; font-weight: bold; }
+  td:nth-child(2) { text-align: left; font-weight: bold; } /* Nome do time */
+  .group-title { font-weight: bold; margin-top: 15px; }
+  .copa-fixture { font-size: 14px; text-align: center; padding: 8px; border-bottom: 1px solid #eee;}
 </style>
 </head>
 <body>
@@ -38,20 +41,24 @@
             <div class="card next-match-card">
                 <h3>Próxima Partida</h3>
                 <div id="nextMatchInfo">
-                    <p>Carregando informações da próxima partida...</p>
+                    <p class="muted">Analisando calendário...</p>
                 </div>
                 <a id="linkPlayMatch" href="escalacao.html"><button class="btn-play">Ir para Jogo</button></a>
             </div>
 
             <div class="card">
                 <h3>Torneio da Vila Freitas</h3>
-                <div id="torneioTables"></div>
+                <div id="torneioTables">
+                    <p class="muted">Gerando tabelas...</p>
+                </div>
             </div>
         </div>
         <div class="sidebar">
             <div class="card">
                 <h3>Copa 1º de Maio</h3>
-                <div id="copaFixtures"></div>
+                <div id="copaFixtures">
+                    <p class="muted">Gerando confrontos...</p>
+                </div>
             </div>
             <div class="card">
                 <h3>Troféu Bandeirantes</h3>
@@ -62,7 +69,172 @@
 </div>
 
 <script>
-// (O script completo da temporada virá aqui)
+// ========== ESTADO DO JOGO ==========
+let userData = {};
+let financas = {};
+let teamStats = {};
+let varzeaUniverse = [];
+let seasonData = {};
+
+// ========== ELEMENTOS DOM ==========
+const elements = {
+    headerTitle: document.getElementById('headerTitle'),
+    nextMatchInfo: document.getElementById('nextMatchInfo'),
+    linkPlayMatch: document.getElementById('linkPlayMatch'),
+    torneioTables: document.getElementById('torneioTables'),
+    copaFixtures: document.getElementById('copaFixtures'),
+};
+
+// ========== LÓGICA DE CRIAÇÃO DO UNIVERSO ==========
+function createUniverse() {
+    const teamNames = [ "Tsunami da ZL", "Galácticos do Grajaú", "Ajax da Vila Sônia", "Real Madruga", "Mulekes da Vila", "Fúria do Capão Redondo", "EC Beira-Rio", "Juventus da Mooca", "Parma da Augusta", "Boca do Lixo FC", "Manchester Paulista", "PSV - Pau Sem Vontade", "Borussia do Ipiranga", "Atlético do Jaçanã", "Inter de Limão", "Só Canelas FC", "Bayern do M'Boi Mirim", "Liverpool da Cantareira", "Chelsea do Cimento", "PSG do Povo" ];
+    
+    const universe = teamNames.map(name => {
+        // Para cada time, criamos um elenco simples. No futuro, podemos detalhar mais.
+        let squad = [];
+        for (let i = 0; i < 22; i++) {
+            squad.push({
+                skill: Math.floor(Math.random() * 40) + 40 // Habilidade entre 40 e 79
+            });
+        }
+        return { name, squad };
+    });
+    return universe;
+}
+
+function generateSeasonFixtures(universe, userTeamName) {
+    let season = {
+        currentWeek: 1,
+        torneio: { groups: {}, schedule: [], table: {} },
+        copa: { schedule: [] },
+        bandeirantes: {}
+    };
+
+    // --- Monta o Torneio da Vila Freitas ---
+    const shuffledUniverse = [...universe].sort(() => 0.5 - Math.random());
+    const torneioTeams = [userTeamName, ...shuffledUniverse.slice(0, 7).map(t => t.name)];
+    const shuffledTorneioTeams = torneioTeams.sort(() => 0.5 - Math.random());
+    
+    season.torneio.groups['A'] = shuffledTorneioTeams.slice(0, 4);
+    season.torneio.groups['B'] = shuffledTorneioTeams.slice(4, 8);
+
+    // Inicializa a tabela
+    torneioTeams.forEach(name => {
+        season.torneio.table[name] = { P: 0, J: 0, V: 0, E: 0, D: 0, GP: 0, GC: 0, SG: 0 };
+    });
+
+    // Gera o calendário de jogos
+    Object.keys(season.torneio.groups).forEach(groupKey => {
+        const group = season.torneio.groups[groupKey];
+        for (let i = 0; i < group.length; i++) {
+            for (let j = i + 1; j < group.length; j++) {
+                season.torneio.schedule.push({ home: group[i], away: group[j] }); // Turno
+                season.torneio.schedule.push({ home: group[j], away: group[i] }); // Returno
+            }
+        }
+    });
+
+    // --- Monta a Copa 1º de Maio ---
+    const copaTeams = shuffledUniverse.slice(7, 19).map(t => t.name); // 12 times restantes
+    // Para a primeira temporada, completamos com mais times aleatórios. Nas próximas, viriam os classificados.
+    const extraTeams = shuffledUniverse.slice(19, 23).map(t => t.name);
+    const allCopaTeams = [...copaTeams, ...extraTeams].sort(() => 0.5 - Math.random());
+
+    for(let i = 0; i < allCopaTeams.length; i += 2) {
+        season.copa.schedule.push({ home: allCopaTeams[i], away: allCopaTeams[i+1] });
+    }
+
+    return season;
+}
+
+// ========== LÓGICA DE EXIBIÇÃO ==========
+function displayNextMatch() {
+    // Por enquanto, vamos pegar o primeiro jogo do calendário do torneio
+    const userTeamName = userData.teamName;
+    const nextTorneioMatch = seasonData.torneio.schedule.find(m => m.home === userTeamName || m.away === userTeamName);
+    
+    if (nextTorneioMatch) {
+        const opponentName = nextTorneioMatch.home === userTeamName ? nextTorneioMatch.away : nextTorneioMatch.home;
+        elements.nextMatchInfo.innerHTML = `
+            <p class="match-details-small">Torneio da Vila Freitas - Rodada ${seasonData.currentWeek}</p>
+            <div class="vs">${userTeamName} vs ${opponentName}</div>
+            <p class="match-details-small">Próximo Domingo</p>
+        `;
+        // Salva as infos do jogo para a próxima tela
+        localStorage.setItem('currentMatchInfo', JSON.stringify({
+            opponentName: opponentName,
+            competition: 'Torneio da Vila Freitas'
+        }));
+    } else {
+        elements.nextMatchInfo.innerHTML = `<p>Fim da temporada!</p>`;
+        elements.linkPlayMatch.style.display = 'none';
+    }
+}
+
+function displayTorneioTables() {
+    let html = '';
+    Object.keys(seasonData.torneio.groups).forEach(groupKey => {
+        const group = seasonData.torneio.groups[groupKey];
+        html += `<h4 class="group-title">Grupo ${groupKey}</h4>`;
+        html += `<table><thead><tr>
+            <th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th>
+        </tr></thead><tbody>`;
+
+        // Ordena o grupo pela pontuação para exibir
+        group.sort((a, b) => seasonData.torneio.table[b].P - seasonData.torneio.table[a].P);
+
+        group.forEach((teamName, index) => {
+            const stats = seasonData.torneio.table[teamName];
+            html += `<tr>
+                <td>${index + 1}</td>
+                <td>${teamName}</td>
+                <td>${stats.P}</td>
+                <td>${stats.J}</td>
+                <td>${stats.V}</td>
+                <td>${stats.E}</td>
+                <td>${stats.D}</td>
+                <td>${stats.GP}</td>
+                <td>${stats.GC}</td>
+                <td>${stats.SG}</td>
+            </tr>`;
+        });
+        html += `</tbody></table>`;
+    });
+    elements.torneioTables.innerHTML = html;
+}
+
+function displayCopaFixtures() {
+    let html = `<h5>Oitavas de Final</h5>`;
+    seasonData.copa.schedule.forEach(match => {
+        html += `<div class="copa-fixture">${match.home} vs ${match.away}</div>`;
+    });
+    elements.copaFixtures.innerHTML = html;
+}
+
+function init() {
+    userData = JSON.parse(localStorage.getItem('userData')) || {};
+    financas = JSON.parse(localStorage.getItem('financasDoTime')) || {};
+    teamStats = JSON.parse(localStorage.getItem('teamStats')) || {};
+    
+    elements.headerTitle.textContent = userData.teamName || 'O Rei da Várzea';
+
+    let storedSeason = localStorage.getItem('seasonData');
+    
+    if (storedSeason) {
+        seasonData = JSON.parse(storedSeason);
+    } else {
+        varzeaUniverse = createUniverse();
+        localStorage.setItem('varzeaUniverse', JSON.stringify(varzeaUniverse));
+        seasonData = generateSeasonFixtures(varzeaUniverse, userData.teamName);
+        localStorage.setItem('seasonData', JSON.stringify(seasonData));
+    }
+
+    displayNextMatch();
+    displayTorneioTables();
+    displayCopaFixtures();
+}
+
+init();
 </script>
 </body>
 </html>
