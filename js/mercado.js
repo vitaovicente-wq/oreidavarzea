@@ -182,7 +182,7 @@ elements.btnNextStep.addEventListener('click', () => {
     }
     marketStep++;
     if (marketStep >= steps.length) {
-        marketStep = 1; // Volta ao início para o usuário poder revisar
+        marketStep = 1;
     }
     elements.marketMessage.textContent = steps[marketStep].msg;
     renderMarket(steps[marketStep].filter);
@@ -214,7 +214,6 @@ elements.linkProximaTela.addEventListener('click', (event) => {
 function init() {
   const userData = JSON.parse(localStorage.getItem('userData')) || {};
   
-  // Se for um novo jogo, zera as finanças e o elenco.
   const isNewGame = !localStorage.getItem('elencoDoTime');
   if(isNewGame){
     financas = {
