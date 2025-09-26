@@ -40,18 +40,11 @@ function createUniverse() {
     return teamNames.map(name => ({ name, squad: createAISquad() }));
 }
 
+// ===== GERADOR DE CALENDÁRIO CORRIGIDO E ROBUSTO =====
 function generateSeasonFixtures(universe, userTeamName) {
     let season = {
         currentWeek: 1,
-        torneio: { 
-            phase: 'groups',
-            groups: {}, 
-            schedule: [], 
-            table: {},
-            finalists: [],
-            finalSchedule: [],
-            finalTable: {}
-        },
+        torneio: { phase: 'groups', groups: {}, schedule: [], table: {}, finalists: [], finalSchedule: [], finalTable: {} },
         copa: { schedule: [] },
     };
     const shuffledUniverse = [...universe].sort(() => 0.5 - Math.random());
@@ -60,36 +53,37 @@ function generateSeasonFixtures(universe, userTeamName) {
     season.torneio.groups['A'] = shuffledTorneioTeams.slice(0, 4);
     season.torneio.groups['B'] = shuffledTorneioTeams.slice(4, 8);
     torneioTeams.forEach(name => { season.torneio.table[name] = { P: 0, J: 0, V: 0, E: 0, D: 0, GP: 0, GC: 0, SG: 0 }; });
-    
-    let schedule = [];
+
+    let fullSchedule = [];
     Object.values(season.torneio.groups).forEach(group => {
         const teams = group;
-        for (let i = 0; i < teams.length; i++) {
-            for (let j = i + 1; j < teams.length; j++) {
-                schedule.push({ home: teams[i], away: teams[j] }); // Turno
-                schedule.push({ home: teams[j], away: teams[i] }); // Returno
-            }
-        }
+        const groupSchedule = [];
+        // Turno
+        groupSchedule.push({ week: 1, home: teams[0], away: teams[1] }, { week: 1, home: teams[2], away: teams[3] });
+        groupSchedule.push({ week: 2, home: teams[0], away: teams[2] }, { week: 2, home: teams[1], away: teams[3] });
+        groupSchedule.push({ week: 3, home: teams[0], away: teams[3] }, { week: 3, home: teams[1], away: teams[2] });
+        // Returno
+        groupSchedule.push({ week: 4, home: teams[1], away: teams[0] }, { week: 4, home: teams[3], away: teams[2] });
+        groupSchedule.push({ week: 5, home: teams[2], away: teams[0] }, { week: 5, home: teams[3], away: teams[1] });
+        groupSchedule.push({ week: 6, home: teams[3], away: teams[0] }, { week: 6, home: teams[2], away: teams[1] });
+        
+        fullSchedule.push(...groupSchedule);
     });
     
-    schedule.sort(() => 0.5 - Math.random());
-    season.torneio.schedule = schedule.map((match, index) => ({ ...match, week: Math.floor(index / 4) + 1, played: false }));
+    season.torneio.schedule = fullSchedule.map(match => ({ ...match, played: false }));
     
     return season;
 }
-
 
 // ========== MOTOR DA TEMPORADA ==========
 function updateTableStats(result, table) {
     const { homeTeam, awayTeam, homeScore, awayScore } = result;
     if (!table[homeTeam] || !table[awayTeam]) return;
-
     table[homeTeam].J++; table[awayTeam].J++;
     table[homeTeam].GP += homeScore; table[homeTeam].GC += awayScore;
     table[awayTeam].GP += awayScore; table[awayTeam].GC += homeScore;
     table[homeTeam].SG = table[homeTeam].GP - table[homeTeam].GC;
     table[awayTeam].SG = table[awayTeam].GP - table[awayTeam].GC;
-
     if (homeScore > awayScore) {
         table[homeTeam].V++; table[awayTeam].D++; table[homeTeam].P += 3;
     } else if (awayScore > homeScore) {
@@ -103,26 +97,15 @@ function simulateAIMatch(homeTeamName, awayTeamName) {
     const homeTeam = varzeaUniverse.find(t => t.name === homeTeamName);
     const awayTeam = varzeaUniverse.find(t => t.name === awayTeamName);
     if(!homeTeam || !awayTeam) return { homeTeam: homeTeamName, awayTeam: awayTeamName, homeScore: 0, awayScore: 0};
-
     const avgSkillHome = homeTeam.squad.reduce((sum, p) => sum + p.skill, 0) / homeTeam.squad.length;
     const avgSkillAway = awayTeam.squad.reduce((sum, p) => sum + p.skill, 0) / awayTeam.squad.length;
     let homeScore = 0; let awayScore = 0;
     const skillDiff = avgSkillHome - avgSkillAway;
     const homeWinProb = 50 + (skillDiff * 1.5);
     const rand = Math.random() * 100;
-
-    if (rand < homeWinProb - 15) {
-        homeScore = Math.floor(Math.random() * 3) + 1;
-        awayScore = Math.floor(Math.random() * 2);
-        if(homeScore <= awayScore) homeScore = awayScore + 1;
-    } else if (rand < homeWinProb + 15) {
-        homeScore = Math.floor(Math.random() * 3);
-        awayScore = homeScore;
-    } else {
-        awayScore = Math.floor(Math.random() * 3) + 1;
-        homeScore = Math.floor(Math.random() * 2);
-        if(homeScore >= awayScore) homeScore = awayScore - 1;
-    }
+    if (rand < homeWinProb - 15) { homeScore = Math.floor(Math.random() * 3) + 1; awayScore = Math.floor(Math.random() * 2); if(homeScore <= awayScore) homeScore = awayScore + 1;
+    } else if (rand < homeWinProb + 15) { homeScore = Math.floor(Math.random() * 3); awayScore = homeScore;
+    } else { awayScore = Math.floor(Math.random() * 3) + 1; homeScore = Math.floor(Math.random() * 2); if(homeScore >= awayScore) homeScore = awayScore - 1; }
     return { homeTeam: homeTeamName, awayTeam: awayTeamName, homeScore: Math.max(0, homeScore), awayScore: Math.max(0, awayScore) };
 }
 
@@ -130,23 +113,18 @@ function setupQuadrangularFinal() {
     seasonData.torneio.phase = 'final';
     const table = seasonData.torneio.table;
     const sortRule = (a, b) => table[b].P - table[a].P || table[b].SG - table[a].SG || table[b].GP - table[a].GP;
-    
     const groupA = [...seasonData.torneio.groups.A].sort(sortRule);
     const groupB = [...seasonData.torneio.groups.B].sort(sortRule);
     const finalists = [groupA[0], groupA[1], groupB[0], groupB[1]];
     seasonData.torneio.finalists = finalists;
-    
-    finalists.forEach(name => {
-        seasonData.torneio.finalTable[name] = { P: 0, J: 0, V: 0, E: 0, D: 0, GP: 0, GC: 0, SG: 0 };
-    });
-
+    finalists.forEach(name => { seasonData.torneio.finalTable[name] = { P: 0, J: 0, V: 0, E: 0, D: 0, GP: 0, GC: 0, SG: 0 }; });
     let finalSchedule = [];
     for (let i = 0; i < finalists.length; i++) {
         for (let j = i + 1; j < finalists.length; j++) {
             finalSchedule.push({ home: finalists[i], away: finalists[j], played: false });
         }
     }
-    seasonData.torneio.finalSchedule = finalSchedule.map((match, index) => ({...match, week: 7 + index}));
+    seasonData.torneio.finalSchedule = finalSchedule.map((match, index) => ({...match, week: 7 + Math.floor(index/2)}));
     seasonData.currentWeek = 7;
 }
 
@@ -183,15 +161,12 @@ function processLastMatchResult() {
     const allGroupMatchesPlayed = seasonData.torneio.schedule.every(m => m.played);
     if(allGroupMatchesPlayed && seasonData.torneio.phase === 'groups'){
         setupQuadrangularFinal();
-    } else {
-        const currentWeekMatches = currentSchedule.filter(m => m.week === seasonData.currentWeek);
-        if(currentWeekMatches.every(m => m.played)){
-            seasonData.currentWeek++;
-        }
     }
+    
     localStorage.setItem('seasonData', JSON.stringify(seasonData));
     localStorage.removeItem('lastMatchResult');
 }
+
 
 // ========== LÓGICA DE EXIBIÇÃO ==========
 function displayNextMatch() {
@@ -207,7 +182,6 @@ function displayNextMatch() {
     }
     
     if (nextMatch) {
-        const opponentName = nextMatch.home === userTeamName ? nextMatch.away : nextMatch.home;
         const location = nextMatch.home === userTeamName ? 'Em Casa' : 'Fora de Casa';
         elements.nextMatchInfo.innerHTML = `
             <p class="match-details-small">${competitionName} - Rodada ${nextMatch.week}</p>
@@ -238,7 +212,14 @@ function displayTorneioTables() {
         html += `<h4 class="group-title">Grupo ${groupKey}</h4>`;
         html += `<table><thead><tr><th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th></tr></thead><tbody>`;
         const table = seasonData.torneio.table;
-        group.sort((a, b) => table[b].P - table[a].P || table[b].SG - table[a].SG || table[b].GP - table[a].GP);
+        group.sort((a, b) => {
+            const statsA = table[a];
+            const statsB = table[b];
+            if (statsB.P !== statsA.P) return statsB.P - statsA.P;
+            if (statsB.SG !== statsA.SG) return statsB.SG - statsA.SG;
+            if (statsB.GP !== statsA.GP) return statsB.GP - statsA.GP;
+            return 0;
+        });
         group.forEach((teamName, index) => {
             const stats = table[teamName];
             html += `<tr><td>${index + 1}</td><td>${teamName}</td><td>${stats.P}</td><td>${stats.J}</td><td>${stats.V}</td><td>${stats.E}</td><td>${stats.D}</td><td>${stats.GP}</td><td>${stats.GC}</td><td>${stats.SG}</td></tr>`;
@@ -329,6 +310,3 @@ function init() {
 }
 
 init();
-</script>
-</body>
-</html>
