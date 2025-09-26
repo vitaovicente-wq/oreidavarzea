@@ -3,42 +3,128 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>O Rei da Várzea — Cadastro</title>
+<title>O Rei da Várzea</title>
 <link rel="stylesheet" href="css/style.css">
 <style>
-  /* Estilos específicos desta página, se houver */
-  input[type=text]{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing: border-box;}
-  label{display:block;margin-top:8px}
-  .controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px}
-  a { display: block; width: 100%;}
-  button { width: 100%; font-size: 16px; }
+  .menu-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding-top: 50px;
+  }
+  .menu-button {
+    width: 100%;
+    max-width: 300px;
+    padding: 20px;
+    font-size: 1.5em;
+    margin-bottom: 15px;
+  }
+  .new-game-form {
+    display: none; /* Começa escondido */
+    margin-top: 20px;
+    padding: 20px;
+    border-top: 1px solid #eee;
+  }
+  input[type=text]{width:100%;padding:10px;border:1px solid #ddd;border-radius:6px;box-sizing: border-box; margin-bottom: 10px;}
+  label{display:block;margin-top:8px; text-align: left;}
 </style>
 </head>
 <body>
 <header>
-  <div class="container"><h1>O Rei da Várzea — Protótipo</h1></div>
+  <div class="container"><h1>O Rei da Várzea</h1></div>
 </header>
 <div class="container">
-  <div id="tela1" class="card">
-    <h2>Tela 1 — Crie seu Time</h2>
-    <label>Nome do seu time
-      <input id="teamName" type="text" placeholder="Ex: Os Meninos da Rua" />
-    </label>
-    <label>Seu nome (Manager)
-      <input id="userName" type="text" placeholder="Seu nome" />
-    </label>
-    <label>Cidade
-      <input id="cityName" type="text" placeholder="Cidade" />
-    </label>
-    <div class="controls">
-      <a id="linkTela2" href="mercado.html">
-        <button id="btnToTela2" disabled>Contratar jogadores</button>
-      </a>
-      <div class="muted">Preencha todos os campos para habilitar.</div>
+  <div class="card menu-container">
+    
+    <a id="continueGameLink" href="temporada.html" style="width: 100%; max-width: 300px;">
+        <button id="btnContinueGame" class="menu-button" disabled>Continuar Jogo</button>
+    </a>
+    
+    <button id="btnNewGame" class="menu-button" style="background-color: #28a745;">Novo Jogo</button>
+
+    <div id="newGameForm" class="new-game-form">
+        <h2>Criar Novo Professor</h2>
+        <label>Seu Nome (Professor)
+          <input id="userName" type="text" placeholder="Ex: Professor Pardal" />
+        </label>
+        <label>Cidade
+          <input id="cityName" type="text" placeholder="Ex: São Paulo" />
+        </label>
+        <a id="linkStartGame" href="mercado.html" style="width: 100%;">
+            <button id="btnStartGame" style="margin-top: 15px;" disabled>Montar Elenco</button>
+        </a>
     </div>
+
   </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const btnContinueGame = document.getElementById('btnContinueGame');
+        const btnNewGame = document.getElementById('btnNewGame');
+        const newGameForm = document.getElementById('newGameForm');
+        const userNameInput = document.getElementById('userName');
+        const cityNameInput = document.getElementById('cityName');
+        const btnStartGame = document.getElementById('btnStartGame');
+        const linkStartGame = document.getElementById('linkStartGame');
 
-<script src="js/index.js"></script>
+        // 1. Verifica se existe um jogo salvo para habilitar o botão "Continuar"
+        if (localStorage.getItem('seasonData')) {
+            btnContinueGame.disabled = false;
+        }
+
+        // 2. Lógica para mostrar o formulário de novo jogo
+        btnNewGame.addEventListener('click', () => {
+            newGameForm.style.display = 'block';
+            btnNewGame.style.display = 'none';
+            btnContinueGame.style.display = 'none';
+        });
+        
+        // 3. Validação do formulário de novo jogo
+        function validateNewGameForm() {
+            const userName = userNameInput.value.trim();
+            const cityName = cityNameInput.value.trim();
+            btnStartGame.disabled = !(userName && cityName);
+        }
+        userNameInput.addEventListener('input', validateNewGameForm);
+        cityNameInput.addEventListener('input', validateNewGameForm);
+
+        // 4. Lógica para começar um novo jogo
+        linkStartGame.addEventListener('click', (event) => {
+            if (btnStartGame.disabled) {
+                event.preventDefault();
+                return;
+            }
+
+            // Gera um nome de time aleatório
+            const teamNames = [ "Tsunami da ZL", "Galácticos do Grajaú", "Ajax da Vila Sônia", "Real Madruga", "Mulekes da Vila", "Fúria do Capão Redondo", "EC Beira-Rio", "Juventus da Mooca", "Parma da Augusta", "Boca do Lixo FC" ];
+            const newTeamName = teamNames[Math.floor(Math.random() * teamNames.length)];
+
+            // Salva os dados do usuário com o time novo
+            const userData = {
+                userName: userNameInput.value.trim(),
+                cityName: cityNameInput.value.trim(),
+                teamName: newTeamName
+            };
+            localStorage.setItem('userData', JSON.stringify(userData));
+
+            // Limpa TODOS os dados de um jogo anterior para garantir um começo do zero
+            localStorage.removeItem('seasonData');
+            localStorage.removeItem('varzeaUniverse');
+            localStorage.removeItem('elencoDoTime');
+            localStorage.removeItem('financasDoTime');
+            localStorage.removeItem('teamHistory');
+            localStorage.removeItem('teamStats');
+            localStorage.removeItem('zapMessages');
+            localStorage.removeItem('escalacaoFinal');
+            localStorage.removeItem('formacaoAtual');
+            localStorage.removeItem('treinoRealizado');
+            localStorage.removeItem('lastMatchResult');
+            localStorage.removeItem('currentMatchInfo');
+            localStorage.removeItem('matchInProgress');
+        });
+    });
+</script>
 </body>
 </html>
