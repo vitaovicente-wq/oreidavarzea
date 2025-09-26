@@ -134,8 +134,8 @@ function endGame() {
     addComentario('FIM', '⏱️ Apita o árbitro! Fim de jogo!', 'evento');
     elements.btnContinuar.style.display = 'inline-block';
     elements.btnSubstituicao.disabled = true;
-    const playersInMatch = userIsHome ? Object.values(lineup) : opponent.squad.slice(0,11).map(p=>p.id);
-    hired.forEach(jogador => { if (playersInMatch.includes(jogador.id)) { let desgaste = 8 + Math.floor(Math.random() * 5); jogador.health = Math.max(0, jogador.health - desgaste); } });
+    const playersInMatch = Object.values(lineup);
+    hired.forEach(jogador => { if (playersInMatch.includes(jogador.id)) { let desgaste = 8 + Math.floor(Math.random() * 5); if (jogador.isPai) desgaste += 3; jogador.health = Math.max(0, jogador.health - desgaste); } });
     let financas = JSON.parse(localStorage.getItem('financasDoTime'));
     financas.caixaAtual += matchRevenue;
     financas.receitaPartidas += matchRevenue;
@@ -176,6 +176,7 @@ function pickPlayerForEvent(positions, teamObject) {
     if (playersInPosition.length > 0) return playersInPosition[Math.floor(Math.random() * playersInPosition.length)];
     return starters[Math.floor(Math.random() * starters.length)];
 }
+
 function addEventIcon(playerIdentifier, icon, isUserTeam) {
     const selector = isUserTeam ? `li[data-player-id="${playerIdentifier}"]` : `li[data-player-name="${playerIdentifier}"]`;
     const playerLi = document.querySelector(selector);
@@ -184,6 +185,7 @@ function addEventIcon(playerIdentifier, icon, isUserTeam) {
         eventSpan.textContent = icon;
     }
 }
+
 function openSubstitutionModal(isMidGame) {
     pauseGame();
     const modalTitle = elements.substitutionModal.querySelector('h2');
@@ -199,6 +201,7 @@ function openSubstitutionModal(isMidGame) {
     elements.btnConfirmSubs.dataset.isMidGame = isMidGame;
     updateSubstitutionModal();
 }
+
 function updateSubstitutionModal() {
     elements.subPitchPlayers.innerHTML = '';
     elements.subBenchPlayers.innerHTML = '';
@@ -209,8 +212,11 @@ function updateSubstitutionModal() {
     titulares.forEach(p => { const item = document.createElement('div'); item.className = 'sub-player-item'; item.textContent = `${p.name} (${p.pos})`; item.dataset.playerId = p.id; item.onclick = () => handleSubPlayerClick(p.id, true); elements.subPitchPlayers.appendChild(item); });
     reservas.forEach(p => { const item = document.createElement('div'); item.className = 'sub-player-item'; item.textContent = `${p.name} (${p.pos})`; item.dataset.playerId = p.id; item.onclick = () => handleSubPlayerClick(p.id, false); if (subsMade >= MAX_SUBS) item.classList.add('disabled'); elements.subBenchPlayers.appendChild(item); });
 }
+
 function handleSubPlayerClick(playerId, isTitular) { if (isTitular) { if (selectedPlayerOutId === playerId) { selectedPlayerOutId = null; } else { selectedPlayerOutId = playerId; } document.querySelectorAll('#subPitchPlayers .sub-player-item').forEach(el => { el.classList.toggle('selected', el.dataset.playerId === selectedPlayerOutId); }); } else { if (!selectedPlayerOutId) { showNotif("Primeiro, selecione um jogador em campo para substituir."); return; } if (subsMade >= MAX_SUBS) { showNotif("Você já usou todas as 5 substituições!"); return; } performSubstitution(selectedPlayerOutId, playerId); } }
+
 function performSubstitution(playerOutId, playerInId) { const playerOut = hired.find(j => j.id === playerOutId); const playerIn = hired.find(j => j.id === playerInId); if (playerOut.pos !== playerIn.pos) { if (!confirm(`Atenção! ${playerIn.name} (${playerIn.pos}) vai entrar no lugar de ${playerOut.name} (${playerOut.pos}) de forma improvisada. Continuar?`)) { return; } } const slotId = Object.keys(lineup).find(key => lineup[key] === playerOutId); lineup[slotId] = playerInId; subsMade++; selectedPlayerOutId = null; addComentario('Jogo Parado', `🔄 Substituição: Sai ${playerOut.name} e entra ${playerIn.name}.`, 'evento'); updateSubstitutionModal(); populateTeamColumn('left', homeTeam, homeTeam.name === userData.teamName); populateTeamColumn('right', awayTeam, awayTeam.name === userData.teamName); }
+
 function populateTeamColumn(side, team, isUserTeam) {
     const nameEl = elements[`${side}TeamName`];
     const startersEl = elements[`${side}TeamStarters`];
@@ -289,7 +295,9 @@ function init() {
     elements.btnSubstituicao.onclick = () => { if (subsMade >= MAX_SUBS) { showNotif("Você já usou o máximo de 5 substituições."); return; } if (subWindows > 0 && gameInterval) { openSubstitutionModal(true); } else if (!gameInterval && currentHalf < 2) { showNotif("Faça as substituições na janela que abriu."); } else if (!gameInterval && currentHalf === 2) { showNotif("O jogo já acabou!"); } else { showNotif("Você não tem mais paradas para substituição."); } };
     elements.btnConfirmSubs.onclick = () => { const isMidGameSub = elements.btnConfirmSubs.dataset.isMidGame === 'true'; elements.substitutionModal.style.display = 'none'; if (isMidGameSub) { subWindows--; elements.btnSubstituicao.textContent = `Fazer Substituição (${subWindows})`; if (subWindows <= 0) elements.btnSubstituicao.disabled = true; resumeGame(); } else { currentHalf = 2; minuto = 46; addComentario('46', '⏱️ Bola rolando para o segundo tempo!', 'evento'); resumeGame(); } };
 }
+
 init();
 </script>
 </body>
 </html>
+ 
