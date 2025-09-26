@@ -59,10 +59,7 @@ function calculateMatchRevenue() {
     elements.matchLocation.textContent = `Campo do ${homeTeam.name}`;
     elements.matchChampionship.textContent = currentMatchInfo.competition;
     const history = JSON.parse(localStorage.getItem('teamHistory')) || { wins: 0, losses: 0 };
-    
-    // ===== LINHA DA CORREÇÃO AQUI =====
     const titularesIds = Object.values(lineup);
-    
     const titulares = hired.filter(j => titularesIds.includes(j.id));
     if (titulares.length === 0) return; 
     const averageSkill = titulares.reduce((sum, p) => sum + p.skill, 0) / titulares.length;
