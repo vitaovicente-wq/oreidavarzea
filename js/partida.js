@@ -134,7 +134,7 @@ function endGame() {
     addComentario('FIM', '⏱️ Apita o árbitro! Fim de jogo!', 'evento');
     elements.btnContinuar.style.display = 'inline-block';
     elements.btnSubstituicao.disabled = true;
-    const playersInMatch = Object.values(lineup);
+    const playersInMatch = userIsHome ? Object.values(lineup) : opponent.squad.slice(0,11).map(p=>p.id);
     hired.forEach(jogador => { if (playersInMatch.includes(jogador.id)) { let desgaste = 8 + Math.floor(Math.random() * 5); jogador.health = Math.max(0, jogador.health - desgaste); } });
     let financas = JSON.parse(localStorage.getItem('financasDoTime'));
     financas.caixaAtual += matchRevenue;
@@ -289,6 +289,7 @@ function init() {
     elements.btnSubstituicao.onclick = () => { if (subsMade >= MAX_SUBS) { showNotif("Você já usou o máximo de 5 substituições."); return; } if (subWindows > 0 && gameInterval) { openSubstitutionModal(true); } else if (!gameInterval && currentHalf < 2) { showNotif("Faça as substituições na janela que abriu."); } else if (!gameInterval && currentHalf === 2) { showNotif("O jogo já acabou!"); } else { showNotif("Você não tem mais paradas para substituição."); } };
     elements.btnConfirmSubs.onclick = () => { const isMidGameSub = elements.btnConfirmSubs.dataset.isMidGame === 'true'; elements.substitutionModal.style.display = 'none'; if (isMidGameSub) { subWindows--; elements.btnSubstituicao.textContent = `Fazer Substituição (${subWindows})`; if (subWindows <= 0) elements.btnSubstituicao.disabled = true; resumeGame(); } else { currentHalf = 2; minuto = 46; addComentario('46', '⏱️ Bola rolando para o segundo tempo!', 'evento'); resumeGame(); } };
 }
+
 init();
 </script>
 </body>
