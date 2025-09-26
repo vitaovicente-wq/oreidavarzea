@@ -73,7 +73,7 @@
             <div class="scoreboard">
                 <div id="homeTeamName" class="scoreboard-team">MEU TIME</div>
                 <div id="score" class="scoreboard-score">0 x 0</div>
-                <div id="awayTeamName" class="scoreboard-team">VILA FREITAS</div>
+                <div id="awayTeamName" class="scoreboard-team">ADVERSÁRIO</div>
             </div>
         </div>
         <div id="matchDetails" class="match-details">
@@ -94,11 +94,11 @@
         </a>
       </div>
       <div style="flex:1; text-align: center;">
-        <h3>Vila Freitas</h3>
+        <h3 id="opponentTeamName">Adversário</h3>
         <h4>Titulares</h4>
-        <ul id="jogadoresVila"></ul>
+        <ul id="jogadoresOponente"></ul>
         <h4>Reservas</h4>
-        <div id="jogadoresVilaBanco" class="bench"></div>
+        <div id="jogadoresOponenteBanco" class="bench"></div>
       </div>
     </div>
   </div>
@@ -123,22 +123,17 @@
 
 <script>
 // ========== ESTADO DO JOGO ==========
-let hired = []; let userData = {}; let lineup = {};
+let hired = []; let userData = {}; let lineup = {}; let varzeaUniverse = []; let currentMatchInfo = {}; let opponent = {};
 let minuto = 1; let gameInterval = null; let currentHalf = 1;
 let halftimeStoppage = 0; let fulltimeStoppage = 0;
 let subsMade = 0; const MAX_SUBS = 5; let subWindows = 3;
 let selectedPlayerOutId = null; let matchRevenue = 0;
 
-const vilaFreitasSquad = {
-    titulares: [ { nome: "Tadeu", pos: "Goleiro" }, { nome: "Joãozinho", pos: "Lateral" }, { nome: "Bira", pos: "Zagueiro" }, { nome: "Marcão", pos: "Zagueiro" }, { nome: "Nego", pos: "Lateral" }, { nome: "Léo", pos: "Volante" }, { nome: "Careca", pos: "Volante" }, { nome: "Tico", pos: "Meia" }, { nome: "Juninho", pos: "Meia" }, { nome: "Beto", pos: "Atacante" }, { nome: "Formiga", pos: "Atacante" } ],
-    reservas: [ { nome: "Gilsão", pos: "Goleiro" }, { nome: "Paulinho", pos: "Lateral" }, { nome: "Tonhão", pos: "Zagueiro" }, { nome: "Gerson", pos: "Volante" }, { nome: "Didi", pos: "Meia" }, { nome: "Chico", pos: "Atacante" } ]
-};
-
 const elements = {
   headerTitle: document.getElementById('headerTitle'), userTeamName: document.getElementById('userTeamName'),
   jogadoresUsuario: document.getElementById('jogadoresUsuario'), jogadoresUsuarioBanco: document.getElementById('jogadoresUsuarioBanco'),
-  jogadoresVila: document.getElementById('jogadoresVila'), 
-  jogadoresVilaBanco: document.getElementById('jogadoresVilaBanco'), // CORREÇÃO AQUI
+  opponentTeamName: document.getElementById('opponentTeamName'), jogadoresOponente: document.getElementById('jogadoresOponente'),
+  jogadoresOponenteBanco: document.getElementById('jogadoresOponenteBanco'),
   homeTeamName: document.getElementById('homeTeamName'), awayTeamName: document.getElementById('awayTeamName'),
   scoreDisplay: document.getElementById('score'), comentarios: document.getElementById('comentarios'),
   btnContinuar: document.getElementById('btnContinuar'), btnSubstituicao: document.getElementById('btnSubstituicao'),
@@ -161,7 +156,8 @@ function saveMatchState() {
         subsMade: subsMade, subWindows: subWindows, commentary: elements.comentarios.innerHTML,
         playerEvents: {}, stoppageTimes: { half1: halftimeStoppage, half2: fulltimeStoppage },
         revenueDetails: { location: elements.matchLocation.textContent, championship: elements.matchChampionship.textContent, audience: elements.matchAudience.textContent, ticket: elements.matchTicketRevenue.textContent, soda: elements.matchSodaSales.textContent, kebab: elements.matchKebabSales.textContent, total: elements.matchTotalRevenue.textContent },
-        matchRevenue: matchRevenue
+        matchRevenue: matchRevenue,
+        opponent: opponent // Salva o adversário atual
     };
     document.querySelectorAll('li[data-player-id]').forEach(li => { const eventSpan = li.querySelector('.player-events'); if (eventSpan.textContent) { state.playerEvents[li.dataset.playerId] = eventSpan.textContent; } });
     document.querySelectorAll('li[data-player-name]').forEach(li => { const eventSpan = li.querySelector('.player-events'); if (eventSpan.textContent) { state.playerEvents[li.dataset.playerName] = eventSpan.textContent; } });
@@ -169,8 +165,8 @@ function saveMatchState() {
 }
 
 function calculateMatchRevenue() {
-    elements.matchLocation.textContent = 'Campo do Marroco';
-    elements.matchChampionship.textContent = 'Amistoso';
+    elements.matchLocation.textContent = 'Campo do ' + (Math.random() < 0.5 ? userData.teamName : opponent.name);
+    elements.matchChampionship.textContent = currentMatchInfo.competition;
     const history = JSON.parse(localStorage.getItem('teamHistory')) || { wins: 0, losses: 0 };
     const titularesIds = Object.values(lineup);
     const titulares = hired.filter(j => titularesIds.includes(j.id));
@@ -219,8 +215,8 @@ function gameTick() {
         } else {
             golsVisitante++;
             const scorer = pickPlayerForEvent(['Atacante', 'Meia'], 'opponent');
-            lance = `⚽ GOOOOL DA VILA FREITAS! Marcado por ${scorer.nome}!`;
-            addEventIcon(scorer.nome, '⚽', 'opponent');
+            lance = `⚽ GOOOOL DE ${opponent.name.toUpperCase()}! Marcado por ${scorer.name}!`;
+            addEventIcon(scorer.name, '⚽', 'opponent');
         }
         elements.scoreDisplay.textContent = `${golsCasa} x ${golsVisitante}`;
         tipoLance = 'gol';
@@ -231,8 +227,8 @@ function gameTick() {
             addEventIcon(player.id, '🟨', 'user');
         } else {
             const player = pickPlayerForEvent(['Zagueiro', 'Volante', 'Lateral'], 'opponent');
-            lance = `🟨 Cartão amarelo para ${player.nome} do Vila Freitas.`;
-            addEventIcon(player.nome, '🟨', 'opponent');
+            lance = `🟨 Cartão amarelo para ${player.name} de ${opponent.name}.`;
+            addEventIcon(player.name, '🟨', 'opponent');
         }
         tipoLance = 'cartao';
     } else {
@@ -270,6 +266,13 @@ function endGame() {
     else history.draws++;
     localStorage.setItem('teamHistory', JSON.stringify(history));
     localStorage.setItem('elencoDoTime', JSON.stringify(hired));
+    // Salva o resultado do jogo para a tela de temporada ler
+    localStorage.setItem('lastMatchResult', JSON.stringify({
+        homeTeam: userData.teamName,
+        awayTeam: opponent.name,
+        homeScore: golsCasa,
+        awayScore: golsVisitante
+    }));
     generateZapMessages(golsCasa, golsVisitante);
     localStorage.removeItem('treinoRealizado'); 
     localStorage.removeItem('matchInProgress');
@@ -278,7 +281,7 @@ function endGame() {
 function generateZapMessages(golsCasa, golsVisitante){
     let zapMessages = JSON.parse(localStorage.getItem('zapMessages')) || [];
     const agora = new Date();
-    let resumo = `Resultado Final: ${userData.teamName} ${golsCasa} x ${golsVisitante} Vila Freitas. `;
+    let resumo = `Resultado Final: ${userData.teamName} ${golsCasa} x ${golsVisitante} ${opponent.name}. `;
     if (golsCasa > golsVisitante) resumo += "Bela vitória!";
     else if (golsVisitante > golsCasa) resumo += "Resultado amargo...";
     else resumo += "Tudo igual no placar.";
@@ -295,25 +298,80 @@ function generateZapMessages(golsCasa, golsVisitante){
     localStorage.setItem('zapMessages', JSON.stringify(zapMessages));
 }
 
-function pickPlayerForEvent(positions, team) { if (team === 'user') { const playersInPosition = hired.filter(p => Object.values(lineup).includes(p.id) && positions.includes(p.pos)); if (playersInPosition.length > 0) { return playersInPosition[Math.floor(Math.random() * playersInPosition.length)]; } return hired.find(p => Object.values(lineup).includes(p.id)); } else { const playersInPosition = vilaFreitasSquad.titulares.filter(p => positions.includes(p.pos)); if (playersInPosition.length > 0) { return playersInPosition[Math.floor(Math.random() * playersInPosition.length)]; } return vilaFreitasSquad.titulares[Math.floor(Math.random() * vilaFreitasSquad.titulares.length)]; } }
+function pickPlayerForEvent(positions, team) {
+    if (team === 'user') {
+        const playersInPosition = hired.filter(p => Object.values(lineup).includes(p.id) && positions.includes(p.pos));
+        if (playersInPosition.length > 0) return playersInPosition[Math.floor(Math.random() * playersInPosition.length)];
+        return hired.find(p => Object.values(lineup).includes(p.id)); 
+    } else { 
+        const opponentStarters = opponent.squad.slice(0, 11);
+        const playersInPosition = opponentStarters.filter(p => positions.includes(p.pos));
+        if (playersInPosition.length > 0) return playersInPosition[Math.floor(Math.random() * playersInPosition.length)];
+        return opponentStarters[Math.floor(Math.random() * opponentStarters.length)];
+    }
+}
 function addEventIcon(playerIdentifier, icon, team) { const selector = (team === 'user') ? `li[data-player-id="${playerIdentifier}"]` : `li[data-player-name="${playerIdentifier}"]`; const playerLi = document.querySelector(selector); if (playerLi) { const eventSpan = playerLi.querySelector('.player-events'); eventSpan.textContent = icon; } }
 function openSubstitutionModal(isMidGame) { pauseGame(); if (isMidGame) { elements.substitutionModalTitle.textContent = "Pausa para Substituição"; addComentario(minuto, `⏱️ Jogo pausado para substituição.`, 'evento'); } else { elements.substitutionModalTitle.textContent = "Intervalo - Faça suas substituições"; addComentario('45', `⏱️ Fim do primeiro tempo! Intervalo de jogo.`, 'evento'); } elements.substitutionModal.style.display = 'block'; elements.btnConfirmSubs.textContent = isMidGame ? "Confirmar e Voltar ao Jogo" : "Iniciar 2º Tempo"; elements.btnConfirmSubs.dataset.isMidGame = isMidGame; updateSubstitutionModal(); }
 function updateSubstitutionModal() { elements.subPitchPlayers.innerHTML = ''; elements.subBenchPlayers.innerHTML = ''; elements.subsCount.textContent = `Substituições: ${subsMade}/${MAX_SUBS}`; const titularesIds = Object.values(lineup); const titulares = hired.filter(j => titularesIds.includes(j.id)); const reservas = hired.filter(j => !titularesIds.includes(j.id)); titulares.forEach(p => { const item = document.createElement('div'); item.className = 'sub-player-item'; item.textContent = `${p.name} (${p.pos})`; item.dataset.playerId = p.id; item.onclick = () => handleSubPlayerClick(p.id, true); elements.subPitchPlayers.appendChild(item); }); reservas.forEach(p => { const item = document.createElement('div'); item.className = 'sub-player-item'; item.textContent = `${p.name} (${p.pos})`; item.dataset.playerId = p.id; item.onclick = () => handleSubPlayerClick(p.id, false); if (subsMade >= MAX_SUBS) item.classList.add('disabled'); elements.subBenchPlayers.appendChild(item); }); }
 function handleSubPlayerClick(playerId, isTitular) { if (isTitular) { if (selectedPlayerOutId === playerId) { selectedPlayerOutId = null; } else { selectedPlayerOutId = playerId; } document.querySelectorAll('#subPitchPlayers .sub-player-item').forEach(el => { el.classList.toggle('selected', el.dataset.playerId === selectedPlayerOutId); }); } else { if (!selectedPlayerOutId) { showNotif("Primeiro, selecione um jogador em campo para substituir."); return; } if (subsMade >= MAX_SUBS) { showNotif("Você já usou todas as 5 substituições!"); return; } performSubstitution(selectedPlayerOutId, playerId); } }
 function performSubstitution(playerOutId, playerInId) { const playerOut = hired.find(j => j.id === playerOutId); const playerIn = hired.find(j => j.id === playerInId); if (playerOut.pos !== playerIn.pos) { if (!confirm(`Atenção! ${playerIn.name} (${playerIn.pos}) vai entrar no lugar de ${playerOut.name} (${playerOut.pos}) de forma improvisada. Continuar?`)) { return; } } const slotId = Object.keys(lineup).find(key => lineup[key] === playerOutId); lineup[slotId] = playerInId; subsMade++; selectedPlayerOutId = null; addComentario('Jogo Parado', `🔄 Substituição: Sai ${playerOut.name} e entra ${playerIn.name}.`, 'evento'); updateSubstitutionModal(); populateLists(); }
-function populateLists() { elements.jogadoresUsuario.innerHTML = ''; elements.jogadoresUsuarioBanco.innerHTML = ''; const titularesIds = Object.values(lineup); hired.forEach(p => { if (titularesIds.includes(p.id)) { const li = document.createElement('li'); li.dataset.playerId = p.id; li.innerHTML = `<span>${p.name} (${p.pos})</span><span class="player-events"></span>`; elements.jogadoresUsuario.appendChild(li); } else { const card = document.createElement('div'); card.className = 'player-card'; const statusColor = p.health > 75 ? 'green' : 'yellow'; card.innerHTML = `<div class="player-card-info"><span class="status-dot status-${statusColor}"></span><div><div><strong>${p.name}</strong> <span class="spec-tag">${p.specialization}</span></div><div class="muted">${p.pos} • Saúde: ${p.health}%</div></div></div>`; elements.jogadoresUsuarioBanco.appendChild(card); } }); elements.jogadoresVila.innerHTML = ''; elements.jogadoresVilaBanco.innerHTML = ''; vilaFreitasSquad.titulares.forEach(p => { const li = document.createElement('li'); li.dataset.playerName = p.nome; li.innerHTML = `<span>${p.nome} (${p.pos})</span><span class="player-events"></span>`; elements.jogadoresVila.appendChild(li); }); vilaFreitasSquad.reservas.forEach(p => { const card = document.createElement('div'); card.className = 'player-card'; card.innerHTML = `<div class="player-card-info"><div><strong>${p.nome}</strong><div class="muted">${p.pos}</div></div></div>`; elements.jogadoresVilaBanco.appendChild(card); }); }
+function populateLists() {
+    elements.jogadoresUsuario.innerHTML = '';
+    elements.jogadoresUsuarioBanco.innerHTML = '';
+    const titularesIds = Object.values(lineup);
+    hired.forEach(p => {
+        if (titularesIds.includes(p.id)) {
+            const li = document.createElement('li');
+            li.dataset.playerId = p.id;
+            li.innerHTML = `<span>${p.name} (${p.pos})</span><span class="player-events"></span>`;
+            elements.jogadoresUsuario.appendChild(li);
+        } else {
+            const card = document.createElement('div'); card.className = 'player-card';
+            const statusColor = p.health > 75 ? 'green' : 'yellow';
+            card.innerHTML = `<div class="player-card-info"><span class="status-dot status-${statusColor}"></span><div><div><strong>${p.name}</strong> <span class="spec-tag">${p.specialization}</span></div><div class="muted">${p.pos} • Saúde: ${p.health}%</div></div></div>`;
+            elements.jogadoresUsuarioBanco.appendChild(card);
+        }
+    });
+
+    elements.jogadoresOponente.innerHTML = '';
+    elements.jogadoresOponenteBanco.innerHTML = '';
+    const opponentStarters = opponent.squad.slice(0, 11);
+    const opponentSubs = opponent.squad.slice(11);
+    opponentStarters.forEach(p => {
+        const li = document.createElement('li');
+        li.dataset.playerName = p.name;
+        li.innerHTML = `<span>${p.name} (${p.pos})</span><span class="player-events"></span>`;
+        elements.jogadoresOponente.appendChild(li);
+    });
+    opponentSubs.forEach(p => {
+        const card = document.createElement('div'); card.className = 'player-card';
+        card.innerHTML = `<div class="player-card-info"><div><strong>${p.name}</strong><div class="muted">${p.pos}</div></div></div>`;
+        elements.jogadoresOponenteBanco.appendChild(card);
+    });
+}
 
 function init() {
     hired = JSON.parse(localStorage.getItem('elencoDoTime')) || [];
     userData = JSON.parse(localStorage.getItem('userData')) || {};
     lineup = JSON.parse(localStorage.getItem('escalacaoFinal')) || {};
+    varzeaUniverse = JSON.parse(localStorage.getItem('varzeaUniverse')) || [];
+    currentMatchInfo = JSON.parse(localStorage.getItem('currentMatchInfo')) || {};
+
+    if (!currentMatchInfo.opponentName) {
+        alert("Informações da partida não encontradas! Volte para a tela da temporada.");
+        window.location.href = 'temporada.html';
+        return;
+    }
+
+    opponent = varzeaUniverse.find(t => t.name === currentMatchInfo.opponentName);
+    
     const savedMatch = localStorage.getItem('matchInProgress');
 
     if (savedMatch) {
         const state = JSON.parse(savedMatch);
         minuto = state.minute; currentHalf = state.half; subsMade = state.subsMade; subWindows = state.subWindows;
         halftimeStoppage = state.stoppageTimes.half1; fulltimeStoppage = state.stoppageTimes.half2;
-        matchRevenue = state.matchRevenue;
+        matchRevenue = state.matchRevenue; opponent = state.opponent;
         elements.scoreDisplay.textContent = state.score;
         elements.comentarios.innerHTML = state.commentary;
         elements.btnSubstituicao.textContent = `Fazer Substituição (${subWindows})`;
@@ -340,6 +398,8 @@ function init() {
     elements.headerTitle.textContent = `${userData.teamName || 'Seu Time'} em Campo`;
     elements.userTeamName.textContent = userData.teamName || 'Meu Time';
     elements.homeTeamName.textContent = (userData.teamName || 'Meu Time').substring(0, 10);
+    elements.opponentTeamName.textContent = opponent.name;
+    elements.awayTeamName.textContent = opponent.name.substring(0, 10);
     
     elements.btnSubstituicao.onclick = () => { if (subsMade >= MAX_SUBS) { showNotif("Você já usou o máximo de 5 substituições."); return; } if (subWindows > 0 && gameInterval) { openSubstitutionModal(true); } else if (!gameInterval && currentHalf < 2) { showNotif("Faça as substituições na janela que abriu."); } else if (!gameInterval && currentHalf === 2) { showNotif("O jogo já acabou!"); } else { showNotif("Você não tem mais paradas para substituição."); } };
     elements.btnConfirmSubs.onclick = () => { const isMidGameSub = elements.btnConfirmSubs.dataset.isMidGame === 'true'; elements.substitutionModal.style.display = 'none'; if (isMidGameSub) { subWindows--; elements.btnSubstituicao.textContent = `Fazer Substituição (${subWindows})`; if (subWindows <= 0) elements.btnSubstituicao.disabled = true; resumeGame(); } else { currentHalf = 2; minuto = 46; addComentario('46', '⏱️ Bola rolando para o segundo tempo!', 'evento'); resumeGame(); } };
