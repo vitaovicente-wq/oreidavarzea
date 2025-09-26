@@ -1,21 +1,3 @@
-Partiu\! Hora de consertar nosso campeonato e botar a bola pra rolar de verdade.
-
-Como diagnosticamos, o problema todo estava no "gerador de calendário", que criava os jogos de forma desbalanceada. Eu reconstruí essa função do zero.
-
-**O que foi corrigido no script:**
-A nova lógica agora cria um calendário de **6 rodadas (turno e returno) perfeito**, onde todos os times jogam exatamente uma vez por semana, sem falhas. Isso garante que a fase de grupos aconteça por completo e a transição para o quadrangular final funcione corretamente.
-
-Abaixo está o script **`js/temporada.js`** corrigido e completo.
-
-### Instrução:
-
-Você só precisa substituir o conteúdo do seu arquivo `js/temporada.js` por este novo script. O arquivo `temporada.html` não precisa ser alterado.
-
------
-
-### Arquivo `js/temporada.js` (Completo e Corrigido)
-
-```javascript
 // ========== ESTADO DO JOGO ==========
 let userData = {};
 let varzeaUniverse = [];
@@ -62,7 +44,6 @@ function generateSeasonFixtures(universe, userTeamName) {
     let season = {
         currentWeek: 1,
         torneio: { phase: 'groups', groups: {}, schedule: [], table: {}, finalists: [], finalSchedule: [], finalTable: {} },
-        copa: { schedule: [] },
     };
     const shuffledUniverse = [...universe].sort(() => 0.5 - Math.random());
     const torneioTeams = [userTeamName, ...shuffledUniverse.slice(0, 7).map(t => t.name)];
@@ -70,25 +51,27 @@ function generateSeasonFixtures(universe, userTeamName) {
     season.torneio.groups['A'] = shuffledTorneioTeams.slice(0, 4);
     season.torneio.groups['B'] = shuffledTorneioTeams.slice(4, 8);
     torneioTeams.forEach(name => { season.torneio.table[name] = { P: 0, J: 0, V: 0, E: 0, D: 0, GP: 0, GC: 0, SG: 0 }; });
-
+    
     let fullSchedule = [];
     Object.values(season.torneio.groups).forEach(group => {
         const teams = group;
-        const groupSchedule = [];
         // Turno (3 rodadas)
-        groupSchedule.push({ week: 1, home: teams[0], away: teams[3] }, { week: 1, home: teams[1], away: teams[2] });
-        groupSchedule.push({ week: 2, home: teams[0], away: teams[2] }, { week: 2, home: teams[3], away: teams[1] });
-        groupSchedule.push({ week: 3, home: teams[0], away: teams[1] }, { week: 3, home: teams[2], away: teams[3] });
+        fullSchedule.push({ week: 1, home: teams[0], away: teams[3], played: false });
+        fullSchedule.push({ week: 1, home: teams[1], away: teams[2], played: false });
+        fullSchedule.push({ week: 2, home: teams[0], away: teams[2], played: false });
+        fullSchedule.push({ week: 2, home: teams[3], away: teams[1], played: false });
+        fullSchedule.push({ week: 3, home: teams[0], away: teams[1], played: false });
+        fullSchedule.push({ week: 3, home: teams[2], away: teams[3], played: false });
         // Returno (3 rodadas)
-        groupSchedule.push({ week: 4, home: teams[3], away: teams[0] }, { week: 4, home: teams[2], away: teams[1] });
-        groupSchedule.push({ week: 5, home: teams[2], away: teams[0] }, { week: 5, home: teams[1], away: teams[3] });
-        groupSchedule.push({ week: 6, home: teams[1], away: teams[0] }, { week: 6, home: teams[3], away: teams[2] });
-        
-        fullSchedule.push(...groupSchedule);
+        fullSchedule.push({ week: 4, home: teams[3], away: teams[0], played: false });
+        fullSchedule.push({ week: 4, home: teams[2], away: teams[1], played: false });
+        fullSchedule.push({ week: 5, home: teams[2], away: teams[0], played: false });
+        fullSchedule.push({ week: 5, home: teams[1], away: teams[3], played: false });
+        fullSchedule.push({ week: 6, home: teams[1], away: teams[0], played: false });
+        fullSchedule.push({ week: 6, home: teams[3], away: teams[2], played: false });
     });
     
-    season.torneio.schedule = fullSchedule.map(match => ({ ...match, played: false }));
-    
+    season.torneio.schedule = fullSchedule;
     return season;
 }
 
@@ -126,6 +109,23 @@ function simulateAIMatch(homeTeamName, awayTeamName) {
     return { homeTeam: homeTeamName, awayTeam: awayTeamName, homeScore: Math.max(0, homeScore), awayScore: Math.max(0, awayScore) };
 }
 
+function generateRoundRobin(teams) {
+    const schedule = [];
+    const numRounds = teams.length - 1;
+    const half = teams.length / 2;
+    let localTeams = [...teams];
+    for (let round = 0; round < numRounds; round++) {
+        for (let i = 0; i < half; i++) {
+            const home = localTeams[i];
+            const away = localTeams[localTeams.length - 1 - i];
+            schedule.push({ home, away });
+        }
+        const last = localTeams.pop();
+        localTeams.splice(1, 0, last);
+    }
+    return schedule;
+}
+
 function setupQuadrangularFinal() {
     seasonData.torneio.phase = 'final';
     const table = seasonData.torneio.table;
@@ -144,10 +144,11 @@ function processLastMatchResult() {
     const result = JSON.parse(localStorage.getItem('lastMatchResult'));
     if (!result) return;
 
-    const currentTable = seasonData.torneio.phase === 'groups' ? seasonData.torneio.table : seasonData.torneio.finalTable;
+    const isFinals = seasonData.torneio.phase === 'final';
+    const currentTable = isFinals ? seasonData.torneio.finalTable : seasonData.torneio.table;
     updateTableStats(result, currentTable);
     
-    const currentSchedule = seasonData.torneio.phase === 'groups' ? seasonData.torneio.schedule : seasonData.torneio.finalSchedule;
+    const currentSchedule = isFinals ? seasonData.torneio.finalSchedule : seasonData.torneio.schedule;
     const matchIndex = currentSchedule.findIndex(m => m.home === result.homeTeam && m.away === result.awayTeam);
     
     let weekOfLastMatch = 0;
@@ -157,7 +158,7 @@ function processLastMatchResult() {
         weekOfLastMatch = currentSchedule[matchIndex].week;
     }
     
-    if(seasonData.torneio.phase === 'groups'){
+    if(!isFinals){
         const otherMatches = seasonData.torneio.schedule.filter(m => m.week === weekOfLastMatch && !m.played);
         otherMatches.forEach(match => {
             const aiResult = simulateAIMatch(match.home, match.away);
@@ -305,4 +306,3 @@ function init() {
 }
 
 init();
-```
