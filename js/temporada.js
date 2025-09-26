@@ -46,7 +46,6 @@ function generateRoundRobin(teams) {
     const numRounds = teams.length - 1;
     const half = teams.length / 2;
     let localTeams = [...teams];
-
     for (let round = 0; round < numRounds; round++) {
         for (let i = 0; i < half; i++) {
             const home = localTeams[i];
@@ -72,17 +71,13 @@ function generateSeasonFixtures(universe, userTeamName) {
     season.torneio.groups['A'] = shuffledTorneioTeams.slice(0, 4);
     season.torneio.groups['B'] = shuffledTorneioTeams.slice(4, 8);
     torneioTeams.forEach(name => { season.torneio.table[name] = { P: 0, J: 0, V: 0, E: 0, D: 0, GP: 0, GC: 0, SG: 0 }; });
-    
     let fullSchedule = [];
     Object.values(season.torneio.groups).forEach(group => {
         const turno = generateRoundRobin([...group]);
         const returno = turno.map(match => ({ home: match.away, away: match.home }));
         fullSchedule.push(...turno, ...returno);
     });
-    
-    fullSchedule.sort(() => 0.5 - Math.random());
     season.torneio.schedule = fullSchedule.map((match, index) => ({ ...match, week: Math.floor(index / 4) + 1, played: false }));
-    
     return season;
 }
 
@@ -90,13 +85,11 @@ function generateSeasonFixtures(universe, userTeamName) {
 function updateTableStats(result, table) {
     const { homeTeam, awayTeam, homeScore, awayScore } = result;
     if (!table[homeTeam] || !table[awayTeam]) return;
-
     table[homeTeam].J++; table[awayTeam].J++;
     table[homeTeam].GP += homeScore; table[homeTeam].GC += awayScore;
     table[awayTeam].GP += awayScore; table[awayTeam].GC += homeScore;
     table[homeTeam].SG = table[homeTeam].GP - table[homeTeam].GC;
     table[awayTeam].SG = table[awayTeam].GP - table[awayTeam].GC;
-
     if (homeScore > awayScore) {
         table[homeTeam].V++; table[awayTeam].D++; table[homeTeam].P += 3;
     } else if (awayScore > homeScore) {
@@ -116,7 +109,6 @@ function simulateAIMatch(homeTeamName, awayTeamName) {
     const skillDiff = avgSkillHome - avgSkillAway;
     const homeWinProb = 50 + (skillDiff * 1.5);
     const rand = Math.random() * 100;
-
     if (rand < homeWinProb - 15) { homeScore = Math.floor(Math.random() * 3) + 1; awayScore = Math.floor(Math.random() * 2); if(homeScore <= awayScore) homeScore = awayScore + 1;
     } else if (rand < homeWinProb + 15) { homeScore = Math.floor(Math.random() * 3); awayScore = homeScore;
     } else { awayScore = Math.floor(Math.random() * 3) + 1; homeScore = Math.floor(Math.random() * 2); if(homeScore >= awayScore) homeScore = awayScore - 1; }
@@ -127,12 +119,10 @@ function setupQuadrangularFinal() {
     seasonData.torneio.phase = 'final';
     const table = seasonData.torneio.table;
     const sortRule = (a, b) => table[b].P - table[a].P || table[b].SG - table[a].SG || table[b].GP - table[a].GP;
-    
     const groupA = [...seasonData.torneio.groups.A].sort(sortRule);
     const groupB = [...seasonData.torneio.groups.B].sort(sortRule);
     const finalists = [groupA[0], groupA[1], groupB[0], groupB[1]];
     seasonData.torneio.finalists = finalists;
-    
     finalists.forEach(name => { seasonData.torneio.finalTable[name] = { P: 0, J: 0, V: 0, E: 0, D: 0, GP: 0, GC: 0, SG: 0 }; });
     let finalSchedule = generateRoundRobin([...finalists]);
     seasonData.torneio.finalSchedule = finalSchedule.map((match, index) => ({...match, week: 7 + index, played: false }));
@@ -142,20 +132,16 @@ function setupQuadrangularFinal() {
 function processLastMatchResult() {
     const result = JSON.parse(localStorage.getItem('lastMatchResult'));
     if (!result) return;
-
     const currentTable = seasonData.torneio.phase === 'groups' ? seasonData.torneio.table : seasonData.torneio.finalTable;
     updateTableStats(result, currentTable);
-    
     const currentSchedule = seasonData.torneio.phase === 'groups' ? seasonData.torneio.schedule : seasonData.torneio.finalSchedule;
     const matchIndex = currentSchedule.findIndex(m => m.home === result.homeTeam && m.away === result.awayTeam);
-    
     let weekOfLastMatch = 0;
     if(matchIndex > -1) {
         currentSchedule[matchIndex].played = true;
         currentSchedule[matchIndex].score = `${result.homeScore} x ${result.awayScore}`;
         weekOfLastMatch = currentSchedule[matchIndex].week;
     }
-    
     if(seasonData.torneio.phase === 'groups'){
         const otherMatches = seasonData.torneio.schedule.filter(m => m.week === weekOfLastMatch && !m.played);
         otherMatches.forEach(match => {
@@ -168,15 +154,14 @@ function processLastMatchResult() {
             }
         });
     }
-
     const allGroupMatchesPlayed = seasonData.torneio.schedule.every(m => m.played);
     if(allGroupMatchesPlayed && seasonData.torneio.phase === 'groups'){
         setupQuadrangularFinal();
     }
-    
     localStorage.setItem('seasonData', JSON.stringify(seasonData));
     localStorage.removeItem('lastMatchResult');
 }
+
 
 // ========== LÓGICA DE EXIBIÇÃO ==========
 function displayNextMatch() {
@@ -198,11 +183,7 @@ function displayNextMatch() {
             <div class="vs">${nextMatch.home} vs ${nextMatch.away}</div>
             <p class="match-details-small">${location}</p>
         `;
-        localStorage.setItem('currentMatchInfo', JSON.stringify({
-            homeTeam: nextMatch.home,
-            awayTeam: nextMatch.away,
-            competition: competitionName
-        }));
+        localStorage.setItem('currentMatchInfo', JSON.stringify({ homeTeam: nextMatch.home, awayTeam: nextMatch.away, competition: competitionName }));
         elements.linkPlayMatch.style.display = 'block';
     } else {
         let endMessage = "Fim da Fase de Grupos!";
@@ -256,33 +237,20 @@ function openCalendarioModal() {
     const userTeamName = userData.teamName;
     const userSchedule = seasonData.torneio.schedule.filter(m => m.home === userTeamName || m.away === userTeamName);
     userSchedule.sort((a,b) => a.week - b.week);
-
     let html = '<h4>Fase de Grupos</h4>';
     userSchedule.forEach(match => {
         const score = match.played ? `<strong>${match.score}</strong>` : "vs";
-        html += `<div class="calendario-fixture ${match.played ? 'played' : ''}">
-            <span>(Rodada ${match.week})</span>
-            <span>${match.home}</span>
-            <span>${score}</span>
-            <span>${match.away}</span>
-        </div>`;
+        html += `<div class="calendario-fixture ${match.played ? 'played' : ''}"><span>(Rodada ${match.week})</span><span>${match.home}</span><span>${score}</span><span>${match.away}</span></div>`;
     });
-
     if(seasonData.torneio.phase === 'final' && seasonData.torneio.finalists.includes(userTeamName)) {
         html += '<h4>Quadrangular Final</h4>';
         const finalUserSchedule = seasonData.torneio.finalSchedule.filter(m => m.home === userTeamName || m.away === userTeamName);
         finalUserSchedule.sort((a,b) => a.week - b.week);
         finalUserSchedule.forEach(match => {
             const score = match.played ? `<strong>${match.score}</strong>` : "vs";
-            html += `<div class="calendario-fixture ${match.played ? 'played' : ''}">
-                <span>(Final ${match.week - 6})</span>
-                <span>${match.home}</span>
-                <span>${score}</span>
-                <span>${match.away}</span>
-            </div>`;
+            html += `<div class="calendario-fixture ${match.played ? 'played' : ''}"><span>(Final ${match.week - 6})</span><span>${match.home}</span><span>${score}</span><span>${match.away}</span></div>`;
         });
     }
-
     elements.calendarioList.innerHTML = html;
     elements.calendarioModal.style.display = 'block';
 }
@@ -305,7 +273,6 @@ function init() {
     }
 
     processLastMatchResult();
-
     displayNextMatch();
     displayTorneioTables();
     elements.copaFixtures.innerHTML = '<p class="muted">Aguardando início...</p>';
