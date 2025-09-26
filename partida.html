@@ -120,7 +120,6 @@
     <button id="btnConfirmSubs" style="margin-top: 20px;">Iniciar 2º Tempo</button>
   </div>
 </div>
-
 <script>
 // ========== ESTADO DO JOGO ==========
 let hired = []; let userData = {}; let lineup = {};
@@ -270,10 +269,7 @@ function endGame() {
     localStorage.setItem('teamHistory', JSON.stringify(history));
     localStorage.setItem('elencoDoTime', JSON.stringify(hired));
     generateZapMessages(golsCasa, golsVisitante);
-    
-    // ===== LINHA ADICIONADA AQUI =====
     localStorage.removeItem('treinoRealizado'); // Libera o treino para a próxima semana!
-
     localStorage.removeItem('matchInProgress');
 }
 
