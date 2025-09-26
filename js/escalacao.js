@@ -103,6 +103,7 @@ function init() {
   
   elements.formationSelect.addEventListener('change', (e) => { unassignAllPlayers(); drawPitch(e.target.value); });
 }
+
 init();
 </script>
 </body>
