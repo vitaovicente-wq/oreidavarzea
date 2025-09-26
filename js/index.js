@@ -20,6 +20,8 @@ linkTela2.addEventListener('click', function(event) {
       event.preventDefault();
       return;
     }
+
+    // Salva os novos dados do usuário
     const userData = {
       teamName: teamNameInput.value.trim(),
       userName: userNameInput.value.trim(),
@@ -27,7 +29,7 @@ linkTela2.addEventListener('click', function(event) {
     };
     localStorage.setItem('userData', JSON.stringify(userData));
 
-    // Limpa todos os dados de um jogo anterior
+    // Limpa todos os dados da temporada e do time anterior para começar um jogo novo do zero
     localStorage.removeItem('seasonData');
     localStorage.removeItem('varzeaUniverse');
     localStorage.removeItem('elencoDoTime');
