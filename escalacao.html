@@ -34,16 +34,16 @@
   .tooltip-text { visibility: hidden; width: 220px; background-color: #555; color: #fff; text-align: center; border-radius: 6px; padding: 8px; position: absolute; z-index: 10; top: 50%; left: 105%; transform: translateY(-50%); opacity: 0; transition: opacity 0.3s; font-style: italic; font-size: 12px; }
   .tooltip-text::after { content: ""; position: absolute; top: 50%; right: 100%; margin-top: -5px; border-width: 5px; border-style: solid; border-color: transparent #555 transparent transparent; }
   .player-with-tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
-  .top-controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+  .top-controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
   .top-controls button, .top-controls div { flex: 1; color: white; padding: 12px 18px; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer; transition: background-color 0.2s; text-align: center; border: none; }
   .finance-box { background-color: #28a745; } .finance-box:hover { background-color: #218838; }
   #zapButton { background-color: #17a2b8; position: relative; } #zapButton:hover { background-color: #138496; }
   #postinhoButton { background-color: #dc3545; } #postinhoButton:hover { background-color: #c82333; }
+  #treinoButton { background-color: #ffc107; color: #212529; } #treinoButton:hover { background-color: #e0a800; }
   .notification-dot { height: 12px; width: 12px; background-color: red; border-radius: 50%; position: absolute; top: 8px; right: 8px; border: 2px solid white; display:flex; justify-content: center; align-items: center; font-size: 9px; }
   .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); }
   .modal-content { background-color: #fff; margin: 5% auto; padding: 20px; border-radius: 10px; width: 80%; max-width: 500px; }
   .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-  /* Estilos Postinho */
   .postinho-modal-content { max-width: 800px; display: flex; gap: 20px; }
   .player-list-column, .treatment-column { flex: 1; }
   .player-list-column { height: 450px; overflow-y: auto; border-right: 1px solid #eee; padding-right: 20px; }
@@ -61,6 +61,10 @@
   .player-list-modal { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
   .modal-player-item { padding: 10px; border: 1px solid #eee; border-radius: 6px; cursor: pointer; }
   .modal-player-item:hover { background-color: #f5f7fb; }
+  .treino-modal-content { max-width: 700px; }
+  .treino-list { height: 450px; overflow-y: auto; }
+  .treino-item { border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 10px; }
+  .treino-item h4 { margin-top: 0; }
 </style>
 </head>
 <body>
@@ -69,15 +73,13 @@
 </header>
 <div class="container">
   <div id="tela3" class="card">
-    
     <div class="top-controls">
         <div id="financeBox" class="finance-box">Caixa: <span id="cashDisplay">--</span></div>
         <button id="zapButton">Zap do Professor <span id="zapNotification" class="notification-dot" style="display: none;"></span></button>
         <button id="postinhoButton">Postinho 🏥</button>
+        <button id="treinoButton">Treinamento 🏋️</button>
     </div>
-
     <h2>Tela 3 — Escalação</h2>
-    
     <div class="formation-controls">
       <label for="formationSelect">Escolha a sua formação:</label>
       <select id="formationSelect">
@@ -88,17 +90,14 @@
         <option value="5-4-1">5-4-1 (Retranca)</option>
       </select>
     </div>
-    
     <div class="card">
       <h3>Escalação Principal</h3>
       <div class="pitch" id="pitch"></div>
     </div>
-
     <div class="card" style="margin-top: 20px;">
       <h3>Banco de Reservas</h3>
       <div class="bench" id="bench"></div>
     </div>
-
     <div class="controls">
         <a id="linkTela4" href="partida.html">
             <button id="btnPlayMatch" disabled>Jogar partida</button>
@@ -112,40 +111,40 @@
     <span id="financeModalClose" class="close">&times;</span>
     <h2>Relatório Financeiro</h2>
     <h3>Saldo em Caixa: <span id="modalCash">--</span></h3>
-    <hr>
-    <h4>Receitas</h4>
+    <hr><h4>Receitas</h4>
     <p>Renda de Partidas: <span id="modalRevenueMatches" style="color: green;">--</span></p>
     <p>Prêmios e Patrocínio: <span id="modalRevenueSponsors" style="color: green;">--</span></p>
     <h4>Despesas</h4>
     <p>Contratações (passes): <span id="modalExpenseSignings" style="color: red;">--</span></p>
     <p>Salários Pagos: <span id="modalExpenseSalaries" style="color: red;">--</span></p>
     <p>Bicho (Prêmio por vitória): <span id="modalExpenseBonus" style="color: red;">--</span></p>
-    <hr>
-    <h3>Balanço Geral: <span id="modalBalance">--</span></h3>
+    <hr><h3>Balanço Geral: <span id="modalBalance">--</span></h3>
   </div>
 </div>
 <div id="zapModal" class="modal">
     <div class="modal-content zap-modal-content">
-        <div class="zap-header">
-            <span id="zapModalClose" class="close">&times;</span>
-            <h2>Zap do Professor</h2>
-        </div>
+        <div class="zap-header"><span id="zapModalClose" class="close">&times;</span><h2>Zap do Professor</h2></div>
         <div id="chatContainer" class="chat-container"></div>
     </div>
 </div>
 <div id="postinhoModal" class="modal">
     <div class="modal-content postinho-modal-content">
         <div class="player-list-column">
-            <h3>Elenco</h3>
-            <div id="postinhoPlayerList"></div>
+            <h3>Elenco</h3><div id="postinhoPlayerList"></div>
         </div>
         <div class="treatment-column">
             <span id="postinhoModalClose" class="close">&times;</span>
             <h2>Sala do Dr. Tairo</h2>
-            <div id="treatmentPanel">
-                <p class="muted" style="text-align: center; margin-top: 50px;">Selecione um jogador à esquerda para o diagnóstico.</p>
-            </div>
+            <div id="treatmentPanel"><p class="muted" style="text-align: center; margin-top: 50px;">Selecione um jogador à esquerda para o diagnóstico.</p></div>
         </div>
+    </div>
+</div>
+<div id="treinoModal" class="modal">
+    <div class="modal-content treino-modal-content">
+        <span id="treinoModalClose" class="close">&times;</span>
+        <h2>CT do Terrão - Treino da Semana</h2>
+        <p class="muted">Escolha um treino para o elenco. O treino só pode ser realizado uma vez por semana (entre as partidas).</p>
+        <div id="treinoList" class="treino-list"></div>
     </div>
 </div>
 <div id="playerModal" class="modal">
@@ -159,9 +158,9 @@
 
 <script>
 // ========== ESTADO DO JOGO ==========
-let hired = []; let userData = {}; let financas = {}; let zapMessages = [];
+let hired = []; let userData = {}; let financas = {}; let zapMessages = []; let teamStats = {};
 
-// ========== DADOS (FORMAÇÕES, TRATAMENTOS, FALAS) ==========
+// ========== DADOS GERAIS ==========
 const treatments = [ { id: 'gelol', name: 'Massagem com Gelol', cost: 10, cost_type: 'fixed', health_gain: 8 }, { id: 'reza', name: 'Reza da Dona Maria', cost: 5, cost_type: 'fixed', health_gain: 15 }, { id: 'mocoto', name: 'Caldo de Mocotó', cost: 15, cost_type: 'fixed', health_gain: 18 }, { id: 'pregacao', name: 'Pregação do Pastor Elias', cost: 0.10, cost_type: 'percentage', health_gain: 13 }, { id: 'garrafada', name: 'Garrafada Misteriosa', cost: 20, cost_type: 'fixed', health_gain: () => Math.floor(Math.random() * 21) + 5 }, { id: 'salgrosso', name: 'Banho de Sal Grosso', cost: 2, cost_type: 'fixed', health_gain: 5 }, { id: 'benzetacil', name: 'Benzetacil', cost: 30, cost_type: 'fixed', health_gain: 20 } ];
 const tairoQuotes = {
     low: [ "Chefe, esse aqui tá na UTI do Postinho. Se botar pra jogar, ele desmonta. O caso é grave e pede o tratamento de choque: uma <strong>Benzetacil</strong>.", "A conta chegou pra esse guerreiro. É o seguinte: ou a gente aplica a artilharia pesada, uma <strong>Benzetacil</strong> pra ontem, ou ele vai estourar um músculo e ficar 3 meses parado.", "Não tem massagem que resolva isso aqui, professor. Isso não é cansaço, é quase um pedido de aposentadoria. Sem conversa, o protocolo é <strong>Benzetacil</strong>." ],
@@ -169,6 +168,8 @@ const tairoQuotes = {
     high: [ "Isso aí é manha de jogador querendo fugir do treino. Manda uma <strong>Massagem com Gelol</strong> que essa frescura passa rapidinho.", "Esse aí tá com a lataria arranhada, coisa de jogo. Nada que uma boa <strong>Massagem com Gelol</strong> não resolva.", "Diagnóstico: dorzinha de cabeça de zagueiro. Protocolo: <strong>Massagem com Gelol</strong> e um esporro pra parar de chorar. Próximo!" ]
 };
 const formations = { '4-4-2': [ { top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] }, { top: '25%', slots: [{ pos: 'Lateral', text: '⬅️ Lateral Esq.' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Lateral', text: '➡️ Lateral Dir.' }] }, { top: '55%', slots: [{ pos: 'Meia', text: '🎯 Meia Esq.' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Meia', text: '🎯 Meia Dir.' }] }, { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Atacante' }, { pos: 'Atacante', text: '⚽ Atacante' }] } ], '4-3-3': [ { top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] }, { top: '25%', slots: [{ pos: 'Lateral', text: '⬅️ Lateral Esq.' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Lateral', text: '➡️ Lateral Dir.' }] }, { top: '55%', slots: [{ pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Meia', text: '🎯 Meia' }, { pos: 'Meia', text: '🎯 Meia' }] }, { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Ponta Esq.' }, { pos: 'Atacante', text: '⚽ Centroavante' }, { pos: 'Atacante', text: '⚽ Ponta Dir.' }] } ], '3-5-2': [ { top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] }, { top: '25%', slots: [{ pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Líbero' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }] }, { top: '55%', slots: [{ pos: 'Lateral', text: '🏃 Ala Esq.' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Meia', text: '🎯 Meia Central' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Lateral', text: '🏃 Ala Dir.' }] }, { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Atacante' }, { pos: 'Atacante', text: '⚽ Atacante' }] } ], '4-2-4': [ { top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] }, { top: '25%', slots: [{ pos: 'Lateral', text: '⬅️ Lateral Esq.' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Lateral', text: '➡️ Lateral Dir.' }] }, { top: '55%', slots: [{ pos: 'Meia', text: '🎯 Meia' }, { pos: 'Meia', text: '🎯 Meia' }] }, { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Ponta Esq.' }, { pos: 'Atacante', text: '⚽ Atacante' }, { pos: 'Atacante', text: '⚽ Atacante' }, { pos: 'Atacante', text: '⚽ Ponta Dir.' }] } ], '5-4-1': [ { top: '5%', slots: [{ pos: 'Goleiro', text: '🧤 Goleiro' }] }, { top: '25%', slots: [{ pos: 'Lateral', text: '⬅️ Lateral Esq.' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Zagueiro', text: '🛡️ Líbero' }, { pos: 'Zagueiro', text: '🛡️ Zagueiro' }, { pos: 'Lateral', text: '➡️ Lateral Dir.' }] }, { top: '55%', slots: [{ pos: 'Meia', text: '🎯 Meia Esq.' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Volante', text: '⚔️ Volante' }, { pos: 'Meia', text: '🎯 Meia Dir.' }] }, { top: '85%', slots: [{ pos: 'Atacante', text: '⚽ Centroavante' }] } ] };
+const trainingSessions = [ { id: 'rachao', name: 'Rachão de Quinta 🥩', description: 'Coletivo pegado para melhorar o entrosamento e a habilidade geral de todos.', cost: 50, cost_health: 10, focus: 'all', reward_type: 'skill', reward_chance: 0.10, reward_value: 1 }, { id: 'dois_toques', name: 'Dois Toques ⚽', description: 'Treino técnico em campo reduzido para aprimorar o passe e a visão de jogo.', cost: 10, cost_health: 5, focus: ['Meia', 'Volante'], reward_type: 'skill', reward_chance: 0.25, reward_value: 1 }, { id: 'finalizacao', name: 'Finalização até o Sol se Por 🥅', description: 'Atacantes aprimoram a pontaria com chutes de todos os jeitos.', cost: 0, cost_health: 8, focus: ['Atacante'], reward_type: 'skill', reward_chance: 0.40, reward_value: 1 }, { id: 'muralha', name: 'Muralha Defensiva 🧱', description: 'Treino intenso de posicionamento e bote para zagueiros e laterais.', cost: 0, cost_health: 8, focus: ['Zagueiro', 'Lateral'], reward_type: 'skill', reward_chance: 0.40, reward_value: 1 }, { id: 'corrida_morro', name: 'Corrida no Morro 🏃', description: 'Preparo físico bruto para aumentar a resistência do elenco nas partidas.', cost: 20, cost_health: 15, focus: 'all', reward_type: 'stamina', reward_value: 5 }, { id: 'churrasco', name: 'Churrasco do Nelson 🍖', description: 'Não melhora a técnica, mas nada une mais o time que uma picanha na brasa.', cost: 100, cost_health: 0, focus: 'all', reward_type: 'entrosamento', reward_value: 5 } ];
+
 const elements = {
   headerTitle: document.getElementById('headerTitle'), bench: document.getElementById('bench'), btnPlayMatch: document.getElementById('btnPlayMatch'),
   linkTela4: document.getElementById('linkTela4'), formationSelect: document.getElementById('formationSelect'), pitch: document.getElementById('pitch'),
@@ -183,7 +184,9 @@ const elements = {
   zapModalClose: document.getElementById('zapModalClose'), chatContainer: document.getElementById('chatContainer'),
   postinhoButton: document.getElementById('postinhoButton'), postinhoModal: document.getElementById('postinhoModal'),
   postinhoModalClose: document.getElementById('postinhoModalClose'), postinhoPlayerList: document.getElementById('postinhoPlayerList'),
-  treatmentPanel: document.getElementById('treatmentPanel')
+  treatmentPanel: document.getElementById('treatmentPanel'),
+  treinoButton: document.getElementById('treinoButton'), treinoModal: document.getElementById('treinoModal'),
+  treinoModalClose: document.getElementById('treinoModalClose'), treinoList: document.getElementById('treinoList')
 };
 
 function showNotif(text, time = 3000) { const box = document.createElement('div'); box.className = 'notif'; box.textContent = text; document.body.appendChild(box); setTimeout(() => box.remove(), time); }
@@ -206,12 +209,15 @@ function populatePostinhoPlayerList() { elements.postinhoPlayerList.innerHTML = 
 function selectPlayerForTreatment(playerId) { const player = hired.find(p => p.id === playerId); if (!player) return; document.querySelectorAll('.postinho-player-item').forEach(el => { el.classList.toggle('selected', el.dataset.playerId === playerId); }); let diagnosisKey = 'high'; if (player.health <= 70) diagnosisKey = 'medium'; if (player.health < 50) diagnosisKey = 'low'; const diagnosisText = tairoQuotes[diagnosisKey][Math.floor(Math.random() * 3)]; let treatmentHTML = `<h3>Diagnóstico de ${player.name}</h3><p class="muted">Saúde Atual: ${player.health}%</p><div class="diagnosis-box">“${diagnosisText}”</div><div class="treatment-list"><h4>Tratamentos Disponíveis</h4>`; treatments.forEach(t => { let costText = ''; if (t.cost_type === 'percentage') { costText = `${t.cost * 100}% do Salário (${formatReal(player.salarioJogo * t.cost)})`; } else { costText = formatReal(t.cost); } treatmentHTML += `<div class="treatment-item"><div><strong>${t.name}</strong><div class="muted">Custo: ${costText}</div></div><button onclick="applyTreatment('${player.id}', '${t.id}')">Aplicar</button></div>`; }); treatmentHTML += `</div>`; elements.treatmentPanel.innerHTML = treatmentHTML; }
 function applyTreatment(playerId, treatmentId) { const player = hired.find(p => p.id === playerId); const treatment = treatments.find(t => t.id === treatmentId); if (!player || !treatment) return; let cost = 0; if (treatment.cost_type === 'percentage') { cost = player.salarioJogo * treatment.cost; } else { cost = treatment.cost; } if (financas.caixaAtual < cost) { showNotif("Dinheiro em caixa insuficiente!"); return; } financas.caixaAtual -= cost; let healthGained = (typeof treatment.health_gain === 'function') ? treatment.health_gain() : treatment.health_gain; player.health = Math.min(100, player.health + healthGained); localStorage.setItem('financasDoTime', JSON.stringify(financas)); localStorage.setItem('elencoDoTime', JSON.stringify(hired)); showNotif(`${player.name} recebeu ${treatment.name}. Saúde agora é ${player.health}%.`); elements.cashDisplay.textContent = formatReal(financas.caixaAtual); selectPlayerForTreatment(playerId); populatePostinhoPlayerList(); populateBench(); }
 function reassignPlayerToSlot(player, slotElement) { if (!player || !slotElement) return; slotElement.dataset.assigned = player.id; slotElement.innerHTML = `<div><strong>${player.name}</strong></div><div>${player.pos}</div><div class="muted">Habilidade: ${player.skill}%</div>`; slotElement.classList.add('assigned'); }
+function openTreinoModal() { elements.treinoList.innerHTML = ''; const treinoRealizado = localStorage.getItem('treinoRealizado') === 'true'; trainingSessions.forEach(session => { const item = document.createElement('div'); item.className = 'treino-item'; let custoSaude = session.cost_health > 0 ? `<li>Custo de Saúde: -${session.cost_health}% para jogadores do foco</li>` : ''; item.innerHTML = `<h4>${session.name}</h4><p class="muted">${session.description}</p><ul><li>Custo: ${formatReal(session.cost)}</li>${custoSaude}</ul><button data-session-id="${session.id}" ${treinoRealizado ? 'disabled' : ''}>Realizar Treino</button>`; elements.treinoList.appendChild(item); }); if (treinoRealizado) { const info = document.createElement('p'); info.className = 'muted'; info.style.textAlign = 'center'; info.style.fontWeight = 'bold'; info.textContent = 'O treino da semana já foi realizado. Jogue uma partida para treinar novamente.'; elements.treinoList.appendChild(info); } elements.treinoList.querySelectorAll('button').forEach(button => { button.onclick = () => realizarTreino(button.dataset.sessionId); }); elements.treinoModal.style.display = 'block'; }
+function realizarTreino(sessionId) { const session = trainingSessions.find(s => s.id === sessionId); if (!session) return; if (financas.caixaAtual < session.cost) { showNotif("Dinheiro em caixa insuficiente para este treino!"); return; } financas.caixaAtual -= session.cost; hired.forEach(p => { let isFocusPlayer = session.focus === 'all' || session.focus.includes(p.pos); if (isFocusPlayer) { p.health = Math.max(0, p.health - session.cost_health); if (session.reward_type === 'skill') { const ageFactor = Math.max(0, (30 - p.age) * 0.01); const finalChance = session.reward_chance + ageFactor; if (Math.random() < finalChance) { p.skill = Math.min(100, p.skill + session.reward_value); showNotif(`${p.name} evoluiu sua habilidade!`, 1500); } } } }); if (session.reward_type === 'entrosamento') { teamStats.entrosamento = Math.min(100, teamStats.entrosamento + session.reward_value); showNotif(`O entrosamento do time aumentou para ${teamStats.entrosamento}!`); } if (session.reward_type === 'stamina') { showNotif(`A resistência do time melhorou!`); } localStorage.setItem('financasDoTime', JSON.stringify(financas)); localStorage.setItem('elencoDoTime', JSON.stringify(hired)); localStorage.setItem('teamStats', JSON.stringify(teamStats)); localStorage.setItem('treinoRealizado', 'true'); elements.cashDisplay.textContent = formatReal(financas.caixaAtual); populateBench(); elements.treinoModal.style.display = 'none'; showNotif(`Treino de "${session.name}" realizado com sucesso!`, 2500); }
 
 function init() {
   hired = JSON.parse(localStorage.getItem('elencoDoTime')) || [];
   userData = JSON.parse(localStorage.getItem('userData')) || {};
   financas = JSON.parse(localStorage.getItem('financasDoTime')) || { caixaAtual: 5000, gastosContratacoes: 0, gastosSalarios: 0, gastosBicho: 0, receitaPartidas: 0, receitaPremiosPatrocinios: 0 };
   zapMessages = JSON.parse(localStorage.getItem('zapMessages')) || [];
+  teamStats = JSON.parse(localStorage.getItem('teamStats')) || { entrosamento: 50 };
   if(hired.length < 22) { alert("Elenco incompleto! Volte ao mercado."); window.location.href = 'mercado.html'; return; }
   
   elements.headerTitle.textContent = userData.teamName || 'O Rei da Várzea';
@@ -237,10 +243,12 @@ function init() {
   elements.financeBox.onclick = openFinanceModal;
   elements.zapButton.onclick = openZapModal;
   elements.postinhoButton.onclick = openPostinhoModal;
+  elements.treinoButton.onclick = openTreinoModal;
   elements.financeModalClose.onclick = () => elements.financeModal.style.display = 'none';
   elements.playerModalClose.onclick = () => elements.playerModal.style.display = 'none';
   elements.zapModalClose.onclick = () => elements.zapModal.style.display = 'none';
   elements.postinhoModalClose.onclick = () => elements.postinhoModal.style.display = 'none';
+  elements.treinoModalClose.onclick = () => elements.treinoModal.style.display = 'none';
   window.onclick = (event) => { if (event.target.classList.contains('modal')) { event.target.style.display = 'none'; } };
   
   elements.linkTela4.addEventListener('click', (event) => {
