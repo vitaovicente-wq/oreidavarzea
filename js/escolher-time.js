@@ -7,9 +7,7 @@ const CIDADES_E_REGIOES = {
     'BA': { vantagem: { nome: "Alegria nas Pernas", desc: "O time começa com um nível de Entrosamento mais alto." }, desvantagem: { nome: "Relaxado Demais", desc: "A eficácia dos treinos é um pouco menor." } },
     'DEFAULT': { vantagem: { nome: "Neutro", desc: "Sem vantagem específica." }, desvantagem: { nome: "Neutro", desc: "Sem desvantagem específica." } }
 };
-
 const TIMES = [
-    // Gigantes do Bairro (20)
     { nome: "Tsunami da ZL", cidade: "São Paulo", estado: "SP", fama: "Gigante do Bairro" }, { nome: "Galácticos do Grajaú", cidade: "São Paulo", estado: "SP", fama: "Gigante do Bairro" },
     { nome: "Ajax da Vila Sônia", cidade: "São Paulo", estado: "SP", fama: "Gigante do Bairro" }, { nome: "Molekes da Vila", cidade: "Santos", estado: "SP", fama: "Gigante do Bairro" },
     { nome: "Guarani do Brinco", cidade: "Campinas", estado: "SP", fama: "Gigante do Bairro" }, { nome: "Guerreiros da Baixada", cidade: "Duque de Caxias", estado: "RJ", fama: "Gigante do Bairro" },
@@ -20,13 +18,11 @@ const TIMES = [
     { nome: "Boi-Bumbá de Parintins", cidade: "Parintins", estado: "AM", fama: "Gigante do Bairro" }, { nome: "Gigantes do Madeira", cidade: "Porto Velho", estado: "RO", fama: "Gigante do Bairro" },
     { nome: "Pequi Atômico FC", cidade: "Goiânia", estado: "GO", fama: "Gigante do Bairro" }, { nome: "Dourado do Pantanal", cidade: "Cuiabá", estado: "MT", fama: "Gigante do Bairro" },
     { nome: "Tuiuiú de Campo Grande", cidade: "Campo Grande", estado: "MS", fama: "Gigante do Bairro" }, { nome: "Real Madruga", cidade: "Rio de Janeiro", estado: "RJ", fama: "Gigante do Bairro" },
-    // Deuses da Cidade (10)
     { nome: "EC Beira-Rio", cidade: "São Paulo", estado: "SP", fama: "Deus da Cidade" }, { nome: "Fúria do Capão Redondo", cidade: "São Paulo", estado: "SP", fama: "Deus da Cidade" },
     { nome: "Manchester Paulista", cidade: "São Paulo", estado: "SP", fama: "Deus da Cidade" }, { nome: "Leões da Gamboa", cidade: "Salvador", estado: "BA", fama: "Deus da Cidade" },
     { nome: "Dragões da Praia do Futuro", cidade: "Fortaleza", estado: "CE", fama: "Deus da Cidade" }, { nome: "Leões do Capibaribe", cidade: "Recife", estado: "PE", fama: "Deus da Cidade" },
     { nome: "Churrasco & Gauchão FC", cidade: "Porto Alegre", estado: "RS", fama: "Deus da Cidade" }, { nome: "Pinheiros de Curitiba", cidade: "Curitiba", estado: "PR", fama: "Deus da Cidade" },
     { nome: "Treme-Terra do Pará", cidade: "Belém", estado: "PA", fama: "Deus da Cidade" }, { nome: "Galácticos da Pampulha", cidade: "Belo Horizonte", estado: "MG", fama: "Deus da Cidade" },
-    // Reis da Várzea (10)
     { nome: "Juventus da Mooca", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" }, { nome: "Boca do Lixo FC", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
     { nome: "PSV - Pau Sem Vontade", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" }, { nome: "Borussia do Ipiranga", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
     { nome: "Atlético do Jaçanã", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" }, { nome: "Inter de Limão", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
@@ -62,22 +58,22 @@ function createPlayer(idCounter, pos, fameTier) {
     if (fameTier === 'Rei da Várzea') skillBonus = 25;
     if (fameTier === 'Deus da Cidade') skillBonus = 15;
 
-    // Habilidade ajustada: Gigantes (30-54), Deuses (45-69), Reis (55-79)
-    const skill = Math.min(100, Math.floor(Math.random() * 25) + 30 + skillBonus); 
     const age = Math.floor(Math.random() * 20) + 16;
+    const skill = Math.min(100, Math.floor(Math.random() * 25) + 30 + skillBonus);
     const salarioJogo = Math.round((30 + (skill * 0.8)) / 5) * 5;
     const specializations = { 'Goleiro': 'Pega-Pênalti 🧤', 'Zagueiro': 'Xerife 🛡️', 'Lateral': 'Velocista ⚡', 'Volante': 'Motorzinho 🔋', 'Meia': 'Armador 🧠', 'Atacante': 'Finalizador 🎯' };
 
     return {
         id: `p${idCounter}`,
         name: `${firsts[Math.floor(Math.random() * firsts.length)]} ${lastParts[Math.floor(Math.random() * lastParts.length)]}`,
-        pos, age, skill, salarioJogo, 
+        pos, age, skill, salarioJogo,
         health: 100,
         specialization: specializations[pos],
-        foot: '', // Será preenchido depois
+        foot: '',
         isPai: Math.random() < 0.2,
         contrato: '1 ano',
-        profissao: { nome: ['Pedreiro', 'Eletricista', 'Professor', 'Vendedor', 'Gerente', 'Entregador'][Math.floor(Math.random() * 6)] },
+        profissao: { nome: ['Pedreiro', 'Motoboy', 'Professor', 'Vendedor', 'TI', 'Entregador', 'Segurança', 'Garçom'][Math.floor(Math.random() * 8)] },
+        apresentacao: "Pronto pra dar o sangue pelo time, professor!"
     };
 }
 
@@ -91,7 +87,7 @@ function createFullSquad(fameTier) {
         const footDistribution = createFootDistribution(playerCount);
         for (let i = 0; i < playerCount; i++) {
             let player = createPlayer(idCounter++, pos, fameTier);
-            player.foot = footDistribution.pop();
+            player.foot = footDistribution.pop() || 'Direito';
             squad.push(player);
         }
     });
