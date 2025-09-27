@@ -10,48 +10,28 @@ const CIDADES_E_REGIOES = {
 
 const TIMES = [
     // Gigantes do Bairro (20)
-    { nome: "Tsunami da ZL", cidade: "São Paulo", estado: "SP", fama: "Gigante do Bairro" },
-    { nome: "Galácticos do Grajaú", cidade: "São Paulo", estado: "SP", fama: "Gigante do Bairro" },
-    { nome: "Ajax da Vila Sônia", cidade: "São Paulo", estado: "SP", fama: "Gigante do Bairro" },
-    { nome: "Molekes da Vila", cidade: "Santos", estado: "SP", fama: "Gigante do Bairro" },
-    { nome: "Guarani do Brinco", cidade: "Campinas", estado: "SP", fama: "Gigante do Bairro" },
-    { nome: "Guerreiros da Baixada", cidade: "Duque de Caxias", estado: "RJ", fama: "Gigante do Bairro" },
-    { nome: "Índios Araribóia", cidade: "Niterói", estado: "RJ", fama: "Gigante do Bairro" },
-    { nome: "Inconfidentes de Ouro Preto", cidade: "Ouro Preto", estado: "MG", fama: "Gigante do Bairro" },
-    { nome: "Arrastapé de Caruaru", cidade: "Caruaru", estado: "PE", fama: "Gigante do Bairro" },
-    { nome: "Padim Ciço FC", cidade: "Juazeiro do Norte", estado: "CE", fama: "Gigante do Bairro" },
-    { nome: "Vaqueiros do Sertão", cidade: "Feira de Santana", estado: "BA", fama: "Gigante do Bairro" },
-    { nome: "Parreiras de Aço", cidade: "Caxias do Sul", estado: "RS", fama: "Gigante do Bairro" },
-    { nome: "Príncipes da Chuva", cidade: "Joinville", estado: "SC", fama: "Gigante do Bairro" },
-    { nome: "Pé Vermelho EC", cidade: "Londrina", estado: "PR", fama: "Gigante do Bairro" },
-    { nome: "Boi-Bumbá de Parintins", cidade: "Parintins", estado: "AM", fama: "Gigante do Bairro" },
-    { nome: "Gigantes do Madeira", cidade: "Porto Velho", estado: "RO", fama: "Gigante do Bairro" },
-    { nome: "Pequi Atômico FC", cidade: "Goiânia", estado: "GO", fama: "Gigante do Bairro" },
-    { nome: "Dourado do Pantanal", cidade: "Cuiabá", estado: "MT", fama: "Gigante do Bairro" },
-    { nome: "Tuiuiú de Campo Grande", cidade: "Campo Grande", estado: "MS", fama: "Gigante do Bairro" },
-    { nome: "Real Madruga", cidade: "Rio de Janeiro", estado: "RJ", fama: "Gigante do Bairro" },
+    { nome: "Tsunami da ZL", cidade: "São Paulo", estado: "SP", fama: "Gigante do Bairro" }, { nome: "Galácticos do Grajaú", cidade: "São Paulo", estado: "SP", fama: "Gigante do Bairro" },
+    { nome: "Ajax da Vila Sônia", cidade: "São Paulo", estado: "SP", fama: "Gigante do Bairro" }, { nome: "Molekes da Vila", cidade: "Santos", estado: "SP", fama: "Gigante do Bairro" },
+    { nome: "Guarani do Brinco", cidade: "Campinas", estado: "SP", fama: "Gigante do Bairro" }, { nome: "Guerreiros da Baixada", cidade: "Duque de Caxias", estado: "RJ", fama: "Gigante do Bairro" },
+    { nome: "Índios Araribóia", cidade: "Niterói", estado: "RJ", fama: "Gigante do Bairro" }, { nome: "Inconfidentes de Ouro Preto", cidade: "Ouro Preto", estado: "MG", fama: "Gigante do Bairro" },
+    { nome: "Arrastapé de Caruaru", cidade: "Caruaru", estado: "PE", fama: "Gigante do Bairro" }, { nome: "Padim Ciço FC", cidade: "Juazeiro do Norte", estado: "CE", fama: "Gigante do Bairro" },
+    { nome: "Vaqueiros do Sertão", cidade: "Feira de Santana", estado: "BA", fama: "Gigante do Bairro" }, { nome: "Parreiras de Aço", cidade: "Caxias do Sul", estado: "RS", fama: "Gigante do Bairro" },
+    { nome: "Príncipes da Chuva", cidade: "Joinville", estado: "SC", fama: "Gigante do Bairro" }, { nome: "Pé Vermelho EC", cidade: "Londrina", estado: "PR", fama: "Gigante do Bairro" },
+    { nome: "Boi-Bumbá de Parintins", cidade: "Parintins", estado: "AM", fama: "Gigante do Bairro" }, { nome: "Gigantes do Madeira", cidade: "Porto Velho", estado: "RO", fama: "Gigante do Bairro" },
+    { nome: "Pequi Atômico FC", cidade: "Goiânia", estado: "GO", fama: "Gigante do Bairro" }, { nome: "Dourado do Pantanal", cidade: "Cuiabá", estado: "MT", fama: "Gigante do Bairro" },
+    { nome: "Tuiuiú de Campo Grande", cidade: "Campo Grande", estado: "MS", fama: "Gigante do Bairro" }, { nome: "Real Madruga", cidade: "Rio de Janeiro", estado: "RJ", fama: "Gigante do Bairro" },
     // Deuses da Cidade (10)
-    { nome: "EC Beira-Rio", cidade: "São Paulo", estado: "SP", fama: "Deus da Cidade" },
-    { nome: "Fúria do Capão Redondo", cidade: "São Paulo", estado: "SP", fama: "Deus da Cidade" },
-    { nome: "Manchester Paulista", cidade: "São Paulo", estado: "SP", fama: "Deus da Cidade" },
-    { nome: "Leões da Gamboa", cidade: "Salvador", estado: "BA", fama: "Deus da Cidade" },
-    { nome: "Dragões da Praia do Futuro", cidade: "Fortaleza", estado: "CE", fama: "Deus da Cidade" },
-    { nome: "Leões do Capibaribe", cidade: "Recife", estado: "PE", fama: "Deus da Cidade" },
-    { nome: "Churrasco & Gauchão FC", cidade: "Porto Alegre", estado: "RS", fama: "Deus da Cidade" },
-    { nome: "Pinheiros de Curitiba", cidade: "Curitiba", estado: "PR", fama: "Deus da Cidade" },
-    { nome: "Treme-Terra do Pará", cidade: "Belém", estado: "PA", fama: "Deus da Cidade" },
-    { nome: "Galácticos da Pampulha", cidade: "Belo Horizonte", estado: "MG", fama: "Deus da Cidade" },
+    { nome: "EC Beira-Rio", cidade: "São Paulo", estado: "SP", fama: "Deus da Cidade" }, { nome: "Fúria do Capão Redondo", cidade: "São Paulo", estado: "SP", fama: "Deus da Cidade" },
+    { nome: "Manchester Paulista", cidade: "São Paulo", estado: "SP", fama: "Deus da Cidade" }, { nome: "Leões da Gamboa", cidade: "Salvador", estado: "BA", fama: "Deus da Cidade" },
+    { nome: "Dragões da Praia do Futuro", cidade: "Fortaleza", estado: "CE", fama: "Deus da Cidade" }, { nome: "Leões do Capibaribe", cidade: "Recife", estado: "PE", fama: "Deus da Cidade" },
+    { nome: "Churrasco & Gauchão FC", cidade: "Porto Alegre", estado: "RS", fama: "Deus da Cidade" }, { nome: "Pinheiros de Curitiba", cidade: "Curitiba", estado: "PR", fama: "Deus da Cidade" },
+    { nome: "Treme-Terra do Pará", cidade: "Belém", estado: "PA", fama: "Deus da Cidade" }, { nome: "Galácticos da Pampulha", cidade: "Belo Horizonte", estado: "MG", fama: "Deus da Cidade" },
     // Reis da Várzea (10)
-    { nome: "Juventus da Mooca", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
-    { nome: "Boca do Lixo FC", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
-    { nome: "PSV - Pau Sem Vontade", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
-    { nome: "Borussia do Ipiranga", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
-    { nome: "Atlético do Jaçanã", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
-    { nome: "Inter de Limão", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
-    { nome: "Só Canelas FC", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
-    { nome: "Bayern do M'Boi Mirim", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
-    { nome: "Liverpool da Cantareira", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
-    { nome: "Chelsea do Cimento", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" }
+    { nome: "Juventus da Mooca", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" }, { nome: "Boca do Lixo FC", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
+    { nome: "PSV - Pau Sem Vontade", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" }, { nome: "Borussia do Ipiranga", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
+    { nome: "Atlético do Jaçanã", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" }, { nome: "Inter de Limão", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
+    { nome: "Só Canelas FC", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" }, { nome: "Bayern do M'Boi Mirim", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
+    { nome: "Liverpool da Cantareira", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" }, { nome: "Chelsea do Cimento", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" }
 ];
 
 const elements = {
@@ -63,23 +43,41 @@ const elements = {
     teamDetailContent: document.getElementById('teamDetailContent'),
 };
 
+function createFootDistribution(count) {
+    const feet = [];
+    const numLeft = Math.ceil(count * 0.20);
+    const numAmbi = Math.floor(count * 0.05);
+    for (let i = 0; i < numLeft; i++) feet.push('Esquerdo');
+    for (let i = 0; i < numAmbi; i++) feet.push('Ambidestro');
+    const numRight = count - feet.length;
+    for (let i = 0; i < numRight; i++) feet.push('Direito');
+    return feet.sort(() => 0.5 - Math.random());
+}
+
 function createPlayer(idCounter, pos, fameTier) {
     const firsts = ["Marrentinho","Juscelino","Ronaldinho","Berg","Tico","Zeca","Xandão","Pedrinho","Claudinho","Sandro","Marollo","Ricardão"];
     const lastParts = ["Carioca","Paulista","Baiano","Gaucho","Mineiro","Nordestino","Pernambucano","Capixaba"];
     
     let skillBonus = 0;
-    if (fameTier === 'Rei da Várzea') skillBonus = 20;
-    if (fameTier === 'Deus da Cidade') skillBonus = 10;
+    if (fameTier === 'Rei da Várzea') skillBonus = 25;
+    if (fameTier === 'Deus da Cidade') skillBonus = 15;
 
-    const age = Math.floor(Math.random() * 25) + 16;
-    const skill = Math.min(100, Math.floor(Math.random() * 25) + 40 + skillBonus);
+    // Habilidade ajustada: Gigantes (30-54), Deuses (45-69), Reis (55-79)
+    const skill = Math.min(100, Math.floor(Math.random() * 25) + 30 + skillBonus); 
+    const age = Math.floor(Math.random() * 20) + 16;
     const salarioJogo = Math.round((30 + (skill * 0.8)) / 5) * 5;
     const specializations = { 'Goleiro': 'Pega-Pênalti 🧤', 'Zagueiro': 'Xerife 🛡️', 'Lateral': 'Velocista ⚡', 'Volante': 'Motorzinho 🔋', 'Meia': 'Armador 🧠', 'Atacante': 'Finalizador 🎯' };
 
     return {
-        id: `p${idCounter}`, name: `${firsts[Math.floor(Math.random() * firsts.length)]} ${lastParts[Math.floor(Math.random() * lastParts.length)]}`,
-        pos, age, skill, salarioJogo, health: 100,
-        specialization: specializations[pos]
+        id: `p${idCounter}`,
+        name: `${firsts[Math.floor(Math.random() * firsts.length)]} ${lastParts[Math.floor(Math.random() * lastParts.length)]}`,
+        pos, age, skill, salarioJogo, 
+        health: 100,
+        specialization: specializations[pos],
+        foot: '', // Será preenchido depois
+        isPai: Math.random() < 0.2,
+        contrato: '1 ano',
+        profissao: { nome: ['Pedreiro', 'Eletricista', 'Professor', 'Vendedor', 'Gerente', 'Entregador'][Math.floor(Math.random() * 6)] },
     };
 }
 
@@ -87,9 +85,14 @@ function createFullSquad(fameTier) {
     let squad = [];
     let idCounter = 0;
     const structure = { 'Goleiro': 2, 'Lateral': 4, 'Zagueiro': 4, 'Volante': 4, 'Meia': 4, 'Atacante': 4 };
+    
     Object.keys(structure).forEach(pos => {
-        for (let i = 0; i < structure[pos]; i++) {
-            squad.push(createPlayer(idCounter++, pos, fameTier));
+        const playerCount = structure[pos];
+        const footDistribution = createFootDistribution(playerCount);
+        for (let i = 0; i < playerCount; i++) {
+            let player = createPlayer(idCounter++, pos, fameTier);
+            player.foot = footDistribution.pop();
+            squad.push(player);
         }
     });
     return squad;
@@ -115,9 +118,16 @@ function openTeamDetailModal(teamData) {
     const squad = createFullSquad(teamData.fama);
     const region = CIDADES_E_REGIOES[teamData.estado] || CIDADES_E_REGIOES['DEFAULT'];
 
-    let squadTable = '<table><thead><tr><th>Nome</th><th>Pos</th><th>Hab.</th></tr></thead><tbody>';
+    let squadTable = '<table><thead><tr><th>Nome</th><th>Pos</th><th>Pé</th><th>Idade</th><th>Hab.</th><th>Profissão</th></tr></thead><tbody>';
     squad.forEach(p => {
-        squadTable += `<tr><td>${p.name}</td><td>${p.pos}</td><td>${p.skill}</td></tr>`;
+        squadTable += `<tr>
+            <td style="text-align: left;">${p.name} ${p.isPai ? '<span class="badge-pai">Pai</span>' : ''}</td>
+            <td>${p.pos}</td>
+            <td>${p.foot}</td>
+            <td>${p.age}</td>
+            <td>${p.skill}</td>
+            <td>${p.profissao.nome}</td>
+        </tr>`;
     });
     squadTable += '</tbody></table>';
 
@@ -146,23 +156,16 @@ function openTeamDetailModal(teamData) {
             alert("Preencha seu nome e cidade para continuar!");
             return;
         }
+        
+        localStorage.clear();
 
-        // Limpa tudo de um jogo antigo
-        Object.keys(localStorage).forEach(key => {
-            if (key !== 'algumaCoisaQueVoceQueiraManter') { // Exemplo de como manter um dado
-                localStorage.removeItem(key);
-            }
-        });
-
-        // Salva os dados iniciais do novo jogo
-        localStorage.setItem('userData', JSON.stringify({ userName, cityName, teamName: teamData.nome }));
+        localStorage.setItem('userData', JSON.stringify({ userName, cityName, teamName: teamData.nome, teamRegion: teamData.estado }));
         localStorage.setItem('elencoDoTime', JSON.stringify(squad));
-        const financasIniciais = { caixaAtual: 5000, gastosContratacoes: 0, gastosSalarios: 0, gastosBicho: 0, receitaPartidas: 0, receitaPremiosPatrocinios: 0 };
+        const financasIniciais = { caixaAtual: 20000, gastosContratacoes: 0, gastosSalarios: 0, gastosBicho: 0, receitaPartidas: 0, receitaPremiosPatrocinios: 0 };
         localStorage.setItem('financasDoTime', JSON.stringify(financasIniciais));
         const statsIniciais = { entrosamento: 50 };
         localStorage.setItem('teamStats', JSON.stringify(statsIniciais));
         
-        // Vai para a tela da temporada
         window.location.href = 'temporada.html';
     };
 
@@ -180,6 +183,3 @@ function init() {
 }
 
 init();
-</script>
-</body>
-</html>
