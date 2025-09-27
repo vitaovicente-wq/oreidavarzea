@@ -14,10 +14,11 @@
   .vs { font-size: 2em; font-weight: bold; margin: 10px 0; }
   .match-details-small { font-size: 0.9em; opacity: 0.8; }
   .btn-play { background-color: #28a745; font-size: 1.2em; width: 100%; padding: 15px; margin-top: 10px;}
+  .btn-advance-day { background-color: #6c757d; font-size: 1.2em; width: 100%; padding: 15px; margin-top: 10px; }
   table{width:100%;border-collapse:collapse;font-size:12px; margin-top: 10px;}
   th,td{padding:6px;border-bottom:1px solid #eee;text-align:center}
   th{background:#fafafa}
-  td:nth-child(2) { text-align: left; font-weight: bold; } /* Nome do time */
+  td:nth-child(2) { text-align: left; font-weight: bold; }
   .group-title { font-weight: bold; margin-top: 15px; }
   .copa-fixture, .calendario-fixture { font-size: 14px; text-align: center; padding: 8px; border-bottom: 1px solid #eee;}
   .calendario-fixture.played { background-color: #f8f9fa; color: #6c757d; }
@@ -32,30 +33,21 @@
 <div class="container">
     <div class="grid-container">
         <div class="main-content">
-            <div class="card next-match-card">
-                <h3>Próxima Partida</h3>
-                <div id="nextMatchInfo">
-                    <p class="muted">Analisando calendário...</p>
+            <div id="nextEventCard" class="card next-match-card">
                 </div>
-                <a id="linkPlayMatch" href="escalacao.html"><button class="btn-play">Ir para Jogo</button></a>
-            </div>
 
             <div class="card">
                 <div style="display:flex; justify-content: space-between; align-items: center;">
                     <h3>Torneio da Vila Freitas</h3>
                     <button id="calendarioButton" style="background-color: #6c757d;">Ver Calendário 🗓️</button>
                 </div>
-                <div id="torneioTables">
-                    <p class="muted">Gerando tabelas...</p>
-                </div>
+                <div id="torneioTables"></div>
             </div>
         </div>
         <div class="sidebar">
             <div class="card">
                 <h3>Copa 1º de Maio</h3>
-                <div id="copaFixtures">
-                    <p class="muted">Aguardando início...</p>
-                </div>
+                <div id="copaFixtures"></div>
             </div>
             <div class="card">
                 <h3>Troféu Bandeirantes</h3>
