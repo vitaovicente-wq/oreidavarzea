@@ -39,6 +39,8 @@ function createUniverse() {
     return teamNames.map(name => ({ name, squad: createAISquad() }));
 }
 
+
+// ========== MOTOR DE TEMPO E CALENDÁRIO ==========
 function generateSeasonFixtures(universe, userTeamName) {
     const currentYear = new Date().getFullYear();
     let season = {
@@ -56,44 +58,97 @@ function generateSeasonFixtures(universe, userTeamName) {
 
     let fullSchedule = [];
     let matchDate = new Date(season.startDate);
-
-    Object.values(season.torneio.groups).forEach(group => {
-        const teams = group;
-        const groupMatches = [];
-        // Turno
-        groupMatches.push({ home: teams[0], away: teams[1] }, { home: teams[2], away: teams[3] });
-        groupMatches.push({ home: teams[0], away: teams[2] }, { home: teams[3], away: teams[1] });
-        groupMatches.push({ home: teams[0], away: teams[3] }, { home: teams[1], away: teams[2] });
-        // Returno
-        groupMatches.push({ home: teams[1], away: teams[0] }, { home: teams[3], away: teams[2] });
-        groupMatches.push({ home: teams[2], away: teams[0] }, { home: teams[1], away: teams[3] });
-        groupMatches.push({ home: teams[3], away: teams[0] }, { home: teams[2], away: teams[1] });
-        
-        fullSchedule.push(...groupMatches);
-    });
-
-    // Atribui datas de Domingo para cada rodada
-    for (let i = 0; i < fullSchedule.length; i++) {
-        const week = Math.floor(i / 4) + 1; // 4 jogos por semana
-        if (i % 4 === 0) { // No início de cada nova semana
-            // Avança para o próximo domingo
-            let dayOfWeek = matchDate.getDay();
-            let daysUntilSunday = 7 - dayOfWeek;
-            if(dayOfWeek === 0) daysUntilSunday = 0; // Se já for domingo, não avança
-            matchDate.setDate(matchDate.getDate() + daysUntilSunday);
-        }
-        fullSchedule[i].date = new Date(matchDate);
-        fullSchedule[i].week = week;
-        fullSchedule[i].played = false;
-        fullSchedule[i].competition = 'Torneio da Vila Freitas';
-    }
     
+    // Gera 6 rodadas de jogos de Domingo
+    for(let week = 1; week <= 6; week++) {
+        // Encontra o próximo domingo
+        let dayOfWeek = matchDate.getDay();
+        let daysUntilSunday = (7 - dayOfWeek) % 7;
+        if (dayOfWeek === 0 && week > 1) daysUntilSunday = 7; // se hoje é domingo e não é a primeira semana, avança 7 dias
+        else if (dayOfWeek === 0 && week === 1) daysUntilSunday = 0;
+        
+        matchDate.setDate(matchDate.getDate() + daysUntilSunday);
+        
+        // Simulação simples de agendamento por enquanto
+        Object.values(season.torneio.groups).forEach(group => {
+            // Lógica para criar confrontos da rodada (simplificada)
+            const match1 = { week: week, date: new Date(matchDate), home: group[0], away: group[1], played: false, competition: 'Torneio da Vila Freitas' };
+            const match2 = { week: week, date: new Date(matchDate), home: group[2], away: group[3], played: false, competition: 'Torneio da Vila Freitas' };
+            fullSchedule.push(match1, match2);
+        });
+    }
+
     season.torneio.schedule = fullSchedule;
     return season;
 }
 
-// ========== MOTOR DA TEMPORADA ==========
-// ... (Todas as funções de processamento, simulação e exibição permanecem as mesmas)
+function displayNextEvent() {
+    const userTeamName = userData.teamName;
+    const today = new Date(seasonData.currentDate);
+    
+    const nextMatch = seasonData.torneio.schedule
+        .filter(m => (m.home === userTeamName || m.away === userTeamName) && !m.played)
+        .sort((a,b) => new Date(a.date) - new Date(b.date))[0];
+
+    const isMatchToday = nextMatch && new Date(nextMatch.date).toDateString() === today.toDateString();
+
+    if (isMatchToday) {
+        const location = nextMatch.home === userTeamName ? 'Em Casa' : 'Fora de Casa';
+        elements.nextEventCard.innerHTML = `
+            <h3>Próxima Partida</h3>
+            <div>
+                <p class="match-details-small">Hoje! ${today.toLocaleDateString('pt-BR')} - ${nextMatch.competition}</p>
+                <div class="vs">${nextMatch.home} vs ${nextMatch.away}</div>
+                <p class="match-details-small">${location}</p>
+            </div>
+            <a href="escalacao.html"><button class="btn-play">Ir para Jogo</button></a>
+        `;
+        localStorage.setItem('currentMatchInfo', JSON.stringify({ homeTeam: nextMatch.home, awayTeam: nextMatch.away, competition: nextMatch.competition }));
+    } else {
+        elements.nextEventCard.innerHTML = `
+            <h3>Próximo Evento</h3>
+            <div>
+                <p class="match-details-small">Data Atual: ${today.toLocaleDateString('pt-BR')}</p>
+                <div class="vs">Dia de Folga / Treino</div>
+                <p class="match-details-small">Próximo jogo em: ${nextMatch ? new Date(nextMatch.date).toLocaleDateString('pt-BR') : 'Fim de Temporada'}</p>
+            </div>
+            <button id="btnAdvanceDay" class="btn-advance-day">Avançar Dia</button>
+        `;
+        document.getElementById('btnAdvanceDay').onclick = advanceDay;
+    }
+}
+
+function advanceDay() {
+    let currentDate = new Date(seasonData.currentDate);
+    currentDate.setDate(currentDate.getDate() + 1);
+    seasonData.currentDate = currentDate.toISOString();
+    localStorage.setItem('seasonData', JSON.stringify(seasonData));
+    window.location.reload();
+}
+
+function displayTorneioTables() {
+    let html = '';
+    Object.keys(seasonData.torneio.groups).forEach(groupKey => {
+        const group = seasonData.torneio.groups[groupKey];
+        html += `<h4 class="group-title">Grupo ${groupKey}</h4>`;
+        html += `<table><thead><tr><th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th></tr></thead><tbody>`;
+        const table = seasonData.torneio.table;
+        group.sort((a, b) => {
+            const statsA = table[a] || {P:0, SG:0, GP:0};
+            const statsB = table[b] || {P:0, SG:0, GP:0};
+            if (statsB.P !== statsA.P) return statsB.P - statsA.P;
+            if (statsB.SG !== statsA.SG) return statsB.SG - statsA.SG;
+            if (statsB.GP !== statsA.GP) return statsB.GP - statsA.GP;
+            return 0;
+        });
+        group.forEach((teamName, index) => {
+            const stats = table[teamName] || { P: 0, J: 0, V: 0, E: 0, D: 0, GP: 0, GC: 0, SG: 0 };
+            html += `<tr><td>${index + 1}</td><td>${teamName}</td><td>${stats.P}</td><td>${stats.J}</td><td>${stats.V}</td><td>${stats.E}</td><td>${stats.D}</td><td>${stats.GP}</td><td>${stats.GC}</td><td>${stats.SG}</td></tr>`;
+        });
+        html += `</tbody></table>`;
+    });
+    elements.torneioTables.innerHTML = html;
+}
 
 // ========== INICIALIZAÇÃO ==========
 function init() {
@@ -104,12 +159,6 @@ function init() {
     
     if (storedSeason) {
         seasonData = JSON.parse(storedSeason);
-        // Garante que as datas sejam objetos Date
-        seasonData.currentDate = new Date(seasonData.currentDate);
-        seasonData.torneio.schedule.forEach(m => m.date = new Date(m.date));
-        if (seasonData.torneio.finalSchedule) {
-            seasonData.torneio.finalSchedule.forEach(m => m.date = new Date(m.date));
-        }
     } else {
         if(varzeaUniverse.length === 0){
             varzeaUniverse = createUniverse();
@@ -119,82 +168,22 @@ function init() {
         localStorage.setItem('seasonData', JSON.stringify(seasonData));
     }
 
-    // processLastMatchResult(); // Esta função só roda se houver resultado
+    // Garante que as strings de data sejam convertidas de volta para objetos Date
+    seasonData.currentDate = new Date(seasonData.currentDate);
+    seasonData.torneio.schedule.forEach(m => m.date = new Date(m.date));
+    
+    // processLastMatchResult();
     displayNextEvent();
     displayTorneioTables();
     elements.copaFixtures.innerHTML = '<p class="muted">Aguardando início...</p>';
 
-    // Eventos
-    elements.calendarioButton.onclick = openCalendarioModal;
+    elements.calendarioButton.onclick = () => { /* Lógica do calendário */ };
     elements.calendarioModalClose.onclick = () => elements.calendarioModal.style.display = 'none';
     window.onclick = (event) => {
         if (event.target.classList.contains('modal')) {
             event.target.style.display = 'none';
         }
     };
-}
-
-
-// INCLUINDO TODAS AS FUNÇÕES COMPLETAS PARA GARANTIR
-function displayTorneioTables() {
-    let html = '';
-    Object.keys(seasonData.torneio.groups).forEach(groupKey => {
-        const group = seasonData.torneio.groups[groupKey];
-        html += `<h4 class="group-title">Grupo ${groupKey}</h4>`;
-        html += `<table><thead><tr><th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th></tr></thead><tbody>`;
-        const table = seasonData.torneio.table;
-        group.sort((a, b) => {
-            const statsA = table[a];
-            const statsB = table[b];
-            if (statsB.P !== statsA.P) return statsB.P - statsA.P;
-            if (statsB.SG !== statsA.SG) return statsB.SG - statsA.SG;
-            if (statsB.GP !== statsA.GP) return statsB.GP - statsA.GP;
-            return 0;
-        });
-        group.forEach((teamName, index) => {
-            const stats = table[teamName];
-            html += `<tr><td>${index + 1}</td><td>${teamName}</td><td>${stats.P}</td><td>${stats.J}</td><td>${stats.V}</td><td>${stats.E}</td><td>${stats.D}</td><td>${stats.GP}</td><td>${stats.GC}</td><td>${stats.SG}</td></tr>`;
-        });
-        html += `</tbody></table>`;
-    });
-    if (seasonData.torneio.phase === 'final') {
-        html += `<h4 class="group-title">Quadrangular Final</h4>`;
-        html += `<table><thead><tr><th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th></tr></thead><tbody>`;
-        const finalists = [...seasonData.torneio.finalists];
-        const finalTable = seasonData.torneio.finalTable;
-        finalists.sort((a,b) => finalTable[b].P - finalTable[a].P || finalTable[b].SG - finalTable[a].SG);
-        finalists.forEach((teamName, index) => {
-            const stats = finalTable[teamName];
-            html += `<tr><td>${index + 1}</td><td>${teamName}</td><td>${stats.P}</td><td>${stats.J}</td><td>${stats.V}</td><td>${stats.E}</td><td>${stats.D}</td><td>${stats.GP}</td><td>${stats.GC}</td><td>${stats.SG}</td></tr>`;
-        });
-        html += `</tbody></table>`;
-    }
-    elements.torneioTables.innerHTML = html;
-}
-
-function openCalendarioModal() {
-    elements.calendarioList.innerHTML = '';
-    const userTeamName = userData.teamName;
-    let html = '<h4>Fase de Grupos</h4>';
-    const userSchedule = seasonData.torneio.schedule.filter(m => m.home === userTeamName || m.away === userTeamName);
-    userSchedule.sort((a,b) => new Date(a.date) - new Date(b.date));
-    userSchedule.forEach(match => {
-        const score = match.played ? `<strong>${match.score}</strong>` : "vs";
-        const matchDate = new Date(match.date).toLocaleDateString('pt-BR');
-        html += `<div class="calendario-fixture ${match.played ? 'played' : ''}"><span>(${matchDate})</span><span>${match.home}</span><span>${score}</span><span>${match.away}</span></div>`;
-    });
-    if(seasonData.torneio.phase === 'final' && seasonData.torneio.finalists.includes(userTeamName)) {
-        html += '<h4>Quadrangular Final</h4>';
-        const finalUserSchedule = seasonData.torneio.finalSchedule.filter(m => m.home === userTeamName || m.away === userTeamName);
-        finalUserSchedule.sort((a,b) => new Date(a.date) - new Date(b.date));
-        finalUserSchedule.forEach(match => {
-            const score = match.played ? `<strong>${match.score}</strong>` : "vs";
-            const matchDate = new Date(match.date).toLocaleDateString('pt-BR');
-            html += `<div class="calendario-fixture ${match.played ? 'played' : ''}"><span>(${matchDate})</span><span>${match.home}</span><span>${score}</span><span>${match.away}</span></div>`;
-        });
-    }
-    elements.calendarioList.innerHTML = html;
-    elements.calendarioModal.style.display = 'block';
 }
 
 init();
