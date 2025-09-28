@@ -48,7 +48,6 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     border-color: #ddd;
   }
-  
   .crest {
     width: 80px;
     height: 80px;
@@ -76,15 +75,16 @@
     position: relative;
     z-index: 2;
   }
-
   .modal-content { max-width: 800px; }
   .team-details-header { text-align: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
   .team-details-header h2 { margin-bottom: 5px; }
   .advantage-box { background-color: #e9f7ef; border-left: 4px solid #28a745; padding: 10px; margin: 10px 0; border-radius: 4px; }
   .disadvantage-box { background-color: #fbe9e7; border-left: 4px solid #dc3545; padding: 10px; margin: 10px 0; border-radius: 4px; }
   .squad-list { height: 250px; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 8px; }
-  .squad-list table { font-size: 12px; width: 100%; }
-  .squad-list th, .squad-list td { text-align: left; padding: 6px;}
+  .squad-list table { font-size: 12px; width: 100%; table-layout: fixed; }
+  .squad-list th, .squad-list td { text-align: left; padding: 6px; white-space: nowrap; }
+  .squad-list .col-small { width: 60px; text-align: center; }
+  .squad-list .col-medium { width: 80px; }
   .manager-inputs { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
   .manager-inputs input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; margin-bottom: 10px; }
   .manager-inputs label { display:block; text-align: left; margin-bottom: 5px; }
@@ -99,13 +99,10 @@
     <div class="card">
         <h2>Escolha seu Time para a Temporada</h2>
         <p class="muted">Comece sua carreira como manager em um dos Gigantes do Bairro. Leve seu time à glória, suba de divisão e se torne um Rei da Várzea!</p>
-        
         <h3 class="tier-title">Reis da Várzea</h3>
         <div id="reisGrid" class="team-grid"></div>
-
         <h3 class="tier-title">Deuses da Cidade</h3>
         <div id="deusesGrid" class="team-grid"></div>
-        
         <h3 class="tier-title">Gigantes do Bairro (Disponíveis para Escolha)</h3>
         <div id="gigantesGrid" class="team-grid"></div>
     </div>
@@ -114,11 +111,9 @@
 <div id="teamDetailModal" class="modal">
     <div class="modal-content">
         <span id="teamDetailModalClose" class="close">&times;</span>
-        <div id="teamDetailContent">
-            </div>
+        <div id="teamDetailContent"></div>
     </div>
 </div>
-
 <script src="js/escolher-time.js"></script>
 </body>
 </html>
