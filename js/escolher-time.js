@@ -39,6 +39,29 @@ const elements = {
     teamDetailContent: document.getElementById('teamDetailContent'),
 };
 
+function generateCrest(teamName) {
+    let seed = 0;
+    for (let i = 0; i < teamName.length; i++) {
+        seed += teamName.charCodeAt(i);
+    }
+    const shapes = ['crest-shield', 'crest-circle', 'crest-badge'];
+    const patterns = ['pattern-stripes', 'pattern-sash', 'pattern-half', 'pattern-none'];
+    const primaryColors = ['#d50000', '#004D40', '#01579B', '#311B92', '#000000', '#FF6F00', '#1B5E20'];
+    const secondaryColors = ['#FFFFFF', '#FFD700', '#C0C0C0'];
+    const shape = shapes[seed % shapes.length];
+    const pattern = patterns[seed % patterns.length];
+    const color1 = primaryColors[seed % primaryColors.length];
+    const color2 = secondaryColors[seed % secondaryColors.length];
+    const initial = teamName.charAt(0);
+    let patternStyle = '';
+    switch(pattern) {
+        case 'pattern-stripes': patternStyle = `background-image: linear-gradient(90deg, ${color2} 33%, transparent 33%, transparent 66%, ${color2} 66%)`; break;
+        case 'pattern-sash': patternStyle = `background-image: linear-gradient(45deg, transparent 42%, ${color2} 42%, ${color2} 58%, transparent 58%)`; break;
+        case 'pattern-half': patternStyle = `background-image: linear-gradient(90deg, ${color2} 50%, transparent 50%)`; break;
+    }
+    return `<div class="crest ${shape}" style="background-color: ${color1};"><div class="pattern" style="${patternStyle}"></div><div class="initial">${initial}</div></div>`;
+}
+
 function createFootDistribution(count) {
     const feet = [];
     const numLeft = Math.ceil(count * 0.20);
