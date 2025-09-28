@@ -35,10 +35,10 @@ function createUniverse() {
 }
 
 function generateSeasonFixtures(universe, userTeamName) {
-    const year = 2026;
+    const year = new Date().getFullYear();
     let season = {
         year: year,
-        currentDate: `${year}-01-25`, // Um domingo no final de Janeiro de 2026
+        currentDate: `${year}-01-26`, // Um Domingo no final de Janeiro
         torneio: { phase: 'groups', groups: {}, schedule: [], table: {} },
         copa: { round: 'quartas', schedule: [] },
     };
@@ -56,10 +56,8 @@ function generateSeasonFixtures(universe, userTeamName) {
 
     // Gera 18 rodadas de jogos de Domingo para o Torneio
     for (let i = 0; i < 18; i++) {
-        matchDate.setDate(matchDate.getDate() + 7); // Avança para o próximo domingo
-        
+        // Lógica de confrontos da rodada (simplificada e funcional)
         Object.values(season.torneio.groups).forEach(group => {
-            // Lógica de confrontos da rodada (simplificada para garantir funcionamento)
             for(let j = 0; j < group.length / 2; j++) {
                 const home = group[j];
                 const away = group[group.length - 1 - j];
@@ -68,8 +66,8 @@ function generateSeasonFixtures(universe, userTeamName) {
             // Rotaciona o grupo para a próxima rodada
             group.splice(1, 0, group.pop());
         });
+        matchDate.setDate(matchDate.getDate() + 7); // Avança para o próximo domingo
     }
-    
     season.torneio.schedule = fullSchedule;
 
     // Sorteia e agenda a Copa 1º de Maio (Quartas)
@@ -84,7 +82,6 @@ function generateSeasonFixtures(universe, userTeamName) {
     return season;
 }
 
-
 // ========== MOTOR DA TEMPORADA E OUTRAS FUNÇÕES ==========
 function processLastMatchResult() { /* A ser implementado */ }
 
@@ -98,13 +95,13 @@ function displayNextEvent() {
 
     const nextMatch = allUserMatches[0];
     const isMatchToday = nextMatch && new Date(nextMatch.date).toDateString() === today.toDateString();
-
+    
     const linkPlayMatch = document.createElement('a');
     linkPlayMatch.id = 'linkPlayMatch';
     linkPlayMatch.href = 'escalacao.html';
     const playButton = document.createElement('button');
     playButton.className = 'btn-play';
-    playButton.textContent = 'Se Preparar para a Partida';
+    playButton.textContent = 'Ir para Jogo';
     linkPlayMatch.appendChild(playButton);
 
     if (isMatchToday) {
@@ -155,15 +152,15 @@ function displayTorneioTables() {
         html += `<table><thead><tr><th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th></tr></thead><tbody>`;
         const table = seasonData.torneio.table;
         group.sort((a, b) => {
-            const statsA = table[a];
-            const statsB = table[b];
+            const statsA = table[a] || {P:0, SG:0, GP:0};
+            const statsB = table[b] || {P:0, SG:0, GP:0};
             if (statsB.P !== statsA.P) return statsB.P - statsA.P;
             if (statsB.SG !== statsA.SG) return statsB.SG - statsA.SG;
             if (statsB.GP !== statsA.GP) return statsB.GP - statsA.GP;
             return 0;
         });
         group.forEach((teamName, index) => {
-            const stats = table[teamName];
+            const stats = table[teamName] || { P: 0, J: 0, V: 0, E: 0, D: 0, GP: 0, GC: 0, SG: 0 };
             html += `<tr><td>${index + 1}</td><td>${teamName}</td><td>${stats.P}</td><td>${stats.J}</td><td>${stats.V}</td><td>${stats.E}</td><td>${stats.D}</td><td>${stats.GP}</td><td>${stats.GC}</td><td>${stats.SG}</td></tr>`;
         });
         html += `</tbody></table>`;
@@ -235,6 +232,7 @@ function init() {
     displayTorneioTables();
     displayCopaFixtures();
 
+    // Eventos
     elements.calendarioButton.onclick = openCalendarioModal;
     elements.calendarioModalClose.onclick = () => elements.calendarioModal.style.display = 'none';
     window.onclick = (event) => {
@@ -243,4 +241,5 @@ function init() {
         }
     };
 }
+
 init();
