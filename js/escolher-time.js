@@ -100,12 +100,10 @@ function createPlayer(idCounter, pos, fameTier) {
     const salarioJogo = Math.round((30 + (skill * 0.8)) / 5) * 5;
     const specializations = { 'Goleiro': 'Pega-Pênalti 🧤', 'Zagueiro': 'Xerife 🛡️', 'Lateral': 'Velocista ⚡', 'Volante': 'Motorzinho 🔋', 'Meia': 'Armador 🧠', 'Atacante': 'Finalizador 🎯' };
     return {
-        id: `p${idCounter}`,
-        name: `${firsts[Math.floor(Math.random() * firsts.length)]} ${lastParts[Math.floor(Math.random() * lastParts.length)]}`,
+        id: `p${idCounter}`, name: `${firsts[Math.floor(Math.random() * firsts.length)]} ${lastParts[Math.floor(Math.random() * lastParts.length)]}`,
         pos, age, skill, salarioJogo, health: 100,
         specialization: specializations[pos], foot: '',
-        isPai: Math.random() < 0.2,
-        contrato: '6 meses', // CORREÇÃO AQUI
+        isPai: Math.random() < 0.2, contrato: '6 meses',
         profissao: { nome: ['Pedreiro', 'Motoboy', 'Professor', 'Vendedor', 'TI', 'Entregador', 'Segurança', 'Garçom'][Math.floor(Math.random() * 8)] },
         apresentacao: "Pronto pra dar o sangue pelo time, professor!"
     };
@@ -191,7 +189,6 @@ function openTeamDetailModal(teamData) {
         localStorage.setItem('financasDoTime', JSON.stringify(financasIniciais));
         const statsIniciais = { entrosamento: 50 };
         localStorage.setItem('teamStats', JSON.stringify(statsIniciais));
-        
         window.location.href = 'temporada.html';
     };
 
