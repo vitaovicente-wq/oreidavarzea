@@ -44,39 +44,23 @@ function generateCrest(teamName) {
     for (let i = 0; i < teamName.length; i++) {
         seed += teamName.charCodeAt(i);
     }
-
     const shapes = ['crest-shield', 'crest-circle', 'crest-badge'];
     const patterns = ['pattern-stripes', 'pattern-sash', 'pattern-half', 'pattern-none'];
     const primaryColors = ['#d50000', '#004D40', '#01579B', '#311B92', '#000000', '#FF6F00', '#1B5E20'];
     const secondaryColors = ['#FFFFFF', '#FFD700', '#C0C0C0'];
-
     const shape = shapes[seed % shapes.length];
     const pattern = patterns[seed % patterns.length];
     const color1 = primaryColors[seed % primaryColors.length];
     const color2 = secondaryColors[seed % secondaryColors.length];
     const initial = teamName.charAt(0);
-
     let patternStyle = '';
     switch(pattern) {
-        case 'pattern-stripes':
-            patternStyle = `background-image: linear-gradient(0deg, ${color2} 25%, transparent 25%, transparent 75%, ${color2} 75%, ${color2}), linear-gradient(90deg, ${color2} 25%, transparent 25%, transparent 75%, ${color2} 75%, ${color2})`;
-            break;
-        case 'pattern-sash':
-            patternStyle = `background-image: linear-gradient(45deg, transparent 42%, ${color2} 42%, ${color2} 58%, transparent 58%)`;
-            break;
-        case 'pattern-half':
-            patternStyle = `background-image: linear-gradient(90deg, ${color2} 50%, transparent 50%)`;
-            break;
+        case 'pattern-stripes': patternStyle = `background-image: linear-gradient(90deg, ${color2} 33%, transparent 33%, transparent 66%, ${color2} 66%)`; break;
+        case 'pattern-sash': patternStyle = `background-image: linear-gradient(45deg, transparent 42%, ${color2} 42%, ${color2} 58%, transparent 58%)`; break;
+        case 'pattern-half': patternStyle = `background-image: linear-gradient(90deg, ${color2} 50%, transparent 50%)`; break;
     }
-
-    return `
-        <div class="crest ${shape}" style="background-color: ${color1};">
-            <div class="pattern" style="${patternStyle}"></div>
-            <div class="initial">${initial}</div>
-        </div>
-    `;
+    return `<div class="crest ${shape}" style="background-color: ${color1};"><div class="pattern" style="${patternStyle}"></div><div class="initial">${initial}</div></div>`;
 }
-
 
 function createFootDistribution(count) {
     const feet = [];
@@ -100,8 +84,10 @@ function createPlayer(idCounter, pos, fameTier) {
     const salarioJogo = Math.round((30 + (skill * 0.8)) / 5) * 5;
     const specializations = { 'Goleiro': 'Pega-Pênalti 🧤', 'Zagueiro': 'Xerife 🛡️', 'Lateral': 'Velocista ⚡', 'Volante': 'Motorzinho 🔋', 'Meia': 'Armador 🧠', 'Atacante': 'Finalizador 🎯' };
     return {
-        id: `p${idCounter}`, name: `${firsts[Math.floor(Math.random() * firsts.length)]} ${lastParts[Math.floor(Math.random() * lastParts.length)]}`,
-        pos, age, skill, salarioJogo, health: 100, specialization: specializations[pos], foot: '',
+        id: `p${idCounter}`,
+        name: `${firsts[Math.floor(Math.random() * firsts.length)]} ${lastParts[Math.floor(Math.random() * lastParts.length)]}`,
+        pos, age, skill, salarioJogo, health: 100,
+        specialization: specializations[pos], foot: '',
         isPai: Math.random() < 0.2, contrato: '1 ano',
         profissao: { nome: ['Pedreiro', 'Motoboy', 'Professor', 'Vendedor', 'TI', 'Entregador', 'Segurança', 'Garçom'][Math.floor(Math.random() * 8)] },
         apresentacao: "Pronto pra dar o sangue pelo time, professor!"
@@ -129,7 +115,6 @@ function displayTeams() {
         const grid = (teamData.fama === 'Gigante do Bairro') ? elements.gigantesGrid : (teamData.fama === 'Deus da Cidade') ? elements.deusesGrid : elements.reisGrid;
         const card = document.createElement('div');
         card.className = 'team-card';
-        
         const crestHTML = generateCrest(teamData.nome);
         card.innerHTML = `${crestHTML}<h4>${teamData.nome}</h4><p class="muted">${teamData.cidade} - ${teamData.estado}</p>`;
         
@@ -145,7 +130,8 @@ function displayTeams() {
 function openTeamDetailModal(teamData) {
     const squad = createFullSquad(teamData.fama);
     const region = CIDADES_E_REGIOES[teamData.estado] || CIDADES_E_REGIOES['DEFAULT'];
-    let squadTable = '<table><thead><tr><th>Nome</th><th>Pos</th><th>Pé</th><th>Idade</th><th>Hab.</th><th>Profissão</th></tr></thead><tbody>';
+
+    let squadTable = '<table><thead><tr><th>Nome</th><th>Pos</th><th>Pé</th><th>Idade</th><th>Hab.</th><th>Saúde</th><th>Profissão</th></tr></thead><tbody>';
     squad.forEach(p => {
         squadTable += `<tr>
             <td style="text-align: left;">${p.name} ${p.isPai ? '<span class="badge-pai">Pai</span>' : ''}</td>
@@ -153,6 +139,7 @@ function openTeamDetailModal(teamData) {
             <td>${p.foot}</td>
             <td>${p.age}</td>
             <td>${p.skill}</td>
+            <td>${p.health}%</td>
             <td>${p.profissao.nome}</td>
         </tr>`;
     });
