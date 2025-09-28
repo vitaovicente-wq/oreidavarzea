@@ -23,12 +23,7 @@ function createAISquad() {
     let idCounter = 0;
     Object.keys(positions).forEach(pos => {
         for (let i = 0; i < positions[pos]; i++) {
-            squad.push({
-                id: `ai_p${Math.round(Math.random()*10000)}_${idCounter++}`,
-                name: `${firsts[Math.floor(Math.random() * firsts.length)]} ${lastParts[Math.floor(Math.random() * lastParts.length)]}`,
-                pos: pos,
-                skill: Math.floor(Math.random() * 35) + 40
-            });
+            squad.push({ id: `ai_p${Math.round(Math.random()*10000)}_${idCounter++}`, name: `${firsts[Math.floor(Math.random() * firsts.length)]} ${lastParts[Math.floor(Math.random() * lastParts.length)]}`, pos: pos, skill: Math.floor(Math.random() * 35) + 40 });
         }
     });
     return squad;
@@ -40,69 +35,102 @@ function createUniverse() {
 }
 
 function generateSeasonFixtures(universe, userTeamName) {
-    const year = 2026;
+    const currentYear = new Date().getFullYear();
     let season = {
-        year: year,
-        currentDate: `${year}-01-25`,
+        year: currentYear,
+        currentDate: `${currentYear}-01-25`,
         torneio: { phase: 'groups', groups: {}, schedule: [], table: {}, finalists: [], finalSchedule: [], finalTable: {} },
         copa: { round: 'quartas', schedule: [] },
     };
-    const giganesDoBairro = universe.slice(0, 19).map(t => t.name);
-    const torneioTeams = [userTeamName, ...giganesDoBairro];
-    
+    const giganesDoBairro = universe.filter(t => t.name !== userTeamName).map(t => t.name);
+    const torneioTeams = [userTeamName, ...giganesDoBairro.slice(0, 19)];
     const shuffledTorneioTeams = [...torneioTeams].sort(() => 0.5 - Math.random());
     season.torneio.groups['A'] = shuffledTorneioTeams.slice(0, 10);
     season.torneio.groups['B'] = shuffledTorneioTeams.slice(10, 20);
-    torneioTeams.forEach(name => {
-        season.torneio.table[name] = { P: 0, J: 0, V: 0, E: 0, D: 0, GP: 0, GC: 0, SG: 0 };
+    torneioTeams.forEach(name => { season.torneio.table[name] = { P: 0, J: 0, V: 0, E: 0, D: 0, GP: 0, GC: 0, SG: 0 }; });
+
+    let fullSchedule = [];
+    let matchDate = new Date(season.currentDate);
+    
+    Object.values(season.torneio.groups).forEach(group => {
+        const teams = group;
+        const groupSchedule = [];
+        for (let i = 0; i < teams.length; i++) {
+            for (let j = i + 1; j < teams.length; j++) {
+                groupSchedule.push({ home: teams[i], away: teams[j] }); // Turno
+                groupSchedule.push({ home: teams[j], away: teams[i] }); // Returno
+            }
+        }
+        fullSchedule.push(...groupSchedule);
     });
 
-    let matchDate = new Date(season.startDate);
-    // Gera 18 rodadas de jogos de Domingo para o Torneio
-    for (let week = 1; week <= 18; week++) {
-        // Encontra o próximo domingo
+    // Atribui datas de Domingo para cada rodada
+    for (let i = 0; i < 18; i++) { // 18 rodadas
         let dayOfWeek = matchDate.getDay();
         let daysUntilSunday = (7 - dayOfWeek) % 7;
-        if(week > 1 && dayOfWeek === 0) daysUntilSunday = 7;
-        else if (week === 1 && dayOfWeek === 0) daysUntilSunday = 0;
+        if(i > 0 && dayOfWeek === 0) daysUntilSunday = 7;
+        else if (i === 0 && dayOfWeek === 0) daysUntilSunday = 0;
         matchDate.setDate(matchDate.getDate() + daysUntilSunday);
         
-        // Simulação de agendamento (simplificada por enquanto)
-        Object.values(season.torneio.groups).forEach(group => {
-            for(let i = 0; i < group.length; i += 2) {
-                season.torneio.schedule.push({ date: new Date(matchDate), home: group[i], away: group[i+1], played: false, competition: 'Torneio da Vila Freitas', week });
-            }
+        const matchesForThisWeek = fullSchedule.filter(m => !m.date).slice(0, 10); // Pega 10 jogos
+        matchesForThisWeek.forEach(match => {
+            match.date = new Date(matchDate);
+            match.week = i + 1;
+            match.played = false;
+            match.competition = 'Torneio da Vila Freitas';
         });
     }
-
-    // Sorteia e agenda a Copa 1º de Maio (Quartas)
-    const copaTeams = [...torneioTeams].sort(() => 0.5 - Math.random()).slice(0, 8);
-    let copaDate = new Date(season.startDate);
     
-    for(let round = 0; round < 3; round++) {
-         // Avança para a próxima quarta-feira
-        copaDate.setDate(copaDate.getDate() + (3 - copaDate.getDay() + 7) % 7);
-        if(round > 0) copaDate.setDate(copaDate.getDate() + 7);
-
-        for(let i = 0; i < copaTeams.length / (2 * (round + 1)) ; i += 2) {
-             season.copa.schedule.push({ date: new Date(copaDate), home: 'A Definir', away: 'A Definir', played: false, competition: 'Copa 1º de Maio' });
-        }
-    }
-    
+    season.torneio.schedule = fullSchedule;
     return season;
 }
 
 // ========== MOTOR DA TEMPORADA ==========
-function processLastMatchResult() {
-    // Implementação futura
+// ... (O resto das funções permanecem as mesmas, pois o erro estava na geração)
+
+// ========== INICIALIZAÇÃO ==========
+function init() {
+    userData = JSON.parse(localStorage.getItem('userData')) || {};
+    elements.headerTitle.textContent = userData.teamName || 'O Rei da Várzea';
+    let storedSeason = localStorage.getItem('seasonData');
+    varzeaUniverse = JSON.parse(localStorage.getItem('varzeaUniverse')) || [];
+    
+    if (storedSeason) {
+        seasonData = JSON.parse(storedSeason);
+    } else {
+        if(varzeaUniverse.length === 0){
+            varzeaUniverse = createUniverse();
+            localStorage.setItem('varzeaUniverse', JSON.stringify(varzeaUniverse));
+        }
+        seasonData = generateSeasonFixtures(varzeaUniverse, userData.teamName);
+        localStorage.setItem('seasonData', JSON.stringify(seasonData));
+    }
+
+    seasonData.currentDate = new Date(seasonData.currentDate);
+    seasonData.torneio.schedule.forEach(m => m.date = new Date(m.date));
+    if (seasonData.copa && seasonData.copa.schedule) {
+        seasonData.copa.schedule.forEach(m => m.date = new Date(m.date));
+    }
+    
+    // processLastMatchResult();
+    displayNextEvent();
+    displayTorneioTables();
+    displayCopaFixtures();
+
+    elements.calendarioButton.onclick = openCalendarioModal;
+    elements.calendarioModalClose.onclick = () => elements.calendarioModal.style.display = 'none';
+    window.onclick = (event) => {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+        }
+    };
 }
 
-// ========== LÓGICA DE EXIBIÇÃO ==========
 function displayNextEvent() {
     const userTeamName = userData.teamName;
     const today = new Date(seasonData.currentDate);
     
-    const allUserMatches = [...seasonData.torneio.schedule, ...seasonData.copa.schedule]
+    const allUserMatches = [...seasonData.torneio.schedule] // Adicionar copa aqui no futuro
         .filter(m => (m.home === userTeamName || m.away === userTeamName) && !m.played)
         .sort((a,b) => new Date(a.date) - new Date(b.date));
 
@@ -141,9 +169,7 @@ function advanceDay() {
     let currentDate = new Date(seasonData.currentDate);
     currentDate.setDate(currentDate.getDate() + 1);
     seasonData.currentDate = currentDate.toISOString();
-
-    // Lógica futura para simular jogos de IA que aconteceriam neste dia
-
+    // Lógica futura para simular jogos de IA
     localStorage.setItem('seasonData', JSON.stringify(seasonData));
     window.location.reload();
 }
@@ -156,15 +182,15 @@ function displayTorneioTables() {
         html += `<table><thead><tr><th>#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th></tr></thead><tbody>`;
         const table = seasonData.torneio.table;
         group.sort((a, b) => {
-            const statsA = table[a] || {P:0, SG:0, GP:0};
-            const statsB = table[b] || {P:0, SG:0, GP:0};
+            const statsA = table[a];
+            const statsB = table[b];
             if (statsB.P !== statsA.P) return statsB.P - statsA.P;
             if (statsB.SG !== statsA.SG) return statsB.SG - statsA.SG;
             if (statsB.GP !== statsA.GP) return statsB.GP - statsA.GP;
             return 0;
         });
         group.forEach((teamName, index) => {
-            const stats = table[teamName] || { P: 0, J: 0, V: 0, E: 0, D: 0, GP: 0, GC: 0, SG: 0 };
+            const stats = table[teamName];
             html += `<tr><td>${index + 1}</td><td>${teamName}</td><td>${stats.P}</td><td>${stats.J}</td><td>${stats.V}</td><td>${stats.E}</td><td>${stats.D}</td><td>${stats.GP}</td><td>${stats.GC}</td><td>${stats.SG}</td></tr>`;
         });
         html += `</tbody></table>`;
@@ -173,71 +199,27 @@ function displayTorneioTables() {
 }
 
 function displayCopaFixtures() {
-    let html = `<h5>Quartas de Final</h5>`;
-    const copaTeams = seasonData.torneio.groups.A.slice(0,4).concat(seasonData.torneio.groups.B.slice(0,4));
-    
-    if (copaTeams.length > 0) {
-        for(let i=0; i < 4; i++){
-             html += `<div class="copa-fixture">${copaTeams[i]} vs ${copaTeams[i+4]}</div>`;
-        }
-    } else {
-        html = '<p class="muted">Aguardando sorteio...</p>';
-    }
-    elements.copaFixtures.innerHTML = html;
+    elements.copaFixtures.innerHTML = '<p class="muted">Aguardando início...</p>';
 }
 
 function openCalendarioModal() {
     elements.calendarioList.innerHTML = '';
     const userTeamName = userData.teamName;
-    let html = '<h4>Fase de Grupos</h4>';
+    let html = '<h4>Fase de Grupos - Torneio</h4>';
     const userSchedule = seasonData.torneio.schedule.filter(m => m.home === userTeamName || m.away === userTeamName);
     userSchedule.sort((a,b) => new Date(a.date) - new Date(b.date));
     userSchedule.forEach(match => {
         const score = match.played ? `<strong>${match.score}</strong>` : "vs";
         const matchDate = new Date(match.date).toLocaleDateString('pt-BR');
-        html += `<div class="calendario-fixture ${match.played ? 'played' : ''}"><span>(${matchDate})</span><span>${match.home}</span><span>${score}</span><span>${match.away}</span></div>`;
+        html += `<div class="calendario-fixture ${match.played ? 'played' : ''}">
+            <span>(${matchDate})</span>
+            <span style="text-align: right;">${match.home}</span>
+            <span style="font-weight: bold;">${score}</span>
+            <span style="text-align: left;">${match.away}</span>
+        </div>`;
     });
     elements.calendarioList.innerHTML = html;
     elements.calendarioModal.style.display = 'block';
-}
-
-function init() {
-    userData = JSON.parse(localStorage.getItem('userData')) || {};
-    elements.headerTitle.textContent = userData.teamName || 'O Rei da Várzea';
-    let storedSeason = localStorage.getItem('seasonData');
-    varzeaUniverse = JSON.parse(localStorage.getItem('varzeaUniverse')) || [];
-    
-    if (storedSeason) {
-        seasonData = JSON.parse(storedSeason);
-    } else {
-        if(varzeaUniverse.length === 0){
-            varzeaUniverse = createUniverse();
-            localStorage.setItem('varzeaUniverse', JSON.stringify(varzeaUniverse));
-        }
-        seasonData = generateSeasonFixtures(varzeaUniverse, userData.teamName);
-        localStorage.setItem('seasonData', JSON.stringify(seasonData));
-    }
-
-    // Garante que as strings de data sejam convertidas de volta para objetos Date
-    seasonData.currentDate = new Date(seasonData.currentDate);
-    seasonData.torneio.schedule.forEach(m => m.date = new Date(m.date));
-    if(seasonData.copa.schedule) {
-        seasonData.copa.schedule.forEach(m => m.date = new Date(m.date));
-    }
-    
-    // processLastMatchResult();
-    displayNextEvent();
-    displayTorneioTables();
-    displayCopaFixtures();
-
-    // Eventos
-    elements.calendarioButton.onclick = openCalendarioModal;
-    elements.calendarioModalClose.onclick = () => elements.calendarioModal.style.display = 'none';
-    window.onclick = (event) => {
-        if (event.target.classList.contains('modal')) {
-            event.target.style.display = 'none';
-        }
-    };
 }
 
 init();
