@@ -12,11 +12,12 @@
   .next-match-card { background-color: #0b6bd6; color: white; text-align: center; }
   .next-match-card h3 { margin-top: 0; border-bottom: 1px solid rgba(255,255,255,0.3); padding-bottom: 10px;}
   .vs { font-size: 2em; font-weight: bold; margin: 10px 0; }
+  .match-details-small { font-size: 0.9em; opacity: 0.8; }
   .btn-play { background-color: #28a745; font-size: 1.2em; width: 100%; padding: 15px; margin-top: 10px;}
   table{width:100%;border-collapse:collapse;font-size:12px; margin-top: 10px;}
   th,td{padding:6px;border-bottom:1px solid #eee;text-align:center}
   th{background:#fafafa}
-  td:nth-child(2) { text-align: left; font-weight: bold; } /* Nome do time */
+  td:nth-child(2) { text-align: left; font-weight: bold; }
   .group-title { font-weight: bold; margin-top: 15px; }
 </style>
 </head>
@@ -28,13 +29,12 @@
     <div class="grid-container">
         <div class="main-content">
             <div class="card next-match-card">
-                <h3>Próxima Partida</h3>
+                <h3 id="nextMatchTitle">Próxima Partida</h3>
                 <div id="nextMatchInfo">
-                    <p class="muted">Calendário a ser gerado...</p>
+                    <p class="muted">Analisando calendário...</p>
                 </div>
-                <a id="linkPlayMatch" href="escalacao.html"><button class="btn-play" disabled>Ir para Jogo</button></a>
+                <a id="linkPlayMatch" href="escalacao.html"><button class="btn-play">Ir para Jogo</button></a>
             </div>
-
             <div class="card">
                 <h3>Torneio da Vila Freitas</h3>
                 <div id="torneioTables">
@@ -45,11 +45,11 @@
         <div class="sidebar">
             <div class="card">
                 <h3>Copa 1º de Maio</h3>
-                <p class="muted">Aguardando classificação da temporada anterior...</p>
+                <p class="muted">Em breve...</p>
             </div>
             <div class="card">
                 <h3>Troféu Jair Cabeça</h3>
-                <p class="muted">Aguardando campeões da temporada...</p>
+                <p class="muted">Em breve...</p>
             </div>
         </div>
     </div>
