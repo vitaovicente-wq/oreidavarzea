@@ -1,53 +1,4 @@
-// ========== DADOS DO UNIVERSO ==========
-const CIDADES_E_REGIOES = {
-    'SP': { vantagem: { nome: "Molecada da Base", desc: "Maior chance de revelar jovens promissores a cada nova temporada." }, desvantagem: { nome: "Trampo e Correria", desc: "Jogadores recuperam a saúde um pouco mais devagar entre as partidas." } },
-    'RJ': { vantagem: { nome: "Artilheiro Nato", desc: "Atacantes recebem um pequeno bônus na chance de fazer gol." }, desvantagem: { nome: "Vestiário Explosivo", desc: "O entrosamento do time cai mais rápido com derrotas." } },
-    'MG': { vantagem: { nome: "Tática Mineira", desc: "A defesa recebe um pequeno bônus, diminuindo a chance do adversário marcar." }, desvantagem: { nome: "Ritmo Cadenciado", desc: "A eficácia do treino físico é um pouco reduzida." } },
-    'RS': { vantagem: { nome: "Raça Gaúcha", desc: "Jogadores se cansam menos durante as partidas." }, desvantagem: { nome: "Futebol Força", desc: "A habilidade média do time é um pouco menor." } },
-    'BA': { vantagem: { nome: "Alegria nas Pernas", desc: "O time começa com um nível de Entrosamento mais alto." }, desvantagem: { nome: "Relaxado Demais", desc: "A eficácia dos treinos é um pouco menor." } },
-    'PE': { vantagem: { nome: "Talento Arretado", desc: "Atacantes e Meias evoluem mais rápido nos treinos." }, desvantagem: { nome: "Pavio Curto", desc: "Time mais propenso a receber cartões." } },
-    'CE': { vantagem: { nome: "Talento Arretado", desc: "Atacantes e Meias evoluem mais rápido nos treinos." }, desvantagem: { nome: "Pavio Curto", desc: "Time mais propenso a receber cartões." } },
-    'MA': { vantagem: { nome: "Talento Arretado", desc: "Atacantes e Meias evoluem mais rápido nos treinos." }, desvantagem: { nome: "Pavio Curto", desc: "Time mais propenso a receber cartões." } },
-    'RN': { vantagem: { nome: "Talento Arretado", desc: "Atacantes e Meias evoluem mais rápido nos treinos." }, desvantagem: { nome: "Pavio Curto", desc: "Time mais propenso a receber cartões." } },
-    'PB': { vantagem: { nome: "Talento Arretado", desc: "Atacantes e Meias evoluem mais rápido nos treinos." }, desvantagem: { nome: "Pavio Curto", desc: "Time mais propenso a receber cartões." } },
-    'PI': { vantagem: { nome: "Talento Arretado", desc: "Atacantes e Meias evoluem mais rápido nos treinos." }, desvantagem: { nome: "Pavio Curto", desc: "Time mais propenso a receber cartões." } },
-    'SE': { vantagem: { nome: "Talento Arretado", desc: "Atacantes e Meias evoluem mais rápido nos treinos." }, desvantagem: { nome: "Pavio Curto", desc: "Time mais propenso a receber cartões." } },
-    'AL': { vantagem: { nome: "Talento Arretado", desc: "Atacantes e Meias evoluem mais rápido nos treinos." }, desvantagem: { nome: "Pavio Curto", desc: "Time mais propenso a receber cartões." } },
-    'AM': { vantagem: { nome: "Pulmão do Mundo", desc: "Jogadores recuperam saúde mais rápido entre as partidas." }, desvantagem: { nome: "Isolamento Geográfico", desc: "O entrosamento inicial do time é mais baixo." } },
-    'PA': { vantagem: { nome: "Pulmão do Mundo", desc: "Jogadores recuperam saúde mais rápido entre as partidas." }, desvantagem: { nome: "Isolamento Geográfico", desc: "O entrosamento inicial do time é mais baixo." } },
-    'AC': { vantagem: { nome: "Pulmão do Mundo", desc: "Jogadores recuperam saúde mais rápido entre as partidas." }, desvantagem: { nome: "Isolamento Geográfico", desc: "O entrosamento inicial do time é mais baixo." } },
-    'RO': { vantagem: { nome: "Pulmão do Mundo", desc: "Jogadores recuperam saúde mais rápido entre as partidas." }, desvantagem: { nome: "Isolamento Geográfico", desc: "O entrosamento inicial do time é mais baixo." } },
-    'RR': { vantagem: { nome: "Pulmão do Mundo", desc: "Jogadores recuperam saúde mais rápido entre as partidas." }, desvantagem: { nome: "Isolamento Geográfico", desc: "O entrosamento inicial do time é mais baixo." } },
-    'AP': { vantagem: { nome: "Pulmão do Mundo", desc: "Jogadores recuperam saúde mais rápido entre as partidas." }, desvantagem: { nome: "Isolamento Geográfico", desc: "O entrosamento inicial do time é mais baixo." } },
-    'TO': { vantagem: { nome: "Pulmão do Mundo", desc: "Jogadores recuperam saúde mais rápido entre as partidas." }, desvantagem: { nome: "Isolamento Geográfico", desc: "O entrosamento inicial do time é mais baixo." } },
-    'GO': { vantagem: { nome: "Força do Cerrado", desc: "O time ganha mais entrosamento após vitórias." }, desvantagem: { nome: "Falta de Malícia", desc: "Time sofre menos faltas a seu favor." } },
-    'MT': { vantagem: { nome: "Força do Cerrado", desc: "O time ganha mais entrosamento após vitórias." }, desvantagem: { nome: "Falta de Malícia", desc: "Time sofre menos faltas a seu favor." } },
-    'MS': { vantagem: { nome: "Força do Cerrado", desc: "O time ganha mais entrosamento após vitórias." }, desvantagem: { nome: "Falta de Malícia", desc: "Time sofre menos faltas a seu favor." } },
-    'DEFAULT': { vantagem: { nome: "Neutro", desc: "Sem vantagem específica." }, desvantagem: { nome: "Neutro", desc: "Sem desvantagem específica." } }
-};
-const TIMES = [
-    { nome: "Tsunami da ZL", cidade: "São Paulo", estado: "SP", fama: "Gigante do Bairro" }, { nome: "Galácticos do Grajaú", cidade: "São Paulo", estado: "SP", fama: "Gigante do Bairro" },
-    { nome: "Ajax da Vila Sônia", cidade: "São Paulo", estado: "SP", fama: "Gigante do Bairro" }, { nome: "Molekes da Vila", cidade: "Santos", estado: "SP", fama: "Gigante do Bairro" },
-    { nome: "Guarani do Brinco", cidade: "Campinas", estado: "SP", fama: "Gigante do Bairro" }, { nome: "Guerreiros da Baixada", cidade: "Duque de Caxias", estado: "RJ", fama: "Gigante do Bairro" },
-    { nome: "Índios Araribóia", cidade: "Niterói", estado: "RJ", fama: "Gigante do Bairro" }, { nome: "Inconfidentes de Ouro Preto", cidade: "Ouro Preto", estado: "MG", fama: "Gigante do Bairro" },
-    { nome: "Arrastapé de Caruaru", cidade: "Caruaru", estado: "PE", fama: "Gigante do Bairro" }, { nome: "Padim Ciço FC", cidade: "Juazeiro do Norte", estado: "CE", fama: "Gigante do Bairro" },
-    { nome: "Vaqueiros do Sertão", cidade: "Feira de Santana", estado: "BA", fama: "Gigante do Bairro" }, { nome: "Parreiras de Aço", cidade: "Caxias do Sul", estado: "RS", fama: "Gigante do Bairro" },
-    { nome: "Príncipes da Chuva", cidade: "Joinville", estado: "SC", fama: "Gigante do Bairro" }, { nome: "Pé Vermelho EC", cidade: "Londrina", estado: "PR", fama: "Gigante do Bairro" },
-    { nome: "Boi-Bumbá de Parintins", cidade: "Parintins", estado: "AM", fama: "Gigante do Bairro" }, { nome: "Gigantes do Madeira", cidade: "Porto Velho", estado: "RO", fama: "Gigante do Bairro" },
-    { nome: "Pequi Atômico FC", cidade: "Goiânia", estado: "GO", fama: "Gigante do Bairro" }, { nome: "Dourado do Pantanal", cidade: "Cuiabá", estado: "MT", fama: "Gigante do Bairro" },
-    { nome: "Tuiuiú de Campo Grande", cidade: "Campo Grande", estado: "MS", fama: "Gigante do Bairro" }, { nome: "Real Madruga", cidade: "Rio de Janeiro", estado: "RJ", fama: "Gigante do Bairro" },
-    { nome: "EC Beira-Rio", cidade: "São Paulo", estado: "SP", fama: "Deus da Cidade" }, { nome: "Fúria do Capão Redondo", cidade: "São Paulo", estado: "SP", fama: "Deus da Cidade" },
-    { nome: "Manchester Paulista", cidade: "São Paulo", estado: "SP", fama: "Deus da Cidade" }, { nome: "Leões da Gamboa", cidade: "Salvador", estado: "BA", fama: "Deus da Cidade" },
-    { nome: "Dragões da Praia do Futuro", cidade: "Fortaleza", estado: "CE", fama: "Deus da Cidade" }, { nome: "Leões do Capibaribe", cidade: "Recife", estado: "PE", fama: "Deus da Cidade" },
-    { nome: "Churrasco & Gauchão FC", cidade: "Porto Alegre", estado: "RS", fama: "Deus da Cidade" }, { nome: "Pinheiros de Curitiba", cidade: "Curitiba", estado: "PR", fama: "Deus da Cidade" },
-    { nome: "Treme-Terra do Pará", cidade: "Belém", estado: "PA", fama: "Deus da Cidade" }, { nome: "Galácticos da Pampulha", cidade: "Belo Horizonte", estado: "MG", fama: "Deus da Cidade" },
-    { nome: "Juventus da Mooca", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" }, { nome: "Boca do Lixo FC", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
-    { nome: "PSV - Pau Sem Vontade", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" }, { nome: "Borussia do Ipiranga", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
-    { nome: "Atlético do Jaçanã", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" }, { nome: "Inter de Limão", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
-    { nome: "Só Canelas FC", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" }, { nome: "Bayern do M'Boi Mirim", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" },
-    { nome: "Liverpool da Cantareira", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" }, { nome: "Chelsea do Cimento", cidade: "São Paulo", estado: "SP", fama: "Rei da Várzea" }
-];
-
+// ========== ELEMENTOS DOM ==========
 const elements = {
     gigantesGrid: document.getElementById('gigantesGrid'),
     deusesGrid: document.getElementById('deusesGrid'),
@@ -57,27 +8,7 @@ const elements = {
     teamDetailContent: document.getElementById('teamDetailContent'),
 };
 
-function generateCrest(teamName) {
-    let seed = 0;
-    for (let i = 0; i < teamName.length; i++) { seed += teamName.charCodeAt(i); }
-    const shapes = ['crest-shield', 'crest-circle', 'crest-badge'];
-    const patterns = ['pattern-stripes', 'pattern-sash', 'pattern-half', 'pattern-none'];
-    const primaryColors = ['#d50000', '#004D40', '#01579B', '#311B92', '#000000', '#FF6F00', '#1B5E20'];
-    const secondaryColors = ['#FFFFFF', '#FFD700', '#C0C0C0'];
-    const shape = shapes[seed % shapes.length];
-    const pattern = patterns[seed % patterns.length];
-    const color1 = primaryColors[seed % primaryColors.length];
-    const color2 = secondaryColors[seed % secondaryColors.length];
-    const initial = teamName.charAt(0);
-    let patternStyle = '';
-    switch(pattern) {
-        case 'pattern-stripes': patternStyle = `background-image: linear-gradient(90deg, ${color2} 33%, transparent 33%, transparent 66%, ${color2} 66%)`; break;
-        case 'pattern-sash': patternStyle = `background-image: linear-gradient(45deg, transparent 42%, ${color2} 42%, ${color2} 58%, transparent 58%)`; break;
-        case 'pattern-half': patternStyle = `background-image: linear-gradient(90deg, ${color2} 50%, transparent 50%)`; break;
-    }
-    return `<div class="crest ${shape}" style="background-color: ${color1};"><div class="pattern" style="${patternStyle}"></div><div class="initial">${initial}</div></div>`;
-}
-
+// ========== LÓGICA DE CRIAÇÃO DE JOGADORES ==========
 function createFootDistribution(count) {
     const feet = [];
     const numLeft = Math.ceil(count * 0.20);
@@ -125,25 +56,49 @@ function createFullSquad(fameTier) {
     return squad;
 }
 
-function displayTeams() {
-    TIMES.forEach(teamData => {
+function generateCrest(teamName) {
+    let seed = 0;
+    for (let i = 0; i < teamName.length; i++) { seed += teamName.charCodeAt(i); }
+    const shapes = ['crest-shield', 'crest-circle', 'crest-badge'];
+    const patterns = ['pattern-stripes', 'pattern-sash', 'pattern-half', 'pattern-none'];
+    const primaryColors = ['#d50000', '#004D40', '#01579B', '#311B92', '#000000', '#FF6F00', '#1B5E20'];
+    const secondaryColors = ['#FFFFFF', '#FFD700', '#C0C0C0'];
+    const shape = shapes[seed % shapes.length];
+    const pattern = patterns[seed % patterns.length];
+    const color1 = primaryColors[seed % primaryColors.length];
+    const color2 = secondaryColors[seed % secondaryColors.length];
+    const initial = teamName.charAt(0);
+    let patternStyle = '';
+    switch(pattern) {
+        case 'pattern-stripes': patternStyle = `background-image: linear-gradient(90deg, ${color2} 33%, transparent 33%, transparent 66%, ${color2} 66%)`; break;
+        case 'pattern-sash': patternStyle = `background-image: linear-gradient(45deg, transparent 42%, ${color2} 42%, ${color2} 58%, transparent 58%)`; break;
+        case 'pattern-half': patternStyle = `background-image: linear-gradient(90deg, ${color2} 50%, transparent 50%)`; break;
+    }
+    return `<div class="crest ${shape}" style="background-color: ${color1};"><div class="pattern" style="${patternStyle}"></div><div class="initial">${initial}</div></div>`;
+}
+
+// ========== LÓGICA PRINCIPAL ==========
+function displayTeams(teams, regions) {
+    teams.forEach(teamData => {
         const grid = (teamData.fama === 'Gigante do Bairro') ? elements.gigantesGrid : (teamData.fama === 'Deus da Cidade') ? elements.deusesGrid : elements.reisGrid;
         const card = document.createElement('div');
         card.className = 'team-card';
         const crestHTML = generateCrest(teamData.nome);
         card.innerHTML = `${crestHTML}<h4>${teamData.nome}</h4><p class="muted">${teamData.cidade} - ${teamData.estado}</p>`;
+        
         if (teamData.fama !== 'Gigante do Bairro') {
             card.classList.add('locked');
         } else {
-            card.onclick = () => openTeamDetailModal(teamData);
+            card.onclick = () => openTeamDetailModal(teamData, regions);
         }
         grid.appendChild(card);
     });
 }
 
-function openTeamDetailModal(teamData) {
+function openTeamDetailModal(teamData, regions) {
     const squad = createFullSquad(teamData.fama);
-    const region = CIDADES_E_REGIOES[teamData.estado] || CIDADES_E_REGIOES['DEFAULT'];
+    const region = regions[teamData.estado] || regions['DEFAULT'];
+
     let squadTable = `<table><thead><tr>
         <th>Nome</th><th class="col-small">Pos</th><th class="col-medium">Pé</th><th class="col-small">Idade</th>
         <th class="col-small">Hab.</th><th class="col-small">Saúde</th><th class="col-medium">Profissão</th>
@@ -195,14 +150,27 @@ function openTeamDetailModal(teamData) {
     elements.teamDetailModal.style.display = 'block';
 }
 
-function init() {
-    displayTeams();
-    elements.teamDetailModalClose.onclick = () => elements.teamDetailModal.style.display = 'none';
-    window.onclick = (event) => {
-        if (event.target == elements.teamDetailModal) {
-            elements.teamDetailModal.style.display = "none";
+async function init() {
+    try {
+        const response = await fetch('data/universo.json');
+        if (!response.ok) {
+            throw new Error(`Erro de rede: ${response.statusText}`);
         }
-    };
+        const universoData = await response.json();
+        
+        displayTeams(universoData.teams, universoData.regions);
+
+        elements.teamDetailModalClose.onclick = () => elements.teamDetailModal.style.display = 'none';
+        window.onclick = (event) => {
+            if (event.target == elements.teamDetailModal) {
+                elements.teamDetailModal.style.display = "none";
+            }
+        };
+
+    } catch (error) {
+        console.error("Falha ao carregar o universo do jogo:", error);
+        document.querySelector('.container').innerHTML = '<h1>Erro ao carregar dados do jogo. Tente recarregar a página.</h1>';
+    }
 }
 
 init();
