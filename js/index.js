@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
         btnContinueGame.disabled = false;
     }
     document.getElementById('btnNewGame').addEventListener('click', () => {
-        // Limpa o jogo antigo ANTES de ir para a tela de escolha
         localStorage.clear(); 
     });
 });
