@@ -14,16 +14,12 @@
   .vs { font-size: 2em; font-weight: bold; margin: 10px 0; }
   .match-details-small { font-size: 0.9em; opacity: 0.8; }
   .btn-play { background-color: #28a745; font-size: 1.2em; width: 100%; padding: 15px; margin-top: 10px;}
-  .btn-advance-day { background-color: #6c757d; font-size: 1.2em; width: 100%; padding: 15px; margin-top: 10px; }
   table{width:100%;border-collapse:collapse;font-size:12px; margin-top: 10px;}
   th,td{padding:6px;border-bottom:1px solid #eee;text-align:center}
   th{background:#fafafa}
   td:nth-child(2) { text-align: left; font-weight: bold; }
   .group-title { font-weight: bold; margin-top: 15px; }
-  .copa-fixture, .calendario-fixture { font-size: 14px; text-align: center; padding: 8px; border-bottom: 1px solid #eee;}
-  .calendario-fixture.played { background-color: #f8f9fa; color: #6c757d; }
-  .calendario-modal-content { max-width: 600px; }
-  .calendario-list { max-height: 450px; overflow-y: auto; }
+  .copa-fixture { font-size: 14px; text-align: center; padding: 8px; border-bottom: 1px solid #eee;}
 </style>
 </head>
 <body>
@@ -33,38 +29,33 @@
 <div class="container">
     <div class="grid-container">
         <div class="main-content">
-            <div id="nextEventCard" class="card next-match-card">
+            <div class="card next-match-card">
+                <h3 id="nextMatchTitle">Próxima Partida</h3>
+                <div id="nextMatchInfo">
+                    <p class="muted">Analisando calendário...</p>
                 </div>
+                <a id="linkPlayMatch" href="escalacao.html"><button class="btn-play">Ir para Jogo</button></a>
+            </div>
 
             <div class="card">
-                <div style="display:flex; justify-content: space-between; align-items: center;">
-                    <h3>Torneio da Vila Freitas</h3>
-                    <button id="calendarioButton" style="background-color: #6c757d;">Ver Calendário 🗓️</button>
+                <h3>Torneio da Vila Freitas</h3>
+                <div id="torneioTables">
+                    <p class="muted">Gerando tabelas...</p>
                 </div>
-                <div id="torneioTables"></div>
             </div>
         </div>
         <div class="sidebar">
             <div class="card">
                 <h3>Copa 1º de Maio</h3>
-                <div id="copaFixtures"></div>
+                <p class="muted">Aguardando classificação da temporada anterior...</p>
             </div>
             <div class="card">
-                <h3>Troféu Bandeirantes</h3>
-                <p class="muted">Aguardando classificação...</p>
+                <h3>Troféu Jair Cabeça</h3>
+                <p class="muted">Aguardando campeões da temporada...</p>
             </div>
         </div>
     </div>
 </div>
-
-<div id="calendarioModal" class="modal">
-    <div class="modal-content calendario-modal-content">
-        <span id="calendarioModalClose" class="close">&times;</span>
-        <h2>Calendário de Jogos</h2>
-        <div id="calendarioList" class="calendario-list"></div>
-    </div>
-</div>
-
 <script src="js/temporada.js"></script>
 </body>
 </html>
