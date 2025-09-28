@@ -39,29 +39,6 @@ const elements = {
     teamDetailContent: document.getElementById('teamDetailContent'),
 };
 
-function generateCrest(teamName) {
-    let seed = 0;
-    for (let i = 0; i < teamName.length; i++) {
-        seed += teamName.charCodeAt(i);
-    }
-    const shapes = ['crest-shield', 'crest-circle', 'crest-badge'];
-    const patterns = ['pattern-stripes', 'pattern-sash', 'pattern-half', 'pattern-none'];
-    const primaryColors = ['#d50000', '#004D40', '#01579B', '#311B92', '#000000', '#FF6F00', '#1B5E20'];
-    const secondaryColors = ['#FFFFFF', '#FFD700', '#C0C0C0'];
-    const shape = shapes[seed % shapes.length];
-    const pattern = patterns[seed % patterns.length];
-    const color1 = primaryColors[seed % primaryColors.length];
-    const color2 = secondaryColors[seed % secondaryColors.length];
-    const initial = teamName.charAt(0);
-    let patternStyle = '';
-    switch(pattern) {
-        case 'pattern-stripes': patternStyle = `background-image: linear-gradient(90deg, ${color2} 33%, transparent 33%, transparent 66%, ${color2} 66%)`; break;
-        case 'pattern-sash': patternStyle = `background-image: linear-gradient(45deg, transparent 42%, ${color2} 42%, ${color2} 58%, transparent 58%)`; break;
-        case 'pattern-half': patternStyle = `background-image: linear-gradient(90deg, ${color2} 50%, transparent 50%)`; break;
-    }
-    return `<div class="crest ${shape}" style="background-color: ${color1};"><div class="pattern" style="${patternStyle}"></div><div class="initial">${initial}</div></div>`;
-}
-
 function createFootDistribution(count) {
     const feet = [];
     const numLeft = Math.ceil(count * 0.20);
@@ -117,7 +94,6 @@ function displayTeams() {
         card.className = 'team-card';
         const crestHTML = generateCrest(teamData.nome);
         card.innerHTML = `${crestHTML}<h4>${teamData.nome}</h4><p class="muted">${teamData.cidade} - ${teamData.estado}</p>`;
-        
         if (teamData.fama !== 'Gigante do Bairro') {
             card.classList.add('locked');
         } else {
@@ -131,16 +107,27 @@ function openTeamDetailModal(teamData) {
     const squad = createFullSquad(teamData.fama);
     const region = CIDADES_E_REGIOES[teamData.estado] || CIDADES_E_REGIOES['DEFAULT'];
 
-    let squadTable = '<table><thead><tr><th>Nome</th><th>Pos</th><th>Pé</th><th>Idade</th><th>Hab.</th><th>Saúde</th><th>Profissão</th></tr></thead><tbody>';
+    let squadTable = `<table>
+        <thead><tr>
+            <th>Nome</th>
+            <th class="col-small">Pos</th>
+            <th class="col-medium">Pé</th>
+            <th class="col-small">Idade</th>
+            <th class="col-small">Hab.</th>
+            <th class="col-small">Saúde</th>
+            <th class="col-medium">Profissão</th>
+        </tr></thead>
+        <tbody>`;
+
     squad.forEach(p => {
         squadTable += `<tr>
-            <td style="text-align: left;">${p.name} ${p.isPai ? '<span class="badge-pai">Pai</span>' : ''}</td>
-            <td>${p.pos}</td>
-            <td>${p.foot}</td>
-            <td>${p.age}</td>
-            <td>${p.skill}</td>
-            <td>${p.health}%</td>
-            <td>${p.profissao.nome}</td>
+            <td>${p.name} ${p.isPai ? '<span class="badge-pai">Pai</span>' : ''}</td>
+            <td class="col-small">${p.pos}</td>
+            <td class="col-medium">${p.foot}</td>
+            <td class="col-small">${p.age}</td>
+            <td class="col-small">${p.skill}</td>
+            <td class="col-small">${p.health}%</td>
+            <td class="col-medium">${p.profissao.nome}</td>
         </tr>`;
     });
     squadTable += '</tbody></table>';
@@ -173,14 +160,12 @@ function openTeamDetailModal(teamData) {
         }
         
         localStorage.clear();
-
         localStorage.setItem('userData', JSON.stringify({ userName, cityName, teamName: teamData.nome, teamRegion: teamData.estado }));
         localStorage.setItem('elencoDoTime', JSON.stringify(squad));
         const financasIniciais = { caixaAtual: 20000, gastosContratacoes: 0, gastosSalarios: 0, gastosBicho: 0, receitaPartidas: 0, receitaPremiosPatrocinios: 0 };
         localStorage.setItem('financasDoTime', JSON.stringify(financasIniciais));
         const statsIniciais = { entrosamento: 50 };
         localStorage.setItem('teamStats', JSON.stringify(statsIniciais));
-        
         window.location.href = 'temporada.html';
     };
 
