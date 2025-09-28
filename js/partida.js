@@ -59,7 +59,9 @@ function calculateMatchRevenue() {
     elements.matchLocation.textContent = `Campo do ${homeTeam.name}`;
     elements.matchChampionship.textContent = currentMatchInfo.competition;
     const history = JSON.parse(localStorage.getItem('teamHistory')) || { wins: 0, losses: 0 };
+    
     const titularesIds = Object.values(lineup);
+    
     const titulares = hired.filter(j => titularesIds.includes(j.id));
     if (titulares.length === 0) return; 
     const averageSkill = titulares.reduce((sum, p) => sum + p.skill, 0) / titulares.length;
@@ -222,7 +224,7 @@ function populateTeamColumn(side, team, isUserTeam) {
     const starters = isUserTeam ? squad.filter(p => Object.values(lineup).includes(p.id)) : squad.slice(0, 11);
     const subs = isUserTeam ? squad.filter(p => !Object.values(lineup).includes(p.id)) : squad.slice(11);
     starters.forEach(p => { const li = document.createElement('li'); if (isUserTeam) { li.dataset.playerId = p.id; } else { li.dataset.playerName = p.name; } li.innerHTML = `<span>${p.name} (${p.pos})</span><span class="player-events"></span>`; startersEl.appendChild(li); });
-    subs.forEach(p => { const card = document.createElement('div'); card.className = 'player-card'; if(isUserTeam){ const statusColor = p.health > 75 ? 'green' : 'yellow'; card.innerHTML = `<div class="player-card-info"><span class="status-dot status-${statusColor}"></span><div><div><strong>${p.name}</strong> <span class="spec-tag">${p.specialization}</span></div><div class="muted">${p.pos} • Saúde: ${p.health}%</div></div></div>`; } else { card.innerHTML = `<div class="player-card-info"><div><strong>${p.name}</strong><div class="muted">${p.pos}</div></div></div>`; } benchEl.appendChild(card); });
+    subs.forEach(p => { const card = document.createElement('div'); card.className = 'player-card'; if(isUserTeam){ const statusColor = p.health > 75 ? 'green' : 'yellow'; card.innerHTML = `<div class.player-card-info"><span class="status-dot status-${statusColor}"></span><div><div><strong>${p.name}</strong> <span class.spec-tag">${p.specialization}</span></div><div class="muted">${p.pos} • Saúde: ${p.health}%</div></div></div>`; } else { card.innerHTML = `<div class="player-card-info"><div><strong>${p.name}</strong><div class="muted">${p.pos}</div></div></div>`; } benchEl.appendChild(card); });
 }
 
 function init() {
