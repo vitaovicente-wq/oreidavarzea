@@ -5,6 +5,24 @@ const CIDADES_E_REGIOES = {
     'MG': { vantagem: { nome: "Tática Mineira", desc: "A defesa recebe um pequeno bônus, diminuindo a chance do adversário marcar." }, desvantagem: { nome: "Ritmo Cadenciado", desc: "A eficácia do treino físico é um pouco reduzida." } },
     'RS': { vantagem: { nome: "Raça Gaúcha", desc: "Jogadores se cansam menos durante as partidas." }, desvantagem: { nome: "Futebol Força", desc: "A habilidade média do time é um pouco menor." } },
     'BA': { vantagem: { nome: "Alegria nas Pernas", desc: "O time começa com um nível de Entrosamento mais alto." }, desvantagem: { nome: "Relaxado Demais", desc: "A eficácia dos treinos é um pouco menor." } },
+    'PE': { vantagem: { nome: "Talento Arretado", desc: "Atacantes e Meias evoluem mais rápido nos treinos." }, desvantagem: { nome: "Pavio Curto", desc: "Time mais propenso a receber cartões." } },
+    'CE': { vantagem: { nome: "Talento Arretado", desc: "Atacantes e Meias evoluem mais rápido nos treinos." }, desvantagem: { nome: "Pavio Curto", desc: "Time mais propenso a receber cartões." } },
+    'MA': { vantagem: { nome: "Talento Arretado", desc: "Atacantes e Meias evoluem mais rápido nos treinos." }, desvantagem: { nome: "Pavio Curto", desc: "Time mais propenso a receber cartões." } },
+    'RN': { vantagem: { nome: "Talento Arretado", desc: "Atacantes e Meias evoluem mais rápido nos treinos." }, desvantagem: { nome: "Pavio Curto", desc: "Time mais propenso a receber cartões." } },
+    'PB': { vantagem: { nome: "Talento Arretado", desc: "Atacantes e Meias evoluem mais rápido nos treinos." }, desvantagem: { nome: "Pavio Curto", desc: "Time mais propenso a receber cartões." } },
+    'PI': { vantagem: { nome: "Talento Arretado", desc: "Atacantes e Meias evoluem mais rápido nos treinos." }, desvantagem: { nome: "Pavio Curto", desc: "Time mais propenso a receber cartões." } },
+    'SE': { vantagem: { nome: "Talento Arretado", desc: "Atacantes e Meias evoluem mais rápido nos treinos." }, desvantagem: { nome: "Pavio Curto", desc: "Time mais propenso a receber cartões." } },
+    'AL': { vantagem: { nome: "Talento Arretado", desc: "Atacantes e Meias evoluem mais rápido nos treinos." }, desvantagem: { nome: "Pavio Curto", desc: "Time mais propenso a receber cartões." } },
+    'AM': { vantagem: { nome: "Pulmão do Mundo", desc: "Jogadores recuperam saúde mais rápido entre as partidas." }, desvantagem: { nome: "Isolamento Geográfico", desc: "O entrosamento inicial do time é mais baixo." } },
+    'PA': { vantagem: { nome: "Pulmão do Mundo", desc: "Jogadores recuperam saúde mais rápido entre as partidas." }, desvantagem: { nome: "Isolamento Geográfico", desc: "O entrosamento inicial do time é mais baixo." } },
+    'AC': { vantagem: { nome: "Pulmão do Mundo", desc: "Jogadores recuperam saúde mais rápido entre as partidas." }, desvantagem: { nome: "Isolamento Geográfico", desc: "O entrosamento inicial do time é mais baixo." } },
+    'RO': { vantagem: { nome: "Pulmão do Mundo", desc: "Jogadores recuperam saúde mais rápido entre as partidas." }, desvantagem: { nome: "Isolamento Geográfico", desc: "O entrosamento inicial do time é mais baixo." } },
+    'RR': { vantagem: { nome: "Pulmão do Mundo", desc: "Jogadores recuperam saúde mais rápido entre as partidas." }, desvantagem: { nome: "Isolamento Geográfico", desc: "O entrosamento inicial do time é mais baixo." } },
+    'AP': { vantagem: { nome: "Pulmão do Mundo", desc: "Jogadores recuperam saúde mais rápido entre as partidas." }, desvantagem: { nome: "Isolamento Geográfico", desc: "O entrosamento inicial do time é mais baixo." } },
+    'TO': { vantagem: { nome: "Pulmão do Mundo", desc: "Jogadores recuperam saúde mais rápido entre as partidas." }, desvantagem: { nome: "Isolamento Geográfico", desc: "O entrosamento inicial do time é mais baixo." } },
+    'GO': { vantagem: { nome: "Força do Cerrado", desc: "O time ganha mais entrosamento após vitórias." }, desvantagem: { nome: "Falta de Malícia", desc: "Time sofre menos faltas a seu favor." } },
+    'MT': { vantagem: { nome: "Força do Cerrado", desc: "O time ganha mais entrosamento após vitórias." }, desvantagem: { nome: "Falta de Malícia", desc: "Time sofre menos faltas a seu favor." } },
+    'MS': { vantagem: { nome: "Força do Cerrado", desc: "O time ganha mais entrosamento após vitórias." }, desvantagem: { nome: "Falta de Malícia", desc: "Time sofre menos faltas a seu favor." } },
     'DEFAULT': { vantagem: { nome: "Neutro", desc: "Sem vantagem específica." }, desvantagem: { nome: "Neutro", desc: "Sem desvantagem específica." } }
 };
 const TIMES = [
@@ -41,9 +59,7 @@ const elements = {
 
 function generateCrest(teamName) {
     let seed = 0;
-    for (let i = 0; i < teamName.length; i++) {
-        seed += teamName.charCodeAt(i);
-    }
+    for (let i = 0; i < teamName.length; i++) { seed += teamName.charCodeAt(i); }
     const shapes = ['crest-shield', 'crest-circle', 'crest-badge'];
     const patterns = ['pattern-stripes', 'pattern-sash', 'pattern-half', 'pattern-none'];
     const primaryColors = ['#d50000', '#004D40', '#01579B', '#311B92', '#000000', '#FF6F00', '#1B5E20'];
@@ -84,8 +100,7 @@ function createPlayer(idCounter, pos, fameTier) {
     const salarioJogo = Math.round((30 + (skill * 0.8)) / 5) * 5;
     const specializations = { 'Goleiro': 'Pega-Pênalti 🧤', 'Zagueiro': 'Xerife 🛡️', 'Lateral': 'Velocista ⚡', 'Volante': 'Motorzinho 🔋', 'Meia': 'Armador 🧠', 'Atacante': 'Finalizador 🎯' };
     return {
-        id: `p${idCounter}`,
-        name: `${firsts[Math.floor(Math.random() * firsts.length)]} ${lastParts[Math.floor(Math.random() * lastParts.length)]}`,
+        id: `p${idCounter}`, name: `${firsts[Math.floor(Math.random() * firsts.length)]} ${lastParts[Math.floor(Math.random() * lastParts.length)]}`,
         pos, age, skill, salarioJogo, health: 100,
         specialization: specializations[pos], foot: '',
         isPai: Math.random() < 0.2, contrato: '1 ano',
@@ -129,28 +144,16 @@ function displayTeams() {
 function openTeamDetailModal(teamData) {
     const squad = createFullSquad(teamData.fama);
     const region = CIDADES_E_REGIOES[teamData.estado] || CIDADES_E_REGIOES['DEFAULT'];
-
-    let squadTable = `<table>
-        <thead><tr>
-            <th>Nome</th>
-            <th class="col-small">Pos</th>
-            <th class="col-medium">Pé</th>
-            <th class="col-small">Idade</th>
-            <th class="col-small">Hab.</th>
-            <th class="col-small">Saúde</th>
-            <th class="col-medium">Profissão</th>
-        </tr></thead>
-        <tbody>`;
-
+    let squadTable = `<table><thead><tr>
+        <th>Nome</th><th class="col-small">Pos</th><th class="col-medium">Pé</th><th class="col-small">Idade</th>
+        <th class="col-small">Hab.</th><th class="col-small">Saúde</th><th class="col-medium">Profissão</th>
+    </tr></thead><tbody>`;
     squad.forEach(p => {
         squadTable += `<tr>
             <td>${p.name} ${p.isPai ? '<span class="badge-pai">Pai</span>' : ''}</td>
-            <td class="col-small">${p.pos}</td>
-            <td class="col-medium">${p.foot}</td>
-            <td class="col-small">${p.age}</td>
-            <td class="col-small">${p.skill}</td>
-            <td class="col-small">${p.health}%</td>
-            <td class="col-medium">${p.profissao.nome}</td>
+            <td class="col-small">${p.pos}</td><td class="col-medium">${p.foot}</td>
+            <td class="col-small">${p.age}</td><td class="col-small">${p.skill}</td>
+            <td class="col-small">${p.health}%</td><td class="col-medium">${p.profissao.nome}</td>
         </tr>`;
     });
     squadTable += '</tbody></table>';
@@ -168,27 +171,25 @@ function openTeamDetailModal(teamData) {
         <div class="manager-inputs">
             <label>Seu Nome (Professor)</label>
             <input id="userName" type="text" placeholder="Seu nome">
-            <label>Sua Cidade Natal</label>
-            <input id="cityName" type="text" placeholder="Cidade onde você nasceu">
             <button id="btnStartGame">Assumir o Comando</button>
         </div>
     `;
 
     document.getElementById('btnStartGame').onclick = () => {
         const userName = document.getElementById('userName').value.trim();
-        const cityName = document.getElementById('cityName').value.trim();
-        if(!userName || !cityName) {
-            alert("Preencha seu nome e cidade para continuar!");
+        if(!userName) {
+            alert("Preencha seu nome de professor para continuar!");
             return;
         }
         
         localStorage.clear();
-        localStorage.setItem('userData', JSON.stringify({ userName, cityName, teamName: teamData.nome, teamRegion: teamData.estado }));
+        localStorage.setItem('userData', JSON.stringify({ userName, teamName: teamData.nome, teamRegion: teamData.estado }));
         localStorage.setItem('elencoDoTime', JSON.stringify(squad));
         const financasIniciais = { caixaAtual: 20000, gastosContratacoes: 0, gastosSalarios: 0, gastosBicho: 0, receitaPartidas: 0, receitaPremiosPatrocinios: 0 };
         localStorage.setItem('financasDoTime', JSON.stringify(financasIniciais));
         const statsIniciais = { entrosamento: 50 };
         localStorage.setItem('teamStats', JSON.stringify(statsIniciais));
+        
         window.location.href = 'temporada.html';
     };
 
