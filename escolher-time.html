@@ -49,7 +49,6 @@
     border-color: #ddd;
   }
   
-  /* --- ESTILOS DOS ESCUDOS --- */
   .crest {
     width: 80px;
     height: 80px;
@@ -77,7 +76,6 @@
     position: relative;
     z-index: 2;
   }
-  /* Fim dos Estilos dos Escudos */
 
   .modal-content { max-width: 800px; }
   .team-details-header { text-align: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 15px; }
@@ -85,7 +83,7 @@
   .advantage-box { background-color: #e9f7ef; border-left: 4px solid #28a745; padding: 10px; margin: 10px 0; border-radius: 4px; }
   .disadvantage-box { background-color: #fbe9e7; border-left: 4px solid #dc3545; padding: 10px; margin: 10px 0; border-radius: 4px; }
   .squad-list { height: 250px; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 8px; }
-  .squad-list table { font-size: 12px; }
+  .squad-list table { font-size: 12px; width: 100%; }
   .squad-list th, .squad-list td { text-align: left; padding: 6px;}
   .manager-inputs { margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
   .manager-inputs input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; margin-bottom: 10px; }
@@ -116,7 +114,8 @@
 <div id="teamDetailModal" class="modal">
     <div class="modal-content">
         <span id="teamDetailModalClose" class="close">&times;</span>
-        <div id="teamDetailContent"></div>
+        <div id="teamDetailContent">
+            </div>
     </div>
 </div>
 
