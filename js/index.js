@@ -1,9 +1,3 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const btnContinueGame = document.getElementById('btnContinueGame');
-    if (localStorage.getItem('seasonData')) {
-        btnContinueGame.disabled = false;
-    }
-    document.getElementById('btnNewGame').addEventListener('click', () => {
-        localStorage.clear(); 
-    });
-});
+// Habilita o botão "Continuar Carreira" se houver progresso salvo
+const btnContinue = document.getElementById('btnContinueGame');
+if (localStorage.getItem('userData')) btnContinue.disabled = false;
