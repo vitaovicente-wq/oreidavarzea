@@ -1,32 +1,51 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>O Rei da Várzea — Temporada</title>
-<link rel="stylesheet" href="css/style.css">
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>O Rei da Várzea - Temporada</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<header><h1 id="headerTitle">O Rei da Várzea</h1></header>
-<div class="container">
-  <div class="grid-container">
-    <div class="main-content">
-      <div class="card next-match-card">
-        <h3>Próxima Partida</h3>
-        <div id="nextMatchInfo"><p class="muted">Carregando calendário...</p></div>
-        <a href="escalacao.html"><button class="btn-play">Ir para Jogo</button></a>
-      </div>
-      <div class="card">
-        <h3>Calendário e Torneios</h3>
-        <div id="torneioTables"><p class="muted">Carregando...</p></div>
-      </div>
+    <header>
+        <div class="container"><h1 id="headerTitle">O Rei da Várzea</h1></div>
+    </header>
+
+    <div class="container">
+        <div class="grid-container">
+            <div class="main-content">
+                <div class="card next-match-card">
+                    <h3 id="nextMatchTitle">Próxima Partida</h3>
+                    <div id="nextMatchInfo">
+                        <p class="muted">Analisando calendário...</p>
+                    </div>
+                    <a id="linkPlayMatch" href="escalacao.html" style="display: none;">
+                        <button class="btn-play">Ir para Jogo</button>
+                    </a>
+                </div>
+                <div class="card">
+                    <h3>Torneio da Vila Freitas</h3>
+                    <div id="torneioTables">
+                        <p class="muted">Gerando tabelas...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="card">
+                    <h3>Copa 1º de Maio</h3>
+                    <div id="copaFixtures">
+                         <p class="muted">Aguardando sorteio...</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Troféu Jair Cabeça</h3>
+                    <p class="muted">Disputado ao final da temporada.</p>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="sidebar">
-      <div class="card"><h3>Copa 1º de Maio</h3><p class="muted">Em breve...</p></div>
-      <div class="card"><h3>Troféu Jair Cabeça</h3><p class="muted">Em breve...</p></div>
-    </div>
-  </div>
-</div>
-<script src="js/temporada.js"></script>
+
+    <script src="js/temporada.js"></script>
 </body>
 </html>
