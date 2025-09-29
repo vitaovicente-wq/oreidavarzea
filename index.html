@@ -1,24 +1,28 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>O Rei da Várzea</title>
 <link rel="stylesheet" href="css/style.css">
 <style>
-  body { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; text-align: center; }
-  .menu-container { width: 100%; max-width: 400px; }
-  .menu-button { width: 100%; padding: 20px; font-size: 1.5em; margin-bottom: 15px; }
+body { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; text-align: center; }
+.menu-container { width: 100%; max-width: 400px; }
+.menu-button { width: 100%; padding: 20px; font-size: 1.5em; margin-bottom: 15px; }
 </style>
 </head>
 <body>
-  <div class="container">
-    <div class="card menu-container">
-      <h1 style="color: #0b6bd6; border-bottom: 2px solid #eee; padding-bottom: 10px;">O Rei da Várzea</h1>
-      <a id="continueGameLink" href="temporada.html"><button id="btnContinueGame" class="menu-button" disabled>Continuar Carreira</button></a>
-      <a id="newGameLink" href="escolher-time.html"><button id="btnNewGame" class="menu-button" style="background-color: #28a745;">Nova Carreira</button></a>
-      <p class="muted" style="margin-top: 20px;">Versão 0.3.0</p>
-    </div>
+<div class="container">
+  <div class="card menu-container">
+    <h1 style="color: #0b6bd6; border-bottom: 2px solid #eee; padding-bottom: 10px;">O Rei da Várzea</h1>
+    <a id="continueGameLink" href="temporada.html"><button id="btnContinueGame" class="menu-button" disabled>Continuar Carreira</button></a>
+    <a id="newGameLink" href="escolher-time.html"><button id="btnNewGame" class="menu-button" style="background-color: #28a745;">Nova Carreira</button></a>
+    <p class="muted" style="margin-top: 20px;">Versão 0.3.0</p>
   </div>
-<script src="js/index.js"></script>
+</div>
+<script>
+const btnContinue = document.getElementById('btnContinueGame');
+if (localStorage.getItem('userData')) btnContinue.disabled = false;
+</script>
 </body>
 </html>
