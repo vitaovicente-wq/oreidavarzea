@@ -1,34 +1,55 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>O Rei da Várzea — Partida</title>
-<link rel="stylesheet" href="css/style.css">
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>O Rei da Várzea - Partida</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<header><h1>O Rei da Várzea — Partida</h1></header>
-<div class="container">
-  <div class="card">
-    <h3>Placar</h3>
-    <div class="scoreboard-container">
-      <span id="homeScore">0</span> x <span id="awayScore">0</span>
+    <header>
+        <div class="container"><h1 id="headerTitle">O Rei da Várzea</h1></div>
+    </header>
+    <div class="container">
+        <div class="card">
+            <h2>Partida em Andamento</h2>
+            <div style="display: flex; gap: 16px; align-items: flex-start;">
+                <div style="flex: 1; text-align: center;">
+                    <h3 id="leftTeamName">Mandante</h3>
+                    <ul id="leftTeamStarters"></ul>
+                </div>
+                <div style="flex:2;text-align:center">
+                    <div class="scoreboard-container">
+                        <div class="scoreboard">
+                            <div id="homeTeamName" class="scoreboard-team">MANDANTE</div>
+                            <div id="score" class="scoreboard-score">0 x 0</div>
+                            <div id="awayTeamName" class="scoreboard-team">VISITANTE</div>
+                        </div>
+                    </div>
+                    <div id="matchDetails" class="match-details">
+                        <p><strong>Local:</strong> <span id="matchLocation">--</span></p>
+                        <p><strong>Campeonato:</strong> <span id="matchChampionship">--</span></p>
+                        <hr>
+                        <p><strong>Público:</strong> <span id="matchAudience">--</span></p>
+                        <p><strong>Renda (Ingressos):</strong> <span id="matchTicketRevenue">--</span></p>
+                        <p><strong>Refri Vendidos:</strong> <span id="matchSodaSales">--</span></p>
+                        <p><strong>Espetinhos Vendidos:</strong> <span id="matchKebabSales">--</span></p>
+                        <hr>
+                        <p><strong>SUA RENDA TOTAL:</strong> <strong id="matchTotalRevenue" style="color: green;">--</strong></p>
+                    </div>
+                    <button id="btnSubstituicao" style="margin-bottom: 10px; display: none;">Fazer Substituição</button>
+                    <div id="comentarios" style="text-align:left;height:300px; overflow-y:auto;border:1px solid #ddd;border-radius:6px;padding:10px; margin-bottom: 10px;"></div>
+                    <a id="linkVoltar" href="temporada.html">
+                        <button id="btnContinuar" style="display:none;">Ver Resumo da Rodada</button>
+                    </a>
+                </div>
+                <div style="flex: 1; text-align: center;">
+                    <h3 id="rightTeamName">Visitante</h3>
+                    <ul id="rightTeamStarters"></ul>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="sub-container">
-      <div class="sub-column">
-        <h4>Seu Time</h4>
-        <div id="homeEvents"></div>
-      </div>
-      <div class="sub-column">
-        <h4>Adversário</h4>
-        <div id="awayEvents"></div>
-      </div>
-    </div>
-
-    <h3>Banco de Reservas</h3>
-    <div class="bench" id="matchBench"></div>
-  </div>
-</div>
-<script src="js/partida.js"></script>
+    <script src="js/partida.js"></script>
 </body>
 </html>
