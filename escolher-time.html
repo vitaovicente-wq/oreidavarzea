@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>O Rei da Várzea — Escolha de Time</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header><h1>O Rei da Várzea</h1></header>
+<div class="container">
+  <div class="card">
+    <h2>Escolha seu Time</h2>
+    <p class="muted">Comece sua carreira e leve seu time à glória!</p>
+    <h3>Reis da Várzea</h3>
+    <div id="reisGrid" class="team-grid"></div>
+    <h3>Deuses da Cidade</h3>
+    <div id="deusesGrid" class="team-grid"></div>
+    <h3>Gigantes do Bairro</h3>
+    <div id="gigantesGrid" class="team-grid"></div>
+  </div>
+</div>
+
+<!-- Modal de detalhes do time -->
+<div id="teamDetailModal" class="modal">
+  <div class="modal-content">
+    <span id="teamDetailModalClose" class="close">&times;</span>
+    <div id="teamDetailContent"></div>
+  </div>
+</div>
+
+<script src="js/escolher-time.js"></script>
+</body>
+</html>
