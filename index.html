@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>O Rei da Várzea</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="container">
+  <div class="card menu-container">
+    <h1>O Rei da Várzea</h1>
+    <a href="temporada.html">
+      <button id="btnContinueGame" disabled>Continuar Carreira</button>
+    </a>
+    <a href="escolher-time.html">
+      <button id="btnNewGame">Nova Carreira</button>
+    </a>
+    <p class="muted">Versão 0.3.0</p>
+  </div>
+</div>
+
+<script>
+const btnContinue = document.getElementById('btnContinueGame');
+if(localStorage.getItem('userData')) btnContinue.disabled = false;
+</script>
+</body>
+</html>
