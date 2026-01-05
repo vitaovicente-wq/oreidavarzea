@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRFutebol - Seleção</title>
+    <style>
+        :root {
+            --primary: #1e272e;
+            --secondary: #0fb9b1;
+            --text: #ecf0f1;
+            --card-bg: #2d3436;
+            --input-bg: #34495e;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #111;
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: var(--primary);
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 3px solid var(--secondary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        h1 { margin: 0 0 25px 0; font-size: 2rem; text-transform: uppercase; letter-spacing: 2px; }
+
+        .controls-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            border: 1px solid #555;
+            background-color: var(--input-bg);
+            color: white;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus { border-color: var(--secondary); }
+
+        select.form-control { cursor: pointer; }
+
+        #teams-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .team-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            border-top: 4px solid var(--secondary);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .team-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,255,177,0.1);
+        }
+
+        /* Novo Header do Card (Escudo + Nome) */
+        .team-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #555;
+            padding-bottom: 10px;
+        }
+
+        .team-crest {
+            width: 50px;
+            height: 50px;
+            object-fit: contain; /* Garante que o escudo não estique */
+            filter: drop-shadow(0 0 2px rgba(255,255,255,0.3));
+        }
+
+        .team-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--secondary);
+            line-height: 1.2;
+        }
+
+        .team-info {
+            font-size: 0.9rem;
+            line-height: 1.7;
+            color: #bdc3c7;
+            flex-grow: 1; /* Empurra o botão para baixo */
+        }
+
+        .team-info strong { color: #fff; }
+
+        .select-btn {
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            background-color: var(--secondary);
+            border: none;
+            color: #1e272e;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .select-btn:hover { background-color: #7bed9f; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Escolha seu time!</h1>
+        <div class="controls-container">
+            <input type="text" id="coach-name" class="form-control" placeholder="Nome do Técnico">
+            <select id="country-select" class="form-control" onchange="loadCountry()">
+                <option value="" disabled selected>Selecione o País da Liga...</option>
+                <option value="brasil">🇧🇷 Brasil</option>
+                <option value="espanha">🇪🇸 Espanha</option>
+                <option value="inglaterra">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra</option>
+            </select>
+        </div>
+    </header>
+
+    <main id="teams-container">
+        <p style="text-align: center; width: 100%; color: #95a5a6; margin-top: 50px;">
+            Selecione uma liga acima para carregar os times.
+        </p>
+    </main>
+
+    <script>
+        // BANCO DE DADOS ATUALIZADO COM ESCUDOS
+        const database = {
+            brasil: [
+                { nome: "Flamengo", escudo: "https://upload.wikimedia.org/wikipedia/commons/2/2e/Flamengo_braz_logo.svg", orcamento: "R$ 200 Mi", expectativa: "Campeão", destaque: "Pedro", estadio: "Maracanã" },
+                { nome: "Palmeiras", escudo: "https://upload.wikimedia.org/wikipedia/commons/1/10/Palmeiras_logo.svg", orcamento: "R$ 180 Mi", expectativa: "Campeão", destaque: "Estêvão", estadio: "Allianz Parque" },
+                { nome: "São Paulo", escudo: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Brasao_do_Sao_Paulo_Futebol_Clube.svg", orcamento: "R$ 90 Mi", expectativa: "Libertadores", destaque: "Lucas Moura", estadio: "Morumbi" },
+                { nome: "Corinthians", escudo: "https://upload.wikimedia.org/wikipedia/commons/5/5a/Sport_Club_Corinthians_Paulista_crest.svg", orcamento: "R$ 100 Mi", expectativa: "G6", destaque: "Memphis Depay", estadio: "Neo Química Arena" },
+                { nome: "Botafogo", escudo: "https://upload.wikimedia.org/wikipedia/commons/c/cb/Botafogo_de_Futebol_e_Regatas_logo.svg", orcamento: "R$ 150 Mi", expectativa: "Título", destaque: "Luiz Henrique", estadio: "Nilton Santos" },
+                { nome: "Vasco", escudo: "https://upload.wikimedia.org/wikipedia/commons/6/67/Club_de_Regatas_Vasco_da_Gama_-_2021.svg", orcamento: "R$ 70 Mi", expectativa: "Sul-Americana", destaque: "Coutinho", estadio: "São Januário" },
+                { nome: "Atlético-MG", escudo: "https://upload.wikimedia.org/wikipedia/commons/2/27/Clube_Atl%C3%A9tico_Mineiro_logo.svg", orcamento: "R$ 130 Mi", expectativa: "G4", destaque: "Hulk", estadio: "Arena MRV" }
+            ],
+            espanha: [
+                { nome: "Real Madrid", escudo: "https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg", orcamento: "€ 800 Mi", expectativa: "Tudo", destaque: "Vinicius Jr.", estadio: "Santiago Bernabéu" },
+                { nome: "Barcelona", escudo: "https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg", orcamento: "€ 400 Mi", expectativa: "Título", destaque: "Lamine Yamal", estadio: "Camp Nou" },
+                { nome: "Atlético de Madrid", escudo: "https://upload.wikimedia.org/wikipedia/en/f/f4/Atletico_Madrid_2017_logo.svg", orcamento: "€ 200 Mi", expectativa: "Champions", destaque: "Griezmann", estadio: "Metropolitano" },
+                { nome: "Sevilla", escudo: "https://upload.wikimedia.org/wikipedia/en/3/3b/Sevilla_FC_logo.svg", orcamento: "€ 150 Mi", expectativa: "Europa League", destaque: "Ocampos", estadio: "Ramón Sánchez Pizjuán" }
+            ],
+            inglaterra: [
+                { nome: "Manchester City", escudo: "https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg", orcamento: "£ 900 Mi", expectativa: "Tudo", destaque: "Haaland", estadio: "Etihad Stadium" },
+                { nome: "Liverpool", escudo: "https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg", orcamento: "£ 600 Mi", expectativa: "Título", destaque: "Salah", estadio: "Anfield" },
+                { nome: "Arsenal", escudo: "https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg", orcamento: "£ 500 Mi", expectativa: "Título", destaque: "Saka", estadio: "Emirates Stadium" },
+                { nome: "Chelsea", escudo: "https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg", orcamento: "£ 700 Mi", expectativa: "Champions", destaque: "Cole Palmer", estadio: "Stamford Bridge" },
+                { nome: "Aston Villa", escudo: "https://upload.wikimedia.org/wikipedia/en/f/f9/Aston_Villa_FC_crest_%282016%29.svg", orcamento: "£ 300 Mi", expectativa: "Europa League", destaque: "Watkins", estadio: "Villa Park" }
+            ]
+        };
+
+        const container = document.getElementById('teams-container');
+        const countrySelect = document.getElementById('country-select');
+
+        function loadCountry() {
+            const countryKey = countrySelect.value;
+            container.innerHTML = '';
+
+            let times = database[countryKey];
+            
+            // Ordenação Alfabética
+            times.sort((a, b) => a.nome.localeCompare(b.nome));
+
+            times.forEach(time => {
+                const card = document.createElement('div');
+                card.className = 'team-card';
+
+                card.innerHTML = `
+                    <div class="team-header">
+                        <img src="${time.escudo}" alt="${time.nome}" class="team-crest" onerror="this.src='https://via.placeholder.com/50?text=Logo'">
+                        <div class="team-name">${time.nome}</div>
+                    </div>
+                    <div class="team-info">
+                        <strong>Orçamento:</strong> ${time.orcamento}<br>
+                        <strong>Expectativa:</strong> ${time.expectativa}<br>
+                        <strong>Destaque:</strong> ${time.destaque}<br>
+                        <strong>Estádio:</strong> ${time.estadio}
+                    </div>
+                    <button class="select-btn" onclick="selectTeam('${time.nome}')">Assumir Time</button>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function selectTeam(teamName) {
+            const coachName = document.getElementById('coach-name').value;
+            if (coachName.trim() === "") {
+                alert("Por favor, digite o nome do técnico antes de começar!");
+                document.getElementById('coach-name').focus();
+                return;
+            }
+            // Salvar no LocalStorage para a próxima página usar
+            localStorage.setItem('brfutebol_time', teamName);
+            localStorage.setItem('brfutebol_tecnico', coachName);
+
+            alert(`Tudo pronto! Você assumiu o ${teamName}. Vamos para o Dashboard.`);
+            
+            // Aqui eu deixei comentado o redirecionamento para você criar o arquivo depois
+            // window.location.href = 'dashboard.html'; 
+        }
+    </script>
+</body>
+</html>
