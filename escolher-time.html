@@ -212,9 +212,18 @@
             
             <select id="country-select" class="form-control" onchange="loadCountry()" disabled>
                 <option value="" disabled selected>2º Passo: Selecione a Liga/País...</option>
-                <option value="brasil">🇧🇷 Brasil (Série A)</option>
-                <option value="espanha">🇪🇸 Espanha (La Liga)</option>
-                <option value="inglaterra">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra (Premier League)</option>
+                <option value="brasil"> Brasil (Série A)</option>
+                <option value="espanha"> Espanha (La Liga)</option>
+                <option value="inglaterra"> Inglaterra (Premier League)</option>
+                <option value="argentina"> Argentina (Liga Profesional)</option>
+                <option value="uruguai">Uruguai (Primera División)</option>
+                <option value="chile">Chile (Primera División)</option>
+                <option value="paraguai">Paraguai (Primera División)</option>
+                <option value="bolivia">Bolívia (División Profesional)</option>
+                <option value="colombia">Colômbia (Liga BetPlay)</option>
+                <option value="equador">Equador (LigaPro)</option>
+                <option value="peru">Peru (Liga 1)</option>
+                <option value="venezuela">Venezuela (Liga FUTVE)</option>
             </select>
         </div>
     </header>
@@ -293,6 +302,165 @@
                 { nome: "Tottenham", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/367.png", orcamento: "£ 500 Mi", expectativa: "G4", destaque: "Son", estadio: "Tottenham Stadium" },
                 { nome: "West Ham", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/371.png", orcamento: "£ 250 Mi", expectativa: "Europa League", destaque: "Lucas Paquetá", estadio: "London Stadium" },
                 { nome: "Wolves", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/380.png", orcamento: "£ 130 Mi", expectativa: "Não Cair", destaque: "Matheus Cunha", estadio: "Molineux" }
+            ],
+            argentina: [
+                { nome: "Argentinos Jrs", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/1.png", orcamento: "US$ 30 Mi", expectativa: "Sul-Americana", destaque: "Alan Lescano", estadio: "Diego A. Maradona" },
+                { nome: "Atlético Tucumán", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/10332.png", orcamento: "US$ 15 Mi", expectativa: "Meio de Tabela", destaque: "Joaquín Pereyra", estadio: "José Fierro" },
+                { nome: "Banfield", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/3.png", orcamento: "US$ 20 Mi", expectativa: "Não Cair", destaque: "Gerónimo Rivera", estadio: "Florencio Sola" },
+                { nome: "Barracas Central", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/17595.png", orcamento: "US$ 10 Mi", expectativa: "Sobreviver", destaque: "Iván Tapia", estadio: "Claudio Tapia" },
+                { nome: "Belgrano", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2.png", orcamento: "US$ 25 Mi", expectativa: "Sul-Americana", destaque: "Santiago Longo", estadio: "Gigante de Alberdi" },
+                { nome: "Boca Juniors", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/5.png", orcamento: "US$ 150 Mi", expectativa: "Libertadores", destaque: "Exequiel Zeballos", estadio: "La Bombonera" },
+                { nome: "Central Córdoba", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/17765.png", orcamento: "US$ 12 Mi", expectativa: "Não Cair", destaque: "Luis Angulo", estadio: "Madre de Ciudades" },
+                { nome: "Defensa y Justicia", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/12586.png", orcamento: "US$ 35 Mi", expectativa: "Sul-Americana", destaque: "Aaron Molinas", estadio: "Norberto Tomaghello" },
+                { nome: "Estudiantes", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/7.png", orcamento: "US$ 50 Mi", expectativa: "Libertadores", destaque: "Santiago Ascacíbar", estadio: "Jorge Luis Hirschi" },
+                { nome: "Gimnasia LP", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/8.png", orcamento: "US$ 20 Mi", expectativa: "Meio de Tabela", destaque: "Benjamín Domínguez", estadio: "El Bosque" },
+                { nome: "Godoy Cruz", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/10.png", orcamento: "US$ 25 Mi", expectativa: "Sul-Americana", destaque: "Hernán López", estadio: "Malvinas Argentinas" },
+                { nome: "Huracán", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/9.png", orcamento: "US$ 30 Mi", expectativa: "Meio de Tabela", destaque: "Ignacio Pussetto", estadio: "El Palacio" },
+                { nome: "Independiente", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/11.png", orcamento: "US$ 40 Mi", expectativa: "Sul-Americana", destaque: "Santiago López", estadio: "Libertadores da América" },
+                { nome: "Indep. Rivadavia", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/12579.png", orcamento: "US$ 10 Mi", expectativa: "Sobreviver", destaque: "Matías Reali", estadio: "Bautista Gargantini" },
+                { nome: "Instituto", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/12.png", orcamento: "US$ 15 Mi", expectativa: "Meio de Tabela", destaque: "Santiago Rodríguez", estadio: "Monumental Alta Córdoba" },
+                { nome: "Lanús", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/13.png", orcamento: "US$ 35 Mi", expectativa: "Sul-Americana", destaque: "Marcelino Moreno", estadio: "La Fortaleza" },
+                { nome: "Newell's Old Boys", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/14.png", orcamento: "US$ 30 Mi", expectativa: "Meio de Tabela", destaque: "Brian Aguirre", estadio: "Marcelo Bielsa" },
+                { nome: "Platense", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/15.png", orcamento: "US$ 15 Mi", expectativa: "Não Cair", destaque: "Ronaldo Martínez", estadio: "Ciudad de Vicente López" },
+                { nome: "Racing", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/16.png", orcamento: "US$ 80 Mi", expectativa: "Libertadores", destaque: "Maravilla Martínez", estadio: "El Cilindro" },
+                { nome: "Riestra", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/17594.png", orcamento: "US$ 5 Mi", expectativa: "Sobreviver", destaque: "Jonathan Herrera", estadio: "Guillermo Laza" },
+                { nome: "River Plate", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/17.png", orcamento: "US$ 200 Mi", expectativa: "Campeão", destaque: "Claudio Echeverri", estadio: "Mas Monumental" },
+                { nome: "Rosario Central", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/18.png", orcamento: "US$ 45 Mi", expectativa: "Libertadores", destaque: "Jaminton Campaz", estadio: "Gigante de Arroyito" },
+                { nome: "San Lorenzo", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/19.png", orcamento: "US$ 50 Mi", expectativa: "G4", destaque: "Nahuel Barrios", estadio: "Nuevo Gasómetro" },
+                { nome: "Sarmiento", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/12604.png", orcamento: "US$ 10 Mi", expectativa: "Não Cair", destaque: "Lisandro López", estadio: "Eva Perón" },
+                { nome: "Talleres", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/20.png", orcamento: "US$ 55 Mi", expectativa: "Título", destaque: "Ramón Sosa", estadio: "Mario Kempes" },
+                { nome: "Tigre", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/21.png", orcamento: "US$ 20 Mi", expectativa: "Meio de Tabela", destaque: "Armoa", estadio: "José Dellagiovanna" },
+                { nome: "Unión", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/22.png", orcamento: "US$ 18 Mi", expectativa: "Meio de Tabela", destaque: "Mauro Luna Diale", estadio: "15 de Abril" },
+                { nome: "Vélez Sarsfield", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/23.png", orcamento: "US$ 40 Mi", expectativa: "G4", destaque: "Claudio Aquino", estadio: "José Amalfitani" }
+            ],
+            uruguai: [
+                { nome: "Boston River", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/18165.png", orcamento: "US$ 8 Mi", expectativa: "Sul-Americana", destaque: "Damiani", estadio: "Campeones Olímpicos" },
+                { nome: "Cerro", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/3476.png", orcamento: "US$ 5 Mi", expectativa: "Não Cair", destaque: "Mathías Abero", estadio: "Luis Tróccoli" },
+                { nome: "Cerro Largo", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2753.png", orcamento: "US$ 6 Mi", expectativa: "Meio de Tabela", destaque: "Sebastián Sosa", estadio: "Ubilla" },
+                { nome: "Danubio", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/245.png", orcamento: "US$ 12 Mi", expectativa: "Sul-Americana", destaque: "Sebastián Fernández", estadio: "Jardines del Hipódromo" },
+                { nome: "Defensor Sporting", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/246.png", orcamento: "US$ 15 Mi", expectativa: "Libertadores", destaque: "Anderson Duarte", estadio: "Luis Franzini" },
+                { nome: "Dep. Maldonado", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/6065.png", orcamento: "US$ 10 Mi", expectativa: "Meio de Tabela", destaque: "Maxi Cantera", estadio: "Domingo Burgueño" },
+                { nome: "Fénix", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/3337.png", orcamento: "US$ 5 Mi", expectativa: "Sobreviver", destaque: "Maxi Juambeltz", estadio: "Parque Capurro" },
+                { nome: "Liverpool (URU)", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2967.png", orcamento: "US$ 18 Mi", expectativa: "G4", destaque: "Luciano Rodríguez", estadio: "Belvedere" },
+                { nome: "Miramar Misiones", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/3655.png", orcamento: "US$ 4 Mi", expectativa: "Não Cair", destaque: "Alex Vázquez", estadio: "Parque Palermo" },
+                { nome: "M. Wanderers", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/248.png", orcamento: "US$ 10 Mi", expectativa: "Sul-Americana", destaque: "Matias Fonseca", estadio: "Parque Viera" },
+                { nome: "Nacional", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/200.png", orcamento: "US$ 60 Mi", expectativa: "Campeão", destaque: "Sebastián Coates", estadio: "Gran Parque Central" },
+                { nome: "Peñarol", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/202.png", orcamento: "US$ 65 Mi", expectativa: "Campeão", destaque: "Leo Fernández", estadio: "Campeón del Siglo" },
+                { nome: "Progreso", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/6072.png", orcamento: "US$ 5 Mi", expectativa: "Sobreviver", destaque: "Alex Silva", estadio: "Abraham Paladino" },
+                { nome: "Racing (URU)", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/3653.png", orcamento: "US$ 7 Mi", expectativa: "Meio de Tabela", destaque: "Dylan Nandín", estadio: "Parque Roberto" },
+                { nome: "Rampla Juniors", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/3419.png", orcamento: "US$ 4 Mi", expectativa: "Não Cair", destaque: "Tomás Adoryan", estadio: "Olímpico" },
+                { nome: "River Plate (URU)", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/247.png", orcamento: "US$ 9 Mi", expectativa: "Sul-Americana", destaque: "Keke Almeida", estadio: "Saroldi" }
+            ],
+            chile: [
+                { nome: "Audax Italiano", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/3336.png", orcamento: "US$ 8 Mi", expectativa: "Sul-Americana", destaque: "Alessandro Riep", estadio: "Bicentenario de La Florida" },
+                { nome: "Cobreloa", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/5835.png", orcamento: "US$ 10 Mi", expectativa: "Sobreviver", destaque: "Cristian Insaurralde", estadio: "Zorros del Desierto" },
+                { nome: "Cobresal", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2968.png", orcamento: "US$ 7 Mi", expectativa: "Meio de Tabela", destaque: "Cecilio Waterman", estadio: "El Cobre" },
+                { nome: "Colo-Colo", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/174.png", orcamento: "US$ 25 Mi", expectativa: "Campeão", destaque: "Arturo Vidal", estadio: "Monumental David Arellano" },
+                { nome: "Coquimbo Unido", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/6060.png", orcamento: "US$ 8 Mi", expectativa: "Sul-Americana", destaque: "Luciano Cabral", estadio: "Francisco Sánchez Rumoroso" },
+                { nome: "Dep. Copiapó", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/10996.png", orcamento: "US$ 5 Mi", expectativa: "Não Cair", destaque: "Isaac Díaz", estadio: "Luis Valenzuela" },
+                { nome: "Dep. Iquique", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/10331.png", orcamento: "US$ 7 Mi", expectativa: "Meio de Tabela", destaque: "Edson Puch", estadio: "Tierra de Campeones" },
+                { nome: "Everton (CHI)", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/3648.png", orcamento: "US$ 12 Mi", expectativa: "Sul-Americana", destaque: "Rodrigo Contreras", estadio: "Sausalito" },
+                { nome: "Huachipato", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/3649.png", orcamento: "US$ 10 Mi", expectativa: "Meio de Tabela", destaque: "Cris Martínez", estadio: "CAP Acero" },
+                { nome: "Ñublense", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/7732.png", orcamento: "US$ 7 Mi", expectativa: "Meio de Tabela", destaque: "Patricio Rubio", estadio: "Nelson Oyarzún" },
+                { nome: "O'Higgins", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2969.png", orcamento: "US$ 9 Mi", expectativa: "Sul-Americana", destaque: "Bryan Rabello", estadio: "El Teniente" },
+                { nome: "Palestino", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2965.png", orcamento: "US$ 10 Mi", expectativa: "Libertadores", destaque: "Bryan Carrasco", estadio: "Municipal de La Cisterna" },
+                { nome: "Unión Española", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2966.png", orcamento: "US$ 12 Mi", expectativa: "Libertadores", destaque: "Emiliano Vecchio", estadio: "Santa Laura" },
+                { nome: "Unión La Calera", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/10328.png", orcamento: "US$ 8 Mi", expectativa: "Sul-Americana", destaque: "Gigliotti", estadio: "Nicolás Chahuán" },
+                { nome: "Univ. Católica", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/176.png", orcamento: "US$ 20 Mi", expectativa: "Título", destaque: "Fernando Zampedri", estadio: "San Carlos de Apoquindo" },
+                { nome: "Univ. de Chile", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/177.png", orcamento: "US$ 22 Mi", expectativa: "Título", destaque: "Marcelo Díaz", estadio: "Nacional de Santiago" }
+            ],
+            paraguai: [
+                { nome: "2 de Mayo", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/8056.png", orcamento: "US$ 3 Mi", expectativa: "Meio de Tabela", destaque: "Brahian Ayala", estadio: "Río Parapití" },
+                { nome: "Cerro Porteño", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/606.png", orcamento: "US$ 20 Mi", expectativa: "Título", destaque: "Cecilio Domínguez", estadio: "La Nueva Olla" },
+                { nome: "General Caballero", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/18167.png", orcamento: "US$ 2 Mi", expectativa: "Não Cair", destaque: "Clementino González", estadio: "Ka'arendy" },
+                { nome: "Guaraní", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2662.png", orcamento: "US$ 8 Mi", expectativa: "Libertadores", destaque: "Gaspar Servio", estadio: "Rogelio Livieres" },
+                { nome: "Libertad", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2665.png", orcamento: "US$ 25 Mi", expectativa: "Campeão", destaque: "Roque Santa Cruz", estadio: "La Huerta" },
+                { nome: "Nacional (PAR)", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2664.png", orcamento: "US$ 6 Mi", expectativa: "Sul-Americana", destaque: "Antony Silva", estadio: "Arsenio Erico" },
+                { nome: "Olimpia", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/1749.png", orcamento: "US$ 18 Mi", expectativa: "Título", destaque: "Derlis González", estadio: "Manuel Ferreira" },
+                { nome: "Sol de América", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/6034.png", orcamento: "US$ 4 Mi", expectativa: "Não Cair", destaque: "Lisandro Cabrera", estadio: "Luis Alfonso Giagni" },
+                { nome: "Sportivo Ameliano", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/19817.png", orcamento: "US$ 3 Mi", expectativa: "Meio de Tabela", destaque: "Richard Torales", estadio: "Martín Torres" },
+                { nome: "Sportivo Luqueño", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2663.png", orcamento: "US$ 5 Mi", expectativa: "Sul-Americana", destaque: "Pablo Aguilar", estadio: "Feliciano Cáceres" },
+                { nome: "Sportivo Trinidense", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/7756.png", orcamento: "US$ 3 Mi", expectativa: "Não Cair", destaque: "Pedro Delvalle", estadio: "Martín Torres" },
+                { nome: "Tacuary", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/6652.png", orcamento: "US$ 2 Mi", expectativa: "Sobreviver", destaque: "Néstor Camacho", estadio: "Toribio Vargas" }
+            ],
+            bolivia: [
+                { nome: "Always Ready", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/17598.png", orcamento: "US$ 6 Mi", expectativa: "Libertadores", destaque: "Adalid Terrazas", estadio: "Villa Ingenio" },
+                { nome: "Aurora", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2972.png", orcamento: "US$ 2 Mi", expectativa: "Sul-Americana", destaque: "Jair Reinoso", estadio: "Félix Capriles" },
+                { nome: "Blooming", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2973.png", orcamento: "US$ 3 Mi", expectativa: "Meio de Tabela", destaque: "Rafinha", estadio: "Tahuichi Aguilera" },
+                { nome: "Bolívar", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2971.png", orcamento: "US$ 15 Mi", expectativa: "Campeão", destaque: "Ramiro Vaca", estadio: "Hernando Siles" },
+                { nome: "Guabirá", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/4636.png", orcamento: "US$ 1.5 Mi", expectativa: "Não Cair", destaque: "Alejandro Quintana", estadio: "Gilberto Parada" },
+                { nome: "GV San José", escudo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Gualberto_Villarroel_San_Jos%C3%A9.png/240px-Gualberto_Villarroel_San_Jos%C3%A9.png", orcamento: "US$ 2 Mi", expectativa: "Sul-Americana", destaque: "Javier Sanguinetti", estadio: "Jesús Bermúdez" },
+                { nome: "Independiente Petrolero", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/20349.png", orcamento: "US$ 1.5 Mi", expectativa: "Sobreviver", destaque: "Thomaz Santos", estadio: "Olímpico Patria" },
+                { nome: "Jorge Wilstermann", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2975.png", orcamento: "US$ 4 Mi", expectativa: "Meio de Tabela", destaque: "Pochi Chávez", estadio: "Félix Capriles" },
+                { nome: "Nacional Potosí", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/4639.png", orcamento: "US$ 3 Mi", expectativa: "Sul-Americana", destaque: "Martín Prost", estadio: "Víctor A. Ugarte" },
+                { nome: "Oriente Petrolero", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2976.png", orcamento: "US$ 4 Mi", expectativa: "Sul-Americana", destaque: "Hugo Dorrego", estadio: "Tahuichi Aguilera" },
+                { nome: "Real Santa Cruz", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/6064.png", orcamento: "US$ 1 Mi", expectativa: "Não Cair", destaque: "Efmamjjasond González", estadio: "Real Santa Cruz" },
+                { nome: "Real Tomayapo", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/20215.png", orcamento: "US$ 2 Mi", expectativa: "Meio de Tabela", destaque: "Matías Noble", estadio: "IV Centenario" },
+                { nome: "Royal Pari", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/17992.png", orcamento: "US$ 2.5 Mi", expectativa: "Meio de Tabela", destaque: "José Flores", estadio: "Tahuichi Aguilera" },
+                { nome: "San Antonio Bulo Bulo", escudo: "https://upload.wikimedia.org/wikipedia/en/3/34/San_Antonio_Bulo_Bulo_logo.png", orcamento: "US$ 2 Mi", expectativa: "Meio de Tabela", destaque: "Daniel Floro", estadio: "Carlos Villegas" },
+                { nome: "The Strongest", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2977.png", orcamento: "US$ 8 Mi", expectativa: "Título", destaque: "Enrique Triverio", estadio: "Hernando Siles" },
+                { nome: "Universitario de Vinto", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/21175.png", orcamento: "US$ 2 Mi", expectativa: "Sul-Americana", destaque: "Tommy Tobar", estadio: "Félix Capriles" }
+            ],
+            peru: [
+                { nome: "ADT Tarma", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/8086.png", orcamento: "US$ 4 Mi", expectativa: "Sul-Americana", destaque: "Victor Cedrón", estadio: "Unión Tarma" },
+                { nome: "Alianza Lima", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/198.png", orcamento: "US$ 18 Mi", expectativa: "Título", destaque: "Paolo Guerrero", estadio: "Matute" },
+                { nome: "Atlético Grau", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/6069.png", orcamento: "US$ 3 Mi", expectativa: "Meio de Tabela", destaque: "Neri Bandiera", estadio: "Miguel Grau" },
+                { nome: "Carlos Mannucci", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/6066.png", orcamento: "US$ 3.5 Mi", expectativa: "Sobreviver", destaque: "Matías Succar", estadio: "Mansiche" },
+                { nome: "Cienciano", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/196.png", orcamento: "US$ 6 Mi", expectativa: "Sul-Americana", destaque: "Cueva", estadio: "Inca Garcilaso" },
+                { nome: "Cusco FC", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/11801.png", orcamento: "US$ 5 Mi", expectativa: "Sul-Americana", destaque: "Iván Colman", estadio: "Inca Garcilaso" },
+                { nome: "Deportivo Garcilaso", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/6070.png", orcamento: "US$ 4 Mi", expectativa: "Meio de Tabela", destaque: "Diego Penny", estadio: "Inca Garcilaso" },
+                { nome: "Melgar", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/199.png", orcamento: "US$ 10 Mi", expectativa: "Libertadores", destaque: "Bernardo Cuesta", estadio: "Monumental UNSA" },
+                { nome: "Sport Boys", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/195.png", orcamento: "US$ 3 Mi", expectativa: "Não Cair", destaque: "Techera", estadio: "Miguel Grau" },
+                { nome: "Sport Huancayo", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/10329.png", orcamento: "US$ 4 Mi", expectativa: "Meio de Tabela", destaque: "Marcos Lliuya", estadio: "Huancayo" },
+                { nome: "Sporting Cristal", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/197.png", orcamento: "US$ 15 Mi", expectativa: "Título", destaque: "Cauteruccio", estadio: "Alberto Gallardo" },
+                { nome: "Universitario", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/201.png", orcamento: "US$ 16 Mi", expectativa: "Campeão", destaque: "Edison Flores", estadio: "Monumental U" },
+                { nome: "UTC", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2970.png", orcamento: "US$ 2.5 Mi", expectativa: "Não Cair", destaque: "Joel Sánchez", estadio: "Héroes de San Ramón" },
+                { nome: "Univ. César Vallejo", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2964.png", orcamento: "US$ 8 Mi", expectativa: "Sul-Americana", destaque: "Yorleys Mena", estadio: "Mansiche" }
+            ],
+            equador: [
+                { nome: "Aucas", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2653.png", orcamento: "US$ 8 Mi", expectativa: "Sul-Americana", destaque: "Jeison Medina", estadio: "Gonzalo Pozo" },
+                { nome: "Barcelona SC", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2654.png", orcamento: "US$ 25 Mi", expectativa: "Título", destaque: "Janner Corozo", estadio: "Monumental Banco Pichincha" },
+                { nome: "Cumbayá", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/21173.png", orcamento: "US$ 3 Mi", expectativa: "Sobreviver", destaque: "Juan Carlos Paredes", estadio: "Olímpico Atahualpa" },
+                { nome: "Delfín", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/15729.png", orcamento: "US$ 5 Mi", expectativa: "Meio de Tabela", destaque: "José Angulo", estadio: "Jocay" },
+                { nome: "Dep. Cuenca", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2655.png", orcamento: "US$ 4 Mi", expectativa: "Não Cair", destaque: "Lucas Mancinelli", estadio: "Alejandro Serrano" },
+                { nome: "El Nacional", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2656.png", orcamento: "US$ 6 Mi", expectativa: "Sul-Americana", destaque: "Fidel Martínez", estadio: "Olímpico Atahualpa" },
+                { nome: "Emelec", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2657.png", orcamento: "US$ 18 Mi", expectativa: "G4", destaque: "Pedro Ortiz", estadio: "George Capwell" },
+                { nome: "Ind. Del Valle", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/6061.png", orcamento: "US$ 30 Mi", expectativa: "Campeão", destaque: "Kendry Páez", estadio: "Banco Guayaquil" },
+                { nome: "LDU Quito", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2658.png", orcamento: "US$ 28 Mi", expectativa: "Título", destaque: "Alex Arce", estadio: "Rodrigo Paz Delgado" },
+                { nome: "Macará", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2659.png", orcamento: "US$ 4 Mi", expectativa: "Meio de Tabela", destaque: "Facundo Pons", estadio: "Bellavista" },
+                { nome: "Mushuc Runa", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/17454.png", orcamento: "US$ 3.5 Mi", expectativa: "Não Cair", destaque: "Bauman", estadio: "Echaleche" },
+                { nome: "Orense", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/19816.png", orcamento: "US$ 4 Mi", expectativa: "Meio de Tabela", destaque: "Agustín Herrera", estadio: "9 de Mayo" },
+                { nome: "Técnico Univ.", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/17215.png", orcamento: "US$ 3 Mi", expectativa: "Sobreviver", destaque: "Diego Armas", estadio: "Bellavista" },
+                { nome: "Univ. Católica", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2661.png", orcamento: "US$ 10 Mi", expectativa: "Libertadores", destaque: "Ismael Díaz", estadio: "Olímpico Atahualpa" }
+            ],
+            colombia: [
+                { nome: "América de Cali", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2561.png", orcamento: "US$ 20 Mi", expectativa: "Título", destaque: "Duván Vergara", estadio: "Pascual Guerrero" },
+                { nome: "Atl. Bucaramanga", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2562.png", orcamento: "US$ 8 Mi", expectativa: "Sul-Americana", destaque: "Fabián Sambueza", estadio: "Alfonso López" },
+                { nome: "Atlético Nacional", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2563.png", orcamento: "US$ 25 Mi", expectativa: "Campeão", destaque: "Edwin Cardona", estadio: "Atanasio Girardot" },
+                { nome: "Deportes Tolima", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2573.png", orcamento: "US$ 12 Mi", expectativa: "G4", destaque: "Yeison Guzmán", estadio: "Manuel Murillo Toro" },
+                { nome: "Deportivo Cali", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2565.png", orcamento: "US$ 10 Mi", expectativa: "Meio de Tabela", destaque: "Fredy Montero", estadio: "Deportivo Cali" },
+                { nome: "Deportivo Pereira", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2570.png", orcamento: "US$ 7 Mi", expectativa: "Sul-Americana", destaque: "Carlos Darwin Quintero", estadio: "Hernán Ramírez" },
+                { nome: "Ind. Medellín", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2567.png", orcamento: "US$ 15 Mi", expectativa: "Libertadores", destaque: "Edwuin Cetré", estadio: "Atanasio Girardot" },
+                { nome: "Junior", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2568.png", orcamento: "US$ 28 Mi", expectativa: "Título", destaque: "Carlos Bacca", estadio: "Metropolitano" },
+                { nome: "La Equidad", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/8064.png", orcamento: "US$ 5 Mi", expectativa: "Meio de Tabela", destaque: "Johan Rojas", estadio: "Techo" },
+                { nome: "Millonarios", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2569.png", orcamento: "US$ 22 Mi", expectativa: "Campeão", destaque: "Radamel Falcao", estadio: "El Campín" },
+                { nome: "Once Caldas", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2571.png", orcamento: "US$ 6 Mi", expectativa: "Sul-Americana", destaque: "Dayro Moreno", estadio: "Palogrande" },
+                { nome: "Santa Fe", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2566.png", orcamento: "US$ 15 Mi", expectativa: "Título", destaque: "Hugo Rodallega", estadio: "El Campín" },
+                { nome: "Águilas Doradas", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/12560.png", orcamento: "US$ 6 Mi", expectativa: "Sul-Americana", destaque: "Jeison Quiñónes", estadio: "Alberto Grisales" }
+            ],
+            venezuela: [
+                { nome: "Academia Puerto Cabello", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/17592.png", orcamento: "US$ 3 Mi", expectativa: "G4", destaque: "Miku Fedor", estadio: "La Bombonerita" },
+                { nome: "Carabobo", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/6067.png", orcamento: "US$ 2.5 Mi", expectativa: "Sul-Americana", destaque: "Harrison Contreras", estadio: "Misael Delgado" },
+                { nome: "Caracas FC", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2666.png", orcamento: "US$ 5 Mi", expectativa: "Título", destaque: "Wuilker Fariñez", estadio: "Olímpico UCV" },
+                { nome: "Dep. La Guaira", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/12588.png", orcamento: "US$ 2 Mi", expectativa: "Meio de Tabela", destaque: "Rafael Arace", estadio: "Olímpico UCV" },
+                { nome: "Dep. Táchira", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2667.png", orcamento: "US$ 6 Mi", expectativa: "Campeão", destaque: "Maurice Cova", estadio: "Pueblo Nuevo" },
+                { nome: "Estudiantes Mérida", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2668.png", orcamento: "US$ 1.5 Mi", expectativa: "Não Cair", destaque: "Tomás Rincón (Sonho)", estadio: "Metropolitano de Mérida" },
+                { nome: "Metropolitanos", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/13880.png", orcamento: "US$ 2.5 Mi", expectativa: "Sul-Americana", destaque: "Charlis Ortiz", estadio: "Olímpico UCV" },
+                { nome: "Monagas", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2669.png", orcamento: "US$ 3 Mi", expectativa: "Sul-Americana", destaque: "Tomás Rodríguez", estadio: "Monumental de Maturín" },
+                { nome: "Portuguesa", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/6068.png", orcamento: "US$ 2 Mi", expectativa: "Sul-Americana", destaque: "Richard Blanco", estadio: "José Antonio Páez" },
+                { nome: "Rayo Zuliano", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/22530.png", orcamento: "US$ 1 Mi", expectativa: "Não Cair", destaque: "Saimon Ramírez", estadio: "Pachencho Romero" },
+                { nome: "UCV FC", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/20348.png", orcamento: "US$ 1.5 Mi", expectativa: "Sobreviver", destaque: "Yeiber Murillo", estadio: "Olímpico UCV" },
+                { nome: "Zamora", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2670.png", orcamento: "US$ 2 Mi", expectativa: "Meio de Tabela", destaque: "Santiago Rodríguez", estadio: "La Carolina" }
             ]
         };
 
