@@ -12,6 +12,7 @@
             --card-bg: #2d3436;
             --input-bg: #34495e;
             --hover-bg: #3e4a4c;
+            --disabled-color: #95a5a6;
         }
 
         body {
@@ -67,7 +68,7 @@
             color: white;
             outline: none;
             transition: all 0.3s;
-            box-sizing: border-box; /* Garante que o padding não estoure a largura */
+            box-sizing: border-box;
         }
 
         .form-control:focus {
@@ -75,8 +76,20 @@
             box-shadow: 0 0 8px rgba(15, 185, 177, 0.3);
         }
 
-        select.form-control {
+        /* Estilo específico para quando o Select está DESATIVADO */
+        select.form-control:disabled {
+            background-color: #2c3e50;
+            color: var(--disabled-color);
+            border-color: #444;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        select.form-control:enabled {
             cursor: pointer;
+            background-color: var(--input-bg);
+            border-color: var(--secondary);
+            color: white;
         }
 
         /* --- GRID DE TIMES --- */
@@ -100,6 +113,12 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .team-card:hover {
@@ -108,7 +127,6 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.4);
         }
 
-        /* Cabeçalho do Card (Escudo + Nome) */
         .team-header {
             display: flex;
             align-items: center;
@@ -132,7 +150,6 @@
             line-height: 1.2;
         }
 
-        /* Informações do Time */
         .team-info {
             font-size: 0.95rem;
             line-height: 1.8;
@@ -145,7 +162,6 @@
             font-weight: 600;
         }
 
-        /* Botão de Seleção */
         .select-btn {
             width: 100%;
             padding: 12px;
@@ -165,13 +181,15 @@
             background-color: #7bed9f;
         }
 
-        /* Mensagem de Estado Vazio */
         .empty-state {
             grid-column: 1 / -1;
             text-align: center;
             color: #7f8c8d;
             font-size: 1.2rem;
             margin-top: 50px;
+            padding: 20px;
+            border: 2px dashed #444;
+            border-radius: 10px;
         }
 
     </style>
@@ -183,10 +201,17 @@
         <h2>Escolha seu time!</h2>
         
         <div class="controls-container">
-            <input type="text" id="coach-name" class="form-control" placeholder="Digite o Nome do Técnico..." autocomplete="off">
+            <input 
+                type="text" 
+                id="coach-name" 
+                class="form-control" 
+                placeholder="1º Passo: Digite seu nome de técnico..." 
+                autocomplete="off"
+                oninput="checkName()"
+            >
             
-            <select id="country-select" class="form-control" onchange="loadCountry()">
-                <option value="" disabled selected>🏳️ Selecione a Liga/País...</option>
+            <select id="country-select" class="form-control" onchange="loadCountry()" disabled>
+                <option value="" disabled selected>2º Passo: Selecione a Liga/País...</option>
                 <option value="brasil">🇧🇷 Brasil (Série A)</option>
                 <option value="espanha">🇪🇸 Espanha (La Liga)</option>
                 <option value="inglaterra">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra (Premier League)</option>
@@ -196,13 +221,12 @@
 
     <main id="teams-container">
         <div class="empty-state">
-            👆 Selecione uma liga no menu acima para começar.
+            🔒 Digite seu nome acima para liberar a seleção de ligas.
         </div>
     </main>
 
     <script>
         // --- BANCO DE DADOS ---
-        // Usando imagens da ESPN (CDN) para garantir que apareçam e não tenham bloqueio
         const database = {
             brasil: [
                 { nome: "Flamengo", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/629.png", orcamento: "R$ 200 Mi", expectativa: "Campeão", destaque: "Pedro", estadio: "Maracanã" },
@@ -233,33 +257,52 @@
             ]
         };
 
-        // --- LÓGICA DO JOGO ---
-
+        // --- REFERÊNCIAS ---
         const container = document.getElementById('teams-container');
         const countrySelect = document.getElementById('country-select');
         const coachInput = document.getElementById('coach-name');
 
+        // --- NOVA FUNÇÃO DE VALIDAÇÃO ---
+        function checkName() {
+            // Verifica se tem texto (removendo espaços vazios)
+            const hasName = coachInput.value.trim().length > 0;
+
+            if (hasName) {
+                // Se tem nome, libera o select
+                countrySelect.disabled = false;
+                countrySelect.setAttribute('title', 'Agora você pode escolher a liga');
+            } else {
+                // Se apagou o nome, bloqueia tudo de novo
+                countrySelect.disabled = true;
+                countrySelect.value = ""; // Reseta a seleção para a primeira opção
+                countrySelect.setAttribute('title', 'Digite seu nome primeiro');
+                
+                // Limpa os times da tela e mostra mensagem de bloqueio
+                container.innerHTML = '<div class="empty-state">🔒 Digite seu nome acima para liberar a seleção de ligas.</div>';
+            }
+        }
+
+        // --- LÓGICA DE CARREGAMENTO ---
         function loadCountry() {
             const countryKey = countrySelect.value;
             
-            // Limpa o container
-            container.innerHTML = '';
+            // Verificação de segurança extra
+            if (coachInput.value.trim() === "") {
+                alert("Por favor, digite seu nome primeiro.");
+                checkName(); // Força o bloqueio se o usuário tentou burlar
+                return;
+            }
 
-            // Se nada for selecionado, sai da função
+            container.innerHTML = '';
             if(!countryKey) return;
 
-            // Pega os times
             let times = database[countryKey];
-            
-            // 1. ORDENAÇÃO ALFABÉTICA (A-Z)
             times.sort((a, b) => a.nome.localeCompare(b.nome));
 
-            // 2. RENDERIZAÇÃO DOS CARDS
             times.forEach(time => {
                 const card = document.createElement('div');
                 card.className = 'team-card';
 
-                // Usamos onerror para caso a imagem falhe, carregar uma bola genérica
                 card.innerHTML = `
                     <div class="team-header">
                         <img src="${time.escudo}" alt="Escudo ${time.nome}" class="team-crest" onerror="this.src='https://cdn-icons-png.flaticon.com/512/53/53283.png'">
@@ -273,31 +316,24 @@
                     </div>
                     <button class="select-btn" onclick="selectTeam('${time.nome}')">Assumir Time</button>
                 `;
-
                 container.appendChild(card);
             });
         }
 
         function selectTeam(teamName) {
-            // Validação do nome do técnico
             const coachName = coachInput.value.trim();
 
+            // Última verificação antes de salvar
             if (coachName === "") {
-                alert("⚠️ ATENÇÃO: Digite o nome do técnico no topo da página antes de escolher seu time!");
+                checkName(); // Re-aplica bloqueios
                 coachInput.focus();
-                coachInput.style.borderColor = "#e74c3c"; // Vermelho para indicar erro
                 return;
-            } else {
-                coachInput.style.borderColor = "#555"; // Volta ao normal
             }
             
-            // Salvar dados no navegador (LocalStorage)
             localStorage.setItem('brfutebol_time', teamName);
             localStorage.setItem('brfutebol_tecnico', coachName);
 
-            // Encontrar e salvar o link do escudo para usar depois
             let selectedTeamObj = null;
-            // Procura em todas as ligas
             Object.values(database).forEach(liga => {
                 const found = liga.find(t => t.nome === teamName);
                 if(found) selectedTeamObj = found;
@@ -307,10 +343,7 @@
                 localStorage.setItem('brfutebol_escudo', selectedTeamObj.escudo);
             }
 
-            // Confirmação e Redirecionamento
             alert(`✅ Contrato assinado!\n\nBem-vindo ao ${teamName}, técnico ${coachName}.\nVamos para o escritório.`);
-            
-            // Descomente a linha abaixo quando criar o arquivo dashboard.html
             // window.location.href = 'dashboard.html'; 
         }
     </script>
