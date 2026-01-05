@@ -3,93 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRFutebol - Seleção de Time</title>
+    <title>BRFutebol - Novo Jogo</title>
     <style>
         :root {
             --primary: #1e272e;
             --secondary: #0fb9b1; /* Verde Turquesa */
+            --accent: #ff4757; /* Vermelho para erros/destaque */
             --text: #ecf0f1;
             --card-bg: #2d3436;
-            --input-bg: #34495e;
-            --hover-bg: #3e4a4c;
-            --disabled-color: #95a5a6;
+            --input-bg: #151a1d;
+            --success: #2ecc71;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #111;
+            background-color: #0d1115;
+            /* Textura de fundo sutil (pontilhada) */
+            background-image: radial-gradient(#2c3e50 1px, transparent 1px);
+            background-size: 20px 20px;
             color: var(--text);
             margin: 0;
             padding: 0;
             min-height: 100vh;
         }
 
-        /* --- HEADER --- */
+        /* --- HERO HEADER (Visual Novo) --- */
         header {
-            background-color: var(--primary);
-            padding: 30px 20px;
+            background: linear-gradient(180deg, rgba(30,39,46,0.95) 0%, rgba(13,17,21,0.95) 100%);
+            padding: 40px 20px;
             text-align: center;
-            border-bottom: 3px solid var(--secondary);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border-bottom: 1px solid #333;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+            z-index: 10;
         }
 
-        h1 { 
-            margin: 0 0 10px 0; 
-            font-size: 2.2rem; 
+        .logo-area h1 { 
+            margin: 0; 
+            font-size: 2.5rem; 
+            font-weight: 800;
             text-transform: uppercase; 
-            letter-spacing: 2px; 
-            color: var(--secondary);
+            letter-spacing: 3px; 
+            background: linear-gradient(to right, #fff, var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        h2 {
-            margin: 0 0 25px 0;
-            font-size: 1.2rem;
-            color: #bdc3c7;
-            font-weight: normal;
+        .logo-area h2 {
+            margin: 5px 0 30px 0;
+            font-size: 1rem;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 400;
         }
 
-        .controls-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            max-width: 500px;
+        /* --- SETUP CARD (Onde digita o nome) --- */
+        .setup-card {
+            background: rgba(45, 52, 54, 0.6);
+            backdrop-filter: blur(10px); /* Efeito de vidro */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 450px;
             margin: 0 auto;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            text-align: left;
         }
 
-        /* --- FORMULÁRIOS --- */
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 0.85rem;
+            color: #bdc3c7;
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-label i { margin-right: 5px; color: var(--secondary); }
+
         .form-control {
             width: 100%;
             padding: 15px;
             font-size: 1.1rem;
             border-radius: 8px;
-            border: 1px solid #555;
+            border: 2px solid #444;
             background-color: var(--input-bg);
             color: white;
             outline: none;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             box-sizing: border-box;
         }
 
         .form-control:focus {
             border-color: var(--secondary);
-            box-shadow: 0 0 8px rgba(15, 185, 177, 0.3);
+            background-color: #1a2226;
+            box-shadow: 0 0 15px rgba(15, 185, 177, 0.1);
         }
 
-        /* Estilo específico para quando o Select está DESATIVADO */
+        /* Select Desativado (Estilo Visual) */
         select.form-control:disabled {
-            background-color: #2c3e50;
-            color: var(--disabled-color);
-            border-color: #444;
+            background-color: #1e2529;
+            border-color: #2c3338;
+            color: #555;
             cursor: not-allowed;
-            opacity: 0.6;
+            opacity: 0.7;
         }
 
+        /* Efeito quando desbloqueia o select */
         select.form-control:enabled {
-            cursor: pointer;
-            background-color: var(--input-bg);
+            animation: pulseSuccess 0.5s;
             border-color: var(--secondary);
-            color: white;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%230fb9b1%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px top 50%;
+            background-size: 12px auto;
+            appearance: none;
+        }
+
+        @keyframes pulseSuccess {
+            0% { transform: scale(1); border-color: #444; }
+            50% { transform: scale(1.02); border-color: #fff; }
+            100% { transform: scale(1); border-color: var(--secondary); }
         }
 
         /* --- GRID DE TIMES --- */
@@ -107,24 +148,27 @@
             background-color: var(--card-bg);
             border-radius: 12px;
             padding: 20px;
-            border-top: 4px solid var(--secondary);
+            border-top: 4px solid #444; /* Padrão cinza */
             box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            transition: transform 0.2s, background-color 0.2s;
+            transition: all 0.3s;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            animation: fadeIn 0.5s ease-in;
+            animation: fadeIn 0.4s ease-out backwards;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        
+        /* Adiciona um atraso na animação de cada card para efeito cascata */
+        .team-card:nth-child(1) { animation-delay: 0.05s; }
+        .team-card:nth-child(2) { animation-delay: 0.1s; }
+        .team-card:nth-child(3) { animation-delay: 0.15s; }
+        .team-card:nth-child(4) { animation-delay: 0.2s; }
+        .team-card:nth-child(5) { animation-delay: 0.25s; }
 
         .team-card:hover {
-            transform: translateY(-5px);
-            background-color: var(--hover-bg);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            transform: translateY(-8px);
+            background-color: #353b48;
+            border-color: var(--secondary);
+            box-shadow: 0 10px 25px rgba(15, 185, 177, 0.15);
         }
 
         .team-header {
@@ -133,63 +177,68 @@
             gap: 15px;
             margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 1px solid #444;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         .team-crest {
             width: 60px;
             height: 60px;
             object-fit: contain;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
         }
 
         .team-name {
             font-size: 1.4rem;
-            font-weight: bold;
+            font-weight: 700;
             color: #fff;
             line-height: 1.2;
         }
 
         .team-info {
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             line-height: 1.8;
-            color: #bdc3c7;
+            color: #b2bec3;
             margin-bottom: 20px;
         }
 
-        .team-info strong {
-            color: var(--secondary);
-            font-weight: 600;
-        }
+        .team-info strong { color: var(--secondary); font-weight: 600; }
 
         .select-btn {
             width: 100%;
             padding: 12px;
-            background-color: var(--secondary);
-            border: none;
-            color: #1e272e;
+            background-color: transparent;
+            border: 2px solid var(--secondary);
+            color: var(--secondary);
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            transition: background-color 0.3s;
+            transition: all 0.2s;
         }
         
         .select-btn:hover {
-            background-color: #7bed9f;
+            background-color: var(--secondary);
+            color: #1e272e;
+            box-shadow: 0 0 15px rgba(15, 185, 177, 0.4);
         }
 
         .empty-state {
             grid-column: 1 / -1;
             text-align: center;
-            color: #7f8c8d;
-            font-size: 1.2rem;
-            margin-top: 50px;
-            padding: 20px;
-            border: 2px dashed #444;
-            border-radius: 10px;
+            color: #555;
+            font-size: 1.1rem;
+            margin-top: 60px;
+            padding: 40px;
+            border: 2px dashed #333;
+            border-radius: 15px;
+            background-color: rgba(0,0,0,0.2);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
     </style>
@@ -197,47 +246,57 @@
 <body>
 
     <header>
-        <h1>BRFutebol</h1>
-        <h2>Escolha seu time!</h2>
+        <div class="logo-area">
+            <h1>BRFutebol</h1>
+            <h2>Manager 2026</h2>
+        </div>
         
-        <div class="controls-container">
-            <input 
-                type="text" 
-                id="coach-name" 
-                class="form-control" 
-                placeholder="1º Passo: Digite seu nome de técnico..." 
-                autocomplete="off"
-                oninput="checkName()"
-            >
+        <div class="setup-card">
             
-            <select id="country-select" class="form-control" onchange="loadCountry()" disabled>
-                <option value="" disabled selected>2º Passo: Selecione a Liga/País...</option>
-                <option value="brasil"> Brasil (Série A)</option>
-                <option value="espanha"> Espanha (La Liga)</option>
-                <option value="inglaterra"> Inglaterra (Premier League)</option>
-                <option value="argentina"> Argentina (Liga Profesional)</option>
-                <option value="uruguai">Uruguai (Primera División)</option>
-                <option value="chile">Chile (Primera División)</option>
-                <option value="paraguai">Paraguai (Primera División)</option>
-                <option value="bolivia">Bolívia (División Profesional)</option>
-                <option value="colombia">Colômbia (Liga BetPlay)</option>
-                <option value="equador">Equador (LigaPro)</option>
-                <option value="peru">Peru (Liga 1)</option>
-                <option value="venezuela">Venezuela (Liga FUTVE)</option>
-            </select>
+            <div class="input-group">
+                <label class="input-label">📝 Passo 1: Identificação</label>
+                <input 
+                    type="text" 
+                    id="coach-name" 
+                    class="form-control" 
+                    placeholder="Nome do Treinador..." 
+                    autocomplete="off"
+                    oninput="checkName()"
+                >
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">🌍 Passo 2: Mercado de Trabalho</label>
+                <select id="country-select" class="form-control" onchange="loadCountry()" disabled>
+                    <option value="" disabled selected>Aguardando credencial...</option>
+                    <option value="brasil">🇧🇷 Brasil (Série A)</option>
+                    <option value="espanha">🇪🇸 Espanha (La Liga)</option>
+                    <option value="inglaterra">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra (Premier League)</option>
+                    <option value="argentina">🇦🇷 Argentina (Liga Profesional)</option>
+                    <option value="uruguai">🇺🇾 Uruguai (Primera División)</option>
+                    <option value="chile">🇨🇱 Chile (Primera División)</option>
+                    <option value="paraguai">🇵🇾 Paraguai (Primera División)</option>
+                    <option value="bolivia">🇧🇴 Bolívia (División Profesional)</option>
+                    <option value="colombia">🇨🇴 Colômbia (Liga BetPlay)</option>
+                    <option value="equador">🇪🇨 Equador (LigaPro)</option>
+                    <option value="peru">🇵🇪 Peru (Liga 1)</option>
+                    <option value="venezuela">🇻🇪 Venezuela (Liga FUTVE)</option>
+                </select>
+            </div>
+
         </div>
     </header>
 
     <main id="teams-container">
         <div class="empty-state">
-            🔒 Digite seu nome acima para liberar a seleção de ligas.
+            👆 Preencha seus dados acima para ver as ofertas de emprego disponíveis.
         </div>
     </main>
 
     <script>
-        // --- BANCO DE DADOS ---
+        // --- BANCO DE DADOS COMPLETO ---
         const database = {
-           brasil: [
+            brasil: [
                 { nome: "Athletico-PR", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2020.png", orcamento: "R$ 350 Mi", expectativa: "Sul-Americana", destaque: "Canobbio", estadio: "Ligga Arena" },
                 { nome: "Atlético-MG", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/1045.png", orcamento: "R$ 400 Mi", expectativa: "Libertadores", destaque: "Hulk", estadio: "Arena MRV" },
                 { nome: "Bahia", escudo: "https://upload.wikimedia.org/wikipedia/pt/2/2c/Esporte_Clube_Bahia_-_Escudo_2011.png", orcamento: "R$ 300 Mi", expectativa: "Libertadores", destaque: "Everton Ribeiro", estadio: "Casa de Apostas Arena" },
@@ -259,7 +318,7 @@
                 { nome: "Vasco", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/3454.png", orcamento: "R$ 180 Mi", expectativa: "Sul-Americana", destaque: "Coutinho", estadio: "São Januário" },
                 { nome: "Vitória", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/3457.png", orcamento: "R$ 80 Mi", expectativa: "Não Cair", destaque: "Matheuzinho", estadio: "Barradão" }
             ],
-           espanha: [
+            espanha: [
                 { nome: "Alavés", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/96.png", orcamento: "€ 50 Mi", expectativa: "Não Cair", destaque: "Kike García", estadio: "Mendizorrotza" },
                 { nome: "Athletic Bilbao", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/93.png", orcamento: "€ 200 Mi", expectativa: "Europa League", destaque: "Nico Williams", estadio: "San Mamés" },
                 { nome: "Atlético de Madrid", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/1068.png", orcamento: "€ 500 Mi", expectativa: "Champions", destaque: "Griezmann", estadio: "Metropolitano" },
@@ -469,34 +528,29 @@
         const countrySelect = document.getElementById('country-select');
         const coachInput = document.getElementById('coach-name');
 
-        // --- NOVA FUNÇÃO DE VALIDAÇÃO ---
+        // --- VALIDAÇÃO ---
         function checkName() {
-            // Verifica se tem texto (removendo espaços vazios)
             const hasName = coachInput.value.trim().length > 0;
 
             if (hasName) {
-                // Se tem nome, libera o select
                 countrySelect.disabled = false;
                 countrySelect.setAttribute('title', 'Agora você pode escolher a liga');
             } else {
-                // Se apagou o nome, bloqueia tudo de novo
                 countrySelect.disabled = true;
-                countrySelect.value = ""; // Reseta a seleção para a primeira opção
+                countrySelect.value = ""; 
                 countrySelect.setAttribute('title', 'Digite seu nome primeiro');
-                
-                // Limpa os times da tela e mostra mensagem de bloqueio
-                container.innerHTML = '<div class="empty-state">🔒 Digite seu nome acima para liberar a seleção de ligas.</div>';
+                container.innerHTML = '<div class="empty-state">👆 Preencha seus dados acima para ver as ofertas de emprego disponíveis.</div>';
             }
         }
 
-        // --- LÓGICA DE CARREGAMENTO ---
+        // --- CARREGAMENTO ---
         function loadCountry() {
             const countryKey = countrySelect.value;
             
-            // Verificação de segurança extra
+            // Verificação Extra
             if (coachInput.value.trim() === "") {
                 alert("Por favor, digite seu nome primeiro.");
-                checkName(); // Força o bloqueio se o usuário tentou burlar
+                checkName(); 
                 return;
             }
 
@@ -530,9 +584,8 @@
         function selectTeam(teamName) {
             const coachName = coachInput.value.trim();
 
-            // Última verificação antes de salvar
             if (coachName === "") {
-                checkName(); // Re-aplica bloqueios
+                checkName();
                 coachInput.focus();
                 return;
             }
@@ -548,9 +601,15 @@
             
             if(selectedTeamObj) {
                 localStorage.setItem('brfutebol_escudo', selectedTeamObj.escudo);
+                localStorage.setItem('brfutebol_orcamento', selectedTeamObj.orcamento); // Salvando orçamento
             }
 
+            // Exemplo de transição visual
+            document.body.style.opacity = 0;
+            document.body.style.transition = "opacity 1s";
+            
             alert(`✅ Contrato assinado!\n\nBem-vindo ao ${teamName}, técnico ${coachName}.\nVamos para o escritório.`);
+            // Redirecionamento (futuro)
             // window.location.href = 'dashboard.html'; 
         }
     </script>
