@@ -1,32 +1,48 @@
+const database = {
+    brasil: [
+        { nome: "Flamengo", forca: 85, escudo: "https://upload.wikimedia.org/wikipedia/commons/2/2e/Flamengo_braz_logo.svg", orcamento: "R$ 1.2 Bi" },
+        { nome: "Palmeiras", forca: 84, escudo: "https://upload.wikimedia.org/wikipedia/commons/1/10/Palmeiras_logo.svg", orcamento: "R$ 1 Bi" },
+        { nome: "Atlético-MG", forca: 82, escudo: "https://upload.wikimedia.org/wikipedia/commons/5/5f/Atl%C3%A9tico_Mineiro_logo.svg", orcamento: "R$ 800 Mi" },
+        { nome: "São Paulo", forca: 80, escudo: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Sao_Paulo_Futebol_Clube.svg", orcamento: "R$ 600 Mi" },
+        { nome: "Corinthians", forca: 99, escudo: "https://upload.wikimedia.org/wikipedia/pt/b/b4/Corinthians_simbolo.png", orcamento: "R$ 700 Mi" },
+        { nome: "Fluminense", forca: 78, escudo: "https://upload.wikimedia.org/wikipedia/commons/a/ad/Fluminense_FC_escudo.png", orcamento: "R$ 400 Mi" },
+        { nome: "Grêmio", forca: 78, escudo: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Gremio_Logo.svg/1200px-Gremio_Logo.svg.png", orcamento: "R$ 500 Mi" },
+        { nome: "Internacional", forca: 78, escudo: "https://upload.wikimedia.org/wikipedia/commons/f/f1/Escudo_do_Sport_Club_Internacional.svg", orcamento: "R$ 450 Mi" },
+        { nome: "Botafogo", forca: 81, escudo: "https://upload.wikimedia.org/wikipedia/commons/c/cb/Botafogo_de_Futebol_e_Regatas_logo.svg", orcamento: "R$ 900 Mi" },
+        { nome: "Vasco", forca: 75, escudo: "https://upload.wikimedia.org/wikipedia/commons/6/67/Vasco_da_Gama_logo.svg", orcamento: "R$ 300 Mi" },
+        { nome: "Cruzeiro", forca: 76, escudo: "https://upload.wikimedia.org/wikipedia/commons/b/b8/Cruzeiro_Esporte_Clube_%28logo%29.svg", orcamento: "R$ 350 Mi" },
+        { nome: "Bahia", forca: 76, escudo: "https://upload.wikimedia.org/wikipedia/pt/2/2c/Esporte_Clube_Bahia_logo.png", orcamento: "R$ 400 Mi" }
+    ],
+    espanha: [
+        { nome: "Real Madrid", forca: 92, escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/5/56/Real_Madrid_CF.svg/1200px-Real_Madrid_CF.svg.png", orcamento: "€ 800 Mi" },
+        { nome: "Barcelona", forca: 89, escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/4/47/FC_Barcelona_%28crest%29.svg/1200px-FC_Barcelona_%28crest%29.svg.png", orcamento: "€ 700 Mi" },
+        { nome: "Atlético Madrid", forca: 85, escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/f/f4/Atletico_Madrid_2017_logo.svg/1200px-Atletico_Madrid_2017_logo.svg.png", orcamento: "€ 400 Mi" },
+        { nome: "Sevilla", forca: 80, escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/3/3b/Sevilla_FC_logo.svg/1200px-Sevilla_FC_logo.svg.png", orcamento: "€ 200 Mi" }
+    ],
+    inglaterra: [
+        { nome: "Man City", forca: 94, escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/e/eb/Manchester_City_FC_badge.svg/1200px-Manchester_City_FC_badge.svg.png", orcamento: "£ 900 Mi" },
+        { nome: "Liverpool", forca: 90, escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/0/0c/Liverpool_FC.svg/1200px-Liverpool_FC.svg.png", orcamento: "£ 800 Mi" },
+        { nome: "Arsenal", forca: 89, escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/5/53/Arsenal_FC.svg/1200px-Arsenal_FC.svg.png", orcamento: "£ 750 Mi" },
+        { nome: "Chelsea", forca: 86, escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/c/cc/Chelsea_FC.svg/1200px-Chelsea_FC.svg.png", orcamento: "£ 600 Mi" }
+    ],
+    argentina: [
+        { nome: "River Plate", forca: 82, escudo: "https://upload.wikimedia.org/wikipedia/commons/3/3f/Logo_River_Plate.png", orcamento: "US$ 100 Mi" },
+        { nome: "Boca Juniors", forca: 80, escudo: "https://upload.wikimedia.org/wikipedia/commons/7/7c/Escudo_del_Club_Atl%C3%A9tico_Boca_Juniors_2012.svg", orcamento: "US$ 90 Mi" },
+        { nome: "Racing", forca: 76, escudo: "https://upload.wikimedia.org/wikipedia/commons/5/56/Escudo_de_Racing_Club_2014.svg", orcamento: "US$ 50 Mi" },
+        { nome: "Independiente", forca: 75, escudo: "https://upload.wikimedia.org/wikipedia/commons/d/db/Escudo_del_Club_Atl%C3%A9tico_Independiente.svg", orcamento: "US$ 40 Mi" }
+    ]
+};
+// Database de jogadores reais (Opcional, se não tiver, o engine cria aleatório)
 const PlayersDB = {
     "Flamengo": [
-        { nome: "Rossi", pos: "GOL", forca: 83, idade: 30, carac: "Pegador de Pênaltis" }, // Especialista
-        { nome: "Léo Ortiz", pos: "ZAG", forca: 85, idade: 30, carac: "Construtor" }, // Sai jogando bem
-        { nome: "Léo Pereira", pos: "ZAG", forca: 82, idade: 29, carac: "Xerife" },
-        { nome: "Ayrton Lucas", pos: "ZAG", forca: 81, idade: 28, carac: "Apoio" }, // Lateral ofensivo
-        { nome: "De la Cruz", pos: "MEI", forca: 88, idade: 28, carac: "Maestro" },
-        { nome: "Pulgar", pos: "MEI", forca: 82, idade: 31, carac: "Cão de Guarda" },
-        { nome: "Pedro", pos: "ATA", forca: 90, idade: 28, carac: "Artilheiro" },
-        { nome: "Bruno Henrique", pos: "ATA", forca: 80, idade: 35, carac: "Veloz" }
-    ],
-    "Palmeiras": [
-        { nome: "Weverton", pos: "GOL", forca: 84, idade: 37, carac: "Paredão" },
-        { nome: "Gómez", pos: "ZAG", forca: 85, idade: 32, carac: "Líder" }, // Capitão
-        { nome: "Piquerez", pos: "ZAG", forca: 83, idade: 27, carac: "Construtor" },
-        { nome: "Mayke", pos: "ZAG", forca: 79, idade: 32, carac: "Defensivo" },
-        { nome: "Estêvão", pos: "ATA", forca: 88, idade: 18, carac: "Veloz" },
-        { nome: "Flaco López", pos: "ATA", forca: 82, idade: 25, carac: "Pivô" }
-    ],
-    "Man City": [
-        { nome: "Ederson", pos: "GOL", forca: 89, idade: 31, carac: "Joga com os Pés" }, // O melhor nisso
-        { nome: "Rodri", pos: "MEI", forca: 93, idade: 29, carac: "Maestro" },
-        { nome: "Haaland", pos: "ATA", forca: 94, idade: 25, carac: "Artilheiro" }
-    ],
-    "Corinthians": [
-        { nome: "Hugo Souza", pos: "GOL", forca: 80, idade: 26, carac: "Pegador de Pênaltis" },
-        { nome: "Fagner", pos: "ZAG", forca: 76, idade: 36, carac: "Apoio" },
-        { nome: "André Ramalho", pos: "ZAG", forca: 81, idade: 33, carac: "Xerife" },
-        { nome: "Memphis Depay", pos: "ATA", forca: 87, idade: 31, carac: "Pivô" }
+        { nome: "Rossi", pos: "GOL", forca: 78 },
+        { nome: "Léo Pereira", pos: "ZAG", forca: 80 },
+        { nome: "David Luiz", pos: "ZAG", forca: 77 },
+        { nome: "Ayrton Lucas", pos: "LE", forca: 79 },
+        { nome: "Pulgar", pos: "VOL", forca: 81 },
+        { nome: "De La Cruz", pos: "MEI", forca: 85, carac: "Maestro" },
+        { nome: "Arrascaeta", pos: "MEI", forca: 87, carac: "Construtor" },
+        { nome: "Pedro", pos: "ATA", forca: 86, carac: "Artilheiro" },
+        { nome: "Bruno Henrique", pos: "ATA", forca: 82, carac: "Veloz" }
     ]
-    // ... adicione as características aos outros times seguindo essa lógica
 };
