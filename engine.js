@@ -1,5 +1,5 @@
 const Engine = {
-    // --- DADOS GERAIS PARA GERAÇÃO ---
+    // --- DADOS GERAIS ---
     nomes: ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Ferreira", "Costa", "Rodrigues", "Almeida", "Nascimento", "Alves", "Carvalho", "Araújo", "Ribeiro", "Müller", "Schneider", "Rossi", "Bianchi", "Smith", "Johnson"],
     prenomes: ["João", "José", "Carlos", "Lucas", "Pedro", "Mateus", "Tiago", "Gabriel", "Rafael", "Daniel", "Bruno", "Leonardo", "Rodrigo", "Guilherme", "Gustavo", "Felipe", "Fernando", "Hans", "Francesco", "James", "Michael"],
     
@@ -243,13 +243,12 @@ const Engine = {
     },
 
     escolherMelhores11: function(elenco) {
-        // Se o usuário salvou a ordem (via tela de Escalação), os primeiros 11 são titulares
-        // Verificação simples: se o primeiro jogador tem posição X/Y definida, respeita a ordem do array
+        // Verifica se há tática salva (jogadores com posição X/Y definida)
         if (elenco[0] && typeof elenco[0].x !== 'undefined') {
             return elenco.slice(0, 11);
         }
 
-        // Caso contrário (primeira vez), escolhe por força
+        // Se não, escolhe por força
         const gols = elenco.filter(j => j.pos === 'GOL').sort((a,b) => b.forca - a.forca);
         const zags = elenco.filter(j => ['ZAG','LE','LD'].includes(j.pos)).sort((a,b) => b.forca - a.forca);
         const meis = elenco.filter(j => ['MEI','VOL','MC'].includes(j.pos)).sort((a,b) => b.forca - a.forca);
@@ -404,7 +403,9 @@ const Engine = {
             const timeFora = this.encontrarTime(gameState, jogo.fora);
 
             if (timeCasa && timeFora) {
+                // Simula, mas distribui gols para artilharia
                 const placar = this.simularPartida(timeCasa, timeFora, evento.tipo);
+                
                 jogo.golsCasa = placar.golsCasa;
                 jogo.golsFora = placar.golsFora;
 
@@ -464,7 +465,33 @@ const Engine = {
         this.atualizarMoral(timeCasa, gC, gF);
         this.atualizarMoral(timeFora, gF, gC);
 
+        // DISTRIBUI GOLS (ARTILHARIA)
+        this.distribuirGols(timeCasa, gC);
+        this.distribuirGols(timeFora, gF);
+
         return { golsCasa: gC, golsFora: gF };
+    },
+
+    distribuirGols: function(time, qtdGols) {
+        if (qtdGols === 0) return;
+        const titulares = this.escolherMelhores11(time.elenco);
+        
+        for (let i = 0; i < qtdGols; i++) {
+            let autor = null;
+            const r = Math.random();
+            if (r < 0.6) { // 60% Atacante
+                const atas = titulares.filter(j => ['ATA','PE','PD'].includes(j.pos));
+                autor = atas.length ? atas[Math.floor(Math.random()*atas.length)] : titulares[0];
+            } else if (r < 0.9) { // 30% Meia
+                const meis = titulares.filter(j => ['MEI','MC','VOL'].includes(j.pos));
+                autor = meis.length ? meis[Math.floor(Math.random()*meis.length)] : titulares[0];
+            } else { // 10% Defesa
+                const defs = titulares.filter(j => !['ATA','MEI'].includes(j.pos));
+                autor = defs.length ? defs[Math.floor(Math.random()*defs.length)] : titulares[0];
+            }
+            if (!autor.gols) autor.gols = 0;
+            autor.gols++;
+        }
     },
 
     calcularBonusCaracteristicas: function(time) {
@@ -502,7 +529,6 @@ const Engine = {
              const goleiroCasa = this.escolherMelhores11(timeCasa.elenco).find(j => j.pos === 'GOL');
              const goleiroFora = this.escolherMelhores11(timeFora.elenco).find(j => j.pos === 'GOL');
 
-             // Batedor de Pênalti Especialista
              const batedorC = timeCasa.elenco.find(j => j.id === timeCasa.funcoes.penalti);
              if(batedorC && batedorC.carac === 'Artilheiro') chanceCasa += 0.05;
 
@@ -516,7 +542,6 @@ const Engine = {
         if (tipo === 'SUPERCOPA') {
             vencedor.stats.titulos.push("Supercopa");
             vencedor.moral = 100;
-            // Premiacao em dinheiro
             vencedor.financas.caixa += 5000000; 
             return { campeao: vencedor.nome };
         } else {
@@ -548,8 +573,6 @@ const Engine = {
             if (time.pressaoDiretoria >= 4) time.moral -= 2; 
             else time.moral += 2;
         }
-        // Ganho de bilheteria se jogar em casa
-        // (Simplificado: só soma se for mandante na lógica principal, aqui apenas moral)
         if (time.moral > 100) time.moral = 100;
         if (time.moral < 10) time.moral = 10;
     },
