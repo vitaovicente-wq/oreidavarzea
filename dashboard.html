@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRFutebol - Dashboard</title>
+    <script src="database_jogadores.js"></script>
+    <script src="engine.js"></script>
+    
+    <style>
+        :root {
+            --primary: #1e272e;
+            --secondary: #0fb9b1;
+            --accent: #ff4757;
+            --bg: #0d1115;
+            --card-bg: #2d3436;
+            --text: #ecf0f1;
+            --text-muted: #bdc3c7;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: grid;
+            grid-template-rows: 80px 1fr;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* --- TOP BAR --- */
+        header {
+            background-color: rgba(30, 39, 46, 0.95);
+            border-bottom: 2px solid var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 100;
+        }
+
+        .team-identity {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .team-logo { width: 50px; height: 50px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        .team-info h1 { margin: 0; font-size: 1.4rem; color: #fff; }
+        .team-info p { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
+
+        .status-bar {
+            display: flex;
+            gap: 25px;
+        }
+
+        .status-item { text-align: right; }
+        .status-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .status-value { font-size: 1.1rem; font-weight: bold; color: var(--secondary); }
+        .status-value.danger { color: var(--accent); }
+
+        /* --- MAIN LAYOUT --- */
+        main {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        /* --- SIDEBAR (Próximo Jogo) --- */
+        aside {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .next-match-card {
+            text-align: center;
+            border-top: 4px solid var(--secondary);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .competition-tag {
+            background-color: #333;
+            color: #fff;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .matchup {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .opponent-crest { width: 70px; height: 70px; object-fit: contain; margin-bottom: 10px; }
+        .vs { font-size: 1.5rem; font-weight: bold; color: #555; }
+        .team-name-match { font-size: 0.9rem; font-weight: 600; }
+
+        .play-btn {
+            background: linear-gradient(135deg, var(--secondary), #098e87);
+            color: #fff;
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .play-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(15, 185, 177, 0.4);
+        }
+
+        /* --- CONTENT AREA (Tabs) --- */
+        .content-area {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            background-color: rgba(0,0,0,0.2);
+            border-bottom: 1px solid #444;
+        }
+
+        .tab-btn {
+            padding: 15px 25px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover { color: #fff; background-color: rgba(255,255,255,0.05); }
+        .tab-btn.active { color: var(--secondary); border-bottom-color: var(--secondary); }
+
+        .tab-content {
+            padding: 20px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        /* --- TABLE STYLES --- */
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; color: var(--text-muted); font-size: 0.85rem; padding: 10px; border-bottom: 1px solid #444; }
+        td { padding: 12px 10px; border-bottom: 1px solid #333; font-size: 0.95rem; }
+        tr:hover { background-color: rgba(255,255,255,0.05); }
+        
+        .pos-num { width: 30px; font-weight: bold; text-align: center; }
+        .col-p { font-weight: bold; color: var(--secondary); text-align: center; }
+        .col-stat { text-align: center; color: #888; }
+        .team-cell { display: flex; align-items: center; gap: 10px; }
+        .mini-crest { width: 24px; height: 24px; }
+
+        /* Highlight classes for table */
+        .my-team-row { background-color: rgba(15, 185, 177, 0.15); }
+        .zone-liberta { border-left: 3px solid #2ecc71; }
+        .zone-relegation { border-left: 3px solid #e74c3c; }
+
+        /* --- MODAL DE RESULTADO --- */
+        #result-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: #2d3436;
+            padding: 40px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid #444;
+            min-width: 400px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            animation: popIn 0.3s ease-out;
+        }
+
+        .scoreboard {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0;
+            font-size: 3rem;
+            font-weight: 800;
+        }
+
+        .score-team { display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 1rem; font-weight: normal; }
+        .score-team img { width: 80px; height: 80px; }
+        .score-val { color: #fff; font-size: 3.5rem; }
+
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="team-identity">
+            <img id="header-escudo" src="" class="team-logo">
+            <div class="team-info">
+                <h1 id="header-time">Carregando...</h1>
+                <p>Técnico: <span id="header-tecnico">...</span></p>
+            </div>
+        </div>
+        <div class="status-bar">
+            <div class="status-item">
+                <div class="status-label">Moral</div>
+                <div class="status-value" id="header-moral">100%</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Força Elenco</div>
+                <div class="status-value" id="header-forca">0</div>
+            </div>
+            <div class="status-item">
+                <div class="status-label">Expectativa</div>
+                <div class="status-value" id="header-expectativa">-</div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <aside>
+            <div class="card next-match-card">
+                <div class="competition-tag" id="match-comp">Semana 1</div>
+                
+                <div id="match-area">
+                    <div class="matchup">
+                        <div class="score-team">
+                            <img id="home-crest" class="opponent-crest">
+                            <span class="team-name-match" id="home-name">Casa</span>
+                        </div>
+                        <div class="vs">X</div>
+                        <div class="score-team">
+                            <img id="away-crest" class="opponent-crest">
+                            <span class="team-name-match" id="away-name">Fora</span>
+                        </div>
+                    </div>
+                    <button class="play-btn" onclick="jogarRodada()">
+                        ⚽ JOGAR PARTIDA
+                    </button>
+                </div>
+
+                <div id="no-match-area" style="display:none;">
+                    <h3>Semana Livre</h3>
+                    <p>Seu time não joga nesta rodada.</p>
+                    <button class="play-btn" style="background: #555;" onclick="jogarRodada()">
+                        ⏩ SIMULAR SEMANA
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-top:0; border-bottom:1px solid #444; padding-bottom:10px;">Notícias</h3>
+                <div id="news-feed" style="font-size: 0.9rem; color: #bdc3c7; line-height: 1.5;">
+                    Bem-vindo ao clube! A diretoria espera uma boa temporada.
+                </div>
+            </div>
+        </aside>
+
+        <div class="content-area">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('classificacao')">Classificação</button>
+                <button class="tab-btn" onclick="switchTab('elenco')">Meu Elenco</button>
+                <button class="tab-btn" onclick="switchTab('calendario')">Calendário</button>
+            </div>
+
+            <div id="tab-classificacao" class="tab-content">
+                <table id="league-table">
+                    <thead>
+                        <tr>
+                            <th class="pos-num">#</th>
+                            <th>Time</th>
+                            <th class="col-p">P</th>
+                            <th class="col-stat">J</th>
+                            <th class="col-stat">V</th>
+                            <th class="col-stat">E</th>
+                            <th class="col-stat">D</th>
+                            <th class="col-stat">SG</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+
+            <div id="tab-elenco" class="tab-content" style="display:none;">
+                <table id="squad-table">
+                    <thead>
+                        <tr>
+                            <th>Pos</th>
+                            <th>Nome</th>
+                            <th class="col-p">Força</th>
+                            <th class="col-stat">Idade</th>
+                            <th class="col-stat">Energia</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+
+            <div id="tab-calendario" class="tab-content" style="display:none;">
+                <h3>Próximos Jogos</h3>
+                <ul id="calendar-list" style="list-style:none; padding:0;"></ul>
+            </div>
+        </div>
+    </main>
+
+    <div id="result-modal">
+        <div class="modal-content">
+            <h2 id="modal-title" style="color:var(--secondary); text-transform:uppercase;">Fim de Jogo</h2>
+            <div class="scoreboard">
+                <div class="score-team">
+                    <img id="modal-home-img" src="">
+                    <span id="modal-home-name">Casa</span>
+                </div>
+                <div id="modal-score" class="score-val">0 - 0</div>
+                <div class="score-team">
+                    <img id="modal-away-img" src="">
+                    <span id="modal-away-name">Fora</span>
+                </div>
+            </div>
+            <p id="modal-desc" style="color:#aaa; margin-bottom:30px;">O jogo foi decidido nos detalhes.</p>
+            <button class="play-btn" onclick="fecharModal()">CONTINUAR</button>
+        </div>
+    </div>
+
+    <script>
+        // --- LÓGICA DA INTERFACE ---
+        let gameState = null;
+        let myTeamObj = null;
+
+        // INICIALIZAÇÃO
+        window.onload = function() {
+            // Carrega o save do Engine
+            if (typeof Engine === 'undefined') {
+                alert("Erro: Engine não carregada.");
+                return;
+            }
+
+            gameState = Engine.carregarJogo();
+
+            if (!gameState) {
+                alert("Nenhum jogo salvo encontrado. Redirecionando...");
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Pega o objeto do meu time no save
+            myTeamObj = gameState.times.find(t => t.nome === gameState.meuTime);
+            
+            // Se não achou na liga, pode estar nos continentais? (Raro, mas segurança)
+            if(!myTeamObj) myTeamObj = gameState.timesContinental.find(t => t.nome === gameState.meuTime);
+
+            renderHeader();
+            renderNextMatch();
+            renderTable();
+            renderSquad();
+        };
+
+        // RENDERIZAÇÃO DO CABEÇALHO
+        function renderHeader() {
+            document.getElementById('header-escudo').src = localStorage.getItem('brfutebol_escudo');
+            document.getElementById('header-time').innerText = myTeamObj.nome;
+            document.getElementById('header-tecnico').innerText = localStorage.getItem('brfutebol_tecnico');
+            
+            document.getElementById('header-moral').innerText = myTeamObj.moral + "%";
+            document.getElementById('header-forca').innerText = myTeamObj.forca;
+            document.getElementById('header-expectativa').innerText = myTeamObj.expectativa;
+
+            // Cor da moral
+            const moralElem = document.getElementById('header-moral');
+            if (myTeamObj.moral < 50) moralElem.style.color = '#ff4757';
+            else if (myTeamObj.moral > 80) moralElem.style.color = '#2ecc71';
+            else moralElem.style.color = '#f1c40f';
+        }
+
+        // RENDERIZAÇÃO DO PRÓXIMO JOGO
+        function renderNextMatch() {
+            const semanaIndex = gameState.semanaAtual - 1;
+            const evento = gameState.calendario[semanaIndex];
+
+            if (!evento) {
+                document.getElementById('match-comp').innerText = "FIM DE TEMPORADA";
+                document.getElementById('match-area').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('match-comp').innerText = `${evento.tipo}: ${evento.nome}`;
+
+            // Procura se meu time joga nessa semana
+            const meuJogo = evento.jogos.find(j => j.casa === myTeamObj.nome || j.fora === myTeamObj.nome);
+
+            if (meuJogo) {
+                document.getElementById('match-area').style.display = 'block';
+                document.getElementById('no-match-area').style.display = 'none';
+
+                const isCasa = meuJogo.casa === myTeamObj.nome;
+                const adversarioNome = isCasa ? meuJogo.fora : meuJogo.casa;
+                
+                // Busca escudo do adversário
+                const advObj = Engine.encontrarTime(gameState, adversarioNome);
+                const advEscudo = advObj ? advObj.escudo : 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
+                const meuEscudo = localStorage.getItem('brfutebol_escudo');
+
+                document.getElementById('home-crest').src = isCasa ? meuEscudo : advEscudo;
+                document.getElementById('home-name').innerText = meuJogo.casa;
+                
+                document.getElementById('away-crest').src = isCasa ? advEscudo : meuEscudo;
+                document.getElementById('away-name').innerText = meuJogo.fora;
+            } else {
+                // Semana de folga (eliminado ou bye)
+                document.getElementById('match-area').style.display = 'none';
+                document.getElementById('no-match-area').style.display = 'block';
+            }
+        }
+
+        // RENDERIZAÇÃO DA TABELA (LIGA)
+        function renderTable() {
+            const tbody = document.querySelector('#league-table tbody');
+            tbody.innerHTML = '';
+
+            // Usa a função do engine para classificar
+            const classificacao = Engine.getClassificacao(gameState);
+
+            classificacao.forEach((time, index) => {
+                const tr = document.createElement('tr');
+                if (time.nome === myTeamObj.nome) tr.classList.add('my-team-row');
+                
+                // Zonas de classificação (Visual simples)
+                if (index < 4) tr.classList.add('zone-liberta');
+                if (index >= classificacao.length - 4) tr.classList.add('zone-relegation');
+
+                tr.innerHTML = `
+                    <td class="pos-num">${index + 1}</td>
+                    <td>
+                        <div class="team-cell">
+                            <img src="${time.escudo}" class="mini-crest">
+                            ${time.nome}
+                        </div>
+                    </td>
+                    <td class="col-p">${time.stats.liga.p}</td>
+                    <td class="col-stat">${time.stats.liga.j}</td>
+                    <td class="col-stat">${time.stats.liga.v}</td>
+                    <td class="col-stat">${time.stats.liga.e}</td>
+                    <td class="col-stat">${time.stats.liga.d}</td>
+                    <td class="col-stat">${time.stats.liga.s}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // RENDERIZAÇÃO DO ELENCO
+        function renderSquad() {
+            const tbody = document.querySelector('#squad-table tbody');
+            tbody.innerHTML = '';
+
+            // Ordena por posição e força
+            const ordemPos = { "GOL": 1, "ZAG": 2, "MEI": 3, "ATA": 4 };
+            const elencoOrdenado = [...myTeamObj.elenco].sort((a,b) => {
+                if (ordemPos[a.pos] !== ordemPos[b.pos]) return ordemPos[a.pos] - ordemPos[b.pos];
+                return b.forca - a.forca;
+            });
+
+            elencoOrdenado.forEach(jog => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><b>${jog.pos}</b></td>
+                    <td>${jog.nome}</td>
+                    <td class="col-p">${jog.forca}</td>
+                    <td class="col-stat">${jog.idade}</td>
+                    <td class="col-stat">${jog.energia}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // AÇÃO: JOGAR
+        function jogarRodada() {
+            const btn = document.querySelector('.play-btn');
+            btn.disabled = true;
+            btn.innerText = "Simulando...";
+
+            // Pequeno delay para efeito visual
+            setTimeout(() => {
+                const resultado = Engine.processarSemana(gameState);
+                
+                if (resultado.fim) {
+                    alert("Temporada Encerrada!");
+                    return;
+                }
+
+                // Acha meu jogo nos resultados
+                const meuJogo = resultado.resultados.find(r => r.casa === myTeamObj.nome || r.fora === myTeamObj.nome);
+
+                // Atualiza dados na tela (recarrega do gameState alterado)
+                myTeamObj = gameState.times.find(t => t.nome === gameState.meuTime) || myTeamObj;
+                renderHeader();
+                renderTable();
+                
+                // Mostra Modal se teve jogo meu
+                if (meuJogo) {
+                    mostrarModal(meuJogo, resultado.evento);
+                } else {
+                    // Se foi simulação, só atualiza o próximo jogo
+                    renderNextMatch();
+                    btn.disabled = false;
+                    btn.innerHTML = "⏩ SIMULAR SEMANA";
+                }
+            }, 800);
+        }
+
+        function mostrarModal(jogo, evento) {
+            const modal = document.getElementById('result-modal');
+            const advObj = Engine.encontrarTime(gameState, jogo.casa === myTeamObj.nome ? jogo.fora : jogo.casa);
+            
+            document.getElementById('modal-title').innerText = `Fim de Jogo - ${evento.tipo}`;
+            document.getElementById('modal-score').innerText = `${jogo.golsCasa} - ${jogo.golsFora}`;
+            
+            document.getElementById('modal-home-name').innerText = jogo.casa;
+            document.getElementById('modal-home-img').src = jogo.escudoCasa;
+            
+            document.getElementById('modal-away-name').innerText = jogo.fora;
+            document.getElementById('modal-away-img').src = jogo.escudoFora;
+
+            // Mensagem de efeito
+            const desc = document.getElementById('modal-desc');
+            const souCasa = jogo.casa === myTeamObj.nome;
+            const meusGols = souCasa ? jogo.golsCasa : jogo.golsFora;
+            const advGols = souCasa ? jogo.golsFora : jogo.golsCasa;
+
+            if (meusGols > advGols) {
+                desc.innerText = "Vitória importante para a moral do time!";
+                desc.style.color = "#2ecc71";
+            } else if (meusGols < advGols) {
+                desc.innerText = "Resultado decepcionante. A torcida protesta.";
+                desc.style.color = "#ff4757";
+            } else {
+                desc.innerText = "Um empate disputado.";
+                desc.style.color = "#ccc";
+            }
+
+            // Verifica se foi campeão (Supercopa/Final)
+            // A lógica de campeão precisa vir do engine, mas podemos inferir se for final
+            if (evento.fase === 'Final' && meusGols > advGols) {
+                desc.innerText = "🏆 É CAMPEÃO!!! 🏆";
+                desc.style.fontSize = "1.5rem";
+                desc.style.fontWeight = "bold";
+                desc.style.color = "#f1c40f";
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        function fecharModal() {
+            document.getElementById('result-modal').style.display = 'none';
+            document.querySelector('.play-btn').disabled = false;
+            document.querySelector('.play-btn').innerHTML = "⚽ JOGAR PARTIDA";
+            renderNextMatch(); // Carrega a próxima semana
+        }
+
+        // TABS
+        function switchTab(tabName) {
+            // Esconde todas
+            document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+            // Mostra atual
+            document.getElementById(`tab-${tabName}`).style.display = 'block';
+            event.target.classList.add('active');
+        }
+
+    </script>
+</body>
+</html>
