@@ -630,6 +630,12 @@
 
             alert(`✅ Contrato assinado!\n\nBem-vindo ao ${teamName}, técnico ${coachName}.`);
         }
+        if (typeof Engine !== 'undefined') {
+                Engine.novoJogo(countryKey, divisionKey, teamName);
+                
+                // --- ADICIONE ISTO AQUI ---
+                window.location.href = 'dashboard.html'; 
+            }
     </script>
 </body>
 </html>
