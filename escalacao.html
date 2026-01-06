@@ -36,15 +36,17 @@
             padding: 0 30px;
         }
 
-        .header-controls { display: flex; align-items: center; gap: 20px; }
+        .header-controls { display: flex; align-items: center; gap: 15px; }
 
         select {
             background: #1e272e; color: white; border: 1px solid #555;
-            padding: 8px 15px; border-radius: 6px; font-size: 1rem; cursor: pointer;
+            padding: 8px 15px; border-radius: 6px; font-size: 0.9rem; cursor: pointer;
         }
 
-        .action-btn { padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; border: none; transition: 0.2s; }
+        .action-btn { padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; border: none; transition: 0.2s; display: flex; align-items: center; gap:5px; }
         .btn-back { background: #444; color: #fff; }
+        .btn-roles { background: #8e44ad; color: #fff; } /* Botão Roxo para Funções */
+        .btn-roles:hover { background: #9b59b6; }
         .btn-save { background: var(--secondary); color: #1e272e; text-transform: uppercase; }
         .btn-save:hover { box-shadow: 0 0 15px rgba(15, 185, 177, 0.4); transform: scale(1.05); }
 
@@ -81,19 +83,8 @@
         }
 
         .player-token:active { cursor: grabbing; z-index: 100; transform: translate(-50%, -50%) scale(1.1); }
-        
-        .player-token.selected {
-            border-color: var(--highlight);
-            box-shadow: 0 0 0 4px var(--highlight);
-            animation: pulse 1s infinite;
-        }
-
-        /* Classe usada quando um jogador é arrastado sobre outro */
-        .player-token.hover-swap {
-            background-color: var(--highlight);
-            border-color: #fff;
-            transform: translate(-50%, -50%) scale(1.2);
-        }
+        .player-token.selected { border-color: var(--highlight); box-shadow: 0 0 0 4px var(--highlight); animation: pulse 1s infinite; }
+        .player-token.hover-swap { background-color: var(--highlight); border-color: #fff; transform: translate(-50%, -50%) scale(1.2); }
 
         .player-label {
             position: absolute; top: 58px; left: 50%; transform: translateX(-50%);
@@ -103,35 +94,58 @@
         }
         .player-label span { font-size: 0.65rem; color: #bdc3c7; }
 
-        /* SIDEBAR */
-        .sidebar {
-            background: var(--card-bg); border-radius: 12px;
-            display: flex; flex-direction: column; overflow: hidden; border: 1px solid #444;
+        /* BADGES DE FUNÇÃO (Capitão, Penalti, etc) */
+        .role-icons {
+            position: absolute; top: -10px; right: -10px;
+            display: flex; flex-direction: column; gap: 2px;
+            pointer-events: none;
         }
+        .role-badge {
+            width: 18px; height: 18px; border-radius: 50%;
+            font-size: 0.65rem; font-weight: bold; color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(0,0,0,0.3);
+        }
+        .role-c { background: #f1c40f; color: #000; } /* Capitão */
+        .role-p { background: #2ecc71; } /* Pênalti */
+        .role-f { background: #3498db; } /* Falta */
+        .role-e { background: #fff; color: #000; } /* Escanteio */
 
-        .sidebar-header {
-            padding: 15px; background: rgba(0,0,0,0.2);
-            border-bottom: 1px solid #444;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        /* SIDEBAR */
+        .sidebar { background: var(--card-bg); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #444; }
+        .sidebar-header { padding: 15px; background: rgba(0,0,0,0.2); border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center; }
         .sidebar-header h3 { margin: 0; font-size: 0.9rem; text-transform: uppercase; color: var(--text-muted); }
         .sidebar-header.active-mode { background-color: var(--highlight); }
         .sidebar-header.active-mode h3 { color: #1e272e; font-weight: 800; }
-
         .player-list { overflow-y: auto; flex-grow: 1; }
-
-        .list-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 15px; border-bottom: 1px solid #333; font-size: 0.9rem;
-            cursor: pointer; background: #2d3436; transition: 0.2s;
-        }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid #333; font-size: 0.9rem; cursor: pointer; background: #2d3436; transition: 0.2s; }
         .list-item:hover { background: rgba(255,255,255,0.05); }
         .list-item.selected { background: rgba(241, 196, 15, 0.1); border-left: 4px solid var(--highlight); }
-
         .pos-badge { font-weight: bold; width: 35px; color: #888; font-size: 0.8rem; text-align: center; }
         .name-area { display: flex; flex-direction: column; }
         .trait-mini { font-size: 0.65rem; color: #aaa; }
         .ovr-badge { font-weight: bold; color: var(--secondary); font-size: 1.1rem; }
+
+        /* MODAL DE FUNÇÕES */
+        #roles-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 5000; align-items: center; justify-content: center;
+        }
+        .roles-box {
+            background: #2d3436; padding: 30px; border-radius: 12px; width: 400px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid #444;
+        }
+        .roles-row { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .roles-row label { color: #bdc3c7; font-weight: bold; }
+        .roles-select { background: #1e272e; color: white; padding: 8px; border: 1px solid #555; border-radius: 6px; width: 220px; }
+        
+        /* Instrução Flutuante */
+        #instruction-toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.9); color: white; padding: 10px 20px;
+            border-radius: 30px; font-weight: bold; border: 1px solid var(--highlight);
+            display: none; box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 1000;
+        }
 
         @keyframes pulse { 0% { box-shadow: 0 0 0 0px rgba(241, 196, 15, 0.7); } 100% { box-shadow: 0 0 0 10px rgba(241, 196, 15, 0); } }
 
@@ -146,6 +160,8 @@
         </div>
 
         <div class="header-controls">
+            <button class="action-btn btn-roles" onclick="abrirModalFuncoes()">⭐ Funções</button>
+            
             <label style="font-size:0.9rem; color:#aaa;">Formação:</label>
             <select id="formationSelect" onchange="aplicarFormacaoAutomatica()">
                 <option value="4-4-2">4-4-2 Clássico</option>
@@ -154,12 +170,12 @@
                 <option value="3-4-3">3-4-3 Pressão</option>
                 <option value="5-4-1">5-4-1 Retranca</option>
             </select>
-            <button class="action-btn btn-save" onclick="salvarTime()">💾 Salvar Time</button>
+            <button class="action-btn btn-save" onclick="salvarTime()">💾 Salvar</button>
         </div>
     </header>
 
     <main>
-        <div class="field-container" id="campo">
+        <div class="field-container" id="campo" onclick="cliqueNoCampoVazio(event)">
             <div class="line mid-line"></div>
             <div class="line circle"></div>
             <div class="line area-top"></div>
@@ -170,10 +186,39 @@
             <div class="sidebar-header" id="sidebarHeader">
                 <h3 id="sidebarTitle">Banco de Reservas</h3>
             </div>
-            <div class="player-list" id="listaReservas">
-                </div>
+            <div class="player-list" id="listaReservas"></div>
         </div>
     </main>
+
+    <div id="instruction-toast">Selecione quem entra...</div>
+
+    <div id="roles-modal">
+        <div class="roles-box">
+            <h2 style="margin-top:0; color:#fff; border-bottom:1px solid #444; padding-bottom:10px;">Bolas Paradas & Capitão</h2>
+            
+            <div class="roles-row">
+                <label>🟡 Capitão:</label>
+                <select id="sel-capitao" class="roles-select"></select>
+            </div>
+            <div class="roles-row">
+                <label>🟢 Pênaltis:</label>
+                <select id="sel-penalti" class="roles-select"></select>
+            </div>
+            <div class="roles-row">
+                <label>🔵 Faltas:</label>
+                <select id="sel-falta" class="roles-select"></select>
+            </div>
+            <div class="roles-row">
+                <label>⚪ Escanteios:</label>
+                <select id="sel-escanteio" class="roles-select"></select>
+            </div>
+
+            <div style="text-align:right; margin-top:20px;">
+                <button class="action-btn btn-back" onclick="fecharModalFuncoes()" style="display:inline-block;">Cancelar</button>
+                <button class="action-btn btn-save" onclick="salvarFuncoes()" style="display:inline-block;">Confirmar</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         // --- COORDENADAS ---
@@ -185,21 +230,13 @@
             "5-4-1": [ {x:50,y:90,p:'GOL'}, {x:10,y:70,p:'LE'}, {x:30,y:80,p:'ZAG'}, {x:50,y:82,p:'LIB'}, {x:70,y:80,p:'ZAG'}, {x:90,y:70,p:'LD'}, {x:20,y:50,p:'ME'}, {x:40,y:55,p:'VOL'}, {x:60,y:55,p:'VOL'}, {x:80,y:50,p:'MD'}, {x:50,y:15,p:'ATA'} ]
         };
 
-        // --- ESTADO ---
-        let gameState = null;
-        let myTeamObj = null;
-        let titulares = [];
-        let reservas = [];
-        let selectedFieldIdx = null; // Para substituição simples
-        let selectedBenchIdx = null; // Para substituição simples
+        let gameState = null, myTeamObj = null, titulares = [], reservas = [];
+        let selectedFieldIdx = null, selectedBenchIdx = null;
+        let isDragging = false, dragIdx = null, startX, startY, originalLeft, originalTop;
 
-        // Variáveis de Drag & Drop
-        let isDragging = false;
-        let dragIdx = null;
-        let startX, startY;
-        let originalLeft, originalTop;
+        // Armazena as funções temporariamente enquanto edita
+        let currentRoles = { capitao: null, penalti: null, falta: null, escanteio: null };
 
-        // --- INIT ---
         window.onload = function() {
             if (typeof Engine === 'undefined') { alert("Erro de Engine"); return; }
             gameState = Engine.carregarJogo();
@@ -210,11 +247,13 @@
             titulares = myTeamObj.elenco.slice(0, 11);
             reservas = myTeamObj.elenco.slice(11);
 
-            // CORREÇÃO DO BUG: Se os jogadores não tiverem coordenadas, força o padrão
-            if (typeof titulares[0].x === 'undefined') {
-                console.log("Aplicando formação padrão inicial...");
-                aplicarCoordenadasPadrao("4-4-2");
+            // Carrega funções do save ou inicializa se vazio
+            if (!myTeamObj.funcoes) {
+                Engine.inicializarTime(myTeamObj); // Fallback para criar estrutura
             }
+            currentRoles = { ...myTeamObj.funcoes };
+
+            if(!titulares[0].x) aplicarCoordenadasPadrao("4-4-2");
 
             renderizarCampo();
             renderizarBanco();
@@ -233,10 +272,18 @@
                 div.style.left = jog.x + '%';
                 div.style.top = jog.y + '%';
                 div.id = `player-${idx}`;
-                
                 if (jog.pos === 'GOL') div.style.background = "#f1c40f";
 
+                // Ícones de Função (Badges)
+                let badgesHtml = '<div class="role-icons">';
+                if(jog.id === currentRoles.capitao) badgesHtml += '<div class="role-badge role-c">C</div>';
+                if(jog.id === currentRoles.penalti) badgesHtml += '<div class="role-badge role-p">P</div>';
+                if(jog.id === currentRoles.falta) badgesHtml += '<div class="role-badge role-f">F</div>';
+                if(jog.id === currentRoles.escanteio) badgesHtml += '<div class="role-badge role-e">E</div>';
+                badgesHtml += '</div>';
+
                 div.innerHTML = `
+                    ${badgesHtml}
                     ${jog.role || jog.pos.substring(0,2)} 
                     <div class="player-label">
                         <b>${jog.nome.split(' ')[0]}</b>
@@ -244,10 +291,8 @@
                     </div>
                 `;
 
-                // EVENTOS
                 div.onmousedown = (e) => iniciarArrasto(e, idx, div);
                 div.onclick = (e) => { e.stopPropagation(); }
-
                 field.appendChild(div);
             });
         }
@@ -275,197 +320,148 @@
             });
         }
 
-        // --- SISTEMA HÍBRIDO (DRAG E CLICK) ---
+        // --- GESTÃO DE FUNÇÕES (ROLES) ---
 
-        let hasMoved = false;
-
-        function iniciarArrasto(e, idx, element) {
-            e.preventDefault();
-            isDragging = true;
-            hasMoved = false;
-            dragIdx = idx;
+        function abrirModalFuncoes() {
+            const modal = document.getElementById('roles-modal');
             
-            startX = e.clientX;
-            startY = e.clientY;
-            originalLeft = element.style.left;
-            originalTop = element.style.top;
+            // Popula os selects apenas com os titulares
+            const selects = ['sel-capitao', 'sel-penalti', 'sel-falta', 'sel-escanteio'];
+            const keys = ['capitao', 'penalti', 'falta', 'escanteio'];
 
+            selects.forEach((selId, i) => {
+                const sel = document.getElementById(selId);
+                sel.innerHTML = '';
+                titulares.forEach(jog => {
+                    const opt = document.createElement('option');
+                    opt.value = jog.id;
+                    opt.innerText = `${jog.pos} - ${jog.nome} (${jog.forca})`;
+                    if(jog.id === currentRoles[keys[i]]) opt.selected = true;
+                    sel.appendChild(opt);
+                });
+            });
+
+            modal.style.display = 'flex';
+        }
+
+        function fecharModalFuncoes() {
+            document.getElementById('roles-modal').style.display = 'none';
+        }
+
+        function salvarFuncoes() {
+            currentRoles.capitao = document.getElementById('sel-capitao').value;
+            currentRoles.penalti = document.getElementById('sel-penalti').value;
+            currentRoles.falta = document.getElementById('sel-falta').value;
+            currentRoles.escanteio = document.getElementById('sel-escanteio').value;
+            
+            myTeamObj.funcoes = currentRoles; // Salva no objeto local
+            renderizarCampo(); // Atualiza os badges
+            fecharModalFuncoes();
+        }
+
+        // --- SISTEMA HÍBRIDO (DRAG E CLICK) ---
+        // (Código idêntico ao anterior para movimentação e troca)
+        function iniciarArrasto(e, idx, element) {
+            e.preventDefault(); isDragging = true; hasMoved = false; dragIdx = idx;
+            startX = e.clientX; startY = e.clientY;
+            originalLeft = element.style.left; originalTop = element.style.top;
             document.onmousemove = (e) => moverElemento(e, element);
             document.onmouseup = (e) => finalizarArrasto(e, idx, element);
         }
-
         function moverElemento(e, element) {
             if (!isDragging) return;
-
-            // Tolerância para diferenciar clique de arrasto
-            if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) {
-                hasMoved = true;
-            }
-
+            if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) hasMoved = true;
             const field = document.getElementById('campo');
             const rect = field.getBoundingClientRect();
-
             let newX = ((e.clientX - rect.left) / rect.width) * 100;
             let newY = ((e.clientY - rect.top) / rect.height) * 100;
-
-            if (newX < 0) newX = 0; if (newX > 100) newX = 100;
-            if (newY < 0) newY = 0; if (newY > 100) newY = 100;
-
-            element.style.left = newX + "%";
-            element.style.top = newY + "%";
-            element.style.zIndex = 1000;
-
+            if (newX < 0) newX = 0; if (newX > 100) newX = 100; if (newY < 0) newY = 0; if (newY > 100) newY = 100;
+            element.style.left = newX + "%"; element.style.top = newY + "%"; element.style.zIndex = 1000;
             detectarHover(element, dragIdx);
         }
-
         function finalizarArrasto(e, idx, element) {
-            isDragging = false;
-            document.onmousemove = null;
-            document.onmouseup = null;
-            element.style.zIndex = "";
-
-            if (!hasMoved) {
-                element.style.left = originalLeft;
-                element.style.top = originalTop;
-                selecionarTitular(idx);
-                return;
-            }
-
+            isDragging = false; document.onmousemove = null; document.onmouseup = null; element.style.zIndex = "";
+            if (!hasMoved) { element.style.left = originalLeft; element.style.top = originalTop; selecionarTitular(idx); return; }
             const alvoIdx = detectarColisao(element, idx);
-
-            if (alvoIdx !== null) {
-                trocarPosicoesCampo(idx, alvoIdx);
-            } else {
-                atualizarCoordenadas(idx, element.style.left, element.style.top);
-            }
-            
+            if (alvoIdx !== null) trocarPosicoesCampo(idx, alvoIdx);
+            else atualizarCoordenadas(idx, element.style.left, element.style.top);
             renderizarCampo();
         }
-
         function detectarColisao(draggedEl, myIdx) {
             const dragRect = draggedEl.getBoundingClientRect();
-            const centroX = dragRect.left + dragRect.width / 2;
-            const centroY = dragRect.top + dragRect.height / 2;
+            const centroX = dragRect.left + dragRect.width / 2; const centroY = dragRect.top + dragRect.height / 2;
             let alvoEncontrado = null;
-
             document.querySelectorAll('.player-token').forEach((token) => {
                 const tokenIdx = parseInt(token.id.replace('player-', ''));
                 if (tokenIdx === myIdx) return;
-
                 const rect = token.getBoundingClientRect();
-                if (centroX >= rect.left && centroX <= rect.right && centroY >= rect.top && centroY <= rect.bottom) {
-                    alvoEncontrado = tokenIdx;
-                }
+                if (centroX >= rect.left && centroX <= rect.right && centroY >= rect.top && centroY <= rect.bottom) alvoEncontrado = tokenIdx;
             });
             return alvoEncontrado;
         }
-
         function detectarHover(draggedEl, myIdx) {
             const alvoIdx = detectarColisao(draggedEl, myIdx);
             document.querySelectorAll('.player-token').forEach(t => t.classList.remove('hover-swap'));
-            if (alvoIdx !== null) {
-                document.getElementById(`player-${alvoIdx}`).classList.add('hover-swap');
-            }
+            if (alvoIdx !== null) document.getElementById(`player-${alvoIdx}`).classList.add('hover-swap');
         }
-
-        // --- LÓGICA DE DADOS ---
-
         function trocarPosicoesCampo(idx1, idx2) {
             const pos1 = { x: titulares[idx1].x, y: titulares[idx1].y, role: titulares[idx1].role };
             const pos2 = { x: titulares[idx2].x, y: titulares[idx2].y, role: titulares[idx2].role };
-
-            const temp = titulares[idx1];
-            titulares[idx1] = titulares[idx2];
-            titulares[idx2] = temp;
-
+            const temp = titulares[idx1]; titulares[idx1] = titulares[idx2]; titulares[idx2] = temp;
             titulares[idx1].x = pos1.x; titulares[idx1].y = pos1.y; titulares[idx1].role = pos1.role;
             titulares[idx2].x = pos2.x; titulares[idx2].y = pos2.y; titulares[idx2].role = pos2.role;
         }
-
         function atualizarCoordenadas(idx, leftStyle, topStyle) {
-            titulares[idx].x = parseFloat(leftStyle);
-            titulares[idx].y = parseFloat(topStyle);
+            titulares[idx].x = parseFloat(leftStyle); titulares[idx].y = parseFloat(topStyle);
         }
-
         function selecionarTitular(idx) {
-            if (selectedBenchIdx !== null) {
-                realizarSubstituicao(idx, selectedBenchIdx);
-                limparSelecao();
-                return;
-            }
-            selectedFieldIdx = (selectedFieldIdx === idx) ? null : idx;
-            atualizarInterfaceVisual();
+            if (selectedBenchIdx !== null) { realizarSubstituicao(idx, selectedBenchIdx); limparSelecao(); return; }
+            selectedFieldIdx = (selectedFieldIdx === idx) ? null : idx; atualizarInterfaceVisual();
         }
-
         function selecionarReserva(idx) {
-            if (selectedFieldIdx !== null) {
-                realizarSubstituicao(selectedFieldIdx, idx);
-                limparSelecao();
-                return;
-            }
-            selectedBenchIdx = (selectedBenchIdx === idx) ? null : idx;
-            atualizarInterfaceVisual();
+            if (selectedFieldIdx !== null) { realizarSubstituicao(selectedFieldIdx, idx); limparSelecao(); return; }
+            selectedBenchIdx = (selectedBenchIdx === idx) ? null : idx; atualizarInterfaceVisual();
         }
-
         function realizarSubstituicao(idxTitular, idxReserva) {
             const titularSaindo = titulares[idxTitular];
             const reservaSaindo = reservas[idxReserva];
-
             titulares[idxTitular] = reservaSaindo;
             reservas[idxReserva] = titularSaindo;
-
             titulares[idxTitular].x = titularSaindo.x;
             titulares[idxTitular].y = titularSaindo.y;
             titulares[idxTitular].role = titularSaindo.role;
-
-            renderizarCampo();
-            renderizarBanco();
+            renderizarCampo(); renderizarBanco();
         }
-
-        function limparSelecao() {
-            selectedFieldIdx = null; selectedBenchIdx = null;
-            atualizarInterfaceVisual();
-        }
-
+        function limparSelecao() { selectedFieldIdx = null; selectedBenchIdx = null; atualizarInterfaceVisual(); }
         function atualizarInterfaceVisual() {
             renderizarCampo(); renderizarBanco();
-            const header = document.getElementById('sidebarHeader');
-            const title = document.getElementById('sidebarTitle');
-            
-            if (selectedFieldIdx !== null) {
-                header.classList.add('active-mode'); title.innerText = "🔁 Quem entra?";
-            } else if (selectedBenchIdx !== null) {
-                header.classList.add('active-mode'); title.innerText = "🔁 Quem sai?";
-            } else {
-                header.classList.remove('active-mode'); title.innerText = "Banco de Reservas";
-            }
+            const header = document.getElementById('sidebarHeader'); const title = document.getElementById('sidebarTitle');
+            if (selectedFieldIdx !== null) { header.classList.add('active-mode'); title.innerText = "🔁 Quem entra?"; }
+            else if (selectedBenchIdx !== null) { header.classList.add('active-mode'); title.innerText = "🔁 Quem sai?"; }
+            else { header.classList.remove('active-mode'); title.innerText = "Banco de Reservas"; }
         }
-
+        function cliqueNoCampoVazio(e) { if (e.target.id === 'campo') { limparSelecao(); } }
+        
+        // --- SALVAR ---
         function aplicarFormacaoAutomatica() {
             const formacao = document.getElementById('formationSelect').value;
             aplicarCoordenadasPadrao(formacao);
             renderizarCampo();
         }
-
         function aplicarCoordenadasPadrao(nomeFormacao) {
             const coords = formations[nomeFormacao];
             titulares.forEach((jog, idx) => {
-                if (coords[idx]) {
-                    jog.x = coords[idx].x;
-                    jog.y = coords[idx].y;
-                    jog.role = coords[idx].p;
-                }
+                if (coords[idx]) { jog.x = coords[idx].x; jog.y = coords[idx].y; jog.role = coords[idx].p; }
             });
         }
-
         function salvarTime() {
             const novoElenco = [...titulares, ...reservas];
             myTeamObj.elenco = novoElenco;
+            myTeamObj.funcoes = currentRoles; // Salva funções
             Engine.salvarJogo(gameState);
-            alert("✅ Time Escalado!");
+            alert("✅ Time e Funções Salvas!");
             voltar();
         }
-
         function voltar() { window.location.href = 'dashboard.html'; }
 
     </script>
