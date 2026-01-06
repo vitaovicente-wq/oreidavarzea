@@ -147,7 +147,23 @@
         .play-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(15, 185, 177, 0.4); }
         .play-btn:disabled { background: #444; color: #888; cursor: not-allowed; box-shadow: none; transform: none; }
 
-        /* --- CONTENT AREA (ABS & TABLES) --- */
+        /* Botão Tática */
+        .tactics-btn {
+            background: transparent;
+            border: 2px solid var(--secondary);
+            color: var(--text);
+            padding: 12px;
+            width: 100%;
+            border-radius: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+        .tactics-btn:hover { background: var(--secondary); color: #1e272e; box-shadow: 0 0 15px rgba(15, 185, 177, 0.3); }
+
+        /* --- CONTENT AREA (TABS) --- */
         .content-area {
             background-color: var(--card-bg);
             border-radius: 16px;
@@ -213,6 +229,7 @@
             margin-left: 8px;
             letter-spacing: 0.5px;
             display: inline-block;
+            color: #fff;
         }
 
         /* --- MODAL RESULTADO --- */
@@ -304,11 +321,17 @@
 
                 <div id="no-match-area" style="display:none; padding: 20px;">
                     <h3 style="color:#777;">Semana Livre</h3>
-                    <p style="color:#555; font-size:0.9rem; margin-bottom:20px;">Seu time folga ou foi eliminado.</p>
+                    <p style="color:#555; font-size:0.9rem; margin-bottom:20px;">Seu time folga nesta rodada.</p>
                     <button class="play-btn" style="background: #444;" onclick="jogarRodada()">
                         ⏩ Simular Semana
                     </button>
                 </div>
+            </div>
+
+            <div class="card" style="padding: 15px;">
+                <button class="tactics-btn" onclick="irParaEscalacao()">
+                    👕 Gerir Elenco e Tática
+                </button>
             </div>
 
             <div class="card">
@@ -377,14 +400,14 @@
                     <img id="modal-home-img" src="">
                     <span id="modal-home-name">Time A</span>
                 </div>
-                <div class="modal-placar" id="modal-score">2 - 1</div>
+                <div class="modal-placar" id="modal-score">0 - 0</div>
                 <div class="modal-team">
                     <img id="modal-away-img" src="">
                     <span id="modal-away-name">Time B</span>
                 </div>
             </div>
 
-            <p class="modal-desc" id="modal-desc">Um jogo eletrizante decidido nos detalhes.</p>
+            <p class="modal-desc" id="modal-desc">Fim de jogo.</p>
             
             <button class="play-btn" onclick="fecharModal()">Continuar</button>
         </div>
@@ -428,6 +451,11 @@
             renderTable();
             renderSquad();
             renderCalendarList();
+        }
+
+        // --- NAVEGAÇÃO ---
+        function irParaEscalacao() {
+            window.location.href = 'escalacao.html';
         }
 
         // --- RENDERIZADORES ---
@@ -541,14 +569,14 @@
             elenco.forEach(jog => {
                 const tr = document.createElement('tr');
                 
-                // Cor da etiqueta de Característica
+                // Lógica de cores das etiquetas (Features novas)
                 let badgeColor = "#555"; 
                 const c = jog.carac;
-                if(['Artilheiro','Veloz','Infiltrador'].includes(c)) badgeColor = "#e74c3c"; // Vermelho (Ataque)
-                else if(['Paredão','Xerife','Cão de Guarda','Defensivo'].includes(c)) badgeColor = "#3498db"; // Azul (Defesa)
-                else if(['Maestro','Construtor','Joga com os Pés'].includes(c)) badgeColor = "#2ecc71"; // Verde (Criação)
-                else if(['Líder','Pegador de Pênaltis'].includes(c)) badgeColor = "#9b59b6"; // Roxo (Especial)
-                else if(['Pivô','Apoio'].includes(c)) badgeColor = "#f39c12"; // Laranja
+                if(['Artilheiro','Veloz','Infiltrador','Apoio'].includes(c)) badgeColor = "#e74c3c"; // Ataque
+                else if(['Paredão','Xerife','Cão de Guarda','Defensivo'].includes(c)) badgeColor = "#3498db"; // Defesa
+                else if(['Maestro','Construtor','Joga com os Pés'].includes(c)) badgeColor = "#2ecc71"; // Criação
+                else if(['Líder','Pegador de Pênaltis'].includes(c)) badgeColor = "#9b59b6"; // Especial
+                else if(['Pivô'].includes(c)) badgeColor = "#f39c12"; // Físico
 
                 tr.innerHTML = `
                     <td style="text-align:center; font-weight:bold; color:#aaa;">${jog.pos}</td>
@@ -665,11 +693,11 @@
                 desc.style.color = "#bdc3c7";
             }
 
-            // Verifica Título (Supercopa)
-            if (evento.tipo === 'SUPERCOPA' && meusGols > advGols) {
-                desc.innerHTML = "🏆 <br>É CAMPEÃO DA SUPERCOPA!";
+            // Verifica Título (Supercopa ou Final)
+            if ((evento.tipo === 'SUPERCOPA' || evento.fase === 'Final') && meusGols > advGols) {
+                desc.innerHTML = "🏆 <br>É CAMPEÃO!!!";
                 desc.style.color = "#f1c40f";
-                desc.style.fontSize = "1.2rem";
+                desc.style.fontSize = "1.5rem";
                 desc.style.fontWeight = "bold";
             }
 
@@ -699,8 +727,6 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             
             document.getElementById('tab-'+tabId).style.display = 'block';
-            // Pega o botão clicado (evento global) ou acha pelo texto (simplificado)
-            // Aqui vamos deixar visualmente ativo quem chamou
             event.target.classList.add('active');
         }
 
