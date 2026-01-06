@@ -2,6 +2,15 @@ const Engine = {
     // --- DADOS PARA GERAÇÃO ALEATÓRIA ---
     nomes: ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Lima", "Ferreira", "Costa", "Rodrigues", "Almeida", "Nascimento", "Alves", "Carvalho", "Araújo", "Ribeiro", "Müller", "Schneider", "Rossi", "Bianchi", "Smith", "Johnson"],
     prenomes: ["João", "José", "Carlos", "Lucas", "Pedro", "Mateus", "Tiago", "Gabriel", "Rafael", "Daniel", "Bruno", "Leonardo", "Rodrigo", "Guilherme", "Gustavo", "Felipe", "Fernando", "Hans", "Francesco", "James", "Michael"],
+    
+    // Características Possíveis (Referência)
+    caracteristicasPossiveis: [
+        "Paredão", "Joga com os Pés", "Pegador de Pênaltis", // Goleiros
+        "Xerife", "Construtor", "Apoio", "Defensivo",        // Defensores
+        "Maestro", "Cão de Guarda", "Infiltrador",           // Meias
+        "Artilheiro", "Veloz", "Pivô",                       // Atacantes
+        "Líder", "Normal"                                    // Geral
+    ],
 
     // --- 1. CONFIGURAÇÃO DE COMPETIÇÕES ---
     configCompeticoes: {
@@ -88,11 +97,11 @@ const Engine = {
             titulos: []
         };
         
-        // Gera Elenco
+        // Gera Elenco e Características
         const nivelBase = this.calcularNivelBase(t.expectativa);
         t.elenco = this.gerarElenco(t.nome, nivelBase, t.destaque);
         
-        // Define Força Real (Média dos 11 melhores)
+        // Define Força Real (Média dos 11 melhores + Bônus de Traits)
         t.forca = this.calcularForcaElenco(t.elenco);
         
         // Moral começa neutra (100)
@@ -122,6 +131,7 @@ const Engine = {
                 pos: jogador.pos,
                 forca: jogador.forca,
                 idade: jogador.idade,
+                carac: jogador.carac || this.sortearCaracteristica(jogador.pos), // Sorteia se não tiver
                 energia: 100,
                 gols: 0,
                 real: true
@@ -162,15 +172,63 @@ const Engine = {
         let forca = nivelBase + variacao;
         if (forca > 99) forca = 99; if (forca < 40) forca = 40;
 
-        return { id: `${nomeTime}_${id}`, nome: nome, pos: pos, forca: forca, idade: Math.floor(Math.random() * 18) + 18, energia: 100, gols: 0, real: false };
+        // Atribui característica baseada na posição
+        const carac = nomeFixo ? "Líder" : this.sortearCaracteristica(pos);
+
+        return { id: `${nomeTime}_${id}`, nome: nome, pos: pos, forca: forca, carac: carac, idade: Math.floor(Math.random() * 18) + 18, energia: 100, gols: 0, real: false };
+    },
+
+    sortearCaracteristica: function(pos) {
+        if (Math.random() > 0.6) return "Normal"; // 40% de chance de não ter nada especial
+
+        if (pos === 'GOL') {
+            const r = Math.random();
+            if (r < 0.4) return "Paredão";
+            if (r < 0.7) return "Joga com os Pés";
+            return "Pegador de Pênaltis";
+        }
+        if (pos === 'ZAG') {
+            const r = Math.random();
+            if (r < 0.3) return "Xerife";
+            if (r < 0.5) return "Construtor";
+            if (r < 0.75) return "Apoio"; 
+            return "Defensivo";
+        }
+        if (pos === 'MEI') {
+            const r = Math.random();
+            if (r < 0.35) return "Maestro";
+            if (r < 0.7) return "Cão de Guarda";
+            return "Infiltrador";
+        }
+        if (pos === 'ATA') {
+            const r = Math.random();
+            if (r < 0.4) return "Artilheiro";
+            if (r < 0.7) return "Veloz";
+            return "Pivô";
+        }
+        return "Líder";
     },
 
     calcularForcaElenco: function(elenco) {
-        // Pega os 11 melhores
-        const titulares = [...elenco].sort((a,b) => b.forca - a.forca).slice(0, 11);
+        const titulares = this.escolherMelhores11(elenco);
         let soma = 0;
         titulares.forEach(j => soma += j.forca);
         return Math.floor(soma / titulares.length);
+    },
+
+    escolherMelhores11: function(elenco) {
+        const gols = elenco.filter(j => j.pos === 'GOL').sort((a,b) => b.forca - a.forca);
+        const zags = elenco.filter(j => j.pos === 'ZAG').sort((a,b) => b.forca - a.forca);
+        const meis = elenco.filter(j => j.pos === 'MEI').sort((a,b) => b.forca - a.forca);
+        const atas = elenco.filter(j => j.pos === 'ATA').sort((a,b) => b.forca - a.forca);
+
+        const titulares = [
+            gols[0],
+            zags[0], zags[1], zags[2], zags[3],
+            meis[0], meis[1], meis[2],
+            atas[0], atas[1], atas[2]
+        ];
+        return titulares.filter(j => j !== undefined);
     },
 
     recalcularExpectativasDaLiga: function(times) {
@@ -196,7 +254,7 @@ const Engine = {
         Object.keys(database).forEach(chavePais => {
             const confPais = this.configCompeticoes[chavePais];
             // Importa times de outros países do mesmo continente
-            if (confPais && confPais.continente === continenteAlvo && database[chavePais] !== database.brasil) { // Evita duplicar se for o próprio
+            if (confPais && confPais.continente === continenteAlvo && database[chavePais] !== database.brasil) { 
                 let timesPais = Array.isArray(database[chavePais]) ? database[chavePais] : (database[chavePais].primeira || database[chavePais].serieA);
                 if(timesPais) {
                     const timesImportados = JSON.parse(JSON.stringify(timesPais));
@@ -229,6 +287,7 @@ const Engine = {
             timeB = times.find(t => t.nome === 'Corinthians');
         }
 
+        // Se não achou (ou outra liga), pega os 2 mais fortes
         if (!timeA || !timeB) {
             const tops = [...times].sort((a, b) => b.forca - a.forca).slice(0, 2);
             timeA = tops[0];
@@ -335,7 +394,7 @@ const Engine = {
         return mestre;
     },
 
-    // --- 5. PROCESSAMENTO DA RODADA ---
+    // --- 5. PROCESSAMENTO E SIMULAÇÃO ---
 
     processarSemana: function(gameState) {
         const semanaIdx = gameState.semanaAtual - 1;
@@ -361,10 +420,7 @@ const Engine = {
                     if(this.isTimeDaLiga(gameState, timeFora)) this.atualizarTabelaLiga(timeFora, placar.golsFora, placar.golsCasa);
                 } 
                 else if (evento.decisivo) {
-                    const resultMataMata = this.processarClassificacao(timeCasa, timeFora, placar.golsCasa, placar.golsFora, evento.tipo);
-                    if (resultMataMata && resultMataMata.campeao) {
-                        // Poderia adicionar ao log de campeões
-                    }
+                    this.processarClassificacao(timeCasa, timeFora, placar.golsCasa, placar.golsFora, evento.tipo);
                 }
 
                 resultados.push({
@@ -385,37 +441,31 @@ const Engine = {
         return { fim: false, resultados: resultados, evento: evento };
     },
 
-    // --- AUXILIARES DE SIMULAÇÃO ---
-
-    encontrarTime: function(gameState, nomeTime) {
-        let t = gameState.times.find(x => x.nome === nomeTime);
-        if (t) return t;
-        return gameState.timesContinental.find(x => x.nome === nomeTime);
-    },
-
-    isTimeDaLiga: function(gameState, time) {
-        return gameState.times.some(t => t.nome === time.nome);
-    },
+    // --- SIMULADOR TÁTICO ---
 
     simularPartida: function(timeCasa, timeFora, tipo) {
-        // Força Real
-        const forca11Casa = this.calcularForcaElenco(timeCasa.elenco);
-        const forca11Fora = this.calcularForcaElenco(timeFora.elenco);
+        // 1. Força Base (Média dos 11 titulares)
+        let forcaCasa = this.calcularForcaElenco(timeCasa.elenco);
+        let forcaFora = this.calcularForcaElenco(timeFora.elenco);
 
-        // Fator Moral (Pressão da diretoria impacta)
+        // 2. Bônus de Características (TÁTICA)
+        forcaCasa += this.calcularBonusCaracteristicas(timeCasa);
+        forcaFora += this.calcularBonusCaracteristicas(timeFora);
+
+        // 3. Fator Moral
         const moralC = (timeCasa.moral - 50) / 10;
         const moralF = (timeFora.moral - 50) / 10;
 
-        // Fator Casa (Neutro em Supercopa e Finais continentais)
+        // 4. Fator Casa (Neutro em Supercopa)
         let fatorCasa = 0;
         if (tipo !== 'SUPERCOPA') fatorCasa = Math.floor(Math.random() * 8) + 5;
 
-        const forcaFinalC = forca11Casa + fatorCasa + moralC;
-        const forcaFinalF = forca11Fora + moralF;
+        // Força Final
+        const forcaFinalC = forcaCasa + fatorCasa + moralC;
+        const forcaFinalF = forcaFora + moralF;
 
+        // Cálculo de Gols
         const diff = forcaFinalC - forcaFinalF;
-        
-        // Gols
         let gC = 0, gF = 0;
         const rC = Math.random(), rF = Math.random();
 
@@ -434,6 +484,76 @@ const Engine = {
         return { golsCasa: gC, golsFora: gF };
     },
 
+    calcularBonusCaracteristicas: function(time) {
+        let bonus = 0;
+        const titulares = this.escolherMelhores11(time.elenco);
+
+        const paredao = titulares.some(j => j.carac === 'Paredão');
+        const pes = titulares.some(j => j.carac === 'Joga com os Pés');
+        const xerifes = titulares.filter(j => j.carac === 'Xerife').length;
+        const apoio = titulares.filter(j => j.carac === 'Apoio').length;
+        const maestros = titulares.filter(j => j.carac === 'Maestro').length;
+        const caes = titulares.filter(j => j.carac === 'Cão de Guarda').length;
+        const artilheiros = titulares.filter(j => j.carac === 'Artilheiro').length;
+        const lider = titulares.some(j => j.carac === 'Líder');
+
+        if (paredao) bonus += 2;
+        if (xerifes >= 1) bonus += (xerifes * 1.5);
+        if (caes >= 1) bonus += (caes * 1.5);
+        if (pes) bonus += 1.5; 
+        if (apoio >= 1) bonus += (apoio * 1.5);
+        if (maestros >= 1) bonus += (maestros * 2);
+        if (artilheiros >= 1) bonus += (artilheiros * 2.5);
+        if (lider && time.moral < 60) bonus += 4; // Líder ajuda na crise
+
+        return Math.floor(bonus);
+    },
+
+    processarClassificacao: function(timeCasa, timeFora, golsC, golsF, tipo) {
+        let vencedor = null, perdedor = null;
+
+        if (golsC > golsF) { vencedor = timeCasa; perdedor = timeFora; }
+        else if (golsF > golsC) { vencedor = timeFora; perdedor = timeCasa; }
+        else {
+             // --- PÊNALTIS ---
+             let chanceCasa = 0.5;
+             const goleiroCasa = this.escolherMelhores11(timeCasa.elenco).find(j => j.pos === 'GOL');
+             const goleiroFora = this.escolherMelhores11(timeFora.elenco).find(j => j.pos === 'GOL');
+
+             // Goleiro pegador de pênaltis faz diferença
+             if (goleiroCasa && goleiroCasa.carac === 'Pegador de Pênaltis') chanceCasa += 0.15;
+             if (goleiroFora && goleiroFora.carac === 'Pegador de Pênaltis') chanceCasa -= 0.15;
+
+             if (Math.random() < chanceCasa) { vencedor = timeCasa; perdedor = timeFora; }
+             else { vencedor = timeFora; perdedor = timeCasa; }
+        }
+
+        if (tipo === 'SUPERCOPA') {
+            vencedor.stats.titulos.push("Supercopa");
+            vencedor.moral = 100;
+            return { campeao: vencedor.nome };
+        } else {
+            if (tipo === 'COPA') perdedor.stats.copa.eliminado = true;
+            else if (tipo === 'CONTINENTAL') perdedor.stats.continental.eliminado = true;
+            
+            vencedor.moral += 10; 
+            perdedor.moral -= 10;
+        }
+        return null;
+    },
+
+    // --- MÉTODOS AUXILIARES ---
+
+    encontrarTime: function(gameState, nomeTime) {
+        let t = gameState.times.find(x => x.nome === nomeTime);
+        if (t) return t;
+        return gameState.timesContinental.find(x => x.nome === nomeTime);
+    },
+
+    isTimeDaLiga: function(gameState, time) {
+        return gameState.times.some(t => t.nome === time.nome);
+    },
+
     atualizarMoral: function(time, gp, gc) {
         if (gp > gc) {
             time.moral += 5;
@@ -441,7 +561,7 @@ const Engine = {
             const queda = 3 + (time.pressaoDiretoria || 1); 
             time.moral -= queda;
         } else {
-            if (time.pressaoDiretoria >= 4) time.moral -= 2; // Time grande não gosta de empate
+            if (time.pressaoDiretoria >= 4) time.moral -= 2; 
             else time.moral += 2;
         }
         if (time.moral > 100) time.moral = 100;
@@ -456,29 +576,6 @@ const Engine = {
         else time.stats.liga.d++;
     },
 
-    processarClassificacao: function(timeCasa, timeFora, golsC, golsF, tipo) {
-        let vencedor = null, perdedor = null;
-        if (golsC > golsF) { vencedor = timeCasa; perdedor = timeFora; }
-        else if (golsF > golsC) { vencedor = timeFora; perdedor = timeCasa; }
-        else {
-             // Penaltis
-             if (Math.random() > 0.5) { vencedor = timeCasa; perdedor = timeFora; }
-             else { vencedor = timeFora; perdedor = timeCasa; }
-        }
-
-        if (tipo === 'SUPERCOPA') {
-            vencedor.stats.titulos.push("Supercopa");
-            vencedor.moral = 100;
-            return { campeao: vencedor.nome };
-        } else {
-            // Eliminação normal
-            if (tipo === 'COPA') perdedor.stats.copa.eliminado = true;
-            else if (tipo === 'CONTINENTAL') perdedor.stats.continental.eliminado = true;
-            vencedor.moral += 10; perdedor.moral -= 10;
-        }
-        return null;
-    },
-
     agendarProximaFase: function(gameState, tipo) {
         let pool = tipo === 'COPA' ? gameState.times : gameState.timesContinental;
         let vivos = tipo === 'COPA' 
@@ -488,20 +585,13 @@ const Engine = {
         if (vivos.length < 2) return;
 
         let proximaFase = vivos.length === 8 ? "Quartas" : vivos.length === 4 ? "Semi-Final" : "Final";
-        
         const novosJogos = this.sortearMataMata(vivos, proximaFase);
-        const idx = gameState.semanaAtual + 1; // Insere logo em seguida para simplificar
+        const idx = gameState.semanaAtual + 1; 
         
-        // Insere Ida
-        gameState.calendario.splice(idx, 0, { 
-            tipo: tipo, nome: `${this.getNomeTorneio(gameState, tipo)} (${proximaFase} Ida)`, jogos: novosJogos, fase: proximaFase 
-        });
-
-        // Insere Volta
+        gameState.calendario.splice(idx, 0, { tipo: tipo, nome: `${this.getNomeTorneio(gameState, tipo)} (${proximaFase} Ida)`, jogos: novosJogos, fase: proximaFase });
+        
         const volta = novosJogos.map(j => ({ casa: j.fora, fora: j.casa, idConfronto: j.idConfronto }));
-        gameState.calendario.splice(idx + 1, 0, { 
-            tipo: tipo, nome: `${this.getNomeTorneio(gameState, tipo)} (${proximaFase} Volta)`, jogos: volta, fase: proximaFase, decisivo: true 
-        });
+        gameState.calendario.splice(idx + 1, 0, { tipo: tipo, nome: `${this.getNomeTorneio(gameState, tipo)} (${proximaFase} Volta)`, jogos: volta, fase: proximaFase, decisivo: true });
     },
 
     getNomeTorneio: function(gameState, tipo) {
@@ -510,7 +600,6 @@ const Engine = {
         return 'Liga';
     },
 
-    // --- UTILS ---
     salvarJogo: function(s) { localStorage.setItem('brfutebol_save', JSON.stringify(s)); },
     carregarJogo: function() { return JSON.parse(localStorage.getItem('brfutebol_save')); },
     getClassificacao: function(gameState) {
