@@ -27,7 +27,7 @@
             grid-template-rows: 70px 1fr;
             height: 100vh;
             overflow: hidden;
-            user-select: none; /* Evita selecionar texto ao arrastar */
+            user-select: none;
         }
 
         /* HEADER */
@@ -41,31 +41,14 @@
             z-index: 100;
         }
 
-        .header-controls {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
+        .header-controls { display: flex; align-items: center; gap: 20px; }
 
         select {
-            background: #1e272e;
-            color: white;
-            border: 1px solid #555;
-            padding: 8px 15px;
-            border-radius: 6px;
-            font-size: 1rem;
-            cursor: pointer;
+            background: #1e272e; color: white; border: 1px solid #555;
+            padding: 8px 15px; border-radius: 6px; font-size: 1rem; cursor: pointer;
         }
 
-        .action-btn {
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            border: none;
-            transition: 0.2s;
-        }
-
+        .action-btn { padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; border: none; transition: 0.2s; }
         .btn-back { background: #444; color: #fff; }
         .btn-save { background: var(--secondary); color: #1e272e; text-transform: uppercase; }
         .btn-save:hover { box-shadow: 0 0 15px rgba(15, 185, 177, 0.4); }
@@ -74,111 +57,80 @@
         main {
             display: grid;
             grid-template-columns: 1fr 350px;
-            gap: 20px;
-            padding: 20px;
-            height: 100%;
-            box-sizing: border-box;
+            gap: 20px; padding: 20px; height: 100%; box-sizing: border-box;
         }
 
         /* CAMPO */
         .field-container {
             background: linear-gradient(180deg, #27ae60 0%, #2ecc71 100%);
-            border: 4px solid #fff;
-            border-radius: 12px;
-            position: relative;
-            box-shadow: inset 0 0 80px rgba(0,0,0,0.5);
-            margin: 0 auto;
-            width: 100%;
-            max-width: 700px; /* Limita largura para não ficar esticado */
-            height: 100%;
-            overflow: hidden;
+            border: 4px solid #fff; border-radius: 12px;
+            position: relative; box-shadow: inset 0 0 80px rgba(0,0,0,0.5);
+            margin: 0 auto; width: 100%; max-width: 700px; height: 100%; overflow: hidden;
         }
 
-        /* Linhas do Campo */
         .line { position: absolute; background: rgba(255,255,255,0.4); pointer-events: none; }
         .mid-line { width: 100%; height: 2px; top: 50%; }
         .circle { width: 100px; height: 100px; border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); }
         .area-top { width: 40%; height: 16%; border: 2px solid rgba(255,255,255,0.4); border-top: none; top: 0; left: 30%; }
         .area-bottom { width: 40%; height: 16%; border: 2px solid rgba(255,255,255,0.4); border-bottom: none; bottom: 0; left: 30%; }
 
-        /* JOGADOR (Bolinha Draggable) */
+        /* JOGADOR NO CAMPO (TOKEN) */
         .player-token {
-            position: absolute;
-            width: 45px; height: 45px;
-            background: #fff;
-            border: 3px solid #333;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            color: #333;
-            font-size: 0.85rem;
-            cursor: grab;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-            transform: translate(-50%, -50%); /* Centraliza no ponto X,Y */
-            z-index: 10;
-            transition: border-color 0.2s, transform 0.1s;
+            position: absolute; width: 50px; height: 50px;
+            background: #fff; border: 3px solid #333; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; color: #333; font-size: 0.85rem;
+            cursor: grab; box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            transform: translate(-50%, -50%); z-index: 10;
+            transition: all 0.2s;
         }
 
-        .player-token:active {
-            cursor: grabbing;
+        /* Estado quando um reserva está sendo arrastado por cima */
+        .player-token.drag-hover {
             transform: translate(-50%, -50%) scale(1.2);
-            z-index: 20;
-            border-color: var(--secondary);
+            border-color: #f1c40f;
+            background-color: #f1c40f;
+            color: #1e272e;
+            box-shadow: 0 0 20px #f1c40f;
         }
+
+        /* Estado de ajuste de posição (mousedown) */
+        .player-token:active { cursor: grabbing; transform: translate(-50%, -50%) scale(1.1); z-index: 20; }
 
         .player-label {
-            position: absolute;
-            top: 48px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            white-space: nowrap;
-            pointer-events: none;
+            position: absolute; top: 52px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.8); color: white; padding: 3px 8px;
+            border-radius: 4px; font-size: 0.75rem; white-space: nowrap; pointer-events: none;
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
         }
+        .player-label span { font-size: 0.65rem; color: #bdc3c7; }
 
-        /* LISTA LATERAL */
+        /* SIDEBAR (RESERVAS) */
         .sidebar {
-            background: var(--card-bg);
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid #444;
+            background: var(--card-bg); border-radius: 12px;
+            display: flex; flex-direction: column; overflow: hidden; border: 1px solid #444;
         }
 
         .sidebar h3 {
-            margin: 0; padding: 15px;
-            background: rgba(0,0,0,0.2);
-            font-size: 0.9rem; text-transform: uppercase;
-            border-bottom: 1px solid #444;
-            color: var(--text-muted);
+            margin: 0; padding: 15px; background: rgba(0,0,0,0.2);
+            font-size: 0.9rem; text-transform: uppercase; border-bottom: 1px solid #444;
+            color: var(--text-muted); display: flex; justify-content: space-between;
         }
 
-        .player-list {
-            overflow-y: auto;
-            flex-grow: 1;
-        }
+        .player-list { overflow-y: auto; flex-grow: 1; }
 
         .list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 15px;
-            border-bottom: 1px solid #333;
-            font-size: 0.9rem;
-            cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 15px; border-bottom: 1px solid #333; font-size: 0.9rem;
+            cursor: grab; background: #2d3436; transition: 0.2s;
         }
         .list-item:hover { background: rgba(255,255,255,0.05); }
-        .list-item.titular { border-left: 3px solid var(--secondary); background: rgba(15, 185, 177, 0.1); }
+        .list-item:active { cursor: grabbing; opacity: 0.6; }
 
-        .pos-badge { font-weight: bold; width: 30px; color: #888; font-size: 0.8rem; }
-        .ovr-badge { font-weight: bold; color: var(--secondary); }
+        .pos-badge { font-weight: bold; width: 35px; color: #888; font-size: 0.8rem; text-align: center; }
+        .name-area { display: flex; flex-direction: column; }
+        .trait-mini { font-size: 0.65rem; color: #aaa; }
+        .ovr-badge { font-weight: bold; color: var(--secondary); font-size: 1.1rem; }
 
     </style>
 </head>
@@ -192,7 +144,7 @@
 
         <div class="header-controls">
             <label style="font-size:0.9rem; color:#aaa;">Formação:</label>
-            <select id="formationSelect" onchange="aplicarFormacao()">
+            <select id="formationSelect" onchange="aplicarFormacaoAutomatica()">
                 <option value="4-4-2">4-4-2 Clássico</option>
                 <option value="4-3-3">4-3-3 Ofensivo</option>
                 <option value="3-5-2">3-5-2 Equilibrado</option>
@@ -209,207 +161,262 @@
             <div class="line circle"></div>
             <div class="line area-top"></div>
             <div class="line area-bottom"></div>
-
+            
             </div>
 
         <div class="sidebar">
-            <h3>Elenco Relacionado</h3>
-            <div class="player-list" id="listaJogadores">
+            <h3><span>Banco de Reservas</span> <small style="font-size:0.7rem">Arraste para o campo</small></h3>
+            <div class="player-list" id="listaReservas">
                 </div>
         </div>
     </main>
 
     <script>
-        // --- COORDENADAS DAS FORMAÇÕES (Em Porcentagem: Left%, Top%) ---
-        // Top 0% = Gol Adversário (Ataque) | Top 100% = Meu Gol (Defesa)
-        // Mas visualmente para escalar, geralmente Goleiro fica embaixo (100%) e Atacante em cima (0%)
-        // Vamos usar: Y=90% (Goleiro), Y=10% (Atacante)
-        
+        // --- COORDENADAS DAS FORMAÇÕES ---
         const formations = {
             "4-4-2": [
-                {x:50, y:90, p:'GOL'}, // GK
-                {x:15, y:75, p:'LE'}, {x:38, y:80, p:'ZAG'}, {x:62, y:80, p:'ZAG'}, {x:85, y:75, p:'LD'}, // DEF
-                {x:15, y:45, p:'ME'}, {x:38, y:55, p:'VOL'}, {x:62, y:55, p:'VOL'}, {x:85, y:45, p:'MD'}, // MEI
-                {x:35, y:15, p:'ATA'}, {x:65, y:15, p:'ATA'} // ATA
+                {x:50,y:90,p:'GOL'}, 
+                {x:15,y:75,p:'LE'}, {x:38,y:80,p:'ZAG'}, {x:62,y:80,p:'ZAG'}, {x:85,y:75,p:'LD'}, 
+                {x:15,y:45,p:'ME'}, {x:38,y:55,p:'VOL'}, {x:62,y:55,p:'VOL'}, {x:85,y:45,p:'MD'}, 
+                {x:35,y:15,p:'ATA'}, {x:65,y:15,p:'ATA'}
             ],
             "4-3-3": [
-                {x:50, y:90, p:'GOL'},
-                {x:15, y:75, p:'LE'}, {x:38, y:80, p:'ZAG'}, {x:62, y:80, p:'ZAG'}, {x:85, y:75, p:'LD'},
-                {x:50, y:60, p:'VOL'}, {x:30, y:45, p:'MC'}, {x:70, y:45, p:'MC'},
-                {x:15, y:20, p:'PE'}, {x:50, y:15, p:'ATA'}, {x:85, y:20, p:'PD'}
+                {x:50,y:90,p:'GOL'},
+                {x:15,y:75,p:'LE'}, {x:38,y:80,p:'ZAG'}, {x:62,y:80,p:'ZAG'}, {x:85,y:75,p:'LD'},
+                {x:50,y:60,p:'VOL'}, {x:30,y:45,p:'MC'}, {x:70,y:45, p:'MC'},
+                {x:15,y:20,p:'PE'}, {x:50,y:15,p:'ATA'}, {x:85,y:20,p:'PD'}
             ],
             "3-5-2": [
-                {x:50, y:90, p:'GOL'},
-                {x:25, y:80, p:'ZAG'}, {x:50, y:82, p:'ZAG'}, {x:75, y:80, p:'ZAG'},
-                {x:10, y:50, p:'AE'}, {x:35, y:60, p:'VOL'}, {x:65, y:60, p:'VOL'}, {x:90, y:50, p:'AD'}, {x:50, y:40, p:'MAT'},
-                {x:35, y:15, p:'ATA'}, {x:65, y:15, p:'ATA'}
+                {x:50,y:90,p:'GOL'},
+                {x:25,y:80,p:'ZAG'}, {x:50,y:82,p:'ZAG'}, {x:75,y:80,p:'ZAG'},
+                {x:10,y:50,p:'AE'}, {x:35,y:60,p:'VOL'}, {x:65,y:60,p:'VOL'}, {x:90,y:50,p:'AD'}, {x:50,y:40,p:'MAT'},
+                {x:35,y:15,p:'ATA'}, {x:65,y:15,p:'ATA'}
             ],
             "3-4-3": [
-                {x:50, y:90, p:'GOL'},
-                {x:20, y:80, p:'ZAG'}, {x:50, y:82, p:'ZAG'}, {x:80, y:80, p:'ZAG'},
-                {x:10, y:50, p:'ME'}, {x:40, y:55, p:'MC'}, {x:60, y:55, p:'MC'}, {x:90, y:50, p:'MD'},
-                {x:20, y:20, p:'PE'}, {x:50, y:15, p:'ATA'}, {x:80, y:20, p:'PD'}
+                {x:50,y:90,p:'GOL'},
+                {x:20,y:80,p:'ZAG'}, {x:50,y:82,p:'ZAG'}, {x:80,y:80,p:'ZAG'},
+                {x:10,y:50,p:'ME'}, {x:40,y:55,p:'MC'}, {x:60,y:55,p:'MC'}, {x:90,y:50,p:'MD'},
+                {x:20,y:20,p:'PE'}, {x:50,y:15,p:'ATA'}, {x:80,y:20,p:'PD'}
             ],
             "5-4-1": [
-                {x:50, y:90, p:'GOL'},
-                {x:10, y:70, p:'LE'}, {x:30, y:80, p:'ZAG'}, {x:50, y:82, p:'LIB'}, {x:70, y:80, p:'ZAG'}, {x:90, y:70, p:'LD'},
-                {x:20, y:50, p:'ME'}, {x:40, y:55, p:'VOL'}, {x:60, y:55, p:'VOL'}, {x:80, y:50, p:'MD'},
-                {x:50, y:15, p:'ATA'}
+                {x:50,y:90,p:'GOL'},
+                {x:10,y:70,p:'LE'}, {x:30,y:80,p:'ZAG'}, {x:50,y:82,p:'LIB'}, {x:70,y:80,p:'ZAG'}, {x:90,y:70,p:'LD'},
+                {x:20,y:50,p:'ME'}, {x:40,y:55,p:'VOL'}, {x:60,y:55,p:'VOL'}, {x:80,y:50,p:'MD'},
+                {x:50,y:15,p:'ATA'}
             ]
         };
 
         // --- ESTADO LOCAL ---
         let gameState = null;
         let myTeamObj = null;
-        let activeFormation = "4-4-2";
-        let draggedElement = null; // Elemento sendo arrastado
+        let titulares = []; // Array com 11 jogadores
+        let reservas = [];  // Array com o resto
+        let draggedPosElement = null; // Para ajuste de posição (Campo -> Campo)
 
         // --- INICIALIZAÇÃO ---
         window.onload = function() {
             if (typeof Engine === 'undefined') { alert("Engine não carregada"); return; }
-            
             gameState = Engine.carregarJogo();
             if (!gameState) { window.location.href = 'index.html'; return; }
 
-            // Pega o time
             myTeamObj = gameState.times.find(t => t.nome === gameState.meuTime) || gameState.timesContinental.find(t => t.nome === gameState.meuTime);
 
-            renderSidebarList();
-            aplicarFormacao(); // Carrega a formação padrão e desenha os jogadores
+            // SEPARA TITULARES E RESERVAS
+            // Se já salvamos antes, o elenco já está ordenado (Titulares nos primeiros 11 índices)
+            // Se for a primeira vez, o engine já gera ordenado por força também.
+            // Então podemos confiar na ordem do array do elenco.
+            titulares = myTeamObj.elenco.slice(0, 11);
+            reservas = myTeamObj.elenco.slice(11);
+
+            // Inicializa posições padrão se não tiverem sido salvas
+            if(!titulares[0].x) {
+                aplicarCoordenadasPadrao("4-4-2"); // Default inicial
+            }
+
+            renderizarCampo();
+            renderizarBanco();
         };
 
-        // --- LÓGICA DE FORMAÇÃO E RENDERIZAÇÃO ---
+        // --- FUNÇÕES PRINCIPAIS DE RENDERIZAÇÃO ---
 
-        function aplicarFormacao() {
-            activeFormation = document.getElementById('formationSelect').value;
-            const coords = formations[activeFormation];
+        function renderizarCampo() {
             const field = document.getElementById('campo');
-            
-            // Limpa o campo antes de redesenhar
-            field.innerHTML = `
-                <div class="line mid-line"></div>
-                <div class="line circle"></div>
-                <div class="line area-top"></div>
-                <div class="line area-bottom"></div>
-            `;
-
-            // Pega os 11 titulares atuais (ou os 11 melhores se não tiver definido)
-            // AQUI USAMOS O ENGINE PARA PEGAR OS MELHORES 11 INICIAIS
-            // Num jogo completo, o 'myTeamObj.titulares' seria persistente.
-            const titulares = Engine.escolherMelhores11(myTeamObj.elenco);
+            // Remove apenas os players, mantém as linhas
+            const dots = document.querySelectorAll('.player-token');
+            dots.forEach(d => d.remove());
 
             titulares.forEach((jog, index) => {
-                // Se a formação tem menos posições que o index (erro de segurança), ignora
-                if (!coords[index]) return;
+                const div = document.createElement('div');
+                div.className = 'player-token';
+                div.style.left = jog.x + '%';
+                div.style.top = jog.y + '%';
+                
+                if (jog.pos === 'GOL') div.style.background = "#f1c40f";
 
-                const posData = coords[index];
-                criarBoneco(jog, posData.x, posData.y, posData.p);
+                div.innerHTML = `
+                    ${jog.role || jog.pos.substring(0,2)} 
+                    <div class="player-label">
+                        <b>${jog.nome.split(' ')[0]}</b>
+                        <span>${jog.forca} | ${jog.carac}</span>
+                    </div>
+                `;
+
+                // EVENTOS MOUSE (Ajuste fino de posição)
+                div.onmousedown = (e) => startPosDrag(e, div, index);
+
+                // EVENTOS DRAG & DROP (Receber substituição)
+                // Permitir que soltem coisas aqui
+                div.ondragover = (e) => {
+                    e.preventDefault(); // Necessário para permitir o drop
+                    div.classList.add('drag-hover');
+                };
+                
+                div.ondragleave = (e) => {
+                    div.classList.remove('drag-hover');
+                };
+
+                div.ondrop = (e) => {
+                    e.preventDefault();
+                    div.classList.remove('drag-hover');
+                    const indexReserva = e.dataTransfer.getData("text/plain");
+                    if (indexReserva !== "") {
+                        realizarSubstituicao(index, parseInt(indexReserva));
+                    }
+                };
+
+                field.appendChild(div);
             });
         }
 
-        function criarBoneco(jogador, x, y, posTatita) {
-            const field = document.getElementById('campo');
-            
-            const div = document.createElement('div');
-            div.className = 'player-token';
-            div.style.left = x + '%';
-            div.style.top = y + '%';
-            
-            // Cor do Goleiro
-            if (jogador.pos === 'GOL') div.style.background = "#f1c40f";
-
-            div.innerHTML = `
-                ${posTatita}
-                <div class="player-label">${jogador.nome.split(' ')[0]} <span style="color:#2ecc71">${jogador.forca}</span></div>
-            `;
-
-            // EVENTOS DE ARRASTAR (Mouse)
-            div.onmousedown = dragMouseDown;
-
-            field.appendChild(div);
-        }
-
-        // --- SISTEMA DE DRAG & DROP (ARRASTAR) ---
-        function dragMouseDown(e) {
-            e.preventDefault();
-            draggedElement = this; // O elemento clicado
-            
-            // Pega posição inicial do mouse
-            pos3 = e.clientX;
-            pos4 = e.clientY;
-            
-            document.onmouseup = closeDragElement;
-            document.onmousemove = elementDrag;
-        }
-
-        function elementDrag(e) {
-            e.preventDefault();
-            
-            if (!draggedElement) return;
-
-            const field = document.getElementById('campo');
-            const rect = field.getBoundingClientRect();
-
-            // Calcula nova posição relativa ao campo (em porcentagem para ser responsivo)
-            let newX = e.clientX - rect.left;
-            let newY = e.clientY - rect.top;
-
-            // Converte para porcentagem (0 a 100)
-            let percentX = (newX / rect.width) * 100;
-            let percentY = (newY / rect.height) * 100;
-
-            // Limites do campo (não deixa sair)
-            if (percentX < 0) percentX = 0;
-            if (percentX > 100) percentX = 100;
-            if (percentY < 0) percentY = 0;
-            if (percentY > 100) percentY = 100;
-
-            draggedElement.style.left = percentX + "%";
-            draggedElement.style.top = percentY + "%";
-        }
-
-        function closeDragElement() {
-            // Para de arrastar
-            document.onmouseup = null;
-            document.onmousemove = null;
-            draggedElement = null;
-        }
-
-        // --- RENDERIZAÇÃO DA LISTA LATERAL ---
-        function renderSidebarList() {
-            const list = document.getElementById('listaJogadores');
+        function renderizarBanco() {
+            const list = document.getElementById('listaReservas');
             list.innerHTML = '';
 
-            // Ordena por força
-            const elenco = [...myTeamObj.elenco].sort((a,b) => b.forca - a.forca);
+            // Ordena reservas por força
+            reservas.sort((a,b) => b.forca - a.forca);
 
-            elenco.forEach((jog, idx) => {
+            reservas.forEach((jog, idx) => {
                 const div = document.createElement('div');
                 div.className = 'list-item';
-                if(idx < 11) div.classList.add('titular');
+                div.draggable = true; // Permite arrastar
 
                 div.innerHTML = `
-                    <div style="display:flex; gap:10px;">
+                    <div style="display:flex; gap:10px; align-items:center;">
                         <span class="pos-badge">${jog.pos}</span>
-                        <span>${jog.nome}</span>
+                        <div class="name-area">
+                            <span>${jog.nome}</span>
+                            <span class="trait-mini">${jog.carac}</span>
+                        </div>
                     </div>
                     <span class="ovr-badge">${jog.forca}</span>
                 `;
-                // Futuramente: Click na lista troca com o jogador selecionado no campo
+
+                // EVENTO DE INÍCIO DO ARRASTO
+                div.ondragstart = (e) => {
+                    // Guarda o índice do reserva que está sendo arrastado
+                    e.dataTransfer.setData("text/plain", idx);
+                    e.dataTransfer.effectAllowed = "move";
+                };
+
                 list.appendChild(div);
             });
         }
 
-        // --- AÇÕES ---
-        function salvarTime() {
-            // Em uma versão avançada, aqui leríamos as posições X/Y finais de cada div
-            // e salvaríamos no objeto do time.
-            // Por enquanto, salvamos apenas a moral/status se necessário.
+        // --- LÓGICA DE SUBSTITUIÇÃO ---
+
+        function realizarSubstituicao(indexTitular, indexReserva) {
+            const titularSaindo = titulares[indexTitular];
+            const reservaSaindo = reservas[indexReserva];
+
+            // Troca de lugares nos arrays
+            titulares[indexTitular] = reservaSaindo;
+            reservas[indexReserva] = titularSaindo;
+
+            // Transfere as coordenadas e a função tática (role) para o novo titular
+            // Assim ele cai exatamente onde o outro estava
+            titulares[indexTitular].x = titularSaindo.x;
+            titulares[indexTitular].y = titularSaindo.y;
+            titulares[indexTitular].role = titularSaindo.role;
+
+            // Re-renderiza tudo
+            renderizarCampo();
+            renderizarBanco();
+        }
+
+        // --- LÓGICA DE FORMAÇÃO AUTOMÁTICA ---
+
+        function aplicarFormacaoAutomatica() {
+            const formacao = document.getElementById('formationSelect').value;
+            aplicarCoordenadasPadrao(formacao);
+            renderizarCampo();
+        }
+
+        function aplicarCoordenadasPadrao(nomeFormacao) {
+            const coords = formations[nomeFormacao];
             
-            // Salva de volta no localStorage (se tiver alterado algo no Engine)
+            // Aplica as posições para os 11 titulares atuais
+            titulares.forEach((jog, idx) => {
+                if (coords[idx]) {
+                    jog.x = coords[idx].x;
+                    jog.y = coords[idx].y;
+                    jog.role = coords[idx].p; // Salva a função (ex: VOL, MAT)
+                }
+            });
+        }
+
+        // --- SISTEMA DE ARRASTAR POSIÇÃO (AJUSTE FINO NO CAMPO) ---
+        // Mantido do código anterior para permitir mover os bonecos no campo
+
+        function startPosDrag(e, divElement, index) {
+            e.preventDefault(); // Impede conflito com o drag&drop nativo
+            
+            draggedPosElement = divElement;
+            const field = document.getElementById('campo');
+            const rect = field.getBoundingClientRect();
+
+            function elementDrag(e) {
+                e.preventDefault();
+                // Calcula nova posição %
+                let newX = ((e.clientX - rect.left) / rect.width) * 100;
+                let newY = ((e.clientY - rect.top) / rect.height) * 100;
+
+                // Limites
+                if (newX < 0) newX = 0; if (newX > 100) newX = 100;
+                if (newY < 0) newY = 0; if (newY > 100) newY = 100;
+
+                // Atualiza visual
+                draggedPosElement.style.left = newX + "%";
+                draggedPosElement.style.top = newY + "%";
+
+                // Atualiza dados do jogador em tempo real
+                titulares[index].x = newX;
+                titulares[index].y = newY;
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+                draggedPosElement = null;
+            }
+
+            document.onmouseup = closeDragElement;
+            document.onmousemove = elementDrag;
+        }
+
+        // --- SALVAR E SAIR ---
+
+        function salvarTime() {
+            // Reconstrói o array 'elenco' com a nova ordem:
+            // 11 Titulares + Reservas
+            const novoElenco = [...titulares, ...reservas];
+            
+            // Atualiza no objeto do time local
+            myTeamObj.elenco = novoElenco;
+
+            // Salva no Engine
             Engine.salvarJogo(gameState);
             
-            alert("Tática e Posicionamento salvos!");
+            alert("Escalação definida!");
             voltar();
         }
 
