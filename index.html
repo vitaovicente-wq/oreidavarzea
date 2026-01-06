@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BRFutebol - Início</title>
     
-    <script src="database_jogadores.js"></script>
-    <script src="engine.js"></script>
+    <script src="./database_jogadores.js"></script>
+    <script src="./engine.js"></script>
 
     <style>
         :root {
             --bg: #0d1115;
             --card: #1e272e;
-            --highlight: #0fb9b1;
+            --highlight: #0fb9b1; /* Verde Turquesa */
             --text: #ecf0f1;
         }
 
@@ -36,9 +36,10 @@
             width: 400px;
             text-align: center;
             border: 1px solid #333;
+            animation: fadeIn 0.5s ease-out;
         }
 
-        h1 { margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; }
+        h1 { margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; margin-top: 0; }
         h1 span { color: var(--highlight); }
 
         .form-group { margin-bottom: 20px; text-align: left; }
@@ -52,12 +53,14 @@
             color: white;
             border-radius: 8px;
             font-size: 1rem;
-            box-sizing: border-box; /* Garante que o padding não estoure a largura */
+            box-sizing: border-box;
+            transition: 0.2s;
         }
 
         select:focus, input:focus {
             outline: none;
             border-color: var(--highlight);
+            box-shadow: 0 0 10px rgba(15, 185, 177, 0.2);
         }
 
         .btn-start {
@@ -70,13 +73,37 @@
             font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
             margin-top: 10px;
+            text-transform: uppercase;
         }
 
-        .btn-start:hover { transform: scale(1.03); }
+        .btn-start:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 5px 15px rgba(15, 185, 177, 0.3);
+        }
+        
+        .btn-start:disabled {
+            background: #444;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
 
-        .loading { font-size: 0.8rem; color: #666; margin-top: 10px; display: none; }
+        .loading { font-size: 0.85rem; color: #888; margin-top: 15px; display: none; }
+        
+        .error-msg {
+            color: #ff4757;
+            background: rgba(255, 71, 87, 0.1);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            margin-bottom: 20px;
+            display: none;
+            border: 1px solid #ff4757;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
     </style>
 </head>
@@ -85,15 +112,18 @@
     <div class="login-card">
         <h1>BR<span>Futebol</span> 26</h1>
         
+        <div id="error-box" class="error-msg"></div>
+
         <div class="form-group">
             <label>Seu Nome de Treinador</label>
-            <input type="text" id="nome-tecnico" placeholder="Ex: Renato Gaúcho">
+            <input type="text" id="nome-tecnico" placeholder="Ex: Abel Ferreira">
         </div>
 
         <div class="form-group">
             <label>País da Liga</label>
             <select id="select-pais" onchange="carregarTimes()">
-                </select>
+                <option value="">Carregando...</option>
+            </select>
         </div>
 
         <div class="form-group">
@@ -104,15 +134,27 @@
         </div>
 
         <button class="btn-start" onclick="iniciarJogo()">ASSUMIR TIME</button>
-        <div class="loading" id="msg-loading">Criando mundo e simulando calendários...</div>
+        <div class="loading" id="msg-loading">
+            ⚙️ Criando mundo, sorteando tabelas e gerando calendário...
+        </div>
     </div>
 
     <script>
         window.onload = function() {
-            if (typeof database === 'undefined' || typeof Engine === 'undefined') {
-                alert("ERRO CRÍTICO: Arquivos database_jogadores.js ou engine.js não encontrados!");
+            const errBox = document.getElementById('error-box');
+            let missing = [];
+
+            if (typeof database === 'undefined') missing.push("database_jogadores.js");
+            if (typeof Engine === 'undefined') missing.push("engine.js");
+
+            if (missing.length > 0) {
+                errBox.style.display = 'block';
+                errBox.innerHTML = `<strong>ERRO CRÍTICO:</strong><br>Não foi possível carregar: ${missing.join(", ")}.<br>Verifique se os arquivos estão na pasta correta e se os nomes estão iguais (minúsculas).`;
+                document.querySelector('.btn-start').disabled = true;
                 return;
             }
+
+            // Tudo certo, carrega os países
             carregarPaises();
         };
 
@@ -134,9 +176,12 @@
             const selTime = document.getElementById('select-time');
             selTime.innerHTML = '';
 
-            if (!pais || !database[pais]) return;
+            if (!pais || !database[pais]) {
+                selTime.innerHTML = '<option value="">Selecione o país primeiro...</option>';
+                return;
+            }
 
-            // Suporte a estrutura antiga (objeto divisao) ou nova (array direto)
+            // Suporte para estruturas diferentes de DB
             let lista = [];
             if (Array.isArray(database[pais])) {
                 lista = database[pais];
@@ -146,7 +191,7 @@
                 lista = database[pais].serieA;
             }
 
-            // Ordena alfabeticamente
+            // Ordena alfabeticamente para facilitar a busca
             lista.sort((a,b) => a.nome.localeCompare(b.nome));
 
             lista.forEach(t => {
@@ -163,32 +208,40 @@
             const time = document.getElementById('select-time').value;
 
             if (!nomeTecnico || !pais || !time) {
-                alert("Preencha todos os campos!");
+                alert("Por favor, preencha todos os campos para começar.");
                 return;
             }
 
-            // Mostra loading (pois o novo Engine demora um pouquinho gerando o mundo)
+            // Interface de Loading
             document.getElementById('msg-loading').style.display = 'block';
-            document.querySelector('.btn-start').disabled = true;
-            document.querySelector('.btn-start').innerText = "Processando...";
+            const btn = document.querySelector('.btn-start');
+            btn.disabled = true;
+            btn.innerText = "PROCESSANDO...";
 
-            // Pequeno delay para o browser renderizar o texto de loading
             setTimeout(() => {
-                // Salva infos básicas
+                // Salva o nome do técnico
                 localStorage.setItem('brfutebol_tecnico', nomeTecnico);
                 
-                // Pega o escudo do time selecionado para cache visual
+                // Salva o escudo para uso rápido no dashboard
                 let lista = Array.isArray(database[pais]) ? database[pais] : (database[pais].primeira || database[pais].serieA);
                 let timeObj = lista.find(t => t.nome === time);
                 if(timeObj) localStorage.setItem('brfutebol_escudo', timeObj.escudo);
 
-                // --- CHAMA O MOTOR NOVO ---
-                // Agora passamos o país, e o motor gera o mundo todo
-                Engine.novoJogo(pais, 'primeira', time);
-
-                // Redireciona
-                window.location.href = 'dashboard.html';
-            }, 100);
+                try {
+                    // CHAMA O MOTOR GLOBAL
+                    // Parâmetros: (país selecionado, divisão padrão, nome do time)
+                    Engine.novoJogo(pais, 'primeira', time);
+                    
+                    // Sucesso -> Vai para o Dashboard
+                    window.location.href = 'dashboard.html';
+                } catch (e) {
+                    alert("Erro ao iniciar o motor: " + e.message);
+                    console.error(e);
+                    btn.disabled = false;
+                    btn.innerText = "TENTAR NOVAMENTE";
+                    document.getElementById('msg-loading').style.display = 'none';
+                }
+            }, 100); // Delay curto para a UI atualizar
         }
     </script>
 </body>
