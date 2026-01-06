@@ -7,17 +7,21 @@
     <style>
         :root {
             --primary: #1e272e;
-            --secondary: #0fb9b1; /* Verde Turquesa */
-            --accent: #ff4757; /* Vermelho */
+            --secondary: #0fb9b1; 
             --text: #ecf0f1;
             --card-bg: #2d3436;
             --input-bg: #151a1d;
             
-            /* Cores das Divisões */
+            /* Cores Brasil */
             --serie-a: #2ecc71;
             --serie-b: #f1c40f;
             --serie-c: #e67e22;
             --serie-d: #e74c3c;
+
+            /* Cores Portugal */
+            --liga-1: #d35400; /* Ouro/Laranja */
+            --liga-2: #bdc3c7; /* Prata */
+            --liga-3: #c0392b; /* Vermelho */
         }
 
         body {
@@ -108,39 +112,45 @@
             cursor: pointer;
         }
 
-        /* --- SELEÇÃO DE DIVISÃO (NOVO) --- */
-        #division-selector {
+        /* --- ÁREA DE BOTÕES DE DIVISÃO --- */
+        .division-container {
             display: none; /* Escondido por padrão */
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 15px;
-            max-width: 600px;
+            max-width: 700px;
             margin: 30px auto 0;
             padding: 0 20px;
         }
 
         .division-btn {
-            padding: 20px;
+            padding: 15px;
             border: none;
             border-radius: 12px;
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1rem;
             text-transform: uppercase;
             cursor: pointer;
             transition: transform 0.2s, filter 0.2s;
-            color: #1e272e;
+            color: white;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
         }
 
         .division-btn:hover { transform: translateY(-3px); filter: brightness(1.1); }
 
-        .btn-a { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; }
-        .btn-b { background: linear-gradient(135deg, #f1c40f, #f39c12); color: #2d3436; }
-        .btn-c { background: linear-gradient(135deg, #e67e22, #d35400); color: white; }
-        .btn-d { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
+        /* Cores Específicas Brasil */
+        .btn-br-a { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+        .btn-br-b { background: linear-gradient(135deg, #f1c40f, #f39c12); color: #2d3436; }
+        .btn-br-c { background: linear-gradient(135deg, #e67e22, #d35400); }
+        .btn-br-d { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+
+        /* Cores Específicas Portugal */
+        .btn-pt-1 { background: linear-gradient(135deg, #d35400, #e67e22); }
+        .btn-pt-2 { background: linear-gradient(135deg, #95a5a6, #7f8c8d); color: #2d3436; }
+        .btn-pt-3 { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+
 
         /* --- GRID DE TIMES --- */
         #teams-container {
@@ -200,18 +210,6 @@
         
         .select-btn:hover { background-color: var(--secondary); color: #1e272e; }
 
-        .back-btn {
-            display: block;
-            margin: 20px auto;
-            background: none;
-            border: 1px solid #777;
-            color: #ccc;
-            padding: 8px 20px;
-            border-radius: 20px;
-            cursor: pointer;
-        }
-        .back-btn:hover { border-color: white; color: white; }
-
         .empty-state {
             grid-column: 1 / -1;
             text-align: center;
@@ -245,7 +243,8 @@
                 <label class="input-label">Passo 2: Mercado de Trabalho</label>
                 <select id="country-select" class="form-control" onchange="handleCountrySelection()" disabled>
                     <option value="" disabled selected>Selecione a Liga...</option>
-                    <option value="brasil">🇧🇷 Brasil (Séries A, B, C, D)</option>
+                    <option value="brasil">🇧🇷 Brasil (Multidivisão)</option>
+                    <option value="portugal">🇵🇹 Portugal (Multidivisão)</option>
                     <option value="espanha">🇪🇸 Espanha (La Liga)</option>
                     <option value="inglaterra">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra (Premier League)</option>
                     <option value="argentina">🇦🇷 Argentina (Liga Profesional)</option>
@@ -261,11 +260,17 @@
             </div>
         </div>
 
-        <div id="division-selector">
-            <button class="division-btn btn-a" onclick="loadBrazilDivision('serieA')">🏆 Série A</button>
-            <button class="division-btn btn-b" onclick="loadBrazilDivision('serieB')">🥈 Série B</button>
-            <button class="division-btn btn-c" onclick="loadBrazilDivision('serieC')">🥉 Série C</button>
-            <button class="division-btn btn-d" onclick="loadBrazilDivision('serieD')">🧱 Série D</button>
+        <div id="division-btns-brasil" class="division-container">
+            <button class="division-btn btn-br-a" onclick="loadSubDivision('brasil', 'serieA')">🏆 Série A</button>
+            <button class="division-btn btn-br-b" onclick="loadSubDivision('brasil', 'serieB')">🥈 Série B</button>
+            <button class="division-btn btn-br-c" onclick="loadSubDivision('brasil', 'serieC')">🥉 Série C</button>
+            <button class="division-btn btn-br-d" onclick="loadSubDivision('brasil', 'serieD')">🧱 Série D</button>
+        </div>
+
+        <div id="division-btns-portugal" class="division-container">
+            <button class="division-btn btn-pt-1" onclick="loadSubDivision('portugal', 'primeira')">🥇 1ª Liga</button>
+            <button class="division-btn btn-pt-2" onclick="loadSubDivision('portugal', 'segunda')">🥈 2ª Liga</button>
+            <button class="division-btn btn-pt-3" onclick="loadSubDivision('portugal', 'terceira')">🥉 Liga 3</button>
         </div>
     </header>
 
@@ -364,6 +369,60 @@
                     { nome: "Sousa", escudo: "https://upload.wikimedia.org/wikipedia/commons/1/14/Sousa_Esporte_Clube_logo.svg", orcamento: "R$ 1.5 Mi", expectativa: "Meio Tabela", destaque: "Luiz Henrique", estadio: "Marizão" }
                 ]
             },
+            portugal: {
+                primeira: [
+                    { nome: "Benfica", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/113.png", orcamento: "€ 150 Mi", expectativa: "Campeão", destaque: "Di María", estadio: "Estádio da Luz" },
+                    { nome: "Porto", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/114.png", orcamento: "€ 120 Mi", expectativa: "Campeão", destaque: "Diogo Costa", estadio: "Estádio do Dragão" },
+                    { nome: "Sporting", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/115.png", orcamento: "€ 140 Mi", expectativa: "Campeão", destaque: "Gyökeres", estadio: "José Alvalade" },
+                    { nome: "Braga", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/116.png", orcamento: "€ 50 Mi", expectativa: "Champions", destaque: "Ricardo Horta", estadio: "Pedreira" },
+                    { nome: "Vitória SC", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2942.png", orcamento: "€ 20 Mi", expectativa: "Europa League", destaque: "Jota Silva", estadio: "D. Afonso Henriques" },
+                    { nome: "Arouca", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/13867.png", orcamento: "€ 10 Mi", expectativa: "Conference", destaque: "Cristo", estadio: "Municipal Arouca" },
+                    { nome: "Moreirense", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2948.png", orcamento: "€ 8 Mi", expectativa: "Meio Tabela", destaque: "Alan", estadio: "Comendador Moreira" },
+                    { nome: "Famalicão", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/17498.png", orcamento: "€ 15 Mi", expectativa: "Conference", destaque: "Gustavo Sá", estadio: "Municipal Famalicão" },
+                    { nome: "Boavista", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2936.png", orcamento: "€ 5 Mi", expectativa: "Sobreviver", destaque: "Bozenik", estadio: "Bessa" },
+                    { nome: "Gil Vicente", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2940.png", orcamento: "€ 7 Mi", expectativa: "Meio Tabela", destaque: "Fujimoto", estadio: "Cidade de Barcelos" },
+                    { nome: "Estoril", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2938.png", orcamento: "€ 6 Mi", expectativa: "Não Cair", destaque: "Rodrigo Gomes", estadio: "António Coimbra" },
+                    { nome: "Rio Ave", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2945.png", orcamento: "€ 8 Mi", expectativa: "Meio Tabela", destaque: "Costinha", estadio: "Arcos" },
+                    { nome: "Casa Pia", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/12584.png", orcamento: "€ 5 Mi", expectativa: "Sobreviver", destaque: "Felippe Cardoso", estadio: "Pina Manique" },
+                    { nome: "Farense", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/18163.png", orcamento: "€ 4 Mi", expectativa: "Não Cair", destaque: "Mattheus Oliveira", estadio: "São Luís" },
+                    { nome: "Santa Clara", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/12582.png", orcamento: "€ 6 Mi", expectativa: "Não Cair", destaque: "Vinicius", estadio: "São Miguel" },
+                    { nome: "Nacional da Madeira", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2944.png", orcamento: "€ 5 Mi", expectativa: "Não Cair", destaque: "Chuchu Ramírez", estadio: "Rui Alves" },
+                    { nome: "AVS", escudo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/Avs_futebol_sad_logo.png/1200px-Avs_futebol_sad_logo.png", orcamento: "€ 4 Mi", expectativa: "Sobreviver", destaque: "Nenê", estadio: "Desportivo das Aves" },
+                    { nome: "Estrela Amadora", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/6036.png", orcamento: "€ 4 Mi", expectativa: "Não Cair", destaque: "Kikas", estadio: "José Gomes" }
+                ],
+                segunda: [
+                    { nome: "Marítimo", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2941.png", orcamento: "€ 10 Mi", expectativa: "Subir (Campeão)", destaque: "Xadas", estadio: "Barreiros" },
+                    { nome: "Paços de Ferreira", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2943.png", orcamento: "€ 8 Mi", expectativa: "Subir", destaque: "Matchoi", estadio: "Capital do Móvel" },
+                    { nome: "Portimonense", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/12581.png", orcamento: "€ 7 Mi", expectativa: "Subir", destaque: "Hélio Varela", estadio: "Municipal Portimão" },
+                    { nome: "Vizela", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/18013.png", orcamento: "€ 6 Mi", expectativa: "Subir", destaque: "Samu", estadio: "FC Vizela" },
+                    { nome: "Chaves", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/17499.png", orcamento: "€ 5 Mi", expectativa: "Playoffs", destaque: "Héctor", estadio: "Eng. Branco Teixeira" },
+                    { nome: "Tondela", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/17500.png", orcamento: "€ 4 Mi", expectativa: "Meio Tabela", destaque: "Daniel dos Anjos", estadio: "João Cardoso" },
+                    { nome: "Torreense", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/12583.png", orcamento: "€ 3 Mi", expectativa: "Surpresa", destaque: "Welthon", estadio: "Manuel Marques" },
+                    { nome: "Académico Viseu", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/12580.png", orcamento: "€ 3 Mi", expectativa: "Meio Tabela", destaque: "André Clóvis", estadio: "Fontelo" },
+                    { nome: "Mafra", escudo: "https://upload.wikimedia.org/wikipedia/pt/f/f6/Clube_Desportivo_de_Mafra.png", orcamento: "€ 2.5 Mi", expectativa: "Meio Tabela", destaque: "Lucas Gabriel", estadio: "Parque Mafra" },
+                    { nome: "Leixões", escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/8/8d/Leix%C3%B5es_S.C._logo.png/180px-Leix%C3%B5es_S.C._logo.png", orcamento: "€ 2 Mi", expectativa: "Não Cair", destaque: "Mozino", estadio: "Do Mar" },
+                    { nome: "Feirense", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2939.png", orcamento: "€ 2 Mi", expectativa: "Não Cair", destaque: "Jorge Pereira", estadio: "Marcolino de Castro" },
+                    { nome: "Penafiel", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2949.png", orcamento: "€ 2 Mi", expectativa: "Meio Tabela", destaque: "Robinho", estadio: "25 de Abril" },
+                    { nome: "União de Leiria", escudo: "https://upload.wikimedia.org/wikipedia/en/6/6e/U.D._Leiria_logo.png", orcamento: "€ 3 Mi", expectativa: "Playoffs", destaque: "Bryan Róchez", estadio: "Dr. Magalhães Pessoa" },
+                    { nome: "Oliveirense", escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/6/61/U.D._Oliveirense.png/180px-U.D._Oliveirense.png", orcamento: "€ 1.5 Mi", expectativa: "Sobreviver", destaque: "Zé Pedro", estadio: "Carlos Osório" },
+                    { nome: "Alverca", escudo: "https://upload.wikimedia.org/wikipedia/en/6/63/F.C._Alverca_logo.png", orcamento: "€ 1.5 Mi", expectativa: "Não Cair", destaque: "JoãoCosta", estadio: "Complexo Alverca" },
+                    { nome: "Felgueiras", escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/9/91/F.C._Felgueiras_1932_logo.png/200px-F.C._Felgueiras_1932_logo.png", orcamento: "€ 1 Mi", expectativa: "Sobreviver", destaque: "Telas", estadio: "Dr. Machado Matos" }
+                ],
+                terceira: [
+                    { nome: "Académica", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2934.png", orcamento: "€ 2 Mi", expectativa: "Subir (Obrigação)", destaque: "Juan Perea", estadio: "Cidade de Coimbra" },
+                    { nome: "Belenenses", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2935.png", orcamento: "€ 1.5 Mi", expectativa: "Subir", destaque: "Rúben Pina", estadio: "Restelo" },
+                    { nome: "Vitória Setúbal", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2950.png", orcamento: "€ 1.5 Mi", expectativa: "Subir", destaque: "Zézinho", estadio: "Bonfim" },
+                    { nome: "Varzim", escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/6/68/Varzim_S.C._logo.png/180px-Varzim_S.C._logo.png", orcamento: "€ 1 Mi", expectativa: "Playoffs", destaque: "Sangaré", estadio: "Varzim SC" },
+                    { nome: "Sporting Covilhã", escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/d/d3/S.C._Covilh%C3%A3_logo.png/180px-S.C._Covilh%C3%A3_logo.png", orcamento: "€ 800 mil", expectativa: "G4", destaque: "Gilberto", estadio: "José Santos Pinto" },
+                    { nome: "Fafe", escudo: "https://upload.wikimedia.org/wikipedia/en/c/c2/Associa%C3%A7%C3%A3o_Desportiva_de_Fafe_logo.png", orcamento: "€ 600 mil", expectativa: "Meio Tabela", destaque: "Landinho", estadio: "Municipal de Fafe" },
+                    { nome: "Trofense", escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/8/87/C.D._Trofense_logo.png/190px-C.D._Trofense_logo.png", orcamento: "€ 700 mil", expectativa: "G4", destaque: "Tiago André", estadio: "CD Trofense" },
+                    { nome: "Sanjoanense", escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/a/a2/A.D._Sanjoanense_logo.png/200px-A.D._Sanjoanense_logo.png", orcamento: "€ 500 mil", expectativa: "Não Cair", destaque: "Marcelo", estadio: "Conde Dias Garcia" },
+                    { nome: "Lourosa", escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/d/d6/Lusit%C3%A2nia_F.C._logo.png/200px-Lusit%C3%A2nia_F.C._logo.png", orcamento: "€ 900 mil", expectativa: "Subir", destaque: "Mika", estadio: "Lusitânia" },
+                    { nome: "Canelas 2010", escudo: "https://upload.wikimedia.org/wikipedia/pt/6/6d/Canelas_2010.png", orcamento: "€ 400 mil", expectativa: "Sobreviver", destaque: "Samu", estadio: "Canelas" },
+                    { nome: "Atlético CP", escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/8/87/Atl%C3%A9tico_Clube_de_Portugal_logo.png/180px-Atl%C3%A9tico_Clube_de_Portugal_logo.png", orcamento: "€ 600 mil", expectativa: "Meio Tabela", destaque: "Elias", estadio: "Tapadinha" },
+                    { nome: "Amora", escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/4/4e/Amora_F.C._logo.png/180px-Amora_F.C._logo.png", orcamento: "€ 500 mil", expectativa: "Não Cair", destaque: "Joca", estadio: "Medideira" }
+                ]
+            },
             espanha: [
                 { nome: "Real Madrid", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/86.png", orcamento: "€ 1 Bi", expectativa: "Tudo", destaque: "Vini Jr.", estadio: "Bernabéu" },
                 { nome: "Barcelona", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/83.png", orcamento: "€ 700 Mi", expectativa: "Título", destaque: "Lamine Yamal", estadio: "Camp Nou" },
@@ -438,7 +497,10 @@
         const container = document.getElementById('teams-container');
         const countrySelect = document.getElementById('country-select');
         const coachInput = document.getElementById('coach-name');
-        const divSelector = document.getElementById('division-selector');
+        
+        // Containers de Divisões
+        const divSelectorBrasil = document.getElementById('division-btns-brasil');
+        const divSelectorPortugal = document.getElementById('division-btns-portugal');
 
         function checkName() {
             const hasName = coachInput.value.trim().length > 0;
@@ -448,8 +510,13 @@
                 countrySelect.disabled = true;
                 countrySelect.value = "";
                 container.innerHTML = '<div class="empty-state">👆 Preencha seus dados.</div>';
-                divSelector.style.display = 'none'; // Esconde botões se apagar nome
+                hideAllDivisions();
             }
+        }
+
+        function hideAllDivisions() {
+            divSelectorBrasil.style.display = 'none';
+            divSelectorPortugal.style.display = 'none';
         }
 
         function handleCountrySelection() {
@@ -461,40 +528,48 @@
                 return;
             }
 
-            // SELECIONOU BRASIL? MOSTRA OS BOTÕES DE DIVISÃO
+            hideAllDivisions(); // Reseta botões
+            container.innerHTML = ''; // Limpa cards
+
+            // LÓGICA DE EXIBIÇÃO DE BOTÕES
             if (countryKey === 'brasil') {
-                container.innerHTML = '<div class="empty-state">🇧🇷 Escolha a divisão acima para carregar os times.</div>';
-                divSelector.style.display = 'grid'; // Mostra os botões
-                
-                // Animação de entrada dos botões
-                divSelector.style.opacity = 0;
-                divSelector.style.transform = 'translateY(-10px)';
-                setTimeout(() => {
-                    divSelector.style.transition = 'all 0.5s';
-                    divSelector.style.opacity = 1;
-                    divSelector.style.transform = 'translateY(0)';
-                }, 50);
+                container.innerHTML = '<div class="empty-state">🇧🇷 Escolha a divisão do Brasileirão.</div>';
+                divSelectorBrasil.style.display = 'grid';
+                animateEntrance(divSelectorBrasil);
+
+            } else if (countryKey === 'portugal') {
+                container.innerHTML = '<div class="empty-state">🇵🇹 Escolha a liga Portuguesa.</div>';
+                divSelectorPortugal.style.display = 'grid';
+                animateEntrance(divSelectorPortugal);
 
             } else {
-                // OUTROS PAÍSES: CARREGA DIRETO
-                divSelector.style.display = 'none'; // Esconde botões
+                // Outros países (Carregamento direto)
                 loadTeams(database[countryKey]);
             }
         }
 
-        // Função específica para carregar divisões do Brasil
-        function loadBrazilDivision(divisionKey) {
-            const times = database.brasil[divisionKey];
+        function animateEntrance(element) {
+            element.style.opacity = 0;
+            element.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+                element.style.transition = 'all 0.5s';
+                element.style.opacity = 1;
+                element.style.transform = 'translateY(0)';
+            }, 50);
+        }
+
+        // Carrega sub-divisões (Brasil e Portugal)
+        function loadSubDivision(country, divisionKey) {
+            const times = database[country][divisionKey];
             loadTeams(times);
         }
 
-        // Função genérica de renderizar cards
+        // Renderiza cards
         function loadTeams(timesArray) {
-            container.innerHTML = ''; // Limpa tela
+            container.innerHTML = ''; 
 
             if (!timesArray) return;
 
-            // Ordena A-Z
             timesArray.sort((a, b) => a.nome.localeCompare(b.nome));
 
             timesArray.forEach(time => {
@@ -529,24 +604,24 @@
             localStorage.setItem('brfutebol_time', teamName);
             localStorage.setItem('brfutebol_tecnico', coachName);
 
-            // Busca profunda para achar o time (agora que Brasil tem sub-níveis)
+            // BUSCA PROFUNDA (Deep Search)
             let selectedTeamObj = null;
 
-            // 1. Procura no Brasil (que é objeto)
-            if(database.brasil.serieA.find(t => t.nome === teamName)) selectedTeamObj = database.brasil.serieA.find(t => t.nome === teamName);
-            else if(database.brasil.serieB.find(t => t.nome === teamName)) selectedTeamObj = database.brasil.serieB.find(t => t.nome === teamName);
-            else if(database.brasil.serieC.find(t => t.nome === teamName)) selectedTeamObj = database.brasil.serieC.find(t => t.nome === teamName);
-            else if(database.brasil.serieD.find(t => t.nome === teamName)) selectedTeamObj = database.brasil.serieD.find(t => t.nome === teamName);
-            
-            // 2. Procura nos outros países (que são arrays)
-            else {
-                Object.keys(database).forEach(key => {
-                    if (key !== 'brasil') { // Pula brasil que já procuramos
-                        const found = database[key].find(t => t.nome === teamName);
-                        if(found) selectedTeamObj = found;
+            // Função auxiliar recursiva para procurar em objetos aninhados
+            function findInObject(obj) {
+                if(Array.isArray(obj)) {
+                    return obj.find(t => t.nome === teamName);
+                }
+                for (let key in obj) {
+                    if (typeof obj[key] === 'object') {
+                        const found = findInObject(obj[key]);
+                        if (found) return found;
                     }
-                });
+                }
+                return null;
             }
+
+            selectedTeamObj = findInObject(database);
             
             if(selectedTeamObj) {
                 localStorage.setItem('brfutebol_escudo', selectedTeamObj.escudo);
