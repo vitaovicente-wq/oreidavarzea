@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRFutebol - Escalação</title>
+    <title>BRFutebol - Prancheta Tática</title>
     
     <script src="database_jogadores.js"></script>
     <script src="engine.js"></script>
@@ -27,9 +27,10 @@
             grid-template-rows: 70px 1fr;
             height: 100vh;
             overflow: hidden;
+            user-select: none; /* Evita selecionar texto ao arrastar */
         }
 
-        /* HEADER SIMPLIFICADO */
+        /* HEADER */
         header {
             background-color: rgba(30, 39, 46, 0.95);
             border-bottom: 2px solid var(--secondary);
@@ -37,203 +38,346 @@
             align-items: center;
             justify-content: space-between;
             padding: 0 30px;
+            z-index: 100;
         }
 
-        h1 { margin: 0; font-size: 1.2rem; text-transform: uppercase; }
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
 
-        .back-btn {
-            background: #444;
+        select {
+            background: #1e272e;
             color: white;
-            border: none;
+            border: 1px solid #555;
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .action-btn {
             padding: 10px 20px;
             border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
-            transition: 0.2s;
-        }
-        .back-btn:hover { background: #555; }
-
-        .save-btn {
-            background: var(--secondary);
-            color: #1e272e;
             border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            text-transform: uppercase;
             transition: 0.2s;
         }
-        .save-btn:hover { transform: scale(1.05); box-shadow: 0 0 10px var(--secondary); }
 
-        /* LAYOUT DUPLO */
+        .btn-back { background: #444; color: #fff; }
+        .btn-save { background: var(--secondary); color: #1e272e; text-transform: uppercase; }
+        .btn-save:hover { box-shadow: 0 0 15px rgba(15, 185, 177, 0.4); }
+
+        /* LAYOUT */
         main {
             display: grid;
-            grid-template-columns: 1fr 400px; /* Campo Esquerda | Lista Direita */
+            grid-template-columns: 1fr 350px;
             gap: 20px;
             padding: 20px;
             height: 100%;
             box-sizing: border-box;
         }
 
-        /* CAMPO DE FUTEBOL */
+        /* CAMPO */
         .field-container {
             background: linear-gradient(180deg, #27ae60 0%, #2ecc71 100%);
             border: 4px solid #fff;
-            border-radius: 10px;
+            border-radius: 12px;
             position: relative;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.4);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            box-shadow: inset 0 0 80px rgba(0,0,0,0.5);
+            margin: 0 auto;
+            width: 100%;
+            max-width: 700px; /* Limita largura para não ficar esticado */
+            height: 100%;
+            overflow: hidden;
         }
 
-        /* Linhas do Campo (Decorativo) */
-        .line { position: absolute; background: rgba(255,255,255,0.3); }
+        /* Linhas do Campo */
+        .line { position: absolute; background: rgba(255,255,255,0.4); pointer-events: none; }
         .mid-line { width: 100%; height: 2px; top: 50%; }
-        .circle { width: 120px; height: 120px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-        .box-top { width: 40%; height: 15%; border: 2px solid rgba(255,255,255,0.3); border-top: none; top: 0; left: 30%; }
-        .box-bottom { width: 40%; height: 15%; border: 2px solid rgba(255,255,255,0.3); border-bottom: none; bottom: 0; left: 30%; }
+        .circle { width: 100px; height: 100px; border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .area-top { width: 40%; height: 16%; border: 2px solid rgba(255,255,255,0.4); border-top: none; top: 0; left: 30%; }
+        .area-bottom { width: 40%; height: 16%; border: 2px solid rgba(255,255,255,0.4); border-bottom: none; bottom: 0; left: 30%; }
 
-        /* LISTA DE JOGADORES */
-        .squad-list {
-            background-color: var(--card-bg);
-            border-radius: 10px;
-            padding: 20px;
-            overflow-y: auto;
-            border: 1px solid #444;
-        }
-
-        .player-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border-bottom: 1px solid #444;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .player-row:hover { background-color: rgba(255,255,255,0.05); }
-        
-        .pos-tag { width: 35px; font-weight: bold; font-size: 0.8rem; color: #888; text-align: center; }
-        .p-name { flex-grow: 1; font-weight: 500; }
-        .p-ovr { font-weight: bold; color: var(--secondary); }
-        
-        .titular-row { border-left: 3px solid var(--secondary); background: rgba(15, 185, 177, 0.05); }
-
-        /* CAMISA NO CAMPO */
-        .kit-dot {
+        /* JOGADOR (Bolinha Draggable) */
+        .player-token {
             position: absolute;
-            width: 40px; height: 40px;
-            background: white;
-            border-radius: 50%;
+            width: 45px; height: 45px;
+            background: #fff;
             border: 3px solid #333;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; color: #333;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-            transform: translate(-50%, -50%);
-            transition: 0.2s;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: #333;
+            font-size: 0.85rem;
             cursor: grab;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            transform: translate(-50%, -50%); /* Centraliza no ponto X,Y */
+            z-index: 10;
+            transition: border-color 0.2s, transform 0.1s;
         }
-        .kit-dot:hover { transform: translate(-50%, -50%) scale(1.1); z-index: 10; }
-        
-        .kit-name {
+
+        .player-token:active {
+            cursor: grabbing;
+            transform: translate(-50%, -50%) scale(1.2);
+            z-index: 20;
+            border-color: var(--secondary);
+        }
+
+        .player-label {
             position: absolute;
-            bottom: -20px;
-            background: rgba(0,0,0,0.7);
+            top: 48px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
             color: white;
-            padding: 2px 5px;
+            padding: 2px 6px;
             border-radius: 4px;
             font-size: 0.7rem;
             white-space: nowrap;
+            pointer-events: none;
         }
+
+        /* LISTA LATERAL */
+        .sidebar {
+            background: var(--card-bg);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #444;
+        }
+
+        .sidebar h3 {
+            margin: 0; padding: 15px;
+            background: rgba(0,0,0,0.2);
+            font-size: 0.9rem; text-transform: uppercase;
+            border-bottom: 1px solid #444;
+            color: var(--text-muted);
+        }
+
+        .player-list {
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid #333;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+        .list-item:hover { background: rgba(255,255,255,0.05); }
+        .list-item.titular { border-left: 3px solid var(--secondary); background: rgba(15, 185, 177, 0.1); }
+
+        .pos-badge { font-weight: bold; width: 30px; color: #888; font-size: 0.8rem; }
+        .ovr-badge { font-weight: bold; color: var(--secondary); }
 
     </style>
 </head>
 <body>
 
     <header>
-        <button class="back-btn" onclick="voltar()">⬅ Voltar</button>
-        <h1 id="team-title">Escalação</h1>
-        <button class="save-btn" onclick="salvarTime()">Salvar Time</button>
+        <div class="header-controls">
+            <button class="action-btn btn-back" onclick="voltar()">⬅ Voltar</button>
+            <h1 style="margin:0; font-size:1.2rem; text-transform:uppercase;">Prancheta</h1>
+        </div>
+
+        <div class="header-controls">
+            <label style="font-size:0.9rem; color:#aaa;">Formação:</label>
+            <select id="formationSelect" onchange="aplicarFormacao()">
+                <option value="4-4-2">4-4-2 Clássico</option>
+                <option value="4-3-3">4-3-3 Ofensivo</option>
+                <option value="3-5-2">3-5-2 Equilibrado</option>
+                <option value="3-4-3">3-4-3 Pressão</option>
+                <option value="5-4-1">5-4-1 Retranca</option>
+            </select>
+            <button class="action-btn btn-save" onclick="salvarTime()">💾 Salvar Time</button>
+        </div>
     </header>
 
     <main>
-        <div class="field-container" id="field">
+        <div class="field-container" id="campo">
             <div class="line mid-line"></div>
             <div class="line circle"></div>
-            <div class="line box-top"></div>
-            <div class="line box-bottom"></div>
-            
+            <div class="line area-top"></div>
+            <div class="line area-bottom"></div>
+
             </div>
 
-        <div class="squad-list" id="squad-list">
-            <h3 style="margin-top:0; color:#aaa; font-size:0.9rem; text-transform:uppercase;">Elenco Disponível</h3>
-            <div id="list-content"></div>
+        <div class="sidebar">
+            <h3>Elenco Relacionado</h3>
+            <div class="player-list" id="listaJogadores">
+                </div>
         </div>
     </main>
 
     <script>
+        // --- COORDENADAS DAS FORMAÇÕES (Em Porcentagem: Left%, Top%) ---
+        // Top 0% = Gol Adversário (Ataque) | Top 100% = Meu Gol (Defesa)
+        // Mas visualmente para escalar, geralmente Goleiro fica embaixo (100%) e Atacante em cima (0%)
+        // Vamos usar: Y=90% (Goleiro), Y=10% (Atacante)
+        
+        const formations = {
+            "4-4-2": [
+                {x:50, y:90, p:'GOL'}, // GK
+                {x:15, y:75, p:'LE'}, {x:38, y:80, p:'ZAG'}, {x:62, y:80, p:'ZAG'}, {x:85, y:75, p:'LD'}, // DEF
+                {x:15, y:45, p:'ME'}, {x:38, y:55, p:'VOL'}, {x:62, y:55, p:'VOL'}, {x:85, y:45, p:'MD'}, // MEI
+                {x:35, y:15, p:'ATA'}, {x:65, y:15, p:'ATA'} // ATA
+            ],
+            "4-3-3": [
+                {x:50, y:90, p:'GOL'},
+                {x:15, y:75, p:'LE'}, {x:38, y:80, p:'ZAG'}, {x:62, y:80, p:'ZAG'}, {x:85, y:75, p:'LD'},
+                {x:50, y:60, p:'VOL'}, {x:30, y:45, p:'MC'}, {x:70, y:45, p:'MC'},
+                {x:15, y:20, p:'PE'}, {x:50, y:15, p:'ATA'}, {x:85, y:20, p:'PD'}
+            ],
+            "3-5-2": [
+                {x:50, y:90, p:'GOL'},
+                {x:25, y:80, p:'ZAG'}, {x:50, y:82, p:'ZAG'}, {x:75, y:80, p:'ZAG'},
+                {x:10, y:50, p:'AE'}, {x:35, y:60, p:'VOL'}, {x:65, y:60, p:'VOL'}, {x:90, y:50, p:'AD'}, {x:50, y:40, p:'MAT'},
+                {x:35, y:15, p:'ATA'}, {x:65, y:15, p:'ATA'}
+            ],
+            "3-4-3": [
+                {x:50, y:90, p:'GOL'},
+                {x:20, y:80, p:'ZAG'}, {x:50, y:82, p:'ZAG'}, {x:80, y:80, p:'ZAG'},
+                {x:10, y:50, p:'ME'}, {x:40, y:55, p:'MC'}, {x:60, y:55, p:'MC'}, {x:90, y:50, p:'MD'},
+                {x:20, y:20, p:'PE'}, {x:50, y:15, p:'ATA'}, {x:80, y:20, p:'PD'}
+            ],
+            "5-4-1": [
+                {x:50, y:90, p:'GOL'},
+                {x:10, y:70, p:'LE'}, {x:30, y:80, p:'ZAG'}, {x:50, y:82, p:'LIB'}, {x:70, y:80, p:'ZAG'}, {x:90, y:70, p:'LD'},
+                {x:20, y:50, p:'ME'}, {x:40, y:55, p:'VOL'}, {x:60, y:55, p:'VOL'}, {x:80, y:50, p:'MD'},
+                {x:50, y:15, p:'ATA'}
+            ]
+        };
+
+        // --- ESTADO LOCAL ---
         let gameState = null;
         let myTeamObj = null;
+        let activeFormation = "4-4-2";
+        let draggedElement = null; // Elemento sendo arrastado
 
+        // --- INICIALIZAÇÃO ---
         window.onload = function() {
-            // Carrega Engine
             if (typeof Engine === 'undefined') { alert("Engine não carregada"); return; }
+            
             gameState = Engine.carregarJogo();
             if (!gameState) { window.location.href = 'index.html'; return; }
 
             // Pega o time
             myTeamObj = gameState.times.find(t => t.nome === gameState.meuTime) || gameState.timesContinental.find(t => t.nome === gameState.meuTime);
-            
-            document.getElementById('team-title').innerText = "Prancheta: " + myTeamObj.nome;
 
-            renderField();
-            renderList();
+            renderSidebarList();
+            aplicarFormacao(); // Carrega a formação padrão e desenha os jogadores
         };
 
-        // Renderiza os 11 titulares no campo (Posições fixas 4-4-2 por enquanto)
-        function renderField() {
-            const field = document.getElementById('field');
-            // Limpa jogadores antigos (mantém linhas)
-            const dots = document.querySelectorAll('.kit-dot');
-            dots.forEach(d => d.remove());
+        // --- LÓGICA DE FORMAÇÃO E RENDERIZAÇÃO ---
 
-            // Pega os 11 melhores (Simulação de titulares)
-            // Num próximo passo, faremos isso ser editável pelo array 'titulares'
+        function aplicarFormacao() {
+            activeFormation = document.getElementById('formationSelect').value;
+            const coords = formations[activeFormation];
+            const field = document.getElementById('campo');
+            
+            // Limpa o campo antes de redesenhar
+            field.innerHTML = `
+                <div class="line mid-line"></div>
+                <div class="line circle"></div>
+                <div class="line area-top"></div>
+                <div class="line area-bottom"></div>
+            `;
+
+            // Pega os 11 titulares atuais (ou os 11 melhores se não tiver definido)
+            // AQUI USAMOS O ENGINE PARA PEGAR OS MELHORES 11 INICIAIS
+            // Num jogo completo, o 'myTeamObj.titulares' seria persistente.
             const titulares = Engine.escolherMelhores11(myTeamObj.elenco);
 
-            // Coordenadas fixas para 4-3-3 (Exemplo visual)
-            const formacao = [
-                {x: 50, y: 90, pos: 'GOL'}, // Goleiro
-                {x: 15, y: 75, pos: 'LE'},  {x: 38, y: 80, pos: 'ZAG'}, {x: 62, y: 80, pos: 'ZAG'}, {x: 85, y: 75, pos: 'LD'}, // Defesa
-                {x: 50, y: 55, pos: 'VOL'}, {x: 30, y: 45, pos: 'MC'}, {x: 70, y: 45, pos: 'MC'}, // Meio
-                {x: 20, y: 20, pos: 'PTE'}, {x: 50, y: 15, pos: 'ATA'}, {x: 80, y: 20, pos: 'PTD'} // Ataque
-            ];
-
             titulares.forEach((jog, index) => {
-                if(index >= formacao.length) return;
-                
-                const coord = formacao[index];
-                const dot = document.createElement('div');
-                dot.className = 'kit-dot';
-                dot.style.left = coord.x + '%';
-                dot.style.top = coord.y + '%';
-                
-                // Cor por posição
-                if(jog.pos === 'GOL') dot.style.background = "#f1c40f"; // Amarelo
-                
-                dot.innerHTML = `
-                    ${jog.pos.substring(0,1)}
-                    <div class="kit-name">${jog.nome.split(' ')[0]}</div>
-                `;
-                
-                field.appendChild(dot);
+                // Se a formação tem menos posições que o index (erro de segurança), ignora
+                if (!coords[index]) return;
+
+                const posData = coords[index];
+                criarBoneco(jog, posData.x, posData.y, posData.p);
             });
         }
 
-        function renderList() {
-            const list = document.getElementById('list-content');
+        function criarBoneco(jogador, x, y, posTatita) {
+            const field = document.getElementById('campo');
+            
+            const div = document.createElement('div');
+            div.className = 'player-token';
+            div.style.left = x + '%';
+            div.style.top = y + '%';
+            
+            // Cor do Goleiro
+            if (jogador.pos === 'GOL') div.style.background = "#f1c40f";
+
+            div.innerHTML = `
+                ${posTatita}
+                <div class="player-label">${jogador.nome.split(' ')[0]} <span style="color:#2ecc71">${jogador.forca}</span></div>
+            `;
+
+            // EVENTOS DE ARRASTAR (Mouse)
+            div.onmousedown = dragMouseDown;
+
+            field.appendChild(div);
+        }
+
+        // --- SISTEMA DE DRAG & DROP (ARRASTAR) ---
+        function dragMouseDown(e) {
+            e.preventDefault();
+            draggedElement = this; // O elemento clicado
+            
+            // Pega posição inicial do mouse
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            
+            document.onmouseup = closeDragElement;
+            document.onmousemove = elementDrag;
+        }
+
+        function elementDrag(e) {
+            e.preventDefault();
+            
+            if (!draggedElement) return;
+
+            const field = document.getElementById('campo');
+            const rect = field.getBoundingClientRect();
+
+            // Calcula nova posição relativa ao campo (em porcentagem para ser responsivo)
+            let newX = e.clientX - rect.left;
+            let newY = e.clientY - rect.top;
+
+            // Converte para porcentagem (0 a 100)
+            let percentX = (newX / rect.width) * 100;
+            let percentY = (newY / rect.height) * 100;
+
+            // Limites do campo (não deixa sair)
+            if (percentX < 0) percentX = 0;
+            if (percentX > 100) percentX = 100;
+            if (percentY < 0) percentY = 0;
+            if (percentY > 100) percentY = 100;
+
+            draggedElement.style.left = percentX + "%";
+            draggedElement.style.top = percentY + "%";
+        }
+
+        function closeDragElement() {
+            // Para de arrastar
+            document.onmouseup = null;
+            document.onmousemove = null;
+            draggedElement = null;
+        }
+
+        // --- RENDERIZAÇÃO DA LISTA LATERAL ---
+        function renderSidebarList() {
+            const list = document.getElementById('listaJogadores');
             list.innerHTML = '';
 
             // Ordena por força
@@ -241,27 +385,38 @@
 
             elenco.forEach((jog, idx) => {
                 const div = document.createElement('div');
-                div.className = 'player-row';
-                if(idx < 11) div.classList.add('titular-row'); // Marca visualmente os titulares
+                div.className = 'list-item';
+                if(idx < 11) div.classList.add('titular');
 
                 div.innerHTML = `
-                    <div class="pos-tag">${jog.pos}</div>
-                    <div class="p-name">${jog.nome}</div>
-                    <div class="p-ovr">${jog.forca}</div>
+                    <div style="display:flex; gap:10px;">
+                        <span class="pos-badge">${jog.pos}</span>
+                        <span>${jog.nome}</span>
+                    </div>
+                    <span class="ovr-badge">${jog.forca}</span>
                 `;
+                // Futuramente: Click na lista troca com o jogador selecionado no campo
                 list.appendChild(div);
             });
         }
 
+        // --- AÇÕES ---
         function salvarTime() {
-            // Futuramente aqui salvaremos a ordem do array
-            alert("Tática salva com sucesso!");
+            // Em uma versão avançada, aqui leríamos as posições X/Y finais de cada div
+            // e salvaríamos no objeto do time.
+            // Por enquanto, salvamos apenas a moral/status se necessário.
+            
+            // Salva de volta no localStorage (se tiver alterado algo no Engine)
+            Engine.salvarJogo(gameState);
+            
+            alert("Tática e Posicionamento salvos!");
             voltar();
         }
 
         function voltar() {
             window.location.href = 'dashboard.html';
         }
+
     </script>
 </body>
 </html>
