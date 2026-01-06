@@ -77,7 +77,7 @@
             font-weight: 800; color: #333; font-size: 0.9rem;
             cursor: grab; box-shadow: 0 5px 15px rgba(0,0,0,0.4);
             transform: translate(-50%, -50%); z-index: 10;
-            transition: border-color 0.2s, box-shadow 0.2s; /* Removemos transition left/top para o drag ficar liso */
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .player-token:active { cursor: grabbing; z-index: 100; transform: translate(-50%, -50%) scale(1.1); }
@@ -193,7 +193,7 @@
         let selectedFieldIdx = null; // Para substituição simples
         let selectedBenchIdx = null; // Para substituição simples
 
-        // Variáveis de Drag & Drop (Movimentação)
+        // Variáveis de Drag & Drop
         let isDragging = false;
         let dragIdx = null;
         let startX, startY;
@@ -210,7 +210,11 @@
             titulares = myTeamObj.elenco.slice(0, 11);
             reservas = myTeamObj.elenco.slice(11);
 
-            if(!titulares[0].x) aplicarCoordenadasPadrao("4-4-2");
+            // CORREÇÃO DO BUG: Se os jogadores não tiverem coordenadas, força o padrão
+            if (typeof titulares[0].x === 'undefined') {
+                console.log("Aplicando formação padrão inicial...");
+                aplicarCoordenadasPadrao("4-4-2");
+            }
 
             renderizarCampo();
             renderizarBanco();
@@ -220,7 +224,6 @@
 
         function renderizarCampo() {
             const field = document.getElementById('campo');
-            // Remove players antigos
             const tokens = document.querySelectorAll('.player-token');
             tokens.forEach(t => t.remove());
 
@@ -229,7 +232,7 @@
                 div.className = `player-token ${selectedFieldIdx === idx ? 'selected' : ''}`;
                 div.style.left = jog.x + '%';
                 div.style.top = jog.y + '%';
-                div.id = `player-${idx}`; // ID para detecção de colisão
+                div.id = `player-${idx}`;
                 
                 if (jog.pos === 'GOL') div.style.background = "#f1c40f";
 
@@ -237,17 +240,13 @@
                     ${jog.role || jog.pos.substring(0,2)} 
                     <div class="player-label">
                         <b>${jog.nome.split(' ')[0]}</b>
-                        <span>${jog.forca} | ${jog.carac.substring(0,8)}</span>
+                        <span>${jog.forca} | ${jog.carac ? jog.carac.substring(0,8) : 'Norm'}</span>
                     </div>
                 `;
 
-                // --- EVENTOS DO MOUSE (DRAG & CLICK) ---
-                
+                // EVENTOS
                 div.onmousedown = (e) => iniciarArrasto(e, idx, div);
-                div.onclick = (e) => {
-                    // O clique é tratado no mouseup se não houve arrasto
-                    e.stopPropagation();
-                }
+                div.onclick = (e) => { e.stopPropagation(); }
 
                 field.appendChild(div);
             });
@@ -276,7 +275,7 @@
             });
         }
 
-        // --- SISTEMA HÍBRIDO: DRAG (Mover/Trocar) & CLICK (Substituir) ---
+        // --- SISTEMA HÍBRIDO (DRAG E CLICK) ---
 
         let hasMoved = false;
 
@@ -286,11 +285,8 @@
             hasMoved = false;
             dragIdx = idx;
             
-            // Posição inicial do mouse
             startX = e.clientX;
             startY = e.clientY;
-            
-            // Salva posição original caso precise cancelar
             originalLeft = element.style.left;
             originalTop = element.style.top;
 
@@ -301,7 +297,7 @@
         function moverElemento(e, element) {
             if (!isDragging) return;
 
-            // Se moveu mais que 5px, considera arrasto (não é clique)
+            // Tolerância para diferenciar clique de arrasto
             if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) {
                 hasMoved = true;
             }
@@ -312,15 +308,13 @@
             let newX = ((e.clientX - rect.left) / rect.width) * 100;
             let newY = ((e.clientY - rect.top) / rect.height) * 100;
 
-            // Limites
             if (newX < 0) newX = 0; if (newX > 100) newX = 100;
             if (newY < 0) newY = 0; if (newY > 100) newY = 100;
 
             element.style.left = newX + "%";
             element.style.top = newY + "%";
-            element.style.zIndex = 1000; // Traz para frente
+            element.style.zIndex = 1000;
 
-            // Detectar colisão visual
             detectarHover(element, dragIdx);
         }
 
@@ -330,60 +324,45 @@
             document.onmouseup = null;
             element.style.zIndex = "";
 
-            // Lógica 1: Se foi só um clique (não arrastou)
             if (!hasMoved) {
-                element.style.left = originalLeft; // Volta pro lugar (visual)
+                element.style.left = originalLeft;
                 element.style.top = originalTop;
-                selecionarTitular(idx); // Ativa lógica de substituição
+                selecionarTitular(idx);
                 return;
             }
 
-            // Lógica 2: Se arrastou, verifica onde soltou
-            
-            // Verifica se soltou em cima de outro jogador (TROCA DE POSIÇÃO)
             const alvoIdx = detectarColisao(element, idx);
 
             if (alvoIdx !== null) {
                 trocarPosicoesCampo(idx, alvoIdx);
             } else {
-                // Apenas moveu para espaço vazio (Ajuste Fino)
                 atualizarCoordenadas(idx, element.style.left, element.style.top);
             }
             
-            renderizarCampo(); // Limpa sujeira visual e re-renderiza
+            renderizarCampo();
         }
-
-        // --- LÓGICA DE DETECÇÃO ---
 
         function detectarColisao(draggedEl, myIdx) {
             const dragRect = draggedEl.getBoundingClientRect();
             const centroX = dragRect.left + dragRect.width / 2;
             const centroY = dragRect.top + dragRect.height / 2;
-
             let alvoEncontrado = null;
 
-            // Varre todos os outros tokens
             document.querySelectorAll('.player-token').forEach((token) => {
                 const tokenIdx = parseInt(token.id.replace('player-', ''));
-                if (tokenIdx === myIdx) return; // Ignora a si mesmo
+                if (tokenIdx === myIdx) return;
 
                 const rect = token.getBoundingClientRect();
-                // Verifica se o centro do arrastado está dentro do alvo
-                if (centroX >= rect.left && centroX <= rect.right &&
-                    centroY >= rect.top && centroY <= rect.bottom) {
+                if (centroX >= rect.left && centroX <= rect.right && centroY >= rect.top && centroY <= rect.bottom) {
                     alvoEncontrado = tokenIdx;
                 }
             });
-
             return alvoEncontrado;
         }
 
         function detectarHover(draggedEl, myIdx) {
             const alvoIdx = detectarColisao(draggedEl, myIdx);
-            
-            // Remove classe de todos
             document.querySelectorAll('.player-token').forEach(t => t.classList.remove('hover-swap'));
-
             if (alvoIdx !== null) {
                 document.getElementById(`player-${alvoIdx}`).classList.add('hover-swap');
             }
@@ -392,25 +371,15 @@
         // --- LÓGICA DE DADOS ---
 
         function trocarPosicoesCampo(idx1, idx2) {
-            // Guarda posições visuais
             const pos1 = { x: titulares[idx1].x, y: titulares[idx1].y, role: titulares[idx1].role };
             const pos2 = { x: titulares[idx2].x, y: titulares[idx2].y, role: titulares[idx2].role };
 
-            // Troca os dados dos jogadores no array
-            // O jogador 1 vai para a posição 2, mantendo as coordenadas da posição 2
             const temp = titulares[idx1];
             titulares[idx1] = titulares[idx2];
             titulares[idx2] = temp;
 
-            // Mas precisamos manter as coordenadas de quem estava lá!
-            // Ex: Se arrastei Zagueiro pro Ataque, o Zagueiro agora tem que ter X/Y do ataque
-            titulares[idx1].x = pos1.x;
-            titulares[idx1].y = pos1.y;
-            titulares[idx1].role = pos1.role;
-
-            titulares[idx2].x = pos2.x;
-            titulares[idx2].y = pos2.y;
-            titulares[idx2].role = pos2.role;
+            titulares[idx1].x = pos1.x; titulares[idx1].y = pos1.y; titulares[idx1].role = pos1.role;
+            titulares[idx2].x = pos2.x; titulares[idx2].y = pos2.y; titulares[idx2].role = pos2.role;
         }
 
         function atualizarCoordenadas(idx, leftStyle, topStyle) {
@@ -418,17 +387,13 @@
             titulares[idx].y = parseFloat(topStyle);
         }
 
-        // --- LÓGICA DE SUBSTITUIÇÃO (CLIQUE) ---
-
         function selecionarTitular(idx) {
             if (selectedBenchIdx !== null) {
                 realizarSubstituicao(idx, selectedBenchIdx);
                 limparSelecao();
                 return;
             }
-            // Toggle seleção
             selectedFieldIdx = (selectedFieldIdx === idx) ? null : idx;
-            
             atualizarInterfaceVisual();
         }
 
@@ -438,9 +403,7 @@
                 limparSelecao();
                 return;
             }
-            // Toggle seleção
             selectedBenchIdx = (selectedBenchIdx === idx) ? null : idx;
-            
             atualizarInterfaceVisual();
         }
 
@@ -448,11 +411,9 @@
             const titularSaindo = titulares[idxTitular];
             const reservaSaindo = reservas[idxReserva];
 
-            // Troca arrays
             titulares[idxTitular] = reservaSaindo;
             reservas[idxReserva] = titularSaindo;
 
-            // Transfere coordenadas
             titulares[idxTitular].x = titularSaindo.x;
             titulares[idxTitular].y = titularSaindo.y;
             titulares[idxTitular].role = titularSaindo.role;
@@ -462,37 +423,32 @@
         }
 
         function limparSelecao() {
-            selectedFieldIdx = null;
-            selectedBenchIdx = null;
+            selectedFieldIdx = null; selectedBenchIdx = null;
             atualizarInterfaceVisual();
         }
 
         function atualizarInterfaceVisual() {
-            // Atualiza classes CSS
-            renderizarCampo(); // Redesenha para aplicar classe .selected
-            renderizarBanco();
-            
-            // Header da Sidebar
+            renderizarCampo(); renderizarBanco();
             const header = document.getElementById('sidebarHeader');
             const title = document.getElementById('sidebarTitle');
             
             if (selectedFieldIdx !== null) {
-                header.classList.add('active-mode');
-                title.innerText = "🔁 Selecione quem entra...";
+                header.classList.add('active-mode'); title.innerText = "🔁 Quem entra?";
             } else if (selectedBenchIdx !== null) {
-                header.classList.add('active-mode');
-                title.innerText = "🔁 Selecione quem sai...";
+                header.classList.add('active-mode'); title.innerText = "🔁 Quem sai?";
             } else {
-                header.classList.remove('active-mode');
-                title.innerText = "Banco de Reservas";
+                header.classList.remove('active-mode'); title.innerText = "Banco de Reservas";
             }
         }
 
-        // --- SALVAR ---
-
         function aplicarFormacaoAutomatica() {
             const formacao = document.getElementById('formationSelect').value;
-            const coords = formations[formacao];
+            aplicarCoordenadasPadrao(formacao);
+            renderizarCampo();
+        }
+
+        function aplicarCoordenadasPadrao(nomeFormacao) {
+            const coords = formations[nomeFormacao];
             titulares.forEach((jog, idx) => {
                 if (coords[idx]) {
                     jog.x = coords[idx].x;
@@ -500,7 +456,6 @@
                     jog.role = coords[idx].p;
                 }
             });
-            renderizarCampo();
         }
 
         function salvarTime() {
