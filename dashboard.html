@@ -67,7 +67,7 @@
             overflow: hidden;
         }
 
-        /* --- SIDEBAR (PRÓXIMO JOGO) --- */
+        /* --- SIDEBAR (ESQUERDA) --- */
         aside {
             display: flex;
             flex-direction: column;
@@ -82,6 +82,7 @@
             border: 1px solid rgba(255,255,255,0.05);
         }
 
+        /* CARD DO PRÓXIMO JOGO */
         .next-match-card {
             text-align: center;
             border-top: 4px solid var(--secondary);
@@ -138,16 +139,12 @@
             cursor: pointer;
             transition: all 0.2s;
             box-shadow: 0 5px 15px rgba(15, 185, 177, 0.25);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
         }
-
         .play-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(15, 185, 177, 0.4); }
         .play-btn:disabled { background: #444; color: #888; cursor: not-allowed; box-shadow: none; transform: none; }
 
-        /* Botão Tática */
+        /* BOTÃO DE TÁTICA */
         .tactics-btn {
             background: transparent;
             border: 2px solid var(--secondary);
@@ -178,18 +175,12 @@
             color: #f1c40f; font-weight: bold; text-transform: uppercase; font-size: 0.8rem;
             margin-bottom: 10px;
         }
-        .finance-value {
-            font-size: 1.4rem; color: #fff; font-weight: 800; margin-bottom: 10px;
-        }
-        .finance-bar-bg {
-            background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 5px;
-        }
-        .finance-bar-fill {
-            background: #f1c40f; height: 100%; width: 0%; transition: width 1s ease-out;
-        }
+        .finance-value { font-size: 1.4rem; color: #fff; font-weight: 800; margin-bottom: 10px; }
+        .finance-bar-bg { background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 5px; }
+        .finance-bar-fill { background: #f1c40f; height: 100%; width: 0%; transition: width 1s ease-out; }
         .finance-label { font-size: 0.7rem; color: #888; }
 
-        /* --- CONTENT AREA (TABS) --- */
+        /* --- ÁREA DE CONTEÚDO (DIREITA) --- */
         .content-area {
             background-color: var(--card-bg);
             border-radius: 16px;
@@ -218,13 +209,12 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-
         .tab-btn:hover { color: #fff; background-color: rgba(255,255,255,0.03); }
         .tab-btn.active { color: var(--secondary); border-bottom-color: var(--secondary); background-color: rgba(15, 185, 177, 0.05); }
 
         .tab-content { padding: 0; overflow-y: auto; flex-grow: 1; scrollbar-width: thin; scrollbar-color: #444 #2d3436; }
 
-        /* --- TABELA DE CLASSIFICAÇÃO --- */
+        /* TABELA */
         table { width: 100%; border-collapse: collapse; }
         th { 
             position: sticky; top: 0; background-color: #262c2e; 
@@ -245,55 +235,12 @@
         .zone-liberta td:first-child { border-left: 3px solid #2ecc71; }
         .zone-relegation td:first-child { border-left: 3px solid #e74c3c; }
 
-        /* --- BADGES DE CARACTERÍSTICAS --- */
+        /* BADGES */
         .trait-badge {
-            font-size: 0.65rem;
-            padding: 3px 8px;
-            border-radius: 4px;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-left: 8px;
-            letter-spacing: 0.5px;
-            display: inline-block;
-            color: #fff;
+            font-size: 0.65rem; padding: 3px 8px; border-radius: 4px;
+            font-weight: 700; text-transform: uppercase; margin-left: 8px;
+            letter-spacing: 0.5px; display: inline-block; color: #fff;
         }
-
-        /* --- MODAL RESULTADO --- */
-        #result-modal {
-            display: none;
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.9);
-            z-index: 2000;
-            align-items: center; justify-content: center;
-            backdrop-filter: blur(8px);
-        }
-
-        .modal-box {
-            background: #2d3436;
-            width: 500px;
-            border-radius: 20px;
-            padding: 40px;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-            border: 1px solid #444;
-            animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .modal-comp { color: var(--secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }
-        
-        .modal-score-area {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 30px;
-        }
-        
-        .modal-team img { width: 90px; height: 90px; display: block; margin: 0 auto 10px; }
-        .modal-team span { font-weight: bold; font-size: 1.1rem; }
-        
-        .modal-placar { font-size: 4rem; font-weight: 800; color: #fff; letter-spacing: -2px; }
-        
-        .modal-desc { color: #bdc3c7; margin-bottom: 30px; font-style: italic; }
-
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
     </style>
 </head>
@@ -369,13 +316,13 @@
                 <div class="finance-bar-bg">
                     <div class="finance-bar-fill" id="dash-bar" style="width: 0%;"></div>
                 </div>
-                <div class="finance-label">Comprometimento do Orçamento</div>
+                <div class="finance-label">Saúde Financeira (Despesa/Receita)</div>
             </div>
 
             <div class="card">
                 <h4 style="margin:0 0 15px 0; color:var(--secondary); text-transform:uppercase; font-size:0.8rem;">📋 Boletim do Clube</h4>
                 <div id="news-feed" style="font-size: 0.9rem; color: #b2bec3; line-height: 1.5;">
-                    A diretoria confia no seu trabalho. O elenco está motivado para o próximo desafio.
+                    A diretoria confia no seu trabalho. Mantenha o foco nos resultados.
                 </div>
             </div>
         </aside>
@@ -391,18 +338,10 @@
                 <table id="league-table">
                     <thead>
                         <tr>
-                            <th class="pos-col">#</th>
-                            <th>Clube</th>
-                            <th class="pts-col">P</th>
-                            <th class="stat-col">J</th>
-                            <th class="stat-col">V</th>
-                            <th class="stat-col">E</th>
-                            <th class="stat-col">D</th>
-                            <th class="stat-col">SG</th>
+                            <th class="pos-col">#</th> <th>Clube</th> <th class="pts-col">P</th> <th class="stat-col">J</th> <th class="stat-col">V</th> <th class="stat-col">E</th> <th class="stat-col">D</th> <th class="stat-col">SG</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
 
@@ -410,15 +349,10 @@
                 <table id="squad-table">
                     <thead>
                         <tr>
-                            <th style="width:50px; text-align:center;">Pos</th>
-                            <th>Nome / Estilo de Jogo</th>
-                            <th style="width:60px; text-align:center; color:var(--secondary);">Força</th>
-                            <th class="stat-col">Idade</th>
-                            <th class="stat-col">Energia</th>
+                            <th style="width:50px; text-align:center;">Pos</th> <th>Nome / Estilo de Jogo</th> <th style="width:60px; text-align:center; color:var(--secondary);">Força</th> <th class="stat-col">Idade</th> <th class="stat-col">Energia</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        </tbody>
+                    <tbody></tbody>
                 </table>
             </div>
 
@@ -429,57 +363,23 @@
         </div>
     </main>
 
-    <div id="result-modal">
-        <div class="modal-box">
-            <div class="modal-comp" id="modal-comp-name">Campeonato Brasileiro</div>
-            
-            <div class="modal-score-area">
-                <div class="modal-team">
-                    <img id="modal-home-img" src="">
-                    <span id="modal-home-name">Time A</span>
-                </div>
-                <div class="modal-placar" id="modal-score">0 - 0</div>
-                <div class="modal-team">
-                    <img id="modal-away-img" src="">
-                    <span id="modal-away-name">Time B</span>
-                </div>
-            </div>
-
-            <p class="modal-desc" id="modal-desc">Fim de jogo.</p>
-            
-            <button class="play-btn" onclick="fecharModal()">Continuar</button>
-        </div>
-    </div>
-
     <script>
-        // --- VARIÁVEIS GLOBAIS ---
         let gameState = null;
         let myTeamObj = null;
 
-        // --- INICIALIZAÇÃO ---
         window.onload = function() {
-            // 1. Verifica se o Motor existe
-            if (typeof Engine === 'undefined') {
-                alert("ERRO CRÍTICO: engine.js não carregado!");
-                return;
-            }
-
-            // 2. Carrega o Save
+            if (typeof Engine === 'undefined') { alert("ERRO: engine.js não carregado!"); return; }
             gameState = Engine.carregarJogo();
+            if (!gameState) { window.location.href = 'index.html'; return; }
 
-            // 3. Se não tem save, volta pro início
-            if (!gameState) {
-                window.location.href = 'index.html';
-                return;
+            myTeamObj = gameState.times.find(t => t.nome === gameState.meuTime) || gameState.timesContinental.find(t => t.nome === gameState.meuTime);
+
+            // Verifica se finanças estão inicializadas (retrocompatibilidade)
+            if (!myTeamObj.financas) {
+                Engine.inicializarFinancas(myTeamObj);
+                Engine.salvarJogo(gameState);
             }
 
-            // 4. Identifica o objeto do meu time no save
-            // Tenta achar na Liga Nacional
-            myTeamObj = gameState.times.find(t => t.nome === gameState.meuTime);
-            // Se não achar, tenta nos continentais (caso raro de jogar com time de fora)
-            if(!myTeamObj) myTeamObj = gameState.timesContinental.find(t => t.nome === gameState.meuTime);
-
-            // 5. Renderiza tudo
             atualizarInterface();
         };
 
@@ -489,33 +389,39 @@
             renderTable();
             renderSquad();
             renderCalendarList();
-            
-            // Finanças (Nova feature)
-            if(!myTeamObj.financas) {
-                // Segurança para saves antigos
-                Engine.inicializarFinancas(myTeamObj);
-                Engine.salvarJogo(gameState);
-            }
             atualizarDadosFinanceirosDash();
         }
 
-        // --- NAVEGAÇÃO ---
-        function irParaEscalacao() { window.location.href = 'escalacao.html'; }
-        function irParaFinancas() { window.location.href = 'financeiro.html'; }
+        // --- AÇÃO PRINCIPAL: JOGAR ---
+        function jogarRodada() {
+            const semanaIdx = gameState.semanaAtual - 1;
+            if (semanaIdx >= gameState.calendario.length) { alert("Temporada Encerrada!"); return; }
+
+            const evento = gameState.calendario[semanaIdx];
+            const meuJogo = evento.jogos.find(j => j.casa === myTeamObj.nome || j.fora === myTeamObj.nome);
+
+            if (meuJogo) {
+                // SE TEM JOGO: Vai para o estádio
+                window.location.href = 'partida.html';
+            } else {
+                // SE É FOLGA: Simula a semana
+                const btn = document.querySelector('.play-btn');
+                btn.disabled = true; btn.innerText = "Simulando...";
+                setTimeout(() => {
+                    Engine.processarSemana(gameState);
+                    window.location.reload();
+                }, 1000);
+            }
+        }
 
         // --- RENDERIZADORES ---
-
         function renderHeader() {
-            // Escudo e Infos Básicas
             document.getElementById('header-escudo').src = localStorage.getItem('brfutebol_escudo');
             document.getElementById('header-time').innerText = myTeamObj.nome;
             document.getElementById('header-tecnico').innerText = localStorage.getItem('brfutebol_tecnico');
             
-            // Stats
             const moralElem = document.getElementById('header-moral');
             moralElem.innerText = myTeamObj.moral + "%";
-            
-            // Cores da Moral
             if(myTeamObj.moral >= 80) moralElem.style.color = '#2ecc71';
             else if(myTeamObj.moral <= 40) moralElem.style.color = '#ff4757';
             else moralElem.style.color = '#f1c40f';
@@ -524,100 +430,61 @@
             document.getElementById('header-expectativa').innerText = myTeamObj.expectativa;
         }
 
+        function renderNextMatch() {
+            const semanaIndex = gameState.semanaAtual - 1;
+            const evento = gameState.calendario[semanaIndex];
+
+            if (!evento) {
+                document.getElementById('match-comp').innerText = "FIM DA TEMPORADA";
+                document.getElementById('match-area').style.display = 'none';
+                document.getElementById('no-match-area').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('match-comp').innerText = `${evento.nome} (${evento.tipo})`;
+            const meuJogo = evento.jogos.find(j => j.casa === myTeamObj.nome || j.fora === myTeamObj.nome);
+
+            if (meuJogo) {
+                document.getElementById('match-area').style.display = 'block';
+                document.getElementById('no-match-area').style.display = 'none';
+                const isCasa = (meuJogo.casa === myTeamObj.nome);
+                
+                document.getElementById('home-name').innerText = meuJogo.casa;
+                document.getElementById('home-crest').src = isCasa ? localStorage.getItem('brfutebol_escudo') : getEscudo(meuJogo.casa);
+                
+                document.getElementById('away-name').innerText = meuJogo.fora;
+                document.getElementById('away-crest').src = isCasa ? getEscudo(meuJogo.fora) : localStorage.getItem('brfutebol_escudo');
+            } else {
+                document.getElementById('match-area').style.display = 'none';
+                document.getElementById('no-match-area').style.display = 'block';
+            }
+        }
+
         function atualizarDadosFinanceirosDash() {
             const fin = myTeamObj.financas;
-            const totalReceitas = fin.receitas.patrocinioMaster + fin.receitas.tv;
-            const totalDespesas = fin.despesas.folhaSalarial + fin.despesas.manutencao;
-            
-            // Calcula comprometimento (Despesa / Receita)
-            const percentual = Math.min((totalDespesas / totalReceitas) * 100, 100);
+            const totalRec = fin.receitas.patrocinioMaster + fin.receitas.tv;
+            const totalDesp = fin.despesas.folhaSalarial + fin.despesas.manutencao;
+            const percentual = Math.min((totalDesp / totalRec) * 100, 100);
             
             document.getElementById('dash-caixa').innerText = Engine.formatarDinheiro(fin.caixa, fin.moeda);
+            setTimeout(() => { document.getElementById('dash-bar').style.width = percentual + "%"; }, 100);
             
-            // Animação da barra
-            setTimeout(() => {
-                document.getElementById('dash-bar').style.width = percentual + "%";
-            }, 100);
-            
-            // Cor da barra (Verde se saudável, Vermelho se perigo)
             const bar = document.getElementById('dash-bar');
             if(percentual > 90) bar.style.backgroundColor = "#ff4757";
             else if(percentual > 70) bar.style.backgroundColor = "#f1c40f";
             else bar.style.backgroundColor = "#2ecc71";
         }
 
-        function renderNextMatch() {
-            // Pega evento da semana atual
-            const semanaIndex = gameState.semanaAtual - 1;
-            const evento = gameState.calendario[semanaIndex];
-
-            if (!evento) {
-                // Fim de Jogo
-                document.getElementById('match-comp').innerText = "FIM DA TEMPORADA";
-                document.getElementById('match-area').style.display = 'none';
-                document.getElementById('no-match-area').style.display = 'block';
-                document.querySelector('#no-match-area h3').innerText = "Temporada Encerrada";
-                document.querySelector('#no-match-area p').innerText = "Parabéns! Veja a classificação final.";
-                document.querySelector('#no-match-area button').style.display = 'none';
-                return;
-            }
-
-            // Atualiza Label da Competição
-            document.getElementById('match-comp').innerText = `${evento.nome} (${evento.tipo})`;
-
-            // Procura meu jogo na lista de jogos da semana
-            const meuJogo = evento.jogos.find(j => j.casa === myTeamObj.nome || j.fora === myTeamObj.nome);
-
-            if (meuJogo) {
-                document.getElementById('match-area').style.display = 'block';
-                document.getElementById('no-match-area').style.display = 'none';
-
-                // Define quem é casa e quem é fora visualmente
-                const isCasa = (meuJogo.casa === myTeamObj.nome);
-                
-                const nomeAdv = isCasa ? meuJogo.fora : meuJogo.casa;
-                const escudoAdv = getEscudo(nomeAdv);
-                const meuEscudo = localStorage.getItem('brfutebol_escudo');
-
-                document.getElementById('home-name').innerText = meuJogo.casa;
-                document.getElementById('home-crest').src = isCasa ? meuEscudo : escudoAdv;
-
-                document.getElementById('away-name').innerText = meuJogo.fora;
-                document.getElementById('away-crest').src = isCasa ? escudoAdv : meuEscudo;
-
-            } else {
-                // Folga / Eliminado
-                document.getElementById('match-area').style.display = 'none';
-                document.getElementById('no-match-area').style.display = 'block';
-            }
-        }
-
         function renderTable() {
             const tbody = document.querySelector('#league-table tbody');
             tbody.innerHTML = '';
-
-            // Pega classificação ordenada do Engine
             const lista = Engine.getClassificacao(gameState);
-
             lista.forEach((t, i) => {
                 const tr = document.createElement('tr');
                 if (t.nome === myTeamObj.nome) tr.classList.add('row-meu-time');
                 if (i < 4) tr.classList.add('zone-liberta');
                 if (i >= lista.length - 4) tr.classList.add('zone-relegation');
-
-                tr.innerHTML = `
-                    <td class="pos-col">${i+1}</td>
-                    <td class="team-col">
-                        <img src="${t.escudo}" class="mini-crest" onerror="this.src='https://cdn-icons-png.flaticon.com/512/53/53283.png'">
-                        ${t.nome}
-                    </td>
-                    <td class="pts-col">${t.stats.liga.p}</td>
-                    <td class="stat-col">${t.stats.liga.j}</td>
-                    <td class="stat-col" style="color:#2ecc71">${t.stats.liga.v}</td>
-                    <td class="stat-col" style="color:#f1c40f">${t.stats.liga.e}</td>
-                    <td class="stat-col" style="color:#ff4757">${t.stats.liga.d}</td>
-                    <td class="stat-col">${t.stats.liga.s}</td>
-                `;
+                tr.innerHTML = `<td class="pos-col">${i+1}</td><td class="team-col"><img src="${t.escudo}" class="mini-crest" onerror="this.src='https://cdn-icons-png.flaticon.com/512/53/53283.png'">${t.nome}</td><td class="pts-col">${t.stats.liga.p}</td><td class="stat-col">${t.stats.liga.j}</td><td class="stat-col" style="color:#2ecc71">${t.stats.liga.v}</td><td class="stat-col" style="color:#f1c40f">${t.stats.liga.e}</td><td class="stat-col" style="color:#ff4757">${t.stats.liga.d}</td><td class="stat-col">${t.stats.liga.s}</td>`;
                 tbody.appendChild(tr);
             });
         }
@@ -625,36 +492,21 @@
         function renderSquad() {
             const tbody = document.querySelector('#squad-table tbody');
             tbody.innerHTML = '';
-
-            // Ordena elenco (Goleiro -> Ataque)
             const mapPos = { 'GOL':1, 'ZAG':2, 'MEI':3, 'ATA':4 };
             const elenco = [...myTeamObj.elenco].sort((a,b) => {
                 if (mapPos[a.pos] !== mapPos[b.pos]) return mapPos[a.pos] - mapPos[b.pos];
-                return b.forca - a.forca; // Desempate por força
+                return b.forca - a.forca;
             });
-
             elenco.forEach(jog => {
                 const tr = document.createElement('tr');
-                
-                // Lógica de cores das etiquetas (Features novas)
-                let badgeColor = "#555"; 
-                const c = jog.carac;
-                if(['Artilheiro','Veloz','Infiltrador','Apoio'].includes(c)) badgeColor = "#e74c3c"; // Ataque
-                else if(['Paredão','Xerife','Cão de Guarda','Defensivo'].includes(c)) badgeColor = "#3498db"; // Defesa
-                else if(['Maestro','Construtor','Joga com os Pés'].includes(c)) badgeColor = "#2ecc71"; // Criação
-                else if(['Líder','Pegador de Pênaltis'].includes(c)) badgeColor = "#9b59b6"; // Especial
-                else if(['Pivô'].includes(c)) badgeColor = "#f39c12"; // Físico
+                let badgeColor = "#555"; const c = jog.carac;
+                if(['Artilheiro','Veloz','Infiltrador','Apoio'].includes(c)) badgeColor = "#e74c3c";
+                else if(['Paredão','Xerife','Cão de Guarda','Defensivo'].includes(c)) badgeColor = "#3498db";
+                else if(['Maestro','Construtor','Joga com os Pés'].includes(c)) badgeColor = "#2ecc71";
+                else if(['Líder','Pegador de Pênaltis'].includes(c)) badgeColor = "#9b59b6";
+                else if(['Pivô'].includes(c)) badgeColor = "#f39c12";
 
-                tr.innerHTML = `
-                    <td style="text-align:center; font-weight:bold; color:#aaa;">${jog.pos}</td>
-                    <td>
-                        ${jog.nome}
-                        ${c !== 'Normal' ? `<span class="trait-badge" style="background:${badgeColor}">${c}</span>` : ''}
-                    </td>
-                    <td style="text-align:center; font-weight:bold; font-size:1.1rem;">${jog.forca}</td>
-                    <td class="stat-col">${jog.idade}</td>
-                    <td class="stat-col" style="color:${jog.energia > 80 ? '#2ecc71':'#f1c40f'}">${jog.energia}%</td>
-                `;
+                tr.innerHTML = `<td style="text-align:center; font-weight:bold; color:#aaa;">${jog.pos}</td><td>${jog.nome}${c !== 'Normal' ? `<span class="trait-badge" style="background:${badgeColor}">${c}</span>` : ''}</td><td style="text-align:center; font-weight:bold; font-size:1.1rem;">${jog.forca}</td><td class="stat-col">${jog.idade}</td><td class="stat-col" style="color:${jog.energia > 80 ? '#2ecc71':'#f1c40f'}">${jog.energia}%</td>`;
                 tbody.appendChild(tr);
             });
         }
@@ -662,128 +514,21 @@
         function renderCalendarList() {
             const lista = document.getElementById('calendar-list');
             lista.innerHTML = '';
-            
-            // Mostra os próximos 5 eventos e os 2 passados
             gameState.calendario.forEach((ev, idx) => {
-                if (Math.abs(idx - (gameState.semanaAtual - 1)) > 4) return; // Filtro visual
-
+                if (Math.abs(idx - (gameState.semanaAtual - 1)) > 4) return;
                 const li = document.createElement('li');
-                li.style.padding = "10px";
-                li.style.borderBottom = "1px solid #444";
-                li.style.display = "flex";
-                li.style.justifyContent = "space-between";
+                li.style.padding = "10px"; li.style.borderBottom = "1px solid #444"; li.style.display = "flex"; li.style.justifyContent = "space-between";
                 li.style.color = (idx === gameState.semanaAtual - 1) ? "#fff" : "#888";
                 if(idx === gameState.semanaAtual - 1) li.style.background = "rgba(15, 185, 177, 0.1)";
-
-                // Procura meu jogo
                 const meuJogo = ev.jogos.find(j => j.casa === myTeamObj.nome || j.fora === myTeamObj.nome);
                 let textoJogo = "Folga";
-                if (meuJogo) {
-                    textoJogo = `${meuJogo.casa} vs ${meuJogo.fora}`;
-                    if(meuJogo.golsCasa !== undefined) textoJogo += ` (${meuJogo.golsCasa}-${meuJogo.golsFora})`;
-                }
-
-                li.innerHTML = `
-                    <span><b>Semana ${idx+1}:</b> ${ev.nome}</span>
-                    <span>${textoJogo}</span>
-                `;
+                if (meuJogo) { textoJogo = `${meuJogo.casa} vs ${meuJogo.fora}`; if(meuJogo.golsCasa !== undefined) textoJogo += ` (${meuJogo.golsCasa}-${meuJogo.golsFora})`; }
+                li.innerHTML = `<span><b>Semana ${idx+1}:</b> ${ev.nome}</span><span>${textoJogo}</span>`;
                 lista.appendChild(li);
             });
         }
 
-        // --- AÇÕES DO JOGO ---
-
-        function jogarRodada() {
-            const btn = document.querySelector('.play-btn');
-            const originalText = btn.innerHTML;
-            
-            btn.disabled = true;
-            btn.innerHTML = "Processando...";
-
-            setTimeout(() => {
-                // 1. O Engine processa tudo
-                const resultado = Engine.processarSemana(gameState);
-
-                if (resultado.fim) {
-                    alert("Fim da temporada!");
-                    return;
-                }
-
-                // 2. Atualiza meu objeto local com os novos dados (moral, etc)
-                myTeamObj = gameState.times.find(t => t.nome === gameState.meuTime) || gameState.timesContinental.find(t => t.nome === gameState.meuTime);
-
-                // 3. Atualiza a tela (Header, Tabela, Elenco)
-                atualizarInterface();
-
-                // 4. Verifica se teve jogo meu para mostrar Modal
-                const meuJogo = resultado.resultados.find(r => r.casa === myTeamObj.nome || r.fora === myTeamObj.nome);
-
-                if (meuJogo) {
-                    abrirModalResultado(meuJogo, resultado.evento);
-                } else {
-                    // Simulação (Semana Livre)
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
-                }
-
-            }, 800); // Delay dramático
-        }
-
-        function abrirModalResultado(jogo, evento) {
-            const modal = document.getElementById('result-modal');
-            
-            // Título
-            document.getElementById('modal-comp-name').innerText = `${evento.nome} - ${evento.tipo}`;
-            document.getElementById('modal-score').innerText = `${jogo.golsCasa} - ${jogo.golsFora}`;
-
-            // Times e Escudos
-            document.getElementById('modal-home-name').innerText = jogo.casa;
-            document.getElementById('modal-home-img').src = jogo.escudoCasa || getEscudo(jogo.casa);
-            
-            document.getElementById('modal-away-name').innerText = jogo.fora;
-            document.getElementById('modal-away-img').src = jogo.escudoFora || getEscudo(jogo.fora);
-
-            // Frase de Efeito
-            const desc = document.getElementById('modal-desc');
-            const souCasa = (jogo.casa === myTeamObj.nome);
-            const meusGols = souCasa ? jogo.golsCasa : jogo.golsFora;
-            const advGols = souCasa ? jogo.golsFora : jogo.golsCasa;
-
-            if (meusGols > advGols) {
-                desc.innerText = "Vitória espetacular! A torcida faz a festa.";
-                desc.style.color = "#2ecc71";
-            } else if (meusGols < advGols) {
-                desc.innerText = "Derrota dolorida. É preciso levantar a cabeça.";
-                desc.style.color = "#ff4757";
-            } else {
-                desc.innerText = "Um empate muito disputado.";
-                desc.style.color = "#bdc3c7";
-            }
-
-            // Verifica Título (Supercopa ou Final)
-            if ((evento.tipo === 'SUPERCOPA' || evento.fase === 'Final') && meusGols > advGols) {
-                desc.innerHTML = "🏆 <br>É CAMPEÃO!!!";
-                desc.style.color = "#f1c40f";
-                desc.style.fontSize = "1.5rem";
-                desc.style.fontWeight = "bold";
-            }
-
-            modal.style.display = 'flex';
-        }
-
-        function fecharModal() {
-            document.getElementById('result-modal').style.display = 'none';
-            document.querySelector('.play-btn').disabled = false;
-            document.querySelector('.play-btn').innerHTML = "<span>⚽ Ir para o Jogo</span>";
-            
-            // Renderiza o próximo jogo (que já foi atualizado no jogarRodada)
-            renderNextMatch();
-        }
-
-        // --- UTILITÁRIOS ---
-        
         function getEscudo(nomeTime) {
-            // Tenta achar no objeto gameState
             let t = Engine.encontrarTime(gameState, nomeTime);
             if(t) return t.escudo;
             return 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
@@ -792,10 +537,12 @@
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            
             document.getElementById('tab-'+tabId).style.display = 'block';
             event.target.classList.add('active');
         }
+
+        function irParaEscalacao() { window.location.href = 'escalacao.html'; }
+        function irParaFinancas() { window.location.href = 'financeiro.html'; }
 
     </script>
 </body>
