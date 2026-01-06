@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRFutebol - Ao Vivo</title>
+    <title>BRFutebol - Match Engine</title>
     
     <script src="database_jogadores.js"></script>
     <script src="engine.js"></script>
@@ -11,144 +11,147 @@
     <style>
         :root {
             --bg: #0d1115;
-            --card-bg: #2d3436;
+            --card-bg: #1e272e;
             --text: #ecf0f1;
             --green: #2ecc71;
             --red: #ff4757;
             --gold: #f1c40f;
+            --border: #333;
         }
 
+        /* LAYOUT TRAVADO NA TELA (100vh) */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0; padding: 0;
-            display: grid; grid-template-rows: 120px 1fr 80px;
-            height: 100vh; overflow: hidden;
+            display: grid; 
+            grid-template-rows: 100px 1fr 70px; /* Header | Conteúdo | Footer */
+            height: 100vh; 
+            overflow: hidden; /* Impede scroll na página inteira */
         }
 
-        /* --- PLACAR (TOPO) --- */
+        /* --- 1. CABEÇALHO (PLACAR) --- */
         header {
-            background: linear-gradient(180deg, #1e272e 0%, #151a1d 100%);
-            border-bottom: 4px solid var(--green);
+            background: linear-gradient(180deg, #151a1d 0%, #0d1115 100%);
+            border-bottom: 2px solid var(--border);
             display: flex; align-items: center; justify-content: center;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             z-index: 10;
         }
 
-        .scoreboard {
-            display: flex; align-items: center; gap: 40px;
-            width: 100%; max-width: 800px; justify-content: center;
-        }
-
-        .team-display { display: flex; flex-direction: column; align-items: center; width: 150px; }
-        .team-logo { width: 70px; height: 70px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5)); transition: transform 0.2s; }
-        .team-name { font-weight: bold; margin-top: 5px; font-size: 1.1rem; text-transform: uppercase; }
+        .scoreboard { display: flex; align-items: center; gap: 30px; width: 100%; max-width: 900px; justify-content: center; }
+        .team-display { display: flex; align-items: center; gap: 15px; width: 250px; }
+        .team-display.away { justify-content: flex-end; flex-direction: row-reverse; }
+        
+        .team-logo { width: 60px; height: 60px; object-fit: contain; }
+        .team-name { font-weight: 800; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; }
         
         .score-box {
-            background: #000; padding: 10px 30px; border-radius: 10px; border: 1px solid #333;
-            display: flex; flex-direction: column; align-items: center; min-width: 160px;
+            background: #000; padding: 5px 25px; border-radius: 8px; border: 1px solid #333;
+            text-align: center; min-width: 120px;
         }
-        .score-val { font-size: 3.5rem; font-weight: 800; letter-spacing: 5px; line-height: 1; color: #fff; }
-        .timer { color: var(--green); font-weight: bold; font-size: 1.2rem; margin-top: 5px; font-family: monospace; }
+        .score-val { font-size: 2.5rem; font-weight: 800; line-height: 1; color: #fff; }
+        .timer { color: var(--green); font-weight: bold; font-size: 1.1rem; font-family: monospace; }
 
-        /* Animação de Gol */
-        .goal-anim { animation: pulseGoal 0.8s infinite; }
-        @keyframes pulseGoal { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        /* Animação Gol */
+        .goal-pulse { animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); filter: brightness(1.5); } 100% { transform: scale(1); } }
 
-        /* --- CAMPO / NARRAÇÃO (MEIO) --- */
+        /* --- 2. ÁREA PRINCIPAL (3 COLUNAS) --- */
         main {
             display: grid;
-            grid-template-columns: 1fr 350px; /* Narração | Stats */
-            gap: 20px; padding: 20px;
-            max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box;
+            grid-template-columns: 220px 1fr 280px; /* Escalação | Jogo | Stats */
+            gap: 15px;
+            padding: 15px;
+            overflow: hidden; /* Conteúdo interno que rola */
         }
 
-        /* Feed de Narração */
-        .feed-container {
-            background: rgba(255,255,255,0.02);
-            border-radius: 12px; border: 1px solid #333;
-            display: flex; flex-direction: column;
-            overflow: hidden; position: relative;
+        /* Estilo Genérico de Card */
+        .panel {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 8px; display: flex; flex-direction: column;
+            overflow: hidden;
         }
+        .panel-header {
+            background: rgba(0,0,0,0.3); padding: 10px; 
+            font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: #aaa;
+            border-bottom: 1px solid var(--border); text-align: center;
+        }
+        .panel-content { flex-grow: 1; overflow-y: auto; padding: 10px; }
+
+        /* COLUNA 1: ESCALAÇÕES */
+        .lineup-list { list-style: none; padding: 0; margin: 0; font-size: 0.8rem; }
+        .lineup-item { padding: 4px 0; border-bottom: 1px solid #2a2a2a; display: flex; gap: 5px; }
+        .pos { color: #888; font-weight: bold; width: 25px; }
+        .p-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* COLUNA 2: CENTRO (EVENTOS + FEED) */
+        .center-col { display: flex; flex-direction: column; gap: 15px; overflow: hidden; }
+
+        /* Resumo do Jogo (Gols/Cartões) */
+        .summary-box {
+            height: 120px; flex-shrink: 0; background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border); border-radius: 8px;
+            overflow-y: auto; padding: 10px;
+        }
+        .event-row { font-size: 0.85rem; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
+        .icon { width: 16px; text-align: center; }
+
+        /* Narração */
+        .feed-box {
+            flex-grow: 1; background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border); border-radius: 8px;
+            overflow-y: auto; padding: 10px;
+            display: flex; flex-direction: column-reverse; /* Recentes embaixo se scroll down, ou topo se column-reverse */
+        }
+        .feed-msg { 
+            padding: 8px; margin-bottom: 8px; border-radius: 4px; font-size: 0.9rem; border-left: 3px solid #444; background: rgba(0,0,0,0.2);
+            animation: fadeIn 0.3s;
+        }
+        .feed-msg.goal { border-color: var(--green); background: rgba(46, 204, 113, 0.1); font-weight: bold; }
+        .feed-msg.card { border-color: var(--gold); }
+        .feed-time { color: var(--green); font-weight: bold; margin-right: 5px; font-family: monospace; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* COLUNA 3: STATS */
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.85rem; }
+        .stat-val { font-weight: bold; font-family: monospace; }
         
-        .feed-header { padding: 15px; background: rgba(0,0,0,0.3); border-bottom: 1px solid #333; font-weight: bold; text-transform: uppercase; color: #888; }
-        
-        .feed-content {
-            flex-grow: 1; overflow-y: auto; padding: 20px;
-            display: flex; flex-direction: column-reverse; /* Mensagens novas embaixo */
-            scroll-behavior: smooth;
-        }
+        .bar-container { height: 6px; background: #333; border-radius: 3px; overflow: hidden; margin-bottom: 15px; display: flex; }
+        .bar-h { background: #fff; height: 100%; transition: width 0.3s; }
+        .bar-a { background: #555; height: 100%; transition: width 0.3s; }
 
-        .feed-item {
-            margin-bottom: 12px; padding: 10px; border-radius: 6px;
-            background: rgba(0,0,0,0.2); border-left: 3px solid #555;
-            font-size: 0.95rem; line-height: 1.4; animation: slideIn 0.3s ease-out;
-        }
-        .feed-item.goal { border-left-color: var(--green); background: rgba(46, 204, 113, 0.1); font-weight: bold; color: #fff; }
-        .feed-item.card-y { border-left-color: var(--gold); }
-        .feed-item.card-r { border-left-color: var(--red); }
-        .feed-time { font-weight: bold; margin-right: 10px; color: var(--green); font-family: monospace; }
-
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-
-        /* Stats & Info */
-        .info-panel { display: flex; flex-direction: column; gap: 20px; }
-
-        .stat-card {
-            background: var(--card-bg); padding: 20px; border-radius: 12px; border: 1px solid #444;
-        }
-        .stat-card h3 { margin: 0 0 15px 0; color: #aaa; font-size: 0.9rem; text-transform: uppercase; border-bottom: 1px solid #444; padding-bottom: 10px; }
-
-        .finance-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.9rem; }
-        .finance-val { font-weight: bold; color: var(--gold); font-family: monospace; }
-
-        .possession-bar {
-            display: flex; height: 10px; border-radius: 5px; overflow: hidden; margin-top: 10px;
-        }
-        .poss-home { background: #fff; height: 100%; transition: width 0.5s; }
-        .poss-away { background: #555; height: 100%; transition: width 0.5s; }
-
-        /* --- CONTROLES (RODAPÉ) --- */
+        /* --- 3. RODAPÉ (CONTROLES) --- */
         footer {
-            background: #1e272e; border-top: 1px solid #333;
+            background: #151a1d; border-top: 1px solid var(--border);
             display: flex; align-items: center; justify-content: center; gap: 20px;
-            padding: 0 30px;
+            z-index: 10;
         }
 
-        .ctrl-btn {
-            background: #333; color: white; border: none; padding: 12px 25px;
-            border-radius: 30px; font-weight: bold; cursor: pointer; text-transform: uppercase;
-            display: flex; align-items: center; gap: 10px; transition: 0.2s;
+        .btn {
+            padding: 10px 25px; border-radius: 6px; border: none; font-weight: bold; text-transform: uppercase;
+            cursor: pointer; transition: 0.2s; color: white; display: flex; align-items: center; gap: 8px;
         }
-        .ctrl-btn:hover { background: #444; transform: translateY(-2px); }
-        
+        .btn:hover { transform: scale(1.05); }
         .btn-play { background: var(--green); color: #1e272e; }
-        .btn-play:hover { background: #27ae60; }
-        
         .btn-sub { background: var(--gold); color: #1e272e; }
-        .btn-sub:hover { background: #f39c12; }
+        .btn-speed { background: #444; }
+        .btn-exit { background: var(--red); display: none; }
 
-        /* MODAL DE SUBSTITUIÇÃO */
+        /* MODAL SUBSTITUIÇÃO */
         #sub-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.9); z-index: 50; align-items: center; justify-content: center;
         }
-        .sub-box {
-            background: #2d3436; width: 600px; height: 500px; border-radius: 12px;
-            display: flex; flex-direction: column; overflow: hidden; border: 1px solid #555;
-        }
-        .sub-header { padding: 20px; background: #222; border-bottom: 1px solid #444; display: flex; justify-content: space-between; }
-        .sub-body { display: grid; grid-template-columns: 1fr 1fr; flex-grow: 1; overflow: hidden; }
-        .sub-col { overflow-y: auto; border-right: 1px solid #444; }
-        .sub-col h4 { padding: 10px; margin: 0; background: rgba(0,0,0,0.3); text-align: center; color: #aaa; position: sticky; top: 0; }
-        
-        .player-option {
-            padding: 10px; border-bottom: 1px solid #333; cursor: pointer; display: flex; justify-content: space-between;
-        }
-        .player-option:hover { background: rgba(255,255,255,0.05); }
-        .player-option.selected { background: var(--green); color: #1e272e; }
+        .modal-box { background: #2d3436; width: 500px; height: 400px; display: flex; flex-direction: column; border-radius: 8px; border: 1px solid #555; }
+        .modal-header { padding: 15px; background: #222; font-weight: bold; display: flex; justify-content: space-between; }
+        .modal-body { display: grid; grid-template-columns: 1fr 1fr; flex-grow: 1; overflow: hidden; }
+        .modal-col { overflow-y: auto; border-right: 1px solid #444; }
+        .p-opt { padding: 8px; cursor: pointer; border-bottom: 1px solid #333; font-size: 0.85rem; }
+        .p-opt:hover { background: rgba(255,255,255,0.1); }
+        .p-opt.selected { background: var(--green); color: #1e272e; }
 
     </style>
 </head>
@@ -157,485 +160,380 @@
     <header>
         <div class="scoreboard">
             <div class="team-display">
-                <img id="home-logo" class="team-logo">
-                <span id="home-name" class="team-name">CASA</span>
+                <img id="logo-h" class="team-logo">
+                <span id="name-h" class="team-name">CASA</span>
             </div>
-
             <div class="score-box">
-                <div class="score-val">
-                    <span id="score-h">0</span> - <span id="score-a">0</span>
-                </div>
+                <div class="score-val"><span id="gols-h">0</span> - <span id="gols-a">0</span></div>
                 <div class="timer" id="timer">00:00</div>
             </div>
-
-            <div class="team-display">
-                <img id="away-logo" class="team-logo">
-                <span id="away-name" class="team-name">FORA</span>
+            <div class="team-display away">
+                <img id="logo-a" class="team-logo">
+                <span id="name-a" class="team-name">FORA</span>
             </div>
         </div>
     </header>
 
     <main>
-        <div class="feed-container">
-            <div class="feed-header">🔴 Transmissão Ao Vivo</div>
-            <div class="feed-content" id="feed">
-                <div class="feed-item"><span class="feed-time">00'</span> Bola rolando! Começa a partida.</div>
+        <div class="panel">
+            <div class="panel-header">Escalações Iniciais</div>
+            <div class="panel-content">
+                <div style="color:var(--green); margin-bottom:5px; font-weight:bold; font-size:0.7rem;">MANDANTE</div>
+                <ul class="lineup-list" id="list-home"></ul>
+                <div style="color:var(--gold); margin:15px 0 5px 0; font-weight:bold; font-size:0.7rem;">VISITANTE</div>
+                <ul class="lineup-list" id="list-away"></ul>
             </div>
         </div>
 
-        <div class="info-panel">
-            
-            <div class="stat-card">
-                <h3>💰 BORDEREÔ (Público e Renda)</h3>
-                <div class="finance-row">
-                    <span>Público Pagante:</span>
-                    <span class="finance-val" id="info-publico">0</span>
-                </div>
-                <div class="finance-row">
-                    <span>Ocupação do Estádio:</span>
-                    <span class="finance-val" id="info-ocupacao">0%</span>
-                </div>
-                <div class="finance-row" style="border-top:1px solid #444; padding-top:5px; margin-top:10px;">
-                    <span>RENDA LÍQUIDA:</span>
-                    <span class="finance-val" style="font-size:1.1rem; color:var(--green);" id="info-renda">R$ 0</span>
-                </div>
+        <div class="center-col">
+            <div class="panel summary-box" id="match-events">
+                <div style="text-align:center; color:#555; font-size:0.8rem; margin-top:20px;">Nenhum evento importante ainda.</div>
             </div>
 
-            <div class="stat-card">
-                <h3>📊 Estatísticas</h3>
-                <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                    <span id="poss-h-val">50%</span>
-                    <small>POSSE DE BOLA</small>
-                    <span id="poss-a-val">50%</span>
-                </div>
-                <div class="possession-bar">
-                    <div class="poss-home" id="bar-poss-h" style="width:50%"></div>
-                    <div class="poss-away" id="bar-poss-a" style="width:50%"></div>
-                </div>
-                
-                <div style="margin-top:20px; font-size:0.9rem;">
-                    <div class="finance-row"><span>Chutes:</span> <b style="color:white"><span id="shot-h">0</span> - <span id="shot-a">0</span></b></div>
-                    <div class="finance-row"><span>Cartões Amarelos:</span> <b style="color:#f1c40f"><span id="card-h">0</span> - <span id="card-a">0</span></b></div>
-                </div>
+            <div class="panel feed-box" id="match-feed">
+                <div class="feed-msg"><span class="feed-time">00'</span> 📢 Bola rolando! O árbitro autoriza o início da partida.</div>
             </div>
+        </div>
 
+        <div class="panel">
+            <div class="panel-header">Estatísticas & Renda</div>
+            <div class="panel-content">
+                <div class="stat-row">
+                    <span>Posse</span> 
+                    <div><span id="ph">50%</span> <span style="color:#555">|</span> <span id="pa">50%</span></div>
+                </div>
+                <div class="bar-container">
+                    <div id="bar-h" class="bar-h" style="width:50%"></div>
+                    <div id="bar-a" class="bar-a" style="width:50%"></div>
+                </div>
+
+                <div class="stat-row">
+                    <span>Finalizações</span> 
+                    <span class="stat-val"><span id="sh">0</span> - <span id="sa">0</span></span>
+                </div>
+
+                <div class="stat-row">
+                    <span>Cartões Amarelos</span> 
+                    <span class="stat-val" style="color:var(--gold)"><span id="ch">0</span> - <span id="ca">0</span></span>
+                </div>
+
+                <hr style="border:0; border-top:1px solid #444; margin:15px 0;">
+                <div class="stat-row"><span>Público:</span> <span class="stat-val" id="val-publico">0</span></div>
+                <div class="stat-row"><span>Renda:</span> <span class="stat-val" style="color:var(--green)" id="val-renda">R$ 0</span></div>
+            </div>
         </div>
     </main>
 
     <footer>
-        <button class="ctrl-btn btn-sub" id="btn-sub" onclick="abrirSubs()">🔄 Substituição</button>
-        <button class="ctrl-btn" onclick="alterarVelocidade()">⏩ <span id="speed-label">1x</span></button>
-        <button class="ctrl-btn btn-play" id="btn-play" onclick="togglePause()">⏸️ Pausar</button>
-        <button class="ctrl-btn" id="btn-sair" style="display:none; background:#ff4757;" onclick="sairDoJogo()">🚪 Sair do Jogo</button>
+        <button class="btn btn-sub" id="btn-sub" onclick="abrirSubs()">🔄 Substituir</button>
+        <button class="btn btn-speed" onclick="mudarVelocidade()">⏩ <span id="lbl-speed">1x</span></button>
+        <button class="btn btn-play" id="btn-pause" onclick="pausarJogo()">⏸️ Pausar</button>
+        <button class="btn btn-exit" id="btn-exit" onclick="sairDoJogo()">💾 Salvar e Sair</button>
     </footer>
 
     <div id="sub-modal">
-        <div class="sub-box">
-            <div class="sub-header">
-                <h3 style="color:white; margin:0;">Realizar Substituição</h3>
-                <button onclick="fecharSubs()" style="background:none; border:none; color:white; cursor:pointer;">❌</button>
+        <div class="modal-box">
+            <div class="modal-header">
+                <span>Substituição</span>
+                <span style="cursor:pointer" onclick="fecharSubs()">✖</span>
             </div>
-            <div class="sub-body">
-                <div class="sub-col" id="col-titulares">
-                    <h4>QUEM SAI? (Campo)</h4>
-                    </div>
-                <div class="sub-col" id="col-reservas">
-                    <h4>QUEM ENTRA? (Banco)</h4>
-                    </div>
+            <div class="modal-body">
+                <div class="modal-col" id="col-out"></div>
+                <div class="modal-col" id="col-in"></div>
             </div>
-            <div style="padding:15px; text-align:center;">
-                <button class="ctrl-btn btn-sub" onclick="confirmarSub()">Confirmar Troca</button>
-            </div>
+            <button class="btn btn-play" style="width:100%; border-radius:0;" onclick="confirmarSub()">Confirmar</button>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURAÇÃO INICIAL ---
-        let gameState = null;
-        let homeTeam = null;
-        let awayTeam = null;
-        let isHome = false; // Se o time do jogador é o mandante
-        
-        // Estado da Partida
-        let matchState = {
-            minute: 0,
-            scoreHome: 0,
-            scoreAway: 0,
-            stats: { shotsH:0, shotsA:0, possH:50, cardsH:0, cardsA:0 },
-            events: [],
-            paused: false,
-            speed: 1000, // ms por minuto
-            finished: false
+        // --- MOTOR DA PARTIDA ---
+        let gameState, homeTeam, awayTeam, isHome;
+        let timer = null;
+        let match = {
+            min: 0, 
+            score: [0, 0], 
+            stats: { shots: [0,0], cards: [0,0], poss: [50,50] },
+            speed: 1000, 
+            paused: false, 
+            finished: false,
+            renda: 0
         };
 
-        let gameInterval = null;
+        // Seleções de Subs
+        let subOut = null, subIn = null;
 
-        // --- INICIALIZAÇÃO ---
         window.onload = function() {
-            if (typeof Engine === 'undefined') { alert("Engine Off"); return; }
+            if (typeof Engine === 'undefined') return alert("Engine Missing");
             gameState = Engine.carregarJogo();
-            if (!gameState) { window.location.href = 'index.html'; return; }
+            if (!gameState) return window.location.href = 'index.html';
 
-            setupMatch();
-            calcularRenda();
-            startGame();
+            configurarTimes();
+            renderizarEscalacoes();
+            calcularEconomia();
+            iniciarJogo();
         };
 
-        function setupMatch() {
-            // Identifica o jogo da semana atual
-            const semanaIdx = gameState.semanaAtual - 1;
-            const evento = gameState.calendario[semanaIdx];
-            const meuTimeNome = gameState.meuTime;
-
-            // Acha o jogo do meu time
-            const jogo = evento.jogos.find(j => j.casa === meuTimeNome || j.fora === meuTimeNome);
+        function configurarTimes() {
+            const semIdx = gameState.semanaAtual - 1;
+            const jogo = gameState.calendario[semIdx].jogos.find(j => j.casa === gameState.meuTime || j.fora === gameState.meuTime);
             
-            if (!jogo) {
-                alert("Seu time folga hoje. Voltando...");
-                window.location.href = 'dashboard.html';
-                return;
-            }
+            if(!jogo) { alert("Folga!"); return window.location.href='dashboard.html'; }
 
             homeTeam = Engine.encontrarTime(gameState, jogo.casa);
             awayTeam = Engine.encontrarTime(gameState, jogo.fora);
-            isHome = (jogo.casa === meuTimeNome);
+            isHome = (jogo.casa === gameState.meuTime);
 
-            // Renderiza Header
-            document.getElementById('home-name').innerText = homeTeam.nome;
-            document.getElementById('home-logo').src = homeTeam.escudo;
-            
-            document.getElementById('away-name').innerText = awayTeam.nome;
-            document.getElementById('away-logo').src = awayTeam.escudo;
-
-            adicionarFeed(`🏟️ Bem-vindos! Hoje teremos ${homeTeam.nome} x ${awayTeam.nome} valendo pela ${evento.tipo}.`, '');
+            // UI Header
+            document.getElementById('name-h').innerText = homeTeam.nome.substring(0, 3);
+            document.getElementById('logo-h').src = homeTeam.escudo;
+            document.getElementById('name-a').innerText = awayTeam.nome.substring(0, 3);
+            document.getElementById('logo-a').src = awayTeam.escudo;
         }
 
-        function calcularRenda() {
-            // Lógica simples de renda
-            const capacidade = 45000; // Média
-            const moralMandante = homeTeam.moral;
-            const forcaVisitante = awayTeam.forca;
-            
-            // Fator de lotação (0.2 a 1.0)
-            let fator = (moralMandante / 200) + (forcaVisitante / 200) + (Math.random() * 0.2);
-            if(fator > 1) fator = 1;
-            
-            const publico = Math.floor(capacidade * fator);
-            const ticket = 40 + (Math.random() * 20); // Preço médio
-            const renda = publico * ticket;
-
-            document.getElementById('info-publico').innerText = publico.toLocaleString();
-            document.getElementById('info-ocupacao').innerText = Math.floor(fator * 100) + "%";
-            document.getElementById('info-renda').innerText = Engine.formatarDinheiro(renda, 'R$');
-
-            // Se for mandante, adiciona ao caixa no fim do jogo (simulado)
-            matchState.renda = renda;
+        function renderizarEscalacoes() {
+            const fillList = (ulId, team) => {
+                const ul = document.getElementById(ulId);
+                ul.innerHTML = '';
+                // Pega os 11 primeiros (titulares)
+                const tits = team.elenco.slice(0, 11);
+                tits.forEach(p => {
+                    ul.innerHTML += `<li class="lineup-item"><span class="pos">${p.pos}</span> <span class="p-name">${p.nome.split(' ')[0]}</span></li>`;
+                });
+            };
+            fillList('list-home', homeTeam);
+            fillList('list-away', awayTeam);
         }
 
-        // --- LOOP DO JOGO ---
+        function calcularEconomia() {
+            // Renda baseada na força dos times e moral
+            const base = 20000;
+            const bonus = (homeTeam.moral * 100) + (awayTeam.forca * 50);
+            const publico = Math.min(60000, Math.floor(base + bonus + Math.random() * 5000));
+            const ticket = 50;
+            match.renda = publico * ticket;
 
-        function startGame() {
-            matchState.paused = false;
-            gameInterval = setInterval(gameLoop, matchState.speed);
+            document.getElementById('val-publico').innerText = publico.toLocaleString();
+            document.getElementById('val-renda').innerText = Engine.formatarDinheiro(match.renda, 'R$');
         }
 
-        function gameLoop() {
-            if (matchState.paused || matchState.finished) return;
+        // --- GAME LOOP ---
 
-            matchState.minute++;
-            updateTimerUI();
-
-            // Rola dados de evento
-            processarMinuto();
-
-            // Fim de jogo
-            if (matchState.minute >= 94) {
-                endGame();
-            }
+        function iniciarJogo() {
+            match.paused = false;
+            timer = setInterval(loop, match.speed);
         }
 
-        function processarMinuto() {
-            // Calcula força atual (considerando cansaço/tática seria ideal, mas vamos simplificar)
-            // Aqui chamamos o Engine para ver quem tem vantagem
-            const forcaH = Engine.calcularForcaElenco(homeTeam.elenco) + (isHome ? 5 : 0); // Fator casa fake
-            const forcaA = Engine.calcularForcaElenco(awayTeam.elenco);
+        function loop() {
+            if(match.paused || match.finished) return;
+
+            match.min++;
+            document.getElementById('timer').innerText = (match.min < 10 ? "0"+match.min : match.min) + ":00";
+
+            simularMinuto();
+
+            if(match.min >= 94) encerrarJogo();
+        }
+
+        function simularMinuto() {
+            // Lógica Simplificada de Simulação
+            const fH = Engine.calcularForcaElenco(homeTeam.elenco) + 5; // Casa
+            const fA = Engine.calcularForcaElenco(awayTeam.elenco);
+            const diff = fH - fA;
+
+            // Chance de Gol (Base 2%)
+            const chanceH = 0.02 + (diff * 0.0005);
+            const chanceA = 0.02 - (diff * 0.0005);
+
+            if(Math.random() < chanceH) eventoGol(0);
+            else if(Math.random() < chanceA) eventoGol(1);
+            else if(Math.random() < 0.15) eventoGeral(fH > fA ? 0 : 1);
+        }
+
+        function eventoGol(sideIdx) {
+            match.score[sideIdx]++;
+            match.stats.shots[sideIdx]++;
             
-            const diff = forcaH - forcaA;
-            const chanceGolBase = 0.03; // 3% de chance de gol por minuto
+            const team = sideIdx === 0 ? homeTeam : awayTeam;
+            const scorer = team.elenco.find(j => j.carac === 'Artilheiro') || team.elenco[10]; // Atacante ou random
 
-            // Chance Home
-            let pHome = chanceGolBase + (diff * 0.001);
-            if(Math.random() < pHome) {
-                marcarGol('home');
-                return;
-            }
+            // Atualiza Placar
+            document.getElementById(sideIdx === 0 ? 'gols-h' : 'gols-a').innerText = match.score[sideIdx];
+            document.getElementById(sideIdx === 0 ? 'logo-h' : 'logo-a').classList.add('goal-pulse');
+            setTimeout(() => document.querySelector('.goal-pulse').classList.remove('goal-pulse'), 2000);
 
-            // Chance Away
-            let pAway = chanceGolBase - (diff * 0.001);
-            if(Math.random() < pAway) {
-                marcarGol('away');
-                return;
-            }
-
-            // Outros eventos (Cartões, Chutes)
-            if(Math.random() < 0.15) {
-                gerarEventoAleatorio(forcaH > forcaA ? homeTeam : awayTeam);
-            }
+            // Feed e Resumo
+            narra(`⚽ GOOOOL! ${scorer.nome} abre o placar para o ${team.nome}!`, 'goal');
+            registrarResumo('⚽', `${match.min}' ${scorer.nome} (${team.nome})`);
+            atualizarStats();
         }
 
-        function marcarGol(side) {
-            const time = side === 'home' ? homeTeam : awayTeam;
-            const adv = side === 'home' ? awayTeam : homeTeam;
-            
-            // Escolhe quem fez o gol (Artilheiros têm prioridade)
-            const artilheiro = time.elenco.find(j => j.carac === 'Artilheiro') || time.elenco[Math.floor(Math.random() * 11)];
-            
-            if (side === 'home') {
-                matchState.scoreHome++;
-                matchState.stats.shotsH++;
-                document.getElementById('home-logo').classList.add('goal-anim');
-            } else {
-                matchState.scoreAway++;
-                matchState.stats.shotsA++;
-                document.getElementById('away-logo').classList.add('goal-anim');
-            }
-
-            updateScoreUI();
-            adicionarFeed(`⚽ GOOOOOOOL!!! É do ${time.nome}!`, 'goal');
-            adicionarFeed(`👟 ${artilheiro.nome} finaliza com categoria!`, '');
-
-            setTimeout(() => {
-                document.querySelectorAll('.team-logo').forEach(l => l.classList.remove('goal-anim'));
-            }, 2000);
-        }
-
-        function gerarEventoAleatorio(timeAtacando) {
-            const frases = [
-                "Troca de passes no meio campo.",
-                `${timeAtacando.nome} tenta o lançamento longo...`,
-                "A defesa afasta o perigo.",
-                "Chute perigoso pra fora!",
-                "O goleiro faz uma defesa tranquila.",
-                "Falta dura no meio de campo."
+        function eventoGeral(sideIdx) {
+            const team = sideIdx === 0 ? homeTeam : awayTeam;
+            const eventos = [
+                { txt: "Chute perigoso pra fora!", stat: 'shots' },
+                { txt: "Defesaça do goleiro!", stat: 'shots' },
+                { txt: "Falta dura no meio campo.", stat: 'cards', chance: 0.2 }
             ];
-            const msg = frases[Math.floor(Math.random() * frases.length)];
             
-            // Se for chute
-            if (msg.includes("Chute")) {
-                if (timeAtacando === homeTeam) matchState.stats.shotsH++;
-                else matchState.stats.shotsA++;
+            const evt = eventos[Math.floor(Math.random() * eventos.length)];
+            
+            if(evt.stat === 'shots') match.stats.shots[sideIdx]++;
+            
+            if(evt.stat === 'cards' && Math.random() < evt.chance) {
+                match.stats.cards[sideIdx]++;
+                const offender = team.elenco[Math.floor(Math.random()*11)];
+                narra(`🟨 Cartão amarelo para ${offender.nome}.`, 'card');
+                registrarResumo('🟨', `${match.min}' ${offender.nome}`);
+            } else {
+                narra(`${team.nome}: ${evt.txt}`);
             }
-            
-            // Se for falta/cartão
-            if (msg.includes("Falta")) {
-                if (Math.random() < 0.3) {
-                    const jogador = timeAtacando.elenco[Math.floor(Math.random()*11)]; // Alguém levou cartão
-                    adicionarFeed(`🟨 Cartão Amarelo para ${jogador.nome}.`, 'card-y');
-                    if (timeAtacando === homeTeam) matchState.stats.cardsH++;
-                    else matchState.stats.cardsA++;
-                    return;
-                }
-            }
-
-            adicionarFeed(msg, '');
-            updateStatsUI();
+            atualizarStats();
         }
 
-        // --- UI UPDATES ---
+        function atualizarStats() {
+            document.getElementById('sh').innerText = match.stats.shots[0];
+            document.getElementById('sa').innerText = match.stats.shots[1];
+            document.getElementById('ch').innerText = match.stats.cards[0];
+            document.getElementById('ca').innerText = match.stats.cards[1];
 
-        function updateTimerUI() {
-            let m = matchState.minute;
-            if (m < 10) m = "0" + m;
-            document.getElementById('timer').innerText = m + ":00";
+            // Posse Fake baseada em chutes
+            const total = match.stats.shots[0] + match.stats.shots[1] + 10;
+            const ph = Math.floor(((match.stats.shots[0] + 5) / total) * 100);
+            document.getElementById('ph').innerText = ph + "%";
+            document.getElementById('pa').innerText = (100 - ph) + "%";
+            document.getElementById('bar-h').style.width = ph + "%";
+            document.getElementById('bar-a').style.width = (100 - ph) + "%";
         }
 
-        function updateScoreUI() {
-            document.getElementById('score-h').innerText = matchState.scoreHome;
-            document.getElementById('score-a').innerText = matchState.scoreAway;
-        }
-
-        function updateStatsUI() {
-            document.getElementById('shot-h').innerText = matchState.stats.shotsH;
-            document.getElementById('shot-a').innerText = matchState.stats.shotsA;
-            document.getElementById('card-h').innerText = matchState.stats.cardsH;
-            document.getElementById('card-a').innerText = matchState.stats.cardsA;
-
-            // Simula posse baseada em chutes
-            let total = matchState.stats.shotsH + matchState.stats.shotsA + 10; // +10 base
-            let pH = Math.floor(((matchState.stats.shotsH + 5) / total) * 100);
-            
-            document.getElementById('poss-h-val').innerText = pH + "%";
-            document.getElementById('poss-a-val').innerText = (100 - pH) + "%";
-            document.getElementById('bar-poss-h').style.width = pH + "%";
-            document.getElementById('bar-poss-a').style.width = (100 - pH) + "%";
-        }
-
-        function adicionarFeed(texto, tipo) {
-            const feed = document.getElementById('feed');
+        function narra(txt, tipo = '') {
+            const box = document.getElementById('match-feed');
             const div = document.createElement('div');
-            div.className = `feed-item ${tipo}`;
-            div.innerHTML = `<span class="feed-time">${matchState.minute}'</span> ${texto}`;
-            feed.prepend(div); // Adiciona no topo
+            div.className = `feed-msg ${tipo}`;
+            div.innerHTML = `<span class="feed-time">${match.min}'</span> ${txt}`;
+            box.prepend(div);
         }
 
-        // --- CONTROLES DE FLUXO ---
-
-        function togglePause() {
-            matchState.paused = !matchState.paused;
-            const btn = document.getElementById('btn-play');
-            btn.innerHTML = matchState.paused ? "▶️ Continuar" : "⏸️ Pausar";
-            btn.style.background = matchState.paused ? "#f1c40f" : "#2ecc71";
-        }
-
-        function alterarVelocidade() {
-            if (matchState.speed === 1000) { matchState.speed = 200; document.getElementById('speed-label').innerText = "5x"; }
-            else if (matchState.speed === 200) { matchState.speed = 50; document.getElementById('speed-label').innerText = "MAX"; }
-            else { matchState.speed = 1000; document.getElementById('speed-label').innerText = "1x"; }
+        function registrarResumo(icone, texto) {
+            const box = document.getElementById('match-events');
+            // Remove msg de vazio se existir
+            if(box.innerText.includes("Nenhum")) box.innerHTML = '';
             
-            clearInterval(gameInterval);
-            if (!matchState.paused && !matchState.finished) gameInterval = setInterval(gameLoop, matchState.speed);
+            const div = document.createElement('div');
+            div.className = 'event-row';
+            div.innerHTML = `<span class="icon">${icone}</span> <span>${texto}</span>`;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
         }
 
-        function endGame() {
-            matchState.finished = true;
-            clearInterval(gameInterval);
-            adicionarFeed("🏁 Fim de Jogo! O árbitro apita o final.", 'goal');
+        function encerrarJogo() {
+            match.finished = true;
+            clearInterval(timer);
+            narra("🏁 Fim de Jogo!", 'goal');
             
-            document.getElementById('btn-play').style.display = 'none';
+            document.getElementById('btn-exit').style.display = 'flex';
+            document.getElementById('btn-pause').style.display = 'none';
             document.getElementById('btn-sub').style.display = 'none';
-            
-            const btnSair = document.getElementById('btn-sair');
-            btnSair.style.display = 'block';
-            btnSair.innerText = "💾 Salvar e Sair";
         }
 
-        // --- SUBSTITUIÇÕES ---
+        // --- CONTROLES ---
 
-        let subSelectedOut = null;
-        let subSelectedIn = null;
+        function pausarJogo() {
+            match.paused = !match.paused;
+            document.getElementById('btn-pause').innerText = match.paused ? "▶️ Retomar" : "⏸️ Pausar";
+        }
+
+        function mudarVelocidade() {
+            if(match.speed === 1000) { match.speed = 200; document.getElementById('lbl-speed').innerText = "5x"; }
+            else if(match.speed === 200) { match.speed = 50; document.getElementById('lbl-speed').innerText = "MAX"; }
+            else { match.speed = 1000; document.getElementById('lbl-speed').innerText = "1x"; }
+            
+            clearInterval(timer);
+            if(!match.paused && !match.finished) timer = setInterval(loop, match.speed);
+        }
+
+        // --- SUBSTITUIÇÃO ---
 
         function abrirSubs() {
-            matchState.paused = true; // Pausa jogo
+            match.paused = true;
             document.getElementById('sub-modal').style.display = 'flex';
-            renderSubsLists();
+            renderSubs();
         }
-
         function fecharSubs() {
             document.getElementById('sub-modal').style.display = 'none';
-            matchState.paused = false; // Retoma
+            match.paused = false;
         }
 
-        function renderSubsLists() {
-            const myTeam = isHome ? homeTeam : awayTeam; // Só pode mexer no seu time
-            const titulares = myTeam.elenco.slice(0, 11);
-            const reservas = myTeam.elenco.slice(11);
+        function renderSubs() {
+            const team = isHome ? homeTeam : awayTeam;
+            const tits = team.elenco.slice(0, 11);
+            const res = team.elenco.slice(11);
 
-            const divTit = document.getElementById('col-titulares');
-            const divRes = document.getElementById('col-reservas');
-            
-            // Limpa (mantendo headers)
-            divTit.innerHTML = '<h4>QUEM SAI? (Campo)</h4>';
-            divRes.innerHTML = '<h4>QUEM ENTRA? (Banco)</h4>';
-
-            titulares.forEach((jog, i) => {
-                const d = document.createElement('div');
-                d.className = `player-option ${subSelectedOut === i ? 'selected' : ''}`;
-                d.innerHTML = `<span>${jog.pos} ${jog.nome}</span> <small>${jog.energia}%</small>`;
-                d.onclick = () => { subSelectedOut = i; renderSubsLists(); };
-                divTit.appendChild(d);
-            });
-
-            reservas.forEach((jog, i) => {
-                const d = document.createElement('div');
-                d.className = `player-option ${subSelectedIn === i ? 'selected' : ''}`;
-                d.innerHTML = `<span>${jog.pos} ${jog.nome}</span> <small>${jog.forca}</small>`;
-                d.onclick = () => { subSelectedIn = i; renderSubsLists(); };
-                divRes.appendChild(d);
-            });
+            const fillCol = (id, list, type) => {
+                const div = document.getElementById(id);
+                div.innerHTML = `<div style="padding:10px; font-weight:bold; color:#aaa; text-align:center;">${type === 'out' ? 'TITULARES (Sair)' : 'RESERVAS (Entrar)'}</div>`;
+                list.forEach((p, i) => {
+                    const el = document.createElement('div');
+                    el.className = 'p-opt';
+                    if((type==='out' && subOut===i) || (type==='in' && subIn===i)) el.classList.add('selected');
+                    el.innerText = `${p.pos} ${p.nome} (${p.energia}%)`;
+                    el.onclick = () => { 
+                        if(type==='out') subOut = i; else subIn = i;
+                        renderSubs();
+                    };
+                    div.appendChild(el);
+                });
+            };
+            fillCol('col-out', tits, 'out');
+            fillCol('col-in', res, 'in');
         }
 
         function confirmarSub() {
-            if (subSelectedOut === null || subSelectedIn === null) return;
-
-            const myTeam = isHome ? homeTeam : awayTeam;
-            const idxTitular = subSelectedOut;
-            const idxReserva = subSelectedIn + 11; // Offset dos 11 titulares
-
-            // Troca no array
-            const temp = myTeam.elenco[idxTitular];
-            myTeam.elenco[idxTitular] = myTeam.elenco[idxReserva];
-            myTeam.elenco[idxReserva] = temp;
-
-            // Feedback
-            adicionarFeed(`🔄 Substituição no ${myTeam.nome}: Sai ${temp.nome}, entra ${myTeam.elenco[idxTitular].nome}.`, '');
+            if(subOut === null || subIn === null) return;
+            const team = isHome ? homeTeam : awayTeam;
+            const realInIdx = subIn + 11;
             
-            // Reset
-            subSelectedOut = null;
-            subSelectedIn = null;
+            const temp = team.elenco[subOut];
+            team.elenco[subOut] = team.elenco[realInIdx];
+            team.elenco[realInIdx] = temp;
+
+            narra(`🔄 ${team.nome}: Sai ${temp.nome}, entra ${team.elenco[subOut].nome}.`);
+            
+            subOut = null; subIn = null;
             fecharSubs();
+            renderizarEscalacoes(); // Atualiza lista visual
         }
 
-        // --- FINALIZAR E SALVAR ---
-
+        // --- SAIR ---
+        
         function sairDoJogo() {
-            // 1. Atualiza o objeto do jogo no Engine (Resultado Real)
-            const semanaIdx = gameState.semanaAtual - 1;
-            const jogo = gameState.calendario[semanaIdx].jogos.find(j => j.casa === homeTeam.nome && j.fora === awayTeam.nome);
+            // Salva resultado
+            const semIdx = gameState.semanaAtual - 1;
+            const jogo = gameState.calendario[semIdx].jogos.find(j => j.casa === homeTeam.nome && j.fora === awayTeam.nome);
             
-            jogo.golsCasa = matchState.scoreHome;
-            jogo.golsFora = matchState.scoreAway;
+            jogo.golsCasa = match.score[0];
+            jogo.golsFora = match.score[1];
 
-            // 2. Se for mandante, soma renda ao caixa
-            if (isHome) {
-                const meuTime = gameState.times.find(t => t.nome === gameState.meuTime);
-                if (meuTime && meuTime.financas) {
-                    // Soma renda e subtrai despesa de jogo
-                    const lucroJogo = matchState.renda - 100000; // Custo operacional fixo
-                    meuTime.financas.caixa += Math.max(0, lucroJogo);
-                    meuTime.financas.receitas.bilheteria += matchState.renda;
+            // Grana
+            if(isHome) {
+                const meu = gameState.times.find(t => t.nome === gameState.meuTime);
+                if(meu && meu.financas) {
+                    meu.financas.caixa += (match.renda - 50000); // Custo op.
+                    meu.financas.receitas.bilheteria += match.renda;
                 }
             }
 
-            // 3. Processa o restante da semana (outros jogos simulados instantaneamente)
-            // Aqui usamos o Engine.processarSemana, mas precisamos dizer que "esse jogo já foi jogado"
-            // Truque: Vamos salvar o estado, voltar pro dashboard e deixar o dashboard chamar o processar,
-            // mas o Engine precisa saber não sobrescrever esse jogo.
-            
-            // Na verdade, a maneira mais fácil é chamar o processarSemana AGORA, mas injetar nosso resultado.
-            // Como o Engine.simularPartida é aleatório, vamos forçar o resultado no array de resultados do engine?
-            // Melhor: Vamos salvar manualmente os dados e redirecionar.
-            
-            // Salva apenas o placar no jogo específico
             Engine.salvarJogo(gameState);
             
-            // Ao voltar para o Dashboard, o botão "Jogar" vai chamar o processarSemana.
-            // O processarSemana vai ver que ainda não processou.
-            // PRECISARÍAMOS ALTERAR O ENGINE PARA RESPEITAR JOGOS JÁ JOGADOS.
+            // Simula o resto da rodada (HACK: Chama processarSemana mas vamos ignorar nosso jogo pois já temos placar,
+            // mas o engine atual sobrescreve. Aceitável pra v1).
+            Engine.processarSemana(gameState); 
             
-            // SOLUÇÃO RÁPIDA (HACK): Vamos processar a semana toda agora, mas forçar nosso placar.
-            const resultadosDaRodada = Engine.processarSemana(gameState);
-            
-            // Sobrescreve o resultado do meu jogo com o placar real da tela
-            // (O processarSemana gerou um placar simulado, vamos corrigir)
-            const meuJogoNoLog = resultadosDaRodada.resultados.find(r => r.casa === homeTeam.nome && r.fora === awayTeam.nome);
-            if (meuJogoNoLog) {
-                meuJogoNoLog.golsCasa = matchState.scoreHome;
-                meuJogoNoLog.golsFora = matchState.scoreAway;
-                
-                // Recalcula tabela com o placar correto? 
-                // Isso exigiria lógica complexa de desfazer a simulação do engine.
-                // Para V1, aceitamos que ao clicar em "Salvar e Sair", o Engine roda a semana e sobrescreve nosso jogo jogado visualmente
-                // A MENOS QUE alteremos o Engine.js.
-                
-                // Vamos deixar simples: O usuário jogou, viu o resultado. Agora clicamos em Sair e voltamos pro Dashboard.
-                // O botão lá vai estar "Simular Semana" (porque a semana não virou ainda visualmente).
-                // Ao clicar lá, vai simular de novo. Isso é ruim.
-                
-                // IDEAL: O botão "Salvar e Sair" aqui roda o processarSemana() usando nosso placar como override.
-            }
-            
-            // Salva de novo com a semana incrementada
+            // Corrige o placar do engine com o nosso real
+            const jogoPosSim = gameState.calendario[semIdx].jogos.find(j => j.casa === homeTeam.nome && j.fora === awayTeam.nome);
+            jogoPosSim.golsCasa = match.score[0];
+            jogoPosSim.golsFora = match.score[1];
             Engine.salvarJogo(gameState);
+
             window.location.href = 'dashboard.html';
         }
 
