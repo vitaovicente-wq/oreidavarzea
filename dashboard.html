@@ -163,6 +163,32 @@
         }
         .tactics-btn:hover { background: var(--secondary); color: #1e272e; box-shadow: 0 0 15px rgba(15, 185, 177, 0.3); }
 
+        /* CARD FINANCEIRO */
+        .finance-card {
+            background: linear-gradient(135deg, #2d3436 0%, #1e272e 100%);
+            border: 1px solid #444;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+            padding: 20px;
+        }
+        .finance-card:hover { transform: translateY(-3px); border-color: #f1c40f; }
+        
+        .finance-header {
+            display: flex; align-items: center; gap: 10px;
+            color: #f1c40f; font-weight: bold; text-transform: uppercase; font-size: 0.8rem;
+            margin-bottom: 10px;
+        }
+        .finance-value {
+            font-size: 1.4rem; color: #fff; font-weight: 800; margin-bottom: 10px;
+        }
+        .finance-bar-bg {
+            background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 5px;
+        }
+        .finance-bar-fill {
+            background: #f1c40f; height: 100%; width: 0%; transition: width 1s ease-out;
+        }
+        .finance-label { font-size: 0.7rem; color: #888; }
+
         /* --- CONTENT AREA (TABS) --- */
         .content-area {
             background-color: var(--card-bg);
@@ -334,6 +360,18 @@
                 </button>
             </div>
 
+            <div class="card finance-card" onclick="irParaFinancas()">
+                <div class="finance-header">
+                    <span style="font-size:1.2rem;">💰</span>
+                    <span>Finanças</span>
+                </div>
+                <div class="finance-value" id="dash-caixa">R$ 0</div>
+                <div class="finance-bar-bg">
+                    <div class="finance-bar-fill" id="dash-bar" style="width: 0%;"></div>
+                </div>
+                <div class="finance-label">Comprometimento do Orçamento</div>
+            </div>
+
             <div class="card">
                 <h4 style="margin:0 0 15px 0; color:var(--secondary); text-transform:uppercase; font-size:0.8rem;">📋 Boletim do Clube</h4>
                 <div id="news-feed" style="font-size: 0.9rem; color: #b2bec3; line-height: 1.5;">
@@ -451,12 +489,19 @@
             renderTable();
             renderSquad();
             renderCalendarList();
+            
+            // Finanças (Nova feature)
+            if(!myTeamObj.financas) {
+                // Segurança para saves antigos
+                Engine.inicializarFinancas(myTeamObj);
+                Engine.salvarJogo(gameState);
+            }
+            atualizarDadosFinanceirosDash();
         }
 
         // --- NAVEGAÇÃO ---
-        function irParaEscalacao() {
-            window.location.href = 'escalacao.html';
-        }
+        function irParaEscalacao() { window.location.href = 'escalacao.html'; }
+        function irParaFinancas() { window.location.href = 'financeiro.html'; }
 
         // --- RENDERIZADORES ---
 
@@ -477,6 +522,28 @@
 
             document.getElementById('header-forca').innerText = myTeamObj.forca;
             document.getElementById('header-expectativa').innerText = myTeamObj.expectativa;
+        }
+
+        function atualizarDadosFinanceirosDash() {
+            const fin = myTeamObj.financas;
+            const totalReceitas = fin.receitas.patrocinioMaster + fin.receitas.tv;
+            const totalDespesas = fin.despesas.folhaSalarial + fin.despesas.manutencao;
+            
+            // Calcula comprometimento (Despesa / Receita)
+            const percentual = Math.min((totalDespesas / totalReceitas) * 100, 100);
+            
+            document.getElementById('dash-caixa').innerText = Engine.formatarDinheiro(fin.caixa, fin.moeda);
+            
+            // Animação da barra
+            setTimeout(() => {
+                document.getElementById('dash-bar').style.width = percentual + "%";
+            }, 100);
+            
+            // Cor da barra (Verde se saudável, Vermelho se perigo)
+            const bar = document.getElementById('dash-bar');
+            if(percentual > 90) bar.style.backgroundColor = "#ff4757";
+            else if(percentual > 70) bar.style.backgroundColor = "#f1c40f";
+            else bar.style.backgroundColor = "#2ecc71";
         }
 
         function renderNextMatch() {
