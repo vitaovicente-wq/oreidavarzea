@@ -4,14 +4,16 @@ const database = {
         { nome: "Palmeiras", forca: 84, escudo: "https://upload.wikimedia.org/wikipedia/commons/1/10/Palmeiras_logo.svg", orcamento: "R$ 1 Bi" },
         { nome: "Atlético-MG", forca: 82, escudo: "https://upload.wikimedia.org/wikipedia/commons/5/5f/Atl%C3%A9tico_Mineiro_logo.svg", orcamento: "R$ 800 Mi" },
         { nome: "São Paulo", forca: 80, escudo: "https://upload.wikimedia.org/wikipedia/commons/6/6f/Sao_Paulo_Futebol_Clube.svg", orcamento: "R$ 600 Mi" },
-        { nome: "Corinthians", forca: 99, escudo: "https://upload.wikimedia.org/wikipedia/pt/b/b4/Corinthians_simbolo.png", orcamento: "R$ 700 Mi" },
+        { nome: "Corinthians", forca: 79, escudo: "https://upload.wikimedia.org/wikipedia/pt/b/b4/Corinthians_simbolo.png", orcamento: "R$ 700 Mi" },
         { nome: "Fluminense", forca: 78, escudo: "https://upload.wikimedia.org/wikipedia/commons/a/ad/Fluminense_FC_escudo.png", orcamento: "R$ 400 Mi" },
         { nome: "Grêmio", forca: 78, escudo: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Gremio_Logo.svg/1200px-Gremio_Logo.svg.png", orcamento: "R$ 500 Mi" },
         { nome: "Internacional", forca: 78, escudo: "https://upload.wikimedia.org/wikipedia/commons/f/f1/Escudo_do_Sport_Club_Internacional.svg", orcamento: "R$ 450 Mi" },
         { nome: "Botafogo", forca: 81, escudo: "https://upload.wikimedia.org/wikipedia/commons/c/cb/Botafogo_de_Futebol_e_Regatas_logo.svg", orcamento: "R$ 900 Mi" },
         { nome: "Vasco", forca: 75, escudo: "https://upload.wikimedia.org/wikipedia/commons/6/67/Vasco_da_Gama_logo.svg", orcamento: "R$ 300 Mi" },
         { nome: "Cruzeiro", forca: 76, escudo: "https://upload.wikimedia.org/wikipedia/commons/b/b8/Cruzeiro_Esporte_Clube_%28logo%29.svg", orcamento: "R$ 350 Mi" },
-        { nome: "Bahia", forca: 76, escudo: "https://upload.wikimedia.org/wikipedia/pt/2/2c/Esporte_Clube_Bahia_logo.png", orcamento: "R$ 400 Mi" }
+        { nome: "Bahia", forca: 76, escudo: "https://upload.wikimedia.org/wikipedia/pt/2/2c/Esporte_Clube_Bahia_logo.png", orcamento: "R$ 400 Mi" },
+        { nome: "Fortaleza", forca: 77, escudo: "https://upload.wikimedia.org/wikipedia/commons/4/42/Fortaleza_Esporte_Clube_logo.svg", orcamento: "R$ 250 Mi" },
+        { nome: "Athletico-PR", forca: 77, escudo: "https://upload.wikimedia.org/wikipedia/commons/c/cb/Club_Athletico_Paranaense_2019.svg", orcamento: "R$ 300 Mi" }
     ],
     espanha: [
         { nome: "Real Madrid", forca: 92, escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/5/56/Real_Madrid_CF.svg/1200px-Real_Madrid_CF.svg.png", orcamento: "€ 800 Mi" },
@@ -32,7 +34,8 @@ const database = {
         { nome: "Independiente", forca: 75, escudo: "https://upload.wikimedia.org/wikipedia/commons/d/db/Escudo_del_Club_Atl%C3%A9tico_Independiente.svg", orcamento: "US$ 40 Mi" }
     ]
 };
-// Database de jogadores reais (Opcional, se não tiver, o engine cria aleatório)
+
+// Database de jogadores reais (Opcional)
 const PlayersDB = {
     "Flamengo": [
         { nome: "Rossi", pos: "GOL", forca: 78 },
