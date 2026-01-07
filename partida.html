@@ -12,6 +12,7 @@
         :root {
             --bg: #0d1115;
             --panel: #1e272e;
+            --field-color: #27ae60;
             --text: #ecf0f1;
             --green: #2ecc71;
             --red: #ff4757;
@@ -27,35 +28,18 @@
             grid-template-rows: 30px 90px 1fr 70px; 
             height: 100vh; 
             overflow: hidden;
+            user-select: none;
         }
 
-        /* 0. TICKER (MUNDO) */
-        .ticker-wrap {
-            background: #000; border-bottom: 1px solid #333;
-            overflow: hidden; white-space: nowrap; position: relative;
-            display: flex; align-items: center; z-index: 20;
-        }
-        .ticker-label {
-            background: var(--red); color: white; font-weight: bold; font-size: 0.7rem;
-            padding: 0 15px; height: 100%; display: flex; align-items: center; z-index: 21;
-        }
-        .ticker-content {
-            display: inline-block; padding-left: 100%;
-            animation: ticker 40s linear infinite;
-            font-family: monospace; font-size: 0.85rem; color: #ccc;
-        }
+        /* --- 0. TICKER (GC) --- */
+        .ticker-wrap { background: #000; border-bottom: 1px solid #333; overflow: hidden; white-space: nowrap; display: flex; align-items: center; z-index: 20; }
+        .ticker-label { background: var(--red); color: white; font-weight: bold; font-size: 0.7rem; padding: 0 15px; height: 100%; display: flex; align-items: center; z-index: 21; }
+        .ticker-content { display: inline-block; padding-left: 100%; animation: ticker 40s linear infinite; font-family: monospace; font-size: 0.85rem; color: #ccc; }
         .ticker-item { margin-right: 40px; display: inline-block; }
-        .live-dot { color: var(--red); animation: blink 1s infinite; font-size: 0.6rem; vertical-align: middle; margin-right: 5px; }
         @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
-        @keyframes blink { 50% { opacity: 0; } }
 
-        /* 1. PLACAR */
-        header {
-            background: linear-gradient(180deg, #151a1d 0%, #0d1115 100%);
-            border-bottom: 2px solid #333;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 10;
-        }
+        /* --- 1. PLACAR --- */
+        header { background: linear-gradient(180deg, #151a1d 0%, #0d1115 100%); border-bottom: 2px solid #333; display: flex; align-items: center; justify-content: center; z-index: 10; }
         .scoreboard { display: flex; align-items: center; gap: 30px; width: 100%; max-width: 800px; justify-content: center; }
         .team-display { display: flex; align-items: center; gap: 15px; width: 250px; }
         .team-display.away { justify-content: flex-end; flex-direction: row-reverse; }
@@ -67,16 +51,13 @@
         .goal-pulse { animation: pulse 1s infinite; }
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); filter: brightness(1.5); } 100% { transform: scale(1); } }
 
-        /* 2. MAIN */
-        main {
-            display: grid; grid-template-columns: 220px 1fr 280px;
-            gap: 15px; padding: 15px; overflow: hidden;
-        }
+        /* --- 2. MAIN --- */
+        main { display: grid; grid-template-columns: 220px 1fr 280px; gap: 15px; padding: 15px; overflow: hidden; }
         .panel { background: var(--panel); border: 1px solid #333; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
         .panel-header { background: rgba(0,0,0,0.3); padding: 10px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: #aaa; border-bottom: 1px solid #333; text-align: center; }
         .panel-content { flex-grow: 1; overflow-y: auto; padding: 10px; }
 
-        /* Escalações */
+        /* Escalações Texto */
         .lineup-item { padding: 4px 0; border-bottom: 1px solid #2a2a2a; display: flex; gap: 5px; font-size: 0.8rem; }
         .pos { color: #888; font-weight: bold; width: 25px; }
 
@@ -89,54 +70,80 @@
         .feed-time { color: var(--green); font-weight: bold; margin-right: 5px; font-family: monospace; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 3. FOOTER */
+        /* --- 3. FOOTER --- */
         footer { background: #151a1d; border-top: 1px solid #333; display: flex; align-items: center; justify-content: center; gap: 20px; z-index: 10; }
         .btn { padding: 10px 25px; border-radius: 6px; border: none; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.2s; color: white; }
         .btn:hover { transform: scale(1.05); }
         .btn-play { background: var(--green); color: #1e272e; }
+        .btn-sub { background: var(--gold); color: #1e272e; }
         .btn-speed { background: #444; }
         .btn-exit { background: var(--red); display: none; }
 
-        /* Stats Bars */
-        .stat-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.85rem; }
-        .bar-bg { height: 6px; background: #333; display: flex; border-radius: 3px; overflow: hidden; margin-bottom: 15px; }
-        .bar-h { background: #fff; height: 100%; transition: width 0.3s; }
-        .bar-a { background: #555; height: 100%; transition: width 0.3s; }
+        /* --- MODAL TÁTICO VISUAL (CAMPO) --- */
+        #tactical-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 200; align-items: center; justify-content: center;
+        }
+        .tac-container {
+            width: 90%; height: 90%; max-width: 1000px;
+            display: grid; grid-template-columns: 1fr 280px; gap: 20px;
+        }
+        
+        /* Campo do Modal */
+        .tac-field {
+            background: var(--field-color); border: 5px solid #1a5c36; border-radius: 8px;
+            position: relative; box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+        }
+        .field-line { position: absolute; background: rgba(255,255,255,0.4); }
+        .player-token {
+            position: absolute; width: 80px; height: 80px; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: grab; transition: 0.2s; z-index: 10;
+        }
+        .player-token:active { cursor: grabbing; }
+        .player-token.drag-over { transform: translate(-50%, -50%) scale(1.2); filter: drop-shadow(0 0 10px white); }
+        
+        .token-shirt {
+            width: 35px; height: 35px; background: #fff; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 0.8rem; color: #333; border: 3px solid #333;
+        }
+        .token-info { background: rgba(0,0,0,0.8); color: #fff; padding: 2px 5px; border-radius: 4px; font-size: 0.7rem; margin-top: 3px; }
+
+        /* Banco do Modal */
+        .tac-sidebar { background: var(--panel); border-radius: 8px; display: flex; flex-direction: column; padding: 15px; }
+        .tac-title { color: #aaa; text-transform: uppercase; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 5px; }
+        .bench-list { overflow-y: auto; flex-grow: 1; }
+        .bench-item {
+            background: rgba(255,255,255,0.05); padding: 10px; margin-bottom: 5px; border-radius: 5px;
+            display: flex; justify-content: space-between; align-items: center; cursor: grab;
+        }
+        .bench-item:hover { background: rgba(255,255,255,0.1); }
+        .bench-item.dragging { opacity: 0.5; }
+
+        .btn-close-sub { background: #444; color: white; border: none; padding: 10px; width: 100%; margin-top: 10px; cursor: pointer; border-radius: 5px; font-weight: bold; }
+        .btn-close-sub:hover { background: #666; }
 
     </style>
 </head>
 <body>
 
-    <div class="ticker-wrap">
-        <div class="ticker-label">MUNDO</div>
-        <div class="ticker-content" id="ticker-feed">Carregando resultados globais...</div>
-    </div>
+    <div class="ticker-wrap"><div class="ticker-label">MUNDO</div><div class="ticker-content" id="ticker-feed">...</div></div>
 
     <header>
         <div class="scoreboard">
-            <div class="team-display">
-                <img id="logo-h" class="team-logo">
-                <span id="name-h" class="team-name">CASA</span>
-            </div>
-            <div class="score-box">
-                <div class="score-val"><span id="gols-h">0</span> - <span id="gols-a">0</span></div>
-                <div class="timer" id="timer">00:00</div>
-            </div>
-            <div class="team-display away">
-                <img id="logo-a" class="team-logo">
-                <span id="name-a" class="team-name">FORA</span>
-            </div>
+            <div class="team-display"><img id="logo-h" class="team-logo"><span id="name-h" class="team-name">CASA</span></div>
+            <div class="score-box"><div class="score-val"><span id="gols-h">0</span> - <span id="gols-a">0</span></div><div class="timer" id="timer">00:00</div></div>
+            <div class="team-display away"><img id="logo-a" class="team-logo"><span id="name-a" class="team-name">FORA</span></div>
         </div>
     </header>
 
     <main>
         <div class="panel">
-            <div class="panel-header">Escalações</div>
+            <div class="panel-header">Em Campo</div>
             <div class="panel-content">
-                <div style="color:var(--green); font-size:0.7rem; font-weight:bold; margin-bottom:5px;">MANDANTE</div>
-                <div id="list-home"></div>
-                <div style="color:var(--gold); font-size:0.7rem; font-weight:bold; margin:15px 0 5px 0;">VISITANTE</div>
-                <div id="list-away"></div>
+                <div style="color:var(--green); font-size:0.7rem; font-weight:bold;">MANDANTE</div><div id="list-home"></div>
+                <div style="color:var(--gold); font-size:0.7rem; font-weight:bold; margin-top:15px;">VISITANTE</div><div id="list-away"></div>
             </div>
         </div>
 
@@ -153,110 +160,180 @@
         <div class="panel">
             <div class="panel-header">Estatísticas</div>
             <div class="panel-content">
-                <div class="stat-row"><span>Posse</span> <span><span id="ph">50</span>% | <span id="pa">50</span>%</span></div>
-                <div class="bar-bg"><div id="bar-h" class="bar-h" style="width:50%"></div><div id="bar-a" class="bar-a" style="width:50%"></div></div>
-                
-                <div class="stat-row"><span>Chutes</span> <span style="font-weight:bold"><span id="sh">0</span> - <span id="sa">0</span></span></div>
-                <div class="stat-row"><span>Cartões</span> <span style="font-weight:bold; color:var(--gold)"><span id="ch">0</span> - <span id="ca">0</span></span></div>
-                
-                <hr style="border:0; border-top:1px solid #444; margin:15px 0;">
-                <div class="stat-row"><span>Público:</span> <span style="font-weight:bold" id="val-publico">0</span></div>
-                <div class="stat-row"><span>Renda:</span> <span style="font-weight:bold; color:var(--green)" id="val-renda">R$ 0</span></div>
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:5px;"><span>Posse</span> <span id="posse-txt">50% | 50%</span></div>
+                <div style="height:6px; background:#333; display:flex; border-radius:3px; overflow:hidden; margin-bottom:15px;"><div id="bar-h" style="width:50%; background:#fff;"></div><div id="bar-a" style="width:50%; background:#555;"></div></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>Chutes</span> <b id="stats-chutes">0 - 0</b></div>
+                <div style="display:flex; justify-content:space-between;"><span>Cartões</span> <b id="stats-cartoes" style="color:var(--gold)">0 - 0</b></div>
             </div>
         </div>
     </main>
 
     <footer>
+        <button class="btn btn-sub" id="btn-sub" onclick="abrirPainelTatico()">🔄 Substituir</button>
         <button class="btn btn-speed" onclick="mudarVelocidade()">⏩ <span id="lbl-speed">1x</span></button>
         <button class="btn btn-play" id="btn-pause" onclick="pausarJogo()">⏸️ Pausar</button>
-        <button class="btn btn-exit" id="btn-exit" onclick="sairDoJogo()">💾 Salvar e Sair</button>
+        <button class="btn btn-exit" id="btn-exit" onclick="sairDoJogo()">💾 Sair</button>
     </footer>
+
+    <div id="tactical-modal">
+        <div class="tac-container">
+            <div class="tac-field" id="tac-field">
+                <div class="field-line" style="top:50%; width:100%; height:2px;"></div>
+                <div class="field-line" style="top:50%; left:50%; width:100px; height:100px; border:2px solid rgba(255,255,255,0.4); border-radius:50%; transform:translate(-50%,-50%); background:transparent;"></div>
+                
+                </div>
+
+            <div class="tac-sidebar">
+                <div class="tac-title">Banco de Reservas</div>
+                <div style="font-size:0.75rem; color:#888; margin-bottom:10px;">Arraste o reserva para o campo</div>
+                <div class="bench-list" id="tac-bench"></div>
+                <button class="btn-close-sub" onclick="fecharPainelTatico()">Voltar ao Jogo</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         let gameState, homeTeam, awayTeam, isHome, matchObj;
         let timer = null;
-        let match = { min: 0, score: [0, 0], stats: { shots: [0,0], cards: [0,0] }, speed: 1000, paused: false, finished: false, renda: 0 };
-        
-        // Jogos Simultâneos (Ticker)
-        let tickerGames = [];
+        let match = { min: 0, score: [0, 0], stats: { shots: [0,0], cards: [0,0] }, speed: 1000, paused: false, finished: false };
+        let draggedIndex = null; // Para Drag & Drop
+
+        // Coordenadas Padrão (4-4-2) caso não tenha salvo
+        const defaultCoords = [
+            {t:90,l:50},{t:75,l:20},{t:75,l:40},{t:75,l:60},{t:75,l:80},{t:50,l:20},{t:50,l:40},{t:50,l:60},{t:50,l:80},{t:20,l:35},{t:20,l:65}
+        ];
 
         window.onload = function() {
             if (typeof Engine === 'undefined') { alert("Engine Off"); return; }
             gameState = Engine.carregarJogo();
             if (!gameState) { window.location.href = 'index.html'; return; }
-
             setupMatch();
-            prepararTicker();
             iniciarJogo();
         };
 
         function setupMatch() {
-            // Busca o jogo na estrutura NOVA do calendarioUsuario
             const semIdx = gameState.semanaAtual - 1;
             const evento = gameState.calendarioUsuario[semIdx];
-            
-            if (!evento) { alert("Erro de calendário!"); window.location.href='dashboard.html'; return; }
-
-            // Encontra o jogo específico que envolve o meu time
             matchObj = evento.jogos.find(j => j.casa === gameState.meuTime || j.fora === gameState.meuTime);
             
-            if (!matchObj) { alert("Folga!"); window.location.href='dashboard.html'; return; }
-
-            // Usa o Engine Global para achar os times
             homeTeam = Engine.encontrarTime(gameState, matchObj.casa);
             awayTeam = Engine.encontrarTime(gameState, matchObj.fora);
             isHome = (matchObj.casa === gameState.meuTime);
 
-            // Renderiza Header
+            // UI Header
             document.getElementById('name-h').innerText = homeTeam.nome.substring(0,3);
             document.getElementById('logo-h').src = homeTeam.escudo;
             document.getElementById('name-a').innerText = awayTeam.nome.substring(0,3);
             document.getElementById('logo-a').src = awayTeam.escudo;
 
-            renderList('list-home', homeTeam);
-            renderList('list-away', awayTeam);
-            calcularRenda();
+            atualizarListasTexto();
         }
 
-        function prepararTicker() {
-            // Varre o MUNDO inteiro buscando jogos desta semana
-            const semIdx = gameState.semanaAtual - 1;
-            tickerGames = [];
-
-            Object.keys(gameState.mundo).forEach(pais => {
-                const liga = gameState.mundo[pais];
-                if (liga.calendario[semIdx]) {
-                    liga.calendario[semIdx].forEach(j => {
-                        // Não inclui o jogo que estou jogando
-                        if (j.casa !== homeTeam.nome && j.fora !== homeTeam.nome) {
-                            tickerGames.push({
-                                c: j.casa.substring(0,3).toUpperCase(),
-                                f: j.fora.substring(0,3).toUpperCase(),
-                                gc: 0, gf: 0,
-                                // Força simulada para o ticker
-                                fc: Math.random()*100, ff: Math.random()*100
-                            });
-                        }
-                    });
-                }
-            });
-            atualizarTickerHTML();
+        function atualizarListasTexto() {
+            renderList('list-home', homeTeam);
+            renderList('list-away', awayTeam);
         }
 
         function renderList(id, t) {
-            const el = document.getElementById(id);
-            el.innerHTML = '';
+            const el = document.getElementById(id); el.innerHTML = '';
             t.elenco.slice(0,11).forEach(p => {
                 el.innerHTML += `<div class="lineup-item"><span class="pos">${p.pos}</span> <span>${p.nome.split(' ')[0]}</span></div>`;
             });
         }
 
-        function calcularRenda() {
-            // Lógica simples
-            const p = Math.floor(20000 + (homeTeam.moral * 200));
-            match.renda = p * 50;
-            document.getElementById('val-publico').innerText = p.toLocaleString();
-            document.getElementById('val-renda').innerText = Engine.formatarDinheiro(match.renda, homeTeam.financas ? homeTeam.financas.moeda : 'R$');
+        // --- SISTEMA DE SUBSTITUIÇÃO VISUAL ---
+
+        function abrirPainelTatico() {
+            match.paused = true; // Pausa
+            document.getElementById('tactical-modal').style.display = 'flex';
+            renderizarCampoTatico();
+            renderizarBancoTatico();
+        }
+
+        function fecharPainelTatico() {
+            document.getElementById('tactical-modal').style.display = 'none';
+            match.paused = false; // Despausa
+        }
+
+        function renderizarCampoTatico() {
+            const field = document.getElementById('tac-field');
+            // Remove players antigos
+            field.querySelectorAll('.player-token').forEach(e => e.remove());
+
+            const meuTime = isHome ? homeTeam : awayTeam;
+            
+            // Renderiza os 11 titulares
+            for(let i=0; i<11; i++) {
+                const jog = meuTime.elenco[i];
+                // Usa coordenadas salvas (x,y) ou padrão
+                const top = jog.y ? jog.y : defaultCoords[i].t;
+                const left = jog.x ? jog.x : defaultCoords[i].l;
+
+                const token = document.createElement('div');
+                token.className = 'player-token';
+                token.style.top = top + '%';
+                token.style.left = left + '%';
+                
+                // Eventos de Drop (Receber reserva)
+                token.ondragover = (e) => { e.preventDefault(); token.classList.add('drag-over'); };
+                token.ondragleave = (e) => { token.classList.remove('drag-over'); };
+                token.ondrop = (e) => { e.preventDefault(); realizarSubstituicao(i); token.classList.remove('drag-over'); };
+
+                let borderColor = jog.forca >= 80 ? "#f1c40f" : "#333";
+
+                token.innerHTML = `
+                    <div class="token-shirt" style="border-color:${borderColor}">${jog.forca}</div>
+                    <div class="token-info">${jog.nome.split(' ')[0]}</div>
+                `;
+                field.appendChild(token);
+            }
+        }
+
+        function renderizarBancoTatico() {
+            const bench = document.getElementById('tac-bench');
+            bench.innerHTML = '';
+            const meuTime = isHome ? homeTeam : awayTeam;
+
+            // Reservas (Índice 11 em diante)
+            for(let i=11; i<meuTime.elenco.length; i++) {
+                const jog = meuTime.elenco[i];
+                const item = document.createElement('div');
+                item.className = 'bench-item';
+                item.draggable = true;
+                item.innerHTML = `<span>${jog.pos}</span> <span>${jog.nome}</span> <b>${jog.forca}</b>`;
+                
+                // Evento de Drag (Iniciar arrasto)
+                item.ondragstart = (e) => { draggedIndex = i; item.classList.add('dragging'); };
+                item.ondragend = (e) => { item.classList.remove('dragging'); };
+
+                bench.appendChild(item);
+            }
+        }
+
+        function realizarSubstituicao(indexTitular) {
+            if (draggedIndex === null) return;
+
+            const meuTime = isHome ? homeTeam : awayTeam;
+            const indexReserva = draggedIndex; // Índice real no array
+
+            // Troca
+            const saindo = meuTime.elenco[indexTitular];
+            const entrando = meuTime.elenco[indexReserva];
+
+            // Inverte posições no array
+            meuTime.elenco[indexTitular] = entrando;
+            meuTime.elenco[indexReserva] = saindo;
+
+            // Mantém coordenadas visuais do titular para quem entrou
+            if(saindo.x) { entrando.x = saindo.x; entrando.y = saindo.y; }
+
+            // Feedback
+            narra(`🔄 Substituição no ${meuTime.nome}: Sai ${saindo.nome}, entra ${entrando.nome}.`, '');
+            
+            draggedIndex = null;
+            renderizarCampoTatico(); // Re-renderiza para mostrar o novo jogador em campo
+            renderizarBancoTatico();
+            atualizarListasTexto(); // Atualiza a lista da tela principal
         }
 
         // --- GAME LOOP ---
@@ -272,134 +349,92 @@
             document.getElementById('timer').innerText = (match.min<10?'0':'')+match.min + ":00";
 
             simularMinuto();
-            simularTicker();
 
-            if(match.min >= 94) finalizar();
+            if(match.min >= 94) {
+                match.finished = true; clearInterval(timer);
+                narra("Fim de jogo!", 'goal');
+                document.getElementById('btn-exit').style.display='inline-block';
+                document.getElementById('btn-pause').style.display='none';
+                document.getElementById('btn-sub').style.display='none';
+            }
         }
 
         function simularMinuto() {
-            // Simulação Visual (Baseada na força)
+            // Força + Fator Casa
             const fH = Engine.calcularForcaElenco(homeTeam.elenco) + (isHome?5:0);
             const fA = Engine.calcularForcaElenco(awayTeam.elenco);
             const diff = fH - fA;
             
-            // Chances por minuto
-            const probGolH = 0.02 + (diff * 0.0005);
-            const probGolA = 0.02 - (diff * 0.0005);
+            // Probabilidade dinâmica
+            const pG_H = 0.02 + (diff * 0.0005);
+            const pG_A = 0.02 - (diff * 0.0005);
 
-            if(Math.random() < probGolH) gol(0);
-            else if(Math.random() < probGolA) gol(1);
-            else if(Math.random() < 0.1) eventoGeral(fH > fA ? 0 : 1);
+            if(Math.random() < pG_H) gol(0);
+            else if(Math.random() < pG_A) gol(1);
+            else if(Math.random() < 0.1) eventoGeral(fH>fA ? 0 : 1);
         }
-
-        function simularTicker() {
-            // Simula gols nos outros jogos do mundo
-            let mudou = false;
-            tickerGames.forEach(g => {
-                if(Math.random() < 0.02) {
-                    if(Math.random() > 0.5) g.gc++; else g.gf++;
-                    mudou = true;
-                }
-            });
-            if(mudou) atualizarTickerHTML();
-        }
-
-        function atualizarTickerHTML() {
-            const el = document.getElementById('ticker-feed');
-            let html = '';
-            // Mostra apenas 10 aleatórios para não poluir
-            const slice = tickerGames.slice(0, 15);
-            slice.forEach(g => {
-                html += `<span class="ticker-item"><span class="live-dot">●</span> ${g.c} <b style="color:#f1c40f">${g.gc}-${g.gf}</b> ${g.f}</span>`;
-            });
-            if(tickerGames.length === 0) html = "Nenhum outro jogo neste momento.";
-            else html += html; // Duplica para loop visual
-            el.innerHTML = html;
-        }
-
-        // --- EVENTOS ---
 
         function gol(side) {
-            match.score[side]++;
-            match.stats.shots[side]++;
-            const t = side===0 ? homeTeam : awayTeam;
-            // Escolhe artilheiro
-            const p = t.elenco[Math.floor(Math.random()*11)]; 
-            
+            match.score[side]++; match.stats.shots[side]++;
+            const t = side===0?homeTeam:awayTeam;
+            const p = t.elenco[Math.floor(Math.random()*11)]; // Autor (titular)
             document.getElementById(side===0?'gols-h':'gols-a').innerText = match.score[side];
             narra(`⚽ GOOOL! ${p.nome} marca para o ${t.nome}!`, 'goal');
             addEvent('⚽', `${match.min}' ${p.nome}`);
-            updateStats();
+            updateStatsUI();
         }
 
         function eventoGeral(side) {
-            const t = side===0 ? homeTeam : awayTeam;
-            const msgs = ["Chute perigoso!", "Bela defesa.", "Falta no meio."];
-            const msg = msgs[Math.floor(Math.random()*msgs.length)];
+            const t = side===0?homeTeam:awayTeam;
+            const evs = [
+                {t:"Chute pra fora!", s:'shots'}, 
+                {t:"Defesaça!", s:'shots'}, 
+                {t:"Falta dura.", s:'cards', prob:0.2}
+            ];
+            const e = evs[Math.floor(Math.random()*evs.length)];
             
-            if(msg.includes("Chute")) match.stats.shots[side]++;
-            narra(`${t.nome}: ${msg}`);
-            updateStats();
+            if(e.s==='shots') match.stats.shots[side]++;
+            if(e.s==='cards' && Math.random()<e.prob) {
+                match.stats.cards[side]++;
+                const p = t.elenco[Math.floor(Math.random()*11)];
+                narra(`🟨 Amarelo para ${p.nome}.`, 'card');
+                addEvent('🟨', `${match.min}' ${p.nome}`);
+            } else {
+                narra(`${t.nome}: ${e.t}`);
+            }
+            updateStatsUI();
         }
 
-        function updateStats() {
-            document.getElementById('sh').innerText = match.stats.shots[0];
-            document.getElementById('sa').innerText = match.stats.shots[1];
-            // Posse fake baseada em chutes
+        function updateStatsUI() {
+            document.getElementById('stats-chutes').innerText = `${match.stats.shots[0]} - ${match.stats.shots[1]}`;
+            document.getElementById('stats-cartoes').innerText = `${match.stats.cards[0]} - ${match.stats.cards[1]}`;
+            // Fake Posse
             const tot = match.stats.shots[0] + match.stats.shots[1] + 10;
             const ph = Math.floor(((match.stats.shots[0]+5)/tot)*100);
-            document.getElementById('ph').innerText = ph;
-            document.getElementById('pa').innerText = 100-ph;
-            document.getElementById('bar-h').style.width = ph+"%";
-            document.getElementById('bar-a').style.width = (100-ph)+"%";
+            document.getElementById('posse-txt').innerText = `${ph}% | ${100-ph}%`;
+            document.getElementById('bar-h').style.width = ph+'%';
+            document.getElementById('bar-a').style.width = (100-ph)+'%';
         }
 
         function narra(txt, type='') {
             const b = document.getElementById('match-feed');
             b.insertAdjacentHTML('afterbegin', `<div class="feed-msg ${type}"><span class="feed-time">${match.min}'</span> ${txt}</div>`);
         }
-        function addEvent(ico, txt) {
-            document.getElementById('match-events').innerHTML += `<div><span style="width:20px; display:inline-block">${ico}</span> ${txt}</div>`;
-        }
-
-        function finalizar() {
-            match.finished = true; clearInterval(timer);
-            narra("Apita o árbitro! Fim de jogo.", 'goal');
-            document.getElementById('btn-exit').style.display='inline-block';
-            document.getElementById('btn-pause').style.display='none';
-        }
-
-        // --- SAÍDA ---
+        function addEvent(i,t) { document.getElementById('match-events').innerHTML+=`<div><span style="width:20px;display:inline-block">${i}</span> ${t}</div>`; }
 
         function sairDoJogo() {
-            // 1. Atualiza o objeto do jogo na memória (referência global)
             matchObj.golsCasa = match.score[0];
             matchObj.golsFora = match.score[1];
-
-            // 2. Grana (Se for mandante)
-            if (isHome) {
-                const meu = Engine.encontrarTime(gameState, gameState.meuTime);
-                if(meu && meu.financas) {
-                    meu.financas.caixa += (match.renda - 50000);
-                    meu.financas.receitas.bilheteria += match.renda;
-                }
-            }
-
-            // 3. Salva estado temporário
             Engine.salvarJogo(gameState);
-
-            // 4. Chama o Engine para processar o resto do mundo
-            // O Engine vai ver que 'matchObj' já tem placar e vai pular ele, simulando só o resto
+            // Simula o resto do mundo
             Engine.processarSemana(gameState);
-
-            // 5. Redireciona
             window.location.href = 'dashboard.html';
         }
 
         function pausarJogo() { match.paused = !match.paused; document.getElementById('btn-pause').innerText = match.paused ? "▶️" : "⏸️"; }
         function mudarVelocidade() { 
-            if(match.speed===1000) { match.speed=200; document.getElementById('lbl-speed').innerText="5x"; }
-            else { match.speed=1000; document.getElementById('lbl-speed').innerText="1x"; }
+            match.speed = (match.speed===1000) ? 200 : 1000;
+            document.getElementById('lbl-speed').innerText = (match.speed===200) ? "5x" : "1x";
             clearInterval(timer); if(!match.finished && !match.paused) timer = setInterval(loop, match.speed);
         }
 
