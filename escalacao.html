@@ -3,93 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRFutebol - Escalação</title>
+    <title>BRFutebol - Tática</title>
     <script src="database_jogadores.js"></script>
     <script src="engine.js"></script>
     <style>
-        :root { --bg:#0d1115; --card:#1e272e; --text:#ecf0f1; --green:#2ecc71; --gold:#f1c40f; --red:#e74c3c; }
+        :root { --bg:#0d1115; --panel:#161b22; --card:#1e272e; --text:#ecf0f1; --green:#2ecc71; --gold:#f1c40f; --red:#e74c3c; --border:#30363d; }
         body { font-family:'Segoe UI',sans-serif; background:var(--bg); color:var(--text); margin:0; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
 
         /* HEADER */
-        header { height: 60px; background: rgba(22,27,34,0.95); border-bottom:1px solid #333; display:flex; align-items:center; justify-content:space-between; padding:0 20px; }
-        .btn-back { background:none; border:1px solid #444; color:#fff; padding:8px 15px; border-radius:5px; cursor:pointer; font-weight:bold; }
-        .btn-save { background:var(--green); border:none; color:#000; padding:10px 30px; border-radius:30px; cursor:pointer; font-weight:900; text-transform:uppercase; box-shadow:0 0 10px rgba(46,204,113,0.3); }
-        .btn-save:hover { transform:scale(1.05); }
+        header { height: 60px; background: rgba(22,27,34,0.95); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index: 10; }
+        .btn-back { background:none; border:1px solid #444; color:#fff; padding:8px 15px; border-radius:5px; cursor:pointer; font-weight:bold; transition:0.2s; }
+        .btn-back:hover { background:#333; }
+        .btn-save { background:var(--green); border:none; color:#000; padding:10px 30px; border-radius:30px; cursor:pointer; font-weight:900; text-transform:uppercase; box-shadow:0 0 15px rgba(46,204,113,0.4); transition:0.2s; }
+        .btn-save:hover { transform:scale(1.05); box-shadow:0 0 25px rgba(46,204,113,0.6); }
 
-        /* MAIN LAYOUT */
-        .container { display:flex; height:calc(100vh - 60px); }
+        /* LAYOUT DE 3 COLUNAS */
+        .container { display:grid; grid-template-columns: 300px 1fr 280px; height:calc(100vh - 60px); }
         
-        /* LISTA DE JOGADORES (ESQUERDA) */
-        .sidebar { width: 350px; background:#161b22; border-right:1px solid #333; display:flex; flex-direction:column; }
-        .sidebar-header { padding:15px; border-bottom:1px solid #333; display:flex; justify-content:space-between; align-items:center; }
-        .player-list { flex:1; overflow-y:auto; padding:10px; }
+        /* GERAL PAINÉIS */
+        .panel { background:var(--panel); border-right:1px solid var(--border); display:flex; flex-direction:column; }
+        .panel-right { border-left:1px solid var(--border); border-right:none; }
+        .panel-header { padding:15px; border-bottom:1px solid var(--border); font-weight:bold; text-transform:uppercase; color:var(--gold); display:flex; justify-content:space-between; align-items:center; }
+        .scroll-area { flex:1; overflow-y:auto; padding:10px; }
 
+        /* LISTA DE JOGADORES (ESQUERDA) */
         .player-card {
-            background:var(--card); padding:10px; margin-bottom:8px; border-radius:6px; border:1px solid #333;
-            display:flex; align-items:center; justify-content:space-between; cursor:grab; user-select:none;
-            transition:0.2s;
+            background:var(--card); padding:8px; margin-bottom:6px; border-radius:4px; border:1px solid #333;
+            display:flex; align-items:center; cursor:grab; user-select:none; transition:0.2s;
         }
         .player-card:hover { border-color:var(--green); background:#252e33; }
-        .player-card.dragging { opacity:0.5; }
-        .player-card.used { opacity:0.3; pointer-events:none; filter:grayscale(1); }
+        .player-card.used { opacity:0.4; filter:grayscale(1); }
+        .p-pos { background:#000; color:#aaa; font-size:0.7rem; padding:2px 5px; border-radius:3px; font-weight:bold; width:25px; text-align:center; margin-right:8px; }
+        .p-name { font-weight:600; font-size:0.85rem; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .p-ovr { font-weight:900; color:var(--gold); font-size:0.9rem; }
+        .health-dot { width:8px; height:8px; border-radius:50%; margin-right:8px; }
 
-        .p-pos { background:#000; color:#aaa; font-size:0.7rem; padding:2px 5px; border-radius:3px; font-weight:bold; width:30px; text-align:center; }
-        .p-info { flex:1; margin-left:10px; }
-        .p-name { font-weight:bold; font-size:0.9rem; }
-        .p-ovr { font-weight:900; color:var(--gold); font-size:1rem; }
-        
-        .health-mini { width:100%; height:4px; background:#000; margin-top:4px; border-radius:2px; }
-        .health-fill { height:100%; border-radius:2px; }
-
-        /* CAMPO (DIREITA) */
-        .field-area { flex:1; display:flex; justify-content:center; align-items:center; position:relative; background:#111; overflow:hidden; }
+        /* CAMPO (CENTRO) */
+        .field-area { background:#0a0a0a; display:flex; justify-content:center; align-items:center; position:relative; overflow:hidden; }
         .pitch {
-            width: 500px; height: 700px;
+            width: 480px; height: 680px;
             background: linear-gradient(180deg, #27ae60 0%, #2ecc71 100%);
             border: 4px solid #fff; border-radius: 8px;
-            position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            display: flex; justify-content: center;
+            position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
         }
-        /* Linhas do campo */
-        .pitch::before { content:''; position:absolute; top:50%; left:0; width:100%; height:2px; background:rgba(255,255,255,0.5); }
-        .pitch::after { content:''; position:absolute; top:50%; left:50%; width:100px; height:100px; border:2px solid rgba(255,255,255,0.5); border-radius:50%; transform:translate(-50%, -50%); }
-        .box-top { position:absolute; top:0; width:250px; height:100px; border:2px solid rgba(255,255,255,0.5); border-top:none; left:50%; transform:translateX(-50%); }
-        .box-bottom { position:absolute; bottom:0; width:250px; height:100px; border:2px solid rgba(255,255,255,0.5); border-bottom:none; left:50%; transform:translateX(-50%); }
+        .pitch::before { content:''; position:absolute; top:50%; left:0; width:100%; height:2px; background:rgba(255,255,255,0.4); }
+        .pitch::after { content:''; position:absolute; top:50%; left:50%; width:100px; height:100px; border:2px solid rgba(255,255,255,0.4); border-radius:50%; transform:translate(-50%, -50%); }
+        .box { position:absolute; width:220px; height:90px; border:2px solid rgba(255,255,255,0.4); left:50%; transform:translateX(-50%); }
+        .box-top { top:0; border-top:none; } .box-bottom { bottom:0; border-bottom:none; }
 
-        /* SLOTS DOS JOGADORES NO CAMPO */
+        /* SLOTS */
         .slot {
-            position: absolute; width: 80px; height: 80px;
-            transform: translate(-50%, -50%);
+            position: absolute; width: 70px; height: 70px; transform: translate(-50%, -50%);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s;
+            cursor: pointer; transition: 0.2s; z-index: 2;
         }
         .slot-circle {
-            width: 45px; height: 45px; background: rgba(0,0,0,0.3);
-            border: 2px dashed rgba(255,255,255,0.5); border-radius: 50%;
+            width: 40px; height: 40px; background: rgba(0,0,0,0.4);
+            border: 2px dashed rgba(255,255,255,0.4); border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 0.7rem; font-weight: bold; overflow: hidden;
+            color: #fff; font-size: 0.7rem; font-weight: bold;
         }
-        .slot.filled .slot-circle { background: var(--card); border: 2px solid var(--green); }
-        .slot-name { background: rgba(0,0,0,0.8); color: #fff; padding: 2px 6px; border-radius: 10px; font-size: 0.7rem; margin-top: 5px; white-space: nowrap; }
-        .slot-ovr { position: absolute; top: -5px; right: 10px; background: var(--gold); color: #000; font-size: 0.7rem; font-weight: bold; padding: 1px 4px; border-radius: 4px; display: none; }
-        .slot.filled .slot-ovr { display: block; }
+        .slot.filled .slot-circle { background: var(--card); border: 2px solid var(--green); color:var(--gold); }
+        .slot-name { background: rgba(0,0,0,0.8); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; margin-top: 3px; white-space: nowrap; max-width: 80px; overflow:hidden; text-overflow:ellipsis; }
+        .captain-badge { position:absolute; top:-5px; right:-5px; background:var(--gold); color:#000; font-weight:bold; font-size:0.7rem; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; display:none; border:1px solid #fff; }
+        .slot.is-captain .captain-badge { display:flex; }
 
-        /* AVISO DE SAÚDE BAIXA NO CAMPO */
-        .warn-icon { position: absolute; top: -5px; left: 10px; color: var(--red); font-size: 1rem; display: none; filter: drop-shadow(0 1px 1px #000); }
-        .slot.low-health .warn-icon { display: block; }
+        /* PAINEL DE FUNÇÕES (DIREITA) */
+        .role-group { margin-bottom: 20px; }
+        .role-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; display: block; font-weight: bold; }
+        .role-select {
+            width: 100%; background: var(--card); border: 1px solid #444; color: #fff;
+            padding: 8px; border-radius: 4px; font-size: 0.9rem; outline: none;
+        }
+        .role-select:focus { border-color: var(--green); }
+        
+        /* Auto Escalar Btn */
+        .btn-auto { background:#333; color:#fff; border:1px solid #555; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.7rem; }
+        .btn-auto:hover { background:#444; border-color:#fff; }
 
         /* Formação 4-3-3 Padrão */
         #pos-GK { bottom: 2%; left: 50%; }
-        #pos-LB { bottom: 20%; left: 15%; }
-        #pos-CB1 { bottom: 15%; left: 38%; }
-        #pos-CB2 { bottom: 15%; left: 62%; }
-        #pos-RB { bottom: 20%; left: 85%; }
-        #pos-CDM { bottom: 35%; left: 50%; }
-        #pos-CM1 { bottom: 50%; left: 30%; }
-        #pos-CM2 { bottom: 50%; left: 70%; }
-        #pos-LW { top: 20%; left: 15%; }
-        #pos-ST { top: 15%; left: 50%; }
-        #pos-RW { top: 20%; left: 85%; }
+        #pos-LB { bottom: 20%; left: 15%; } #pos-CB1 { bottom: 15%; left: 38%; } #pos-CB2 { bottom: 15%; left: 62%; } #pos-RB { bottom: 20%; left: 85%; }
+        #pos-CDM { bottom: 35%; left: 50%; } #pos-CM1 { bottom: 50%; left: 30%; } #pos-CM2 { bottom: 50%; left: 70%; }
+        #pos-LW { top: 20%; left: 15%; } #pos-ST { top: 15%; left: 50%; } #pos-RW { top: 20%; left: 85%; }
 
     </style>
 </head>
@@ -97,43 +93,84 @@
 
     <header>
         <button class="btn-back" onclick="window.location.href='dashboard.html'">⬅ Voltar</button>
-        <div style="font-weight:bold; color:var(--text-muted);">FORÇA DO TIME: <span id="team-str" style="color:var(--text);">0</span></div>
-        <button class="btn-save" onclick="salvarTime()">SALVAR ESCALAÇÃO</button>
+        <div style="font-weight:bold; color:var(--text-muted); font-size:0.9rem;">
+            FORÇA: <span id="team-str" style="color:#fff; font-size:1.1rem;">0</span>
+        </div>
+        <button class="btn-save" onclick="salvarTudo()">SALVAR TÁTICA</button>
     </header>
 
     <div class="container">
-        <div class="sidebar">
-            <div class="sidebar-header">
+        
+        <div class="panel">
+            <div class="panel-header">
                 <span>Elenco</span>
-                <button onclick="autoEscalar()" style="background:#333; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-size:0.8rem;">⚡ Auto-Escalar</button>
+                <button class="btn-auto" onclick="autoEscalar()">⚡ AUTO</button>
             </div>
-            <div class="player-list" id="roster">
+            <div class="scroll-area" id="roster">
                 </div>
         </div>
 
-        <div class="field-area" id="field-dropzone">
+        <div class="field-area">
             <div class="pitch">
-                <div class="box-top"></div>
-                <div class="box-bottom"></div>
+                <div class="box box-top"></div>
+                <div class="box box-bottom"></div>
 
-                <div class="slot" id="pos-GK" data-role="GOL"><div class="slot-circle">GOL</div><div class="slot-name">Vazio</div><div class="slot-ovr"></div><div class="warn-icon">🚑</div></div>
-                <div class="slot" id="pos-LB" data-role="LE"><div class="slot-circle">LE</div><div class="slot-name">Vazio</div><div class="slot-ovr"></div><div class="warn-icon">🚑</div></div>
-                <div class="slot" id="pos-CB1" data-role="ZAG"><div class="slot-circle">ZAG</div><div class="slot-name">Vazio</div><div class="slot-ovr"></div><div class="warn-icon">🚑</div></div>
-                <div class="slot" id="pos-CB2" data-role="ZAG"><div class="slot-circle">ZAG</div><div class="slot-name">Vazio</div><div class="slot-ovr"></div><div class="warn-icon">🚑</div></div>
-                <div class="slot" id="pos-RB" data-role="LD"><div class="slot-circle">LD</div><div class="slot-name">Vazio</div><div class="slot-ovr"></div><div class="warn-icon">🚑</div></div>
-                <div class="slot" id="pos-CDM" data-role="VOL"><div class="slot-circle">VOL</div><div class="slot-name">Vazio</div><div class="slot-ovr"></div><div class="warn-icon">🚑</div></div>
-                <div class="slot" id="pos-CM1" data-role="MEI"><div class="slot-circle">MEI</div><div class="slot-name">Vazio</div><div class="slot-ovr"></div><div class="warn-icon">🚑</div></div>
-                <div class="slot" id="pos-CM2" data-role="MEI"><div class="slot-circle">MEI</div><div class="slot-name">Vazio</div><div class="slot-ovr"></div><div class="warn-icon">🚑</div></div>
-                <div class="slot" id="pos-LW" data-role="ATA"><div class="slot-circle">PTE</div><div class="slot-name">Vazio</div><div class="slot-ovr"></div><div class="warn-icon">🚑</div></div>
-                <div class="slot" id="pos-ST" data-role="ATA"><div class="slot-circle">ATA</div><div class="slot-name">Vazio</div><div class="slot-ovr"></div><div class="warn-icon">🚑</div></div>
-                <div class="slot" id="pos-RW" data-role="ATA"><div class="slot-circle">PTD</div><div class="slot-name">Vazio</div><div class="slot-ovr"></div><div class="warn-icon">🚑</div></div>
+                <div class="slot" id="pos-GK" data-role="GOL"><div class="slot-circle">GOL</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="pos-LB" data-role="LE"><div class="slot-circle">LE</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="pos-CB1" data-role="ZAG"><div class="slot-circle">ZAG</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="pos-CB2" data-role="ZAG"><div class="slot-circle">ZAG</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="pos-RB" data-role="LD"><div class="slot-circle">LD</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="pos-CDM" data-role="VOL"><div class="slot-circle">VOL</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="pos-CM1" data-role="MEI"><div class="slot-circle">MEI</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="pos-CM2" data-role="MEI"><div class="slot-circle">MEI</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="pos-LW" data-role="ATA"><div class="slot-circle">PTE</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="pos-ST" data-role="ATA"><div class="slot-circle">ATA</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="pos-RW" data-role="ATA"><div class="slot-circle">PTD</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
             </div>
         </div>
+
+        <div class="panel panel-right">
+            <div class="panel-header">Funções & Bolas Paradas</div>
+            <div class="scroll-area">
+                
+                <div class="role-group">
+                    <label class="role-label">© Capitão</label>
+                    <select id="role-capitao" class="role-select" onchange="atualizarIconesFuncao()"></select>
+                </div>
+
+                <div class="role-group">
+                    <label class="role-label">⚽ Pênaltis</label>
+                    <select id="role-penalti" class="role-select"></select>
+                </div>
+
+                <div class="role-group">
+                    <label class="role-label">🎯 Faltas</label>
+                    <select id="role-falta" class="role-select"></select>
+                </div>
+
+                <div class="role-group">
+                    <label class="role-label">🚩 Escanteio Direito</label>
+                    <select id="role-escanteioD" class="role-select"></select>
+                </div>
+
+                <div class="role-group">
+                    <label class="role-label">🚩 Escanteio Esquerdo</label>
+                    <select id="role-escanteioE" class="role-select"></select>
+                </div>
+
+                <div style="margin-top:20px; padding:15px; background:rgba(255,255,255,0.05); border-radius:6px; font-size:0.8rem; color:#888;">
+                    ℹ️ Escolha jogadores com boa técnica e liderança. O capitão influencia a moral do time.
+                </div>
+
+            </div>
+        </div>
+
     </div>
 
     <script>
         let gameState, meuTime;
-        let escalacaoAtual = {}; // { "pos-GK": "id_jogador", ... }
+        let escalacaoAtual = {}; // { "pos-GK": "id123" }
+        let funcoesAtuais = { capitao: null, penalti: null, falta: null, escanteioD: null, escanteioE: null };
         let dragSrcEl = null;
 
         window.onload = function() {
@@ -141,120 +178,64 @@
             if (!gameState) { window.location.href = 'index.html'; return; }
             meuTime = Engine.encontrarTime(gameState, gameState.meuTime);
             
-            // Tenta carregar escalação salva
-            const salva = localStorage.getItem('brfutebol_formacao');
-            if (salva) {
-                try {
-                    const obj = JSON.parse(salva);
-                    // Mapeia para os slots visuais
-                    // O formato salvo é { "GK": id, ... } simplificado, ou { "pos-GK": id }
-                    // Vamos assumir que salvamos com as chaves dos IDs dos slots para facilitar
-                    escalacaoAtual = obj;
-                } catch(e) { console.log("Erro ao carregar tática"); }
-            } else {
-                autoEscalar(true); // Se não tiver, auto-escala na primeira vez silenciosamente
-            }
-
+            carregarDadosSalvos();
             renderizarLista();
             atualizarCampo();
+            povoarDropdowns();
         };
 
+        function carregarDadosSalvos() {
+            // Escalação
+            const formacaoSalva = localStorage.getItem('brfutebol_formacao');
+            if (formacaoSalva) {
+                try { escalacaoAtual = JSON.parse(formacaoSalva); } catch(e) {}
+            } else {
+                autoEscalar(true);
+            }
+
+            // Funções
+            const funcoesSalvas = localStorage.getItem('brfutebol_funcoes');
+            if (funcoesSalvas) {
+                try { funcoesAtuais = JSON.parse(funcoesSalvas); } catch(e) {}
+            }
+        }
+
+        // --- RENDERIZAÇÃO ---
         function renderizarLista() {
             const container = document.getElementById('roster');
             container.innerHTML = '';
-
-            // Pega IDs que já estão em campo
             const emCampoIds = Object.values(escalacaoAtual);
+            
+            // Ordena
+            const lista = [...meuTime.elenco].sort((a,b) => b.forca - a.forca);
 
-            // Ordena lista
-            const listaOrdenada = [...meuTime.elenco].sort((a,b) => b.forca - a.forca);
-
-            listaOrdenada.forEach(jog => {
+            lista.forEach(jog => {
                 const div = document.createElement('div');
                 div.className = 'player-card';
                 div.draggable = true;
                 div.id = `card-${jog.id}`;
-                
-                // Se já está em campo, marca visualmente
                 if (emCampoIds.includes(jog.id)) div.classList.add('used');
 
-                // Lógica de Saúde
+                // Cor da Saúde
                 const saude = jog.saude !== undefined ? jog.saude : 100;
-                let corBarra = '#2ecc71';
-                if(saude < 80) corBarra = '#f1c40f';
-                if(saude < 60) corBarra = '#e74c3c';
+                let corSaude = '#2ecc71';
+                if(saude < 80) corSaude = '#f1c40f';
+                if(saude < 60) corSaude = '#e74c3c';
 
                 div.innerHTML = `
+                    <div class="health-dot" style="background:${corSaude}" title="Saúde: ${Math.floor(saude)}%"></div>
                     <div class="p-pos">${jog.pos}</div>
-                    <div class="p-info">
-                        <div class="p-name">${jog.nome}</div>
-                        <div class="health-mini"><div class="health-fill" style="width:${saude}%; background:${corBarra};"></div></div>
-                    </div>
+                    <div class="p-name">${jog.nome}</div>
                     <div class="p-ovr">${jog.forca}</div>
                 `;
 
-                // Eventos de Drag
                 div.addEventListener('dragstart', handleDragStart);
                 div.addEventListener('dragend', handleDragEnd);
-                
-                // Evento de Clique (Mobile Friendly - Clique na lista, depois no campo)
+                // Mobile tap
                 div.onclick = () => selecionarParaTroca(jog.id);
 
                 container.appendChild(div);
             });
-        }
-
-        // --- LÓGICA DE DRAG & DROP ---
-        function handleDragStart(e) {
-            this.classList.add('dragging');
-            dragSrcEl = this;
-            e.dataTransfer.effectAllowed = 'move';
-            // Passa o ID do jogador (extraído do id da div "card-XXXX")
-            const jogId = this.id.replace('card-', '');
-            e.dataTransfer.setData('text/plain', jogId);
-        }
-
-        function handleDragEnd(e) {
-            this.classList.remove('dragging');
-            document.querySelectorAll('.slot').forEach(slot => slot.classList.remove('drag-over'));
-        }
-
-        // Configura os Slots do Campo
-        document.querySelectorAll('.slot').forEach(slot => {
-            slot.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                slot.classList.add('drag-over');
-            });
-            slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
-            slot.addEventListener('drop', handleDrop);
-            
-            // Clique no slot para remover jogador
-            slot.onclick = () => {
-                const slotId = slot.id;
-                if (escalacaoAtual[slotId]) {
-                    delete escalacaoAtual[slotId];
-                    atualizarCampo();
-                    renderizarLista();
-                }
-            };
-        });
-
-        function handleDrop(e) {
-            e.preventDefault();
-            this.classList.remove('drag-over');
-            const jogId = e.dataTransfer.getData('text/plain');
-            const slotId = this.id;
-
-            // Remove o jogador de qualquer outro slot que ele esteja
-            Object.keys(escalacaoAtual).forEach(key => {
-                if (escalacaoAtual[key] === jogId) delete escalacaoAtual[key];
-            });
-
-            // Coloca no novo slot
-            escalacaoAtual[slotId] = jogId;
-            
-            atualizarCampo();
-            renderizarLista();
         }
 
         function atualizarCampo() {
@@ -267,24 +248,24 @@
 
                 if (jog) {
                     slot.classList.add('filled');
-                    slot.querySelector('.slot-circle').innerText = jog.forca;
-                    slot.querySelector('.slot-circle').style.background = `url('https://cdn-icons-png.flaticon.com/512/847/847969.png') center/cover`; // Placeholder de rosto ou numero
-                    slot.querySelector('.slot-circle').innerText = jog.pos; // Ou numero da camisa
-                    slot.querySelector('.slot-name').innerText = jog.nome.split(' ')[0]; // Primeiro nome
-                    slot.querySelector('.slot-ovr').innerText = jog.forca;
+                    slot.querySelector('.slot-circle').innerText = jog.pos;
+                    slot.querySelector('.slot-name').innerText = jog.nome.split(' ')[0];
                     
-                    // Aviso de saúde
-                    if(jog.saude < 60) slot.classList.add('low-health');
-                    else slot.classList.remove('low-health');
+                    // Verifica capitão visualmente
+                    const selectCapitao = document.getElementById('role-capitao');
+                    if (jog.id === selectCapitao.value || jog.id === funcoesAtuais.capitao) {
+                        slot.classList.add('is-captain');
+                    } else {
+                        slot.classList.remove('is-captain');
+                    }
 
                     forcaTotal += jog.forca;
                     count++;
                 } else {
                     slot.classList.remove('filled');
+                    slot.classList.remove('is-captain');
                     slot.querySelector('.slot-circle').innerText = slot.dataset.role;
-                    slot.querySelector('.slot-circle').style.background = 'rgba(0,0,0,0.3)';
                     slot.querySelector('.slot-name').innerText = "Vazio";
-                    slot.classList.remove('low-health');
                 }
             });
 
@@ -292,132 +273,162 @@
             document.getElementById('team-str').innerText = count === 11 ? media : `${media} (Incompleto)`;
         }
 
-        function autoEscalar(silencioso = false) {
-            if(!silencioso && !confirm("Substituir a escalação atual pelos melhores jogadores disponíveis?")) return;
+        function povoarDropdowns() {
+            // Pega apenas os jogadores que estão no campo
+            const titularesIds = Object.values(escalacaoAtual);
+            const titulares = meuTime.elenco.filter(j => titularesIds.includes(j.id));
+            
+            // Ordena por força para facilitar escolha
+            titulares.sort((a,b) => b.forca - a.forca);
 
-            escalacaoAtual = {};
-            const usados = [];
+            const selects = ['capitao', 'penalti', 'falta', 'escanteioD', 'escanteioE'];
 
-            // Mapeamento simples de posições ideais
-            const slotsMap = {
-                'pos-GK': ['GOL'],
-                'pos-LB': ['LE', 'ZAG'],
-                'pos-CB1': ['ZAG'],
-                'pos-CB2': ['ZAG'],
-                'pos-RB': ['LD', 'ZAG'],
-                'pos-CDM': ['VOL', 'MEI'],
-                'pos-CM1': ['MEI', 'VOL'],
-                'pos-CM2': ['MEI', 'ATA'],
-                'pos-LW': ['ATA', 'MEI'],
-                'pos-ST': ['ATA'],
-                'pos-RW': ['ATA', 'MEI']
-            };
-
-            Object.keys(slotsMap).forEach(slotId => {
-                const posPreferencia = slotsMap[slotId];
-                // Busca o melhor jogador para a posição que tenha saúde > 50 e não esteja usado
-                let melhor = null;
+            selects.forEach(tipo => {
+                const el = document.getElementById(`role-${tipo}`);
+                const valorAtual = el.value || funcoesAtuais[tipo]; // Mantém o que estava selecionado se possível
                 
-                // Tenta achar da posição exata primeiro
-                for(let pos of posPreferencia) {
-                    const candidatos = meuTime.elenco.filter(j => j.pos === pos && !usados.includes(j.id) && (j.saude === undefined || j.saude > 50));
-                    candidatos.sort((a,b) => b.forca - a.forca);
-                    if(candidatos.length > 0) {
-                        melhor = candidatos[0];
-                        break;
-                    }
-                }
+                el.innerHTML = '<option value="">-- Selecione --</option>';
+                
+                titulares.forEach(jog => {
+                    const opt = document.createElement('option');
+                    opt.value = jog.id;
+                    opt.innerText = `[${jog.pos}] ${jog.nome} (${jog.forca})`;
+                    if (jog.id === valorAtual) opt.selected = true;
+                    el.appendChild(opt);
+                });
 
-                // Se não achou (ou todos cansados), pega qualquer um de linha (exceto GOL)
-                if(!melhor && !slotId.includes('GK')) {
-                    const sobra = meuTime.elenco.filter(j => j.pos !== 'GOL' && !usados.includes(j.id));
-                    sobra.sort((a,b) => b.forca - a.forca);
-                    if(sobra.length > 0) melhor = sobra[0];
-                }
-
-                if (melhor) {
-                    escalacaoAtual[slotId] = melhor.id;
-                    usados.push(melhor.id);
+                // Se o valor selecionado anteriormente não está mais no campo, reseta
+                if (valorAtual && !titularesIds.includes(valorAtual)) {
+                    el.value = "";
                 }
             });
-
-            atualizarCampo();
-            renderizarLista();
-        }
-
-        function salvarTime() {
-            // Verifica se tem 11
-            const titulares = Object.keys(escalacaoAtual).length;
-            if (titulares < 11) {
-                alert(`Atenção: Você escalou apenas ${titulares} jogadores. O time entrará incompleto!`);
-            }
-
-            // Salva no LocalStorage para o Engine ler
-            localStorage.setItem('brfutebol_formacao', JSON.stringify(escalacaoAtual));
             
-            // Feedback
-            const btn = document.querySelector('.btn-save');
-            const originalText = btn.innerText;
-            btn.innerText = "SALVO! ✅";
-            btn.style.background = "#fff";
-            setTimeout(() => {
-                btn.innerText = originalText;
-                btn.style.background = "var(--green)";
-                window.location.href = 'dashboard.html';
-            }, 800);
+            atualizarIconesFuncao();
         }
 
-        // Mobile touch support fix para DragDrop simples (ou use biblioteca, aqui é fallback básico)
-        let selectedPlayerId = null;
-        function selecionarParaTroca(id) {
-            if(selectedPlayerId === id) {
-                selectedPlayerId = null;
-                renderizarLista(); // remove destaque
-                return;
+        function atualizarIconesFuncao() {
+            // Atualiza visual do campo (Badge de Capitão)
+            const idCapitao = document.getElementById('role-capitao').value;
+            document.querySelectorAll('.slot').forEach(slot => {
+                const jogId = escalacaoAtual[slot.id];
+                if (jogId && jogId === idCapitao) slot.classList.add('is-captain');
+                else slot.classList.remove('is-captain');
+            });
+        }
+
+        // --- LÓGICA DE DRAG & DROP E CLIQUES ---
+        function handleDragStart(e) {
+            this.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', this.id.replace('card-', ''));
+        }
+        function handleDragEnd(e) { this.classList.remove('dragging'); }
+
+        document.querySelectorAll('.slot').forEach(slot => {
+            slot.addEventListener('dragover', e => { e.preventDefault(); slot.style.transform = 'translate(-50%, -50%) scale(1.1)'; });
+            slot.addEventListener('dragleave', e => { slot.style.transform = 'translate(-50%, -50%) scale(1)'; });
+            slot.addEventListener('drop', handleDrop);
+            slot.onclick = () => removerJogador(slot.id);
+        });
+
+        function handleDrop(e) {
+            e.preventDefault();
+            this.style.transform = 'translate(-50%, -50%) scale(1)';
+            const jogId = e.dataTransfer.getData('text/plain');
+            
+            // Remove de outro slot se já estiver escalado
+            Object.keys(escalacaoAtual).forEach(k => { if(escalacaoAtual[k]===jogId) delete escalacaoAtual[k]; });
+            
+            escalacaoAtual[this.id] = jogId;
+            renderizarLista();
+            atualizarCampo();
+            povoarDropdowns(); // Atualiza dropdowns pois entrou gente nova
+        }
+
+        function removerJogador(slotId) {
+            if (escalacaoAtual[slotId]) {
+                delete escalacaoAtual[slotId];
+                renderizarLista();
+                atualizarCampo();
+                povoarDropdowns(); // Atualiza dropdowns pois saiu gente
             }
-            selectedPlayerId = id;
-            // Visual feedback (adicionar classe selected manualmente nos cards)
+        }
+
+        // --- SISTEMA DE SELEÇÃO POR CLIQUE (MOBILE) ---
+        let selectedId = null;
+        function selecionarParaTroca(id) {
+            if (selectedId === id) { selectedId = null; renderizarLista(); return; }
+            selectedId = id;
             document.querySelectorAll('.player-card').forEach(c => c.style.borderColor = '#333');
             document.getElementById(`card-${id}`).style.borderColor = 'var(--gold)';
             
-            // Agora espera clique no slot
+            // Sobrescreve click dos slots temporariamente
             document.querySelectorAll('.slot').forEach(slot => {
                 slot.onclick = function() {
-                    if (selectedPlayerId) {
-                        // Remove de onde estava
-                        Object.keys(escalacaoAtual).forEach(key => {
-                            if (escalacaoAtual[key] === selectedPlayerId) delete escalacaoAtual[key];
-                        });
-                        
-                        escalacaoAtual[this.id] = selectedPlayerId;
-                        selectedPlayerId = null;
-                        atualizarCampo();
+                    if (selectedId) {
+                        Object.keys(escalacaoAtual).forEach(k => { if(escalacaoAtual[k]===selectedId) delete escalacaoAtual[k]; });
+                        escalacaoAtual[this.id] = selectedId;
+                        selectedId = null;
                         renderizarLista();
-                        
-                        // Reseta o onclick padrão do slot para remover
-                        configurarSlotsParaRemover();
+                        atualizarCampo();
+                        povoarDropdowns();
+                        // Restaura clique normal
+                        document.querySelectorAll('.slot').forEach(s => s.onclick = () => removerJogador(s.id));
                     } else {
-                        // Comportamento normal de remover
-                        if (escalacaoAtual[this.id]) {
-                            delete escalacaoAtual[this.id];
-                            atualizarCampo();
-                            renderizarLista();
-                        }
+                        removerJogador(this.id);
                     }
                 }
             });
         }
-        
-        function configurarSlotsParaRemover() {
-             document.querySelectorAll('.slot').forEach(slot => {
-                slot.onclick = () => {
-                    if (escalacaoAtual[slot.id]) {
-                        delete escalacaoAtual[slot.id];
-                        atualizarCampo();
-                        renderizarLista();
-                    }
-                };
-             });
+
+        function autoEscalar(silencioso = false) {
+            if(!silencioso && !confirm("Auto-escalar o time com os melhores jogadores saudáveis?")) return;
+            
+            escalacaoAtual = {};
+            const usados = [];
+            const map = { 'pos-GK':['GOL'], 'pos-LB':['LE','ZAG'], 'pos-CB1':['ZAG'], 'pos-CB2':['ZAG'], 'pos-RB':['LD','ZAG'], 'pos-CDM':['VOL','MEI'], 'pos-CM1':['MEI','VOL'], 'pos-CM2':['MEI','ATA'], 'pos-LW':['ATA'], 'pos-ST':['ATA'], 'pos-RW':['ATA'] };
+
+            Object.keys(map).forEach(slotId => {
+                const prefs = map[slotId];
+                let melhor = null;
+                for(let pos of prefs) {
+                    const c = meuTime.elenco.filter(j => j.pos === pos && !usados.includes(j.id) && (j.saude === undefined || j.saude > 50));
+                    c.sort((a,b) => b.forca - a.forca);
+                    if(c.length > 0) { melhor = c[0]; break; }
+                }
+                if(melhor) { escalacaoAtual[slotId] = melhor.id; usados.push(melhor.id); }
+            });
+
+            renderizarLista();
+            atualizarCampo();
+            povoarDropdowns();
+            
+            // Auto-define Capitão (Melhor Overall)
+            if(usados.length > 0) {
+                const capitao = meuTime.elenco.find(j => j.id === usados[0]); // Já está ordenado por força na lógica acima? Não necessariamente, mas é um bom chute
+                document.getElementById('role-capitao').value = capitao.id;
+            }
+        }
+
+        function salvarTudo() {
+            // Salva Escalação
+            const titulares = Object.keys(escalacaoAtual).length;
+            if (titulares < 11) alert("Atenção: Time incompleto!");
+            localStorage.setItem('brfutebol_formacao', JSON.stringify(escalacaoAtual));
+
+            // Salva Funções
+            const funcoes = {
+                capitao: document.getElementById('role-capitao').value,
+                penalti: document.getElementById('role-penalti').value,
+                falta: document.getElementById('role-falta').value,
+                escanteioD: document.getElementById('role-escanteioD').value,
+                escanteioE: document.getElementById('role-escanteioE').value
+            };
+            localStorage.setItem('brfutebol_funcoes', JSON.stringify(funcoes));
+
+            // Feedback
+            const btn = document.querySelector('.btn-save');
+            btn.innerText = "SALVO! ✅";
+            setTimeout(() => { btn.innerText = "SALVAR TÁTICA"; window.location.href='dashboard.html'; }, 800);
         }
 
     </script>
