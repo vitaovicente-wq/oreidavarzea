@@ -32,7 +32,7 @@
             overflow: hidden;
         }
 
-        /* SIDEBAR */
+        /* BARRA LATERAL */
         aside {
             background-color: var(--sidebar);
             border-right: 1px solid var(--border);
@@ -67,22 +67,21 @@
         .nav-btn:hover { background: var(--card); color: #fff; border-color: #fff; }
         .nav-btn.active { background: var(--green); color: #0d1115; border-color: var(--green); }
 
-        /* MAIN CONTENT */
+        /* CONTEÚDO PRINCIPAL */
         main {
             display: flex;
             flex-direction: column;
             overflow-y: auto;
         }
 
-        /* HEADER */
+        /* CABEÇALHO */
         header {
-            background: rgba(22, 27, 34, 0.9);
+            background: rgba(22, 27, 34, 0.95);
             padding: 20px 40px;
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            backdrop-filter: blur(10px);
             position: sticky; top: 0; z-index: 10;
         }
 
@@ -94,7 +93,7 @@
         .game-info { text-align: right; }
         .year-badge { background: var(--card); padding: 5px 15px; border-radius: 20px; border: 1px solid var(--border); font-weight: bold; }
 
-        /* DASHBOARD GRID */
+        /* GRID DO DASHBOARD */
         .dashboard-grid {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -113,7 +112,7 @@
             display: flex; flex-direction: column;
         }
 
-        /* NEXT MATCH CARD (HERO) */
+        /* CARD DO PRÓXIMO JOGO */
         .match-card {
             background: linear-gradient(160deg, #1e272e 0%, #161b22 100%);
             border-top: 4px solid var(--green);
@@ -147,26 +146,28 @@
         .play-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46, 204, 113, 0.5); }
         .play-btn:disabled { background: #444; color: #888; cursor: not-allowed; transform: none; box-shadow: none; }
 
-        /* SQUAD TABLE */
-        .squad-card { height: 500px; overflow: hidden; }
+        /* TABELA DE ELENCO */
+        .squad-card { height: 600px; overflow: hidden; }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
         .table-container { overflow-y: auto; height: 100%; }
         
         table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; color: var(--text-muted); font-size: 0.8rem; padding: 10px; position: sticky; top: 0; background: var(--card); }
-        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
-        .pos-tag { background: #333; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
-        .ovr-high { color: var(--green); font-weight: bold; }
-        .ovr-mid { color: var(--gold); font-weight: bold; }
+        th { text-align: left; color: var(--text-muted); font-size: 0.75rem; padding: 10px; position: sticky; top: 0; background: var(--card); text-transform: uppercase; }
+        td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; vertical-align: middle; }
         
-        /* FINANCE CARD */
+        .pos-tag { background: #333; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; width: 35px; text-align: center; display: inline-block; }
+        
+        /* BARRINHA DE SAÚDE */
+        .health-bar-container { width: 100%; background: #333; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 5px; }
+        .health-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+
+        /* FINANÇAS */
         .finance-item { margin-bottom: 15px; }
         .finance-label { font-size: 0.8rem; color: var(--text-muted); }
         .finance-value { font-size: 1.5rem; font-weight: bold; color: var(--text); }
         .positive { color: var(--green); }
-        .negative { color: var(--red); }
-
-        /* SEASON END STATE */
+        
+        /* FIM DE TEMPORADA */
         .season-end { display: none; text-align: center; padding: 40px; }
         .season-end h1 { color: var(--gold); }
 
@@ -193,7 +194,7 @@
                 </div>
             </div>
             <div class="game-info">
-                <div class="year-badge" id="header-ano">2026</div>
+                <div class="year-badge">Temporada <span id="header-ano">2026</span></div>
             </div>
         </header>
 
@@ -206,12 +207,12 @@
                     <div class="scoreboard">
                         <div class="team-display">
                             <img id="home-logo" class="big-crest">
-                            <span id="home-name" style="font-weight:bold;">Casa</span>
+                            <span id="home-name" style="font-weight:bold; margin-top:5px;">Casa</span>
                         </div>
                         <div class="vs-tag">VS</div>
                         <div class="team-display">
                             <img id="away-logo" class="big-crest">
-                            <span id="away-name" style="font-weight:bold;">Fora</span>
+                            <span id="away-name" style="font-weight:bold; margin-top:5px;">Fora</span>
                         </div>
                     </div>
                     <button class="play-btn" onclick="jogarPartida()">JOGAR PARTIDA</button>
@@ -219,8 +220,8 @@
 
                 <div class="card match-card season-end" id="card-fim-temporada">
                     <h1>FIM DE TEMPORADA</h1>
-                    <p>O ano acabou. Prepare-se para a renovação de contratos, aposentadorias e o sorteio do novo calendário.</p>
-                    <button class="play-btn" style="background:var(--gold);" onclick="virarTemporada()">INICIAR NOVA TEMPORADA</button>
+                    <p style="margin-bottom:20px; color:#aaa;">O ano acabou. Prepare-se para a renovação de contratos, aposentadorias e o sorteio do novo calendário.</p>
+                    <button class="play-btn" style="background:var(--gold); color:#000;" onclick="virarTemporada()">INICIAR NOVA TEMPORADA</button>
                 </div>
 
                 <div class="card squad-card">
@@ -232,11 +233,12 @@
                         <table id="squad-table">
                             <thead>
                                 <tr>
-                                    <th>POS</th>
+                                    <th style="width:50px;">POS</th>
                                     <th>NOME</th>
                                     <th>IDADE</th>
                                     <th>OVR</th>
                                     <th>SALÁRIO</th>
+                                    <th style="width:100px;">SAÚDE</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -263,12 +265,13 @@
                 <div class="card" style="flex-grow: 1;">
                     <div class="card-header">DIRETORIA</div>
                     <p style="color:#aaa; font-size:0.9rem; line-height: 1.6;">
-                        A diretoria espera um bom desempenho nesta temporada. Mantenha as finanças em dia e busque o topo da tabela.
+                        A diretoria espera um bom desempenho. Fique atento à saúde dos jogadores veteranos, eles cansam mais rápido!
                     </p>
                     <hr style="border:0; border-top:1px solid #333; margin: 15px 0;">
-                    <div style="font-size:0.8rem; color:#666;">
-                        <p>ℹ️ Janela de transferências: ABERTA</p>
-                        <p>ℹ️ Próximo Pagamento: Dia 05</p>
+                    <div style="font-size:0.85rem; color:#888; display:flex; flex-direction:column; gap:10px;">
+                        <div>🟢 Saúde > 80%: Ideal para jogar</div>
+                        <div>🟡 Saúde < 80%: Risco de lesão leve</div>
+                        <div>🔴 Saúde < 60%: <b>POUPE O JOGADOR!</b></div>
                     </div>
                 </div>
 
@@ -284,18 +287,21 @@
             // 1. Carrega o jogo salvo
             gameState = Engine.carregarJogo();
             if (!gameState) {
-                window.location.href = 'index.html'; // Se não tem save, volta pro início
+                window.location.href = 'index.html'; 
                 return;
             }
 
-            // 2. Encontra o objeto do meu time (na Serie A, B, C, etc)
+            // 2. Busca o time do usuário no Engine
             meuTime = Engine.encontrarTime(gameState, gameState.meuTime);
+            
+            // Tratamento de erro caso o time não exista (bug de save antigo)
             if (!meuTime) {
-                alert("Erro crítico: Time não encontrado no save.");
+                alert("Erro: Time não encontrado. Inicie um novo jogo.");
+                window.location.href = 'index.html';
                 return;
             }
 
-            // 3. Inicializa a Interface
+            // 3. Renderiza a tela
             atualizarHeader();
             atualizarProximoJogo();
             atualizarElenco();
@@ -313,7 +319,7 @@
             const semana = gameState.semanaAtual - 1;
             const evento = gameState.calendarioUsuario[semana];
 
-            // Verifica se acabou a temporada
+            // Se não tem evento, é fim de temporada
             if (!evento) {
                 document.getElementById('card-proximo-jogo').style.display = 'none';
                 document.getElementById('card-fim-temporada').style.display = 'flex';
@@ -322,7 +328,7 @@
 
             document.getElementById('match-competition').innerText = `${evento.nome} (${evento.tipo})`;
 
-            // Acha o jogo do meu time na rodada
+            // Procura o jogo do meu time na rodada
             const jogo = evento.jogos.find(j => j.casa === meuTime.nome || j.fora === meuTime.nome);
 
             if (jogo) {
@@ -333,7 +339,7 @@
                 document.getElementById('home-name').innerText = jogo.casa;
                 document.getElementById('away-name').innerText = jogo.fora;
 
-                // Escudos
+                // Tenta carregar escudos, usa genérico se falhar
                 const escudoAdv = advObj ? advObj.escudo : 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
                 
                 if (souCasa) {
@@ -344,10 +350,13 @@
                     document.getElementById('away-logo').src = meuTime.escudo;
                 }
             } else {
-                // Time de folga na rodada
+                // Caso de Folga
                 document.getElementById('home-name').innerText = "FOLGA";
+                document.getElementById('home-logo').src = "";
                 document.getElementById('away-name').innerText = "---";
-                document.querySelector('.play-btn').innerText = "SIMULAR FOLGA";
+                document.getElementById('away-logo').src = "";
+                const btn = document.querySelector('.play-btn');
+                btn.innerText = "SIMULAR SEMANA (FOLGA)";
             }
         }
 
@@ -356,7 +365,7 @@
             tbody.innerHTML = '';
             document.getElementById('squad-count').innerText = `${meuTime.elenco.length} Jogadores`;
 
-            // Ordena por Posição e Força
+            // Ordenação: Goleiros > Zagueiros > Meias > Ataque > Força
             const ordemPos = { 'GOL': 1, 'ZAG': 2, 'LD': 3, 'LE': 3, 'VOL': 4, 'MEI': 5, 'ATA': 6 };
             
             meuTime.elenco.sort((a, b) => {
@@ -367,9 +376,16 @@
             });
 
             meuTime.elenco.forEach(jog => {
+                // Cor do Overall
                 let corOvr = '#fff';
                 if (jog.forca >= 80) corOvr = 'var(--green)';
                 else if (jog.forca >= 75) corOvr = 'var(--gold)';
+
+                // Lógica da Barra de Saúde
+                const saude = jog.saude !== undefined ? jog.saude : 100;
+                let corBarra = '#2ecc71'; // Verde
+                if(saude < 80) corBarra = '#f1c40f'; // Amarelo
+                if(saude < 60) corBarra = '#e74c3c'; // Vermelho
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -377,7 +393,12 @@
                     <td style="font-weight:500;">${jog.nome}</td>
                     <td style="color:#888;">${jog.idade}</td>
                     <td style="color:${corOvr}; font-weight:bold;">${jog.forca}</td>
-                    <td style="color:#aaa; font-family:monospace;">${Engine.formatarDinheiro(jog.salario)}</td>
+                    <td style="color:#aaa; font-family:monospace; font-size:0.8rem;">${Engine.formatarDinheiro(jog.salario)}</td>
+                    <td>
+                        <div class="health-bar-container" title="Saúde: ${Math.floor(saude)}%">
+                            <div class="health-bar-fill" style="width:${saude}%; background-color:${corBarra};"></div>
+                        </div>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -387,13 +408,16 @@
             if (!meuTime.financas) Engine.inicializarFinancas(meuTime);
             
             document.getElementById('fin-caixa').innerText = Engine.formatarDinheiro(meuTime.financas.caixa);
-            document.getElementById('fin-folha').innerText = Engine.formatarDinheiro(meuTime.financas.despesas.folhaSalarial / 12);
+            // Mostra folha salarial mensal aproximada
+            const folhaMensal = Math.floor(meuTime.financas.despesas.folhaSalarial / 13);
+            document.getElementById('fin-folha').innerText = Engine.formatarDinheiro(folhaMensal);
         }
 
         function jogarPartida() {
             const btn = document.querySelector('.play-btn');
+            
             if(btn.innerText.includes("FOLGA")) {
-                // Simula folga
+                // Lógica de simular folga
                 btn.disabled = true;
                 btn.innerText = "SIMULANDO...";
                 setTimeout(() => {
@@ -401,14 +425,15 @@
                     window.location.reload();
                 }, 1000);
             } else {
-                // Vai para o jogo 3D/Simulado
+                // Ir para a tela de partida
                 window.location.href = 'partida.html';
             }
         }
 
         function virarTemporada() {
-            if (confirm("Tem certeza? O ano irá virar e os jogadores envelhecerão.")) {
+            if (confirm("Deseja encerrar o ano e iniciar a próxima temporada? Os jogadores vão envelhecer e evoluir.")) {
                 Engine.virarTemporada(gameState);
+                alert("Feliz Ano Novo! Temporada atualizada.");
                 window.location.reload();
             }
         }
