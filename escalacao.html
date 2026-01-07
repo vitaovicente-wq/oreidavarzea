@@ -11,8 +11,8 @@
         * { box-sizing: border-box; }
         body { font-family:'Segoe UI',sans-serif; background:var(--bg); color:var(--text); margin:0; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
 
-        /* HEADER COMPACTO */
-        header { height: 50px; background: rgba(22,27,34,0.95); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index: 10; }
+        /* HEADER */
+        header { height: 50px; flex-shrink: 0; background: rgba(22,27,34,0.95); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index: 10; }
         .btn-back { background:none; border:1px solid #444; color:#fff; padding:5px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size: 0.8rem; }
         .btn-back:hover { background:#333; }
         
@@ -22,12 +22,19 @@
         .btn-save { background:var(--green); border:none; color:#000; padding:6px 20px; border-radius:20px; cursor:pointer; font-weight:800; font-size:0.8rem; text-transform:uppercase; box-shadow:0 0 10px rgba(46,204,113,0.3); }
         .btn-save:hover { transform:scale(1.05); }
 
-        /* LAYOUT 3 COLUNAS FLUIDO */
-        .container { display:grid; grid-template-columns: 280px 1fr 250px; height:calc(100vh - 50px); }
+        /* LAYOUT PRINCIPAL - GARANTE QUE OCUPE 100% DA TELA SEM VAZAR */
+        .container { 
+            display: grid; 
+            grid-template-columns: 280px 1fr 250px; 
+            height: calc(100vh - 50px); /* Tira o tamanho do header */
+            width: 100%;
+            overflow: hidden;
+        }
         
-        .panel { background:var(--panel); border-right:1px solid var(--border); display:flex; flex-direction:column; }
+        /* PAINÉIS LATERAIS */
+        .panel { background:var(--panel); border-right:1px solid var(--border); display:flex; flex-direction:column; height: 100%; overflow: hidden; }
         .panel-right { border-left:1px solid var(--border); border-right:none; }
-        .panel-header { padding:10px; border-bottom:1px solid var(--border); font-weight:bold; text-transform:uppercase; color:var(--gold); display:flex; justify-content:space-between; align-items:center; font-size: 0.9rem; }
+        .panel-header { padding:10px; border-bottom:1px solid var(--border); font-weight:bold; text-transform:uppercase; color:var(--gold); display:flex; justify-content:space-between; align-items:center; font-size: 0.9rem; flex-shrink: 0; }
         .scroll-area { flex:1; overflow-y:auto; padding:10px; }
 
         /* LISTA DE JOGADORES */
@@ -38,44 +45,57 @@
         .player-card:hover { border-color:var(--green); background:#252e33; }
         .player-card.used { opacity:0.5; filter:grayscale(1); border-style: dashed; }
         
-        .p-pos { background:#000; color:#aaa; font-size:0.7rem; padding:4px 0; border-radius:3px; font-weight:bold; width:30px; text-align:center; margin-right:8px; display: flex; align-items: center; justify-content: center; height: 30px; }
-        
+        .p-pos { background:#000; color:#aaa; font-size:0.7rem; padding:0; border-radius:3px; font-weight:bold; width:30px; text-align:center; margin-right:8px; display: flex; align-items: center; justify-content: center; height: 30px; }
         .p-info { flex:1; display:flex; flex-direction:column; gap:2px; min-width: 0; }
         .p-name { font-weight:600; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .p-carac { font-size: 0.7rem; color: var(--blue); font-style: italic; }
-
-        /* SAÚDE NA LISTA */
+        
         .health-wrapper { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
-        .health-icon { font-size: 0.7rem; }
+        .health-icon { font-size: 0.7rem; line-height: 1; }
         .health-track { flex:1; height: 4px; background: #000; border-radius: 2px; overflow: hidden; }
         .health-fill { height: 100%; border-radius: 2px; }
         .health-val { font-size: 0.65rem; color: #888; width: 25px; text-align: right; }
-
         .p-ovr { font-weight:900; color:var(--gold); font-size:1rem; margin-left: 8px; }
 
-        /* CAMPO HORIZONTAL */
-        .field-area { background:#0a0a0a; display:flex; justify-content:center; align-items:center; position:relative; overflow:hidden; padding: 20px; }
+        /* ÁREA DO CAMPO (CENTRO) - CORREÇÃO DE SCROLL */
+        .field-area { 
+            background: #0a0a0a; 
+            position: relative; 
+            overflow: hidden; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* O CAMPO EM SI (RESPONSIVO) */
         .pitch {
-            width: 95%; max-width: 800px; 
-            aspect-ratio: 1.5; /* Mantém proporção de campo */
+            /* Tamanho inteligente: Cresce até 95% da largura ou altura, o que limitar primeiro */
+            width: 100%;
+            height: 100%;
+            max-width: 90vh; /* Impede que fique largo demais se a tela for wide */
+            max-height: 90%; 
+            aspect-ratio: 1.5; /* Mantém formato retangular de campo */
+            
             background: linear-gradient(90deg, #27ae60 0%, #2ecc71 50%, #27ae60 100%);
             border: 3px solid #fff; border-radius: 4px;
             position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             transition: all 0.5s ease;
         }
-        /* Linha do Meio (Vertical agora) */
-        .pitch::before { content:''; position:absolute; left:50%; top:0; width:2px; height:100%; background:rgba(255,255,255,0.4); transform:translateX(-50%); }
-        /* Círculo Central */
-        .pitch::after { content:''; position:absolute; top:50%; left:50%; width:100px; height:100px; border:2px solid rgba(255,255,255,0.4); border-radius:50%; transform:translate(-50%, -50%); }
         
-        /* Grandes Áreas */
-        .box { position:absolute; width:12%; height:40%; border:2px solid rgba(255,255,255,0.4); top:50%; transform:translateY(-50%); }
+        /* LINHAS DO CAMPO */
+        .pitch::before { content:''; position:absolute; left:50%; top:0; width:2px; height:100%; background:rgba(255,255,255,0.4); transform:translateX(-50%); }
+        .pitch::after { content:''; position:absolute; top:50%; left:50%; width:18%; padding-top: 18%; border:2px solid rgba(255,255,255,0.4); border-radius:50%; transform:translate(-50%, -50%); }
+        .box { position:absolute; width:15%; height:45%; border:2px solid rgba(255,255,255,0.4); top:50%; transform:translateY(-50%); }
         .box-left { left:0; border-left:none; } 
         .box-right { right:0; border-right:none; }
 
-        /* SLOTS NO CAMPO */
+        /* SLOTS */
         .slot {
-            position: absolute; width: 70px; height: 60px; transform: translate(-50%, -50%);
+            position: absolute; width: 12%; height: 15%; /* Tamanho relativo ao campo */
+            transform: translate(-50%, -50%);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             cursor: pointer; transition: top 0.5s ease, left 0.5s ease; z-index: 2;
         }
@@ -87,9 +107,9 @@
         }
         .slot.filled .slot-circle { background: var(--card); border: 2px solid var(--green); color:var(--gold); }
         
-        .slot-name { background: rgba(0,0,0,0.8); color: #fff; padding: 1px 5px; border-radius: 3px; font-size: 0.65rem; margin-top: 2px; white-space: nowrap; max-width: 80px; overflow:hidden; text-overflow:ellipsis; }
+        .slot-name { background: rgba(0,0,0,0.8); color: #fff; padding: 1px 5px; border-radius: 3px; font-size: 0.65rem; margin-top: 2px; white-space: nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 100%; }
         
-        /* SAÚDE NO CAMPO */
+        /* SAÚDE MINI */
         .slot-health-container { display: none; align-items: center; gap: 2px; background: rgba(0,0,0,0.7); padding: 1px 3px; border-radius: 3px; margin-top: 1px; }
         .slot.filled .slot-health-container { display: flex; }
         .slot-health-icon { font-size: 0.5rem; }
@@ -113,7 +133,6 @@
 
     <header>
         <button class="btn-back" onclick="window.location.href='dashboard.html'">⬅ Voltar</button>
-        
         <div class="header-controls">
             <select id="formation-select" class="formation-select" onchange="mudarFormacao()">
                 <option value="4-3-3">4-3-3 (Padrão)</option>
@@ -126,12 +145,10 @@
                 FORÇA: <span id="team-str" style="color:#fff; font-size:1rem;">0</span>
             </div>
         </div>
-
         <button class="btn-save" onclick="salvarTudo()">SALVAR</button>
     </header>
 
     <div class="container">
-        
         <div class="panel">
             <div class="panel-header">
                 <span>Elenco</span>
@@ -177,64 +194,64 @@
         let funcoesAtuais = { capitao: null, penalti: null, falta: null, escanteioD: null, escanteioE: null };
         let formacaoAtual = "4-3-3";
 
-        // COORDENADAS HORIZONTAIS (Esquerda = GOL, Direita = ATAQUE)
+        // COORDENADAS HORIZONTAIS AJUSTADAS (Esquerda = GOL, Direita = ATAQUE)
         const layouts = {
             "4-3-3": [
-                {id:"slot-1",top:"50%",left:"5%",role:"GOL"}, // GK
-                {id:"slot-2",top:"15%",left:"25%",role:"LE"}, // LE (Cima)
-                {id:"slot-3",top:"35%",left:"20%",role:"ZAG"}, // ZAG
-                {id:"slot-4",top:"65%",left:"20%",role:"ZAG"}, // ZAG
-                {id:"slot-5",top:"85%",left:"25%",role:"LD"}, // LD (Baixo)
-                {id:"slot-6",top:"50%",left:"40%",role:"VOL"}, // VOL
-                {id:"slot-7",top:"30%",left:"55%",role:"MEI"}, // MEI
-                {id:"slot-8",top:"70%",left:"55%",role:"MEI"}, // MEI
-                {id:"slot-9",top:"20%",left:"80%",role:"ATA"}, // PTE
-                {id:"slot-10",top:"50%",left:"85%",role:"ATA"},// ATA
-                {id:"slot-11",top:"80%",left:"80%",role:"ATA"} // PTD
+                {id:"slot-1",top:"50%",left:"5%",role:"GOL"},
+                {id:"slot-2",top:"15%",left:"25%",role:"LE"},
+                {id:"slot-3",top:"35%",left:"20%",role:"ZAG"},
+                {id:"slot-4",top:"65%",left:"20%",role:"ZAG"},
+                {id:"slot-5",top:"85%",left:"25%",role:"LD"},
+                {id:"slot-6",top:"50%",left:"40%",role:"VOL"},
+                {id:"slot-7",top:"30%",left:"55%",role:"MEI"},
+                {id:"slot-8",top:"70%",left:"55%",role:"MEI"},
+                {id:"slot-9",top:"20%",left:"80%",role:"ATA"},
+                {id:"slot-10",top:"50%",left:"85%",role:"ATA"},
+                {id:"slot-11",top:"80%",left:"80%",role:"ATA"}
             ],
             "4-4-2": [
                 {id:"slot-1",top:"50%",left:"5%",role:"GOL"},
-                {id:"slot-2",top:"15%",left:"25%",role:"LE"},
-                {id:"slot-3",top:"38%",left:"20%",role:"ZAG"},
-                {id:"slot-4",top:"62%",left:"20%",role:"ZAG"},
-                {id:"slot-5",top:"85%",left:"25%",role:"LD"},
-                {id:"slot-6",top:"38%",left:"45%",role:"VOL"},
-                {id:"slot-7",top:"62%",left:"45%",role:"VOL"},
-                {id:"slot-8",top:"15%",left:"60%",role:"MEI"}, // MEI Ala
-                {id:"slot-9",top:"85%",left:"60%",role:"MEI"}, // MEI Ala
+                {id:"slot-2",top:"10%",left:"25%",role:"LE"},
+                {id:"slot-3",top:"35%",left:"20%",role:"ZAG"},
+                {id:"slot-4",top:"65%",left:"20%",role:"ZAG"},
+                {id:"slot-5",top:"90%",left:"25%",role:"LD"},
+                {id:"slot-6",top:"35%",left:"45%",role:"VOL"},
+                {id:"slot-7",top:"65%",left:"45%",role:"VOL"},
+                {id:"slot-8",top:"15%",left:"60%",role:"MEI"}, 
+                {id:"slot-9",top:"85%",left:"60%",role:"MEI"},
                 {id:"slot-10",top:"35%",left:"85%",role:"ATA"},
                 {id:"slot-11",top:"65%",left:"85%",role:"ATA"}
             ],
             "3-5-2": [
                 {id:"slot-1",top:"50%",left:"5%",role:"GOL"},
-                {id:"slot-2",top:"25%",left:"20%",role:"ZAG"},
-                {id:"slot-3",top:"50%",left:"20%",role:"ZAG"},
-                {id:"slot-4",top:"75%",left:"20%",role:"ZAG"},
+                {id:"slot-2",top:"20%",left:"20%",role:"ZAG"},
+                {id:"slot-3",top:"50%",left:"18%",role:"ZAG"},
+                {id:"slot-4",top:"80%",left:"20%",role:"ZAG"},
                 {id:"slot-5",top:"35%",left:"40%",role:"VOL"},
                 {id:"slot-6",top:"65%",left:"40%",role:"VOL"},
-                {id:"slot-7",top:"10%",left:"50%",role:"MEI"}, // Ala
-                {id:"slot-8",top:"90%",left:"50%",role:"MEI"}, // Ala
-                {id:"slot-9",top:"50%",left:"60%",role:"MEI"}, // CAM
+                {id:"slot-7",top:"10%",left:"50%",role:"MEI"},
+                {id:"slot-8",top:"90%",left:"50%",role:"MEI"},
+                {id:"slot-9",top:"50%",left:"60%",role:"MEI"},
                 {id:"slot-10",top:"35%",left:"85%",role:"ATA"},
                 {id:"slot-11",top:"65%",left:"85%",role:"ATA"}
             ],
             "4-2-3-1": [
                 {id:"slot-1",top:"50%",left:"5%",role:"GOL"},
-                {id:"slot-2",top:"15%",left:"25%",role:"LE"},
-                {id:"slot-3",top:"38%",left:"20%",role:"ZAG"},
-                {id:"slot-4",top:"62%",left:"20%",role:"ZAG"},
-                {id:"slot-5",top:"85%",left:"25%",role:"LD"},
-                {id:"slot-6",top:"38%",left:"40%",role:"VOL"},
-                {id:"slot-7",top:"62%",left:"40%",role:"VOL"},
-                {id:"slot-8",top:"50%",left:"60%",role:"MEI"}, // CAM
-                {id:"slot-9",top:"20%",left:"75%",role:"ATA"}, // Ponta
-                {id:"slot-10",top:"50%",left:"85%",role:"ATA"}, // ST
-                {id:"slot-11",top:"80%",left:"75%",role:"ATA"}  // Ponta
+                {id:"slot-2",top:"10%",left:"25%",role:"LE"},
+                {id:"slot-3",top:"35%",left:"20%",role:"ZAG"},
+                {id:"slot-4",top:"65%",left:"20%",role:"ZAG"},
+                {id:"slot-5",top:"90%",left:"25%",role:"LD"},
+                {id:"slot-6",top:"35%",left:"40%",role:"VOL"},
+                {id:"slot-7",top:"65%",left:"40%",role:"VOL"},
+                {id:"slot-8",top:"50%",left:"60%",role:"MEI"},
+                {id:"slot-9",top:"20%",left:"75%",role:"ATA"},
+                {id:"slot-10",top:"50%",left:"85%",role:"ATA"},
+                {id:"slot-11",top:"80%",left:"75%",role:"ATA"}
             ],
             "3-4-3": [
                 {id:"slot-1",top:"50%",left:"5%",role:"GOL"},
                 {id:"slot-2",top:"20%",left:"20%",role:"ZAG"},
-                {id:"slot-3",top:"50%",left:"20%",role:"ZAG"},
+                {id:"slot-3",top:"50%",left:"18%",role:"ZAG"},
                 {id:"slot-4",top:"80%",left:"20%",role:"ZAG"},
                 {id:"slot-5",top:"15%",left:"45%",role:"MEI"},
                 {id:"slot-6",top:"40%",left:"45%",role:"VOL"},
@@ -437,7 +454,6 @@
             
             layout.forEach(posData => {
                 let melhor = meuTime.elenco.find(j => j.pos === posData.role && !usados.includes(j.id) && (j.saude === undefined || j.saude > 50));
-                
                 if(!melhor) {
                     if(posData.role === 'ATA') melhor = meuTime.elenco.find(j => (j.pos==='MEI'||j.pos==='ST') && !usados.includes(j.id));
                     if(posData.role === 'MEI') melhor = meuTime.elenco.find(j => (j.pos==='VOL'||j.pos==='ATA') && !usados.includes(j.id));
@@ -445,7 +461,6 @@
                     if(posData.role === 'LE' || posData.role === 'LD') melhor = meuTime.elenco.find(j => j.pos==='ZAG' && !usados.includes(j.id));
                 }
                 if(!melhor && posData.role !== 'GOL') melhor = meuTime.elenco.find(j => j.pos!=='GOL' && !usados.includes(j.id) && j.saude > 40);
-
                 if(melhor) { escalacaoAtual[posData.id] = melhor.id; usados.push(melhor.id); }
             });
 
