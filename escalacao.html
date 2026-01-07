@@ -8,90 +8,101 @@
     <script src="engine.js"></script>
     <style>
         :root { --bg:#0d1115; --panel:#161b22; --card:#1e272e; --text:#ecf0f1; --green:#2ecc71; --gold:#f1c40f; --red:#e74c3c; --blue:#3498db; --border:#30363d; }
+        * { box-sizing: border-box; }
         body { font-family:'Segoe UI',sans-serif; background:var(--bg); color:var(--text); margin:0; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
 
-        /* HEADER */
-        header { height: 60px; background: rgba(22,27,34,0.95); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index: 10; }
-        .btn-back { background:none; border:1px solid #444; color:#fff; padding:8px 15px; border-radius:5px; cursor:pointer; font-weight:bold; transition:0.2s; }
+        /* HEADER COMPACTO */
+        header { height: 50px; background: rgba(22,27,34,0.95); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index: 10; }
+        .btn-back { background:none; border:1px solid #444; color:#fff; padding:5px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size: 0.8rem; }
         .btn-back:hover { background:#333; }
         
         .header-controls { display:flex; gap:15px; align-items:center; }
-        .formation-select { background:#000; color:var(--gold); border:1px solid var(--border); padding:8px; border-radius:5px; font-weight:bold; cursor:pointer; outline:none; }
+        .formation-select { background:#000; color:var(--gold); border:1px solid var(--border); padding:5px; border-radius:4px; font-weight:bold; cursor:pointer; outline:none; font-size: 0.85rem;}
 
-        .btn-save { background:var(--green); border:none; color:#000; padding:10px 30px; border-radius:30px; cursor:pointer; font-weight:900; text-transform:uppercase; box-shadow:0 0 15px rgba(46,204,113,0.4); transition:0.2s; }
-        .btn-save:hover { transform:scale(1.05); box-shadow:0 0 25px rgba(46,204,113,0.6); }
+        .btn-save { background:var(--green); border:none; color:#000; padding:6px 20px; border-radius:20px; cursor:pointer; font-weight:800; font-size:0.8rem; text-transform:uppercase; box-shadow:0 0 10px rgba(46,204,113,0.3); }
+        .btn-save:hover { transform:scale(1.05); }
 
-        /* LAYOUT */
-        .container { display:grid; grid-template-columns: 320px 1fr 280px; height:calc(100vh - 60px); }
+        /* LAYOUT 3 COLUNAS FLUIDO */
+        .container { display:grid; grid-template-columns: 280px 1fr 250px; height:calc(100vh - 50px); }
         
         .panel { background:var(--panel); border-right:1px solid var(--border); display:flex; flex-direction:column; }
         .panel-right { border-left:1px solid var(--border); border-right:none; }
-        .panel-header { padding:15px; border-bottom:1px solid var(--border); font-weight:bold; text-transform:uppercase; color:var(--gold); display:flex; justify-content:space-between; align-items:center; }
+        .panel-header { padding:10px; border-bottom:1px solid var(--border); font-weight:bold; text-transform:uppercase; color:var(--gold); display:flex; justify-content:space-between; align-items:center; font-size: 0.9rem; }
         .scroll-area { flex:1; overflow-y:auto; padding:10px; }
 
-        /* LISTA DE JOGADORES (ATUALIZADA) */
+        /* LISTA DE JOGADORES */
         .player-card {
-            background:var(--card); padding:10px; margin-bottom:8px; border-radius:6px; border:1px solid #333;
+            background:var(--card); padding:8px; margin-bottom:6px; border-radius:4px; border:1px solid #333;
             display:flex; align-items:center; cursor:grab; user-select:none; transition:0.2s;
         }
         .player-card:hover { border-color:var(--green); background:#252e33; }
-        .player-card.used { opacity:0.5; filter:grayscale(1); }
+        .player-card.used { opacity:0.5; filter:grayscale(1); border-style: dashed; }
         
-        .p-pos { background:#000; color:#aaa; font-size:0.75rem; padding:4px 0; border-radius:4px; font-weight:bold; width:35px; text-align:center; margin-right:10px; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .p-pos { background:#000; color:#aaa; font-size:0.7rem; padding:4px 0; border-radius:3px; font-weight:bold; width:30px; text-align:center; margin-right:8px; display: flex; align-items: center; justify-content: center; height: 30px; }
         
-        .p-info { flex:1; display:flex; flex-direction:column; gap:2px; }
-        .p-name { font-weight:700; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        
-        /* NOVA CARACTERÍSTICA */
-        .p-carac { font-size: 0.75rem; color: var(--blue); font-style: italic; }
+        .p-info { flex:1; display:flex; flex-direction:column; gap:2px; min-width: 0; }
+        .p-name { font-weight:600; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .p-carac { font-size: 0.7rem; color: var(--blue); font-style: italic; }
 
-        /* NOVA BARRA DE SAÚDE NA LISTA */
-        .health-track { width: 100%; height: 5px; background: #000; border-radius: 3px; margin-top: 3px; overflow: hidden; }
-        .health-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+        /* SAÚDE NA LISTA */
+        .health-wrapper { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+        .health-icon { font-size: 0.7rem; }
+        .health-track { flex:1; height: 4px; background: #000; border-radius: 2px; overflow: hidden; }
+        .health-fill { height: 100%; border-radius: 2px; }
+        .health-val { font-size: 0.65rem; color: #888; width: 25px; text-align: right; }
 
-        .p-ovr { font-weight:900; color:var(--gold); font-size:1.1rem; margin-left: 10px; }
+        .p-ovr { font-weight:900; color:var(--gold); font-size:1rem; margin-left: 8px; }
 
-        /* CAMPO */
-        .field-area { background:#0a0a0a; display:flex; justify-content:center; align-items:center; position:relative; overflow:hidden; }
+        /* CAMPO HORIZONTAL */
+        .field-area { background:#0a0a0a; display:flex; justify-content:center; align-items:center; position:relative; overflow:hidden; padding: 20px; }
         .pitch {
-            width: 480px; height: 680px;
-            background: linear-gradient(180deg, #27ae60 0%, #2ecc71 100%);
-            border: 4px solid #fff; border-radius: 8px;
-            position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            width: 95%; max-width: 800px; 
+            aspect-ratio: 1.5; /* Mantém proporção de campo */
+            background: linear-gradient(90deg, #27ae60 0%, #2ecc71 50%, #27ae60 100%);
+            border: 3px solid #fff; border-radius: 4px;
+            position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             transition: all 0.5s ease;
         }
-        .pitch::before { content:''; position:absolute; top:50%; left:0; width:100%; height:2px; background:rgba(255,255,255,0.4); }
+        /* Linha do Meio (Vertical agora) */
+        .pitch::before { content:''; position:absolute; left:50%; top:0; width:2px; height:100%; background:rgba(255,255,255,0.4); transform:translateX(-50%); }
+        /* Círculo Central */
         .pitch::after { content:''; position:absolute; top:50%; left:50%; width:100px; height:100px; border:2px solid rgba(255,255,255,0.4); border-radius:50%; transform:translate(-50%, -50%); }
-        .box { position:absolute; width:220px; height:90px; border:2px solid rgba(255,255,255,0.4); left:50%; transform:translateX(-50%); }
-        .box-top { top:0; border-top:none; } .box-bottom { bottom:0; border-bottom:none; }
+        
+        /* Grandes Áreas */
+        .box { position:absolute; width:12%; height:40%; border:2px solid rgba(255,255,255,0.4); top:50%; transform:translateY(-50%); }
+        .box-left { left:0; border-left:none; } 
+        .box-right { right:0; border-right:none; }
 
         /* SLOTS NO CAMPO */
         .slot {
-            position: absolute; width: 70px; height: 70px; transform: translate(-50%, -50%);
+            position: absolute; width: 70px; height: 60px; transform: translate(-50%, -50%);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             cursor: pointer; transition: top 0.5s ease, left 0.5s ease; z-index: 2;
         }
         .slot-circle {
-            width: 40px; height: 40px; background: rgba(0,0,0,0.4);
+            width: 35px; height: 35px; background: rgba(0,0,0,0.4);
             border: 2px dashed rgba(255,255,255,0.4); border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             color: #fff; font-size: 0.7rem; font-weight: bold; position: relative;
         }
         .slot.filled .slot-circle { background: var(--card); border: 2px solid var(--green); color:var(--gold); }
         
-        .slot-name { background: rgba(0,0,0,0.8); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; margin-top: 3px; white-space: nowrap; max-width: 80px; overflow:hidden; text-overflow:ellipsis; }
+        .slot-name { background: rgba(0,0,0,0.8); color: #fff; padding: 1px 5px; border-radius: 3px; font-size: 0.65rem; margin-top: 2px; white-space: nowrap; max-width: 80px; overflow:hidden; text-overflow:ellipsis; }
         
-        /* MINI BARRA DE SAÚDE NO CAMPO */
-        .slot-health-mini { width: 40px; height: 3px; background: #000; margin-top: 2px; border-radius: 2px; display: none; }
-        .slot.filled .slot-health-mini { display: block; }
+        /* SAÚDE NO CAMPO */
+        .slot-health-container { display: none; align-items: center; gap: 2px; background: rgba(0,0,0,0.7); padding: 1px 3px; border-radius: 3px; margin-top: 1px; }
+        .slot.filled .slot-health-container { display: flex; }
+        .slot-health-icon { font-size: 0.5rem; }
+        .slot-health-bar { width: 30px; height: 3px; background: #333; border-radius: 1px; }
+        .slot-health-fill { height: 100%; border-radius: 1px; }
         
-        .captain-badge { position:absolute; top:-5px; right:-5px; background:var(--gold); color:#000; font-weight:bold; font-size:0.7rem; width:16px; height:16px; border-radius:50%; display:flex; align-items:center; justify-content:center; display:none; border:1px solid #fff; }
+        .captain-badge { position:absolute; top:-5px; right:-5px; background:var(--gold); color:#000; font-weight:bold; font-size:0.6rem; width:14px; height:14px; border-radius:50%; display:flex; align-items:center; justify-content:center; display:none; border:1px solid #fff; }
         .slot.is-captain .captain-badge { display:flex; }
 
         /* DIREITA */
-        .role-group { margin-bottom: 20px; }
-        .role-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; display: block; font-weight: bold; }
-        .role-select { width: 100%; background: var(--card); border: 1px solid #444; color: #fff; padding: 8px; border-radius: 4px; font-size: 0.9rem; outline: none; }
+        .role-group { margin-bottom: 15px; }
+        .role-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 3px; display: block; font-weight: bold; }
+        .role-select { width: 100%; background: var(--card); border: 1px solid #444; color: #fff; padding: 6px; border-radius: 4px; font-size: 0.85rem; outline: none; }
         .role-select:focus { border-color: var(--green); }
         .btn-auto { background:#333; color:#fff; border:1px solid #555; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.7rem; }
         .btn-auto:hover { background:#444; border-color:#fff; }
@@ -111,12 +122,12 @@
                 <option value="4-2-3-1">4-2-3-1 (Moderno)</option>
                 <option value="3-4-3">3-4-3 (Ofensivo)</option>
             </select>
-            <div style="font-weight:bold; color:var(--text-muted); font-size:0.9rem;">
-                FORÇA: <span id="team-str" style="color:#fff; font-size:1.1rem;">0</span>
+            <div style="font-weight:bold; color:var(--text-muted); font-size:0.8rem;">
+                FORÇA: <span id="team-str" style="color:#fff; font-size:1rem;">0</span>
             </div>
         </div>
 
-        <button class="btn-save" onclick="salvarTudo()">SALVAR TÁTICA</button>
+        <button class="btn-save" onclick="salvarTudo()">SALVAR</button>
     </header>
 
     <div class="container">
@@ -131,20 +142,20 @@
 
         <div class="field-area">
             <div class="pitch">
-                <div class="box box-top"></div>
-                <div class="box box-bottom"></div>
+                <div class="box box-left"></div>
+                <div class="box box-right"></div>
 
-                <div class="slot" id="slot-1"><div class="slot-circle">GOL</div><div class="slot-name">Vazio</div><div class="slot-health-mini"></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-2"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-mini"></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-3"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-mini"></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-4"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-mini"></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-5"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-mini"></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-6"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-mini"></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-7"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-mini"></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-8"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-mini"></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-9"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-mini"></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-10"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-mini"></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-11"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-mini"></div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-1"><div class="slot-circle">GOL</div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-2"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-3"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-4"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-5"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-6"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-7"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-8"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-9"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-10"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-11"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
             </div>
         </div>
 
@@ -166,13 +177,73 @@
         let funcoesAtuais = { capitao: null, penalti: null, falta: null, escanteioD: null, escanteioE: null };
         let formacaoAtual = "4-3-3";
 
-        // COORDENADAS (LAYOUTS)
+        // COORDENADAS HORIZONTAIS (Esquerda = GOL, Direita = ATAQUE)
         const layouts = {
-            "4-3-3": [{id:"slot-1",top:"90%",left:"50%",role:"GOL"},{id:"slot-2",top:"75%",left:"15%",role:"LE"},{id:"slot-3",top:"80%",left:"38%",role:"ZAG"},{id:"slot-4",top:"80%",left:"62%",role:"ZAG"},{id:"slot-5",top:"75%",left:"85%",role:"LD"},{id:"slot-6",top:"60%",left:"50%",role:"VOL"},{id:"slot-7",top:"45%",left:"30%",role:"MEI"},{id:"slot-8",top:"45%",left:"70%",role:"MEI"},{id:"slot-9",top:"20%",left:"15%",role:"ATA"},{id:"slot-10",top:"15%",left:"50%",role:"ATA"},{id:"slot-11",top:"20%",left:"85%",role:"ATA"}],
-            "4-4-2": [{id:"slot-1",top:"90%",left:"50%",role:"GOL"},{id:"slot-2",top:"75%",left:"15%",role:"LE"},{id:"slot-3",top:"80%",left:"38%",role:"ZAG"},{id:"slot-4",top:"80%",left:"62%",role:"ZAG"},{id:"slot-5",top:"75%",left:"85%",role:"LD"},{id:"slot-6",top:"50%",left:"35%",role:"VOL"},{id:"slot-7",top:"50%",left:"65%",role:"VOL"},{id:"slot-8",top:"35%",left:"15%",role:"MEI"},{id:"slot-9",top:"35%",left:"85%",role:"MEI"},{id:"slot-10",top:"15%",left:"40%",role:"ATA"},{id:"slot-11",top:"15%",left:"60%",role:"ATA"}],
-            "3-5-2": [{id:"slot-1",top:"90%",left:"50%",role:"GOL"},{id:"slot-2",top:"80%",left:"25%",role:"ZAG"},{id:"slot-3",top:"80%",left:"50%",role:"ZAG"},{id:"slot-4",top:"80%",left:"75%",role:"ZAG"},{id:"slot-5",top:"60%",left:"35%",role:"VOL"},{id:"slot-6",top:"60%",left:"65%",role:"VOL"},{id:"slot-7",top:"45%",left:"10%",role:"MEI"},{id:"slot-8",top:"45%",left:"90%",role:"MEI"},{id:"slot-9",top:"35%",left:"50%",role:"MEI"},{id:"slot-10",top:"15%",left:"40%",role:"ATA"},{id:"slot-11",top:"15%",left:"60%",role:"ATA"}],
-            "4-2-3-1": [{id:"slot-1",top:"90%",left:"50%",role:"GOL"},{id:"slot-2",top:"80%",left:"15%",role:"LE"},{id:"slot-3",top:"80%",left:"38%",role:"ZAG"},{id:"slot-4",top:"80%",left:"62%",role:"ZAG"},{id:"slot-5",top:"80%",left:"85%",role:"LD"},{id:"slot-6",top:"65%",left:"35%",role:"VOL"},{id:"slot-7",top:"65%",left:"65%",role:"VOL"},{id:"slot-8",top:"40%",left:"50%",role:"MEI"},{id:"slot-9",top:"30%",left:"15%",role:"ATA"},{id:"slot-10",top:"15%",left:"50%",role:"ATA"},{id:"slot-11",top:"30%",left:"85%",role:"ATA"}],
-            "3-4-3": [{id:"slot-1",top:"90%",left:"50%",role:"GOL"},{id:"slot-2",top:"80%",left:"20%",role:"ZAG"},{id:"slot-3",top:"80%",left:"50%",role:"ZAG"},{id:"slot-4",top:"80%",left:"80%",role:"ZAG"},{id:"slot-5",top:"55%",left:"15%",role:"MEI"},{id:"slot-6",top:"55%",left:"40%",role:"VOL"},{id:"slot-7",top:"55%",left:"60%",role:"VOL"},{id:"slot-8",top:"55%",left:"85%",role:"MEI"},{id:"slot-9",top:"20%",left:"20%",role:"ATA"},{id:"slot-10",top:"15%",left:"50%",role:"ATA"},{id:"slot-11",top:"20%",left:"80%",role:"ATA"}]
+            "4-3-3": [
+                {id:"slot-1",top:"50%",left:"5%",role:"GOL"}, // GK
+                {id:"slot-2",top:"15%",left:"25%",role:"LE"}, // LE (Cima)
+                {id:"slot-3",top:"35%",left:"20%",role:"ZAG"}, // ZAG
+                {id:"slot-4",top:"65%",left:"20%",role:"ZAG"}, // ZAG
+                {id:"slot-5",top:"85%",left:"25%",role:"LD"}, // LD (Baixo)
+                {id:"slot-6",top:"50%",left:"40%",role:"VOL"}, // VOL
+                {id:"slot-7",top:"30%",left:"55%",role:"MEI"}, // MEI
+                {id:"slot-8",top:"70%",left:"55%",role:"MEI"}, // MEI
+                {id:"slot-9",top:"20%",left:"80%",role:"ATA"}, // PTE
+                {id:"slot-10",top:"50%",left:"85%",role:"ATA"},// ATA
+                {id:"slot-11",top:"80%",left:"80%",role:"ATA"} // PTD
+            ],
+            "4-4-2": [
+                {id:"slot-1",top:"50%",left:"5%",role:"GOL"},
+                {id:"slot-2",top:"15%",left:"25%",role:"LE"},
+                {id:"slot-3",top:"38%",left:"20%",role:"ZAG"},
+                {id:"slot-4",top:"62%",left:"20%",role:"ZAG"},
+                {id:"slot-5",top:"85%",left:"25%",role:"LD"},
+                {id:"slot-6",top:"38%",left:"45%",role:"VOL"},
+                {id:"slot-7",top:"62%",left:"45%",role:"VOL"},
+                {id:"slot-8",top:"15%",left:"60%",role:"MEI"}, // MEI Ala
+                {id:"slot-9",top:"85%",left:"60%",role:"MEI"}, // MEI Ala
+                {id:"slot-10",top:"35%",left:"85%",role:"ATA"},
+                {id:"slot-11",top:"65%",left:"85%",role:"ATA"}
+            ],
+            "3-5-2": [
+                {id:"slot-1",top:"50%",left:"5%",role:"GOL"},
+                {id:"slot-2",top:"25%",left:"20%",role:"ZAG"},
+                {id:"slot-3",top:"50%",left:"20%",role:"ZAG"},
+                {id:"slot-4",top:"75%",left:"20%",role:"ZAG"},
+                {id:"slot-5",top:"35%",left:"40%",role:"VOL"},
+                {id:"slot-6",top:"65%",left:"40%",role:"VOL"},
+                {id:"slot-7",top:"10%",left:"50%",role:"MEI"}, // Ala
+                {id:"slot-8",top:"90%",left:"50%",role:"MEI"}, // Ala
+                {id:"slot-9",top:"50%",left:"60%",role:"MEI"}, // CAM
+                {id:"slot-10",top:"35%",left:"85%",role:"ATA"},
+                {id:"slot-11",top:"65%",left:"85%",role:"ATA"}
+            ],
+            "4-2-3-1": [
+                {id:"slot-1",top:"50%",left:"5%",role:"GOL"},
+                {id:"slot-2",top:"15%",left:"25%",role:"LE"},
+                {id:"slot-3",top:"38%",left:"20%",role:"ZAG"},
+                {id:"slot-4",top:"62%",left:"20%",role:"ZAG"},
+                {id:"slot-5",top:"85%",left:"25%",role:"LD"},
+                {id:"slot-6",top:"38%",left:"40%",role:"VOL"},
+                {id:"slot-7",top:"62%",left:"40%",role:"VOL"},
+                {id:"slot-8",top:"50%",left:"60%",role:"MEI"}, // CAM
+                {id:"slot-9",top:"20%",left:"75%",role:"ATA"}, // Ponta
+                {id:"slot-10",top:"50%",left:"85%",role:"ATA"}, // ST
+                {id:"slot-11",top:"80%",left:"75%",role:"ATA"}  // Ponta
+            ],
+            "3-4-3": [
+                {id:"slot-1",top:"50%",left:"5%",role:"GOL"},
+                {id:"slot-2",top:"20%",left:"20%",role:"ZAG"},
+                {id:"slot-3",top:"50%",left:"20%",role:"ZAG"},
+                {id:"slot-4",top:"80%",left:"20%",role:"ZAG"},
+                {id:"slot-5",top:"15%",left:"45%",role:"MEI"},
+                {id:"slot-6",top:"40%",left:"45%",role:"VOL"},
+                {id:"slot-7",top:"60%",left:"45%",role:"VOL"},
+                {id:"slot-8",top:"85%",left:"45%",role:"MEI"},
+                {id:"slot-9",top:"20%",left:"80%",role:"ATA"},
+                {id:"slot-10",top:"50%",left:"85%",role:"ATA"},
+                {id:"slot-11",top:"80%",left:"80%",role:"ATA"}
+            ]
         };
 
         window.onload = function() {
@@ -223,18 +294,21 @@
                 if (emCampoIds.includes(jog.id)) div.classList.add('used');
 
                 const saude = jog.saude !== undefined ? jog.saude : 100;
-                let corBarra = '#2ecc71';
-                if(saude < 80) corBarra = '#f1c40f';
-                if(saude < 60) corBarra = '#e74c3c';
+                let corSaude = '#2ecc71';
+                if(saude < 80) corSaude = '#f1c40f';
+                if(saude < 60) corSaude = '#e74c3c';
 
-                // HTML ATUALIZADO: Mostra Característica e Barra de Saúde
                 div.innerHTML = `
                     <div class="p-pos">${jog.pos}</div>
                     <div class="p-info">
                         <div class="p-name">${jog.nome}</div>
                         <div class="p-carac">${jog.carac || 'Normal'}</div>
-                        <div class="health-track" title="Saúde: ${Math.floor(saude)}%">
-                            <div class="health-fill" style="width:${saude}%; background:${corBarra};"></div>
+                        <div class="health-wrapper">
+                            <span class="health-icon" style="color:${corSaude}">❤️</span>
+                            <div class="health-track">
+                                <div class="health-fill" style="width:${saude}%; background:${corSaude};"></div>
+                            </div>
+                            <span class="health-val">${Math.floor(saude)}%</span>
                         </div>
                     </div>
                     <div class="p-ovr">${jog.forca}</div>
@@ -252,23 +326,22 @@
             document.querySelectorAll('.slot').forEach(slot => {
                 const jogId = escalacaoAtual[slot.id];
                 const jog = jogId ? meuTime.elenco.find(j => j.id === jogId) : null;
-
-                const healthBar = slot.querySelector('.slot-health-mini');
+                const healthFill = slot.querySelector('.slot-health-fill');
+                const healthIcon = slot.querySelector('.slot-health-icon');
 
                 if (jog) {
                     slot.classList.add('filled');
                     slot.querySelector('.slot-circle').innerText = jog.pos;
                     slot.querySelector('.slot-name').innerText = jog.nome.split(' ')[0];
                     
-                    // Barra de saúde do slot no campo
                     const saude = jog.saude !== undefined ? jog.saude : 100;
                     let corBarra = '#2ecc71';
                     if(saude < 80) corBarra = '#f1c40f';
                     if(saude < 60) corBarra = '#e74c3c';
-                    healthBar.style.width = `${saude}%`; // Ajusta largura visualmente (max 40px no CSS)
-                    healthBar.style.width = '100%'; // O container tem tamanho fixo, a barra interna teria que ser complexa. 
-                    // Simplificação: Vamos mudar a cor da barrinha inteira para indicar estado
-                    healthBar.style.background = `linear-gradient(90deg, ${corBarra} ${saude}%, #333 ${saude}%)`;
+                    
+                    healthFill.style.width = `${saude}%`;
+                    healthFill.style.background = corBarra;
+                    healthIcon.style.color = corBarra;
 
                     const selectCapitao = document.getElementById('role-capitao');
                     if (jog.id === selectCapitao.value || jog.id === funcoesAtuais.capitao) slot.classList.add('is-captain');
@@ -283,7 +356,7 @@
                 }
             });
             const media = count > 0 ? Math.floor(forcaTotal / count) : 0;
-            document.getElementById('team-str').innerText = count === 11 ? media : `${media} (Incompleto)`;
+            document.getElementById('team-str').innerText = count === 11 ? media : `${media}*`;
         }
 
         function povoarDropdowns() {
@@ -356,7 +429,6 @@
             });
         }
 
-        // --- AUTO ESCALAR ---
         function autoEscalar(silencioso = false) {
             if(!silencioso && !confirm("Auto-escalar com melhores jogadores saudáveis?")) return;
             escalacaoAtual = {};
@@ -364,17 +436,14 @@
             const layout = layouts[formacaoAtual];
             
             layout.forEach(posData => {
-                // Tenta achar jogador da posição com saude > 50
                 let melhor = meuTime.elenco.find(j => j.pos === posData.role && !usados.includes(j.id) && (j.saude === undefined || j.saude > 50));
                 
-                // Fallbacks
                 if(!melhor) {
                     if(posData.role === 'ATA') melhor = meuTime.elenco.find(j => (j.pos==='MEI'||j.pos==='ST') && !usados.includes(j.id));
                     if(posData.role === 'MEI') melhor = meuTime.elenco.find(j => (j.pos==='VOL'||j.pos==='ATA') && !usados.includes(j.id));
                     if(posData.role === 'VOL') melhor = meuTime.elenco.find(j => (j.pos==='MEI'||j.pos==='ZAG') && !usados.includes(j.id));
                     if(posData.role === 'LE' || posData.role === 'LD') melhor = meuTime.elenco.find(j => j.pos==='ZAG' && !usados.includes(j.id));
                 }
-                // Última chance (qualquer um saudável)
                 if(!melhor && posData.role !== 'GOL') melhor = meuTime.elenco.find(j => j.pos!=='GOL' && !usados.includes(j.id) && j.saude > 40);
 
                 if(melhor) { escalacaoAtual[posData.id] = melhor.id; usados.push(melhor.id); }
@@ -399,7 +468,7 @@
             localStorage.setItem('brfutebol_funcoes', JSON.stringify(funcoes));
             const btn = document.querySelector('.btn-save');
             btn.innerText = "SALVO! ✅";
-            setTimeout(() => { btn.innerText = "SALVAR TÁTICA"; window.location.href='dashboard.html'; }, 800);
+            setTimeout(() => { btn.innerText = "SALVAR"; window.location.href='dashboard.html'; }, 800);
         }
     </script>
 </body>
