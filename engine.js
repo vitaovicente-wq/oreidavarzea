@@ -7,7 +7,7 @@ const Engine = {
         inglaterra: { nome: "Premier League", cont: "Champions League" }
     },
 
-    // --- 1. SETUP DO JOGO ---
+    // --- 1. SETUP ---
     novoJogo: function(paisUsuario, divisao, timeJogador) {
         const gameState = {
             paisUsuario: paisUsuario,
@@ -15,11 +15,9 @@ const Engine = {
             ano: 2026,
             semanaAtual: 1,
             mundo: {}, 
-            calendarioUsuario: [],
-            mercado: [] // Lista de jogadores à venda
+            calendarioUsuario: []
         };
 
-        // Inicializa Mundo
         Object.keys(database).forEach(pais => {
             let timesRaw = Array.isArray(database[pais]) ? database[pais] : (database[pais].primeira || database[pais].serieA);
             if (timesRaw && timesRaw.length > 0) {
@@ -35,9 +33,6 @@ const Engine = {
 
         this.construirCalendarioUsuario(gameState);
         
-        // Gera o mercado inicial
-        this.atualizarMercado(gameState);
-
         const meuTimeObj = this.encontrarTime(gameState, timeJogador);
         if (meuTimeObj) this.inicializarFinancas(meuTimeObj);
 
@@ -50,97 +45,84 @@ const Engine = {
         t.elenco = this.gerarElenco(t.nome, t.forca || 60);
         t.forca = this.calcularForcaElenco(t.elenco);
         t.moral = 100;
-        t.funcoes = { capitao: null, penalti: null, falta: null, escanteio: null };
+        t.pais = pais; // Importante para o mercado saber de onde é
         this.definirFuncoesAutomaticas(t);
         return t;
     },
 
-    // --- 2. SISTEMA DE MERCADO (NOVO!) ---
-
-    atualizarMercado: function(gameState) {
-        // Limpa lista antiga ou mantém alguns? Vamos renovar 100% para simplificar
-        gameState.mercado = [];
-        
-        // Pega 15 jogadores aleatórios do mundo (exceto do usuário)
-        const todosPaises = Object.keys(gameState.mundo);
-        
-        for(let i=0; i<15; i++) {
-            const paisRand = todosPaises[Math.floor(Math.random() * todosPaises.length)];
-            const liga = gameState.mundo[paisRand];
-            const timeRand = liga.times[Math.floor(Math.random() * liga.times.length)];
-            
-            // Não pega do time do jogador
-            if (timeRand.nome === gameState.meuTime) continue;
-
-            const jogadorRand = timeRand.elenco[Math.floor(Math.random() * timeRand.elenco.length)];
-            
-            // Evita duplicatas
-            if (!gameState.mercado.find(j => j.id === jogadorRand.id)) {
-                // Clona o objeto para adicionar preço sem alterar o original ainda
-                const jogVenda = JSON.parse(JSON.stringify(jogadorRand));
-                jogVenda.timeOrigem = timeRand.nome;
-                jogVenda.paisOrigem = paisRand;
-                jogVenda.valorMercado = this.calcularValorPasse(jogVenda);
-                
-                gameState.mercado.push(jogVenda);
-            }
-        }
-    },
+    // --- 2. SISTEMA DE NEGOCIAÇÃO (NOVO!) ---
 
     calcularValorPasse: function(jog) {
-        // Fórmula: (Força^3) * Fator Idade
-        // Ex: Força 80 -> 512.000 * 20 = ~10 Milhões
         let base = Math.pow(jog.forca, 3);
-        let fatorIdade = 1;
-        
-        if (jog.idade < 23) fatorIdade = 1.5; // Jovens valem mais
-        else if (jog.idade > 32) fatorIdade = 0.6; // Velhos valem menos
-        
-        // Ajuste monetário para ficar realista (R$)
-        let valor = Math.floor(base * 30 * fatorIdade); 
-        
-        // Arredonda para ficar bonito (ex: 10.500.000)
+        let fatorIdade = jog.idade < 23 ? 1.4 : (jog.idade > 31 ? 0.7 : 1);
+        let valor = Math.floor(base * 35 * fatorIdade); 
         return Math.floor(valor / 10000) * 10000;
     },
 
-    comprarJogador: function(gameState, idJogador) {
-        const jogVenda = gameState.mercado.find(j => j.id === idJogador);
-        const meuTime = this.encontrarTime(gameState, gameState.meuTime);
+    // A IA DECIDE SE ACEITA A OFERTA
+    processarProposta: function(gameState, nomeTimeVendedor, idJogador, valorOferta) {
+        const vendedor = this.encontrarTime(gameState, nomeTimeVendedor);
+        const comprador = this.encontrarTime(gameState, gameState.meuTime);
+        const jogador = vendedor.elenco.find(j => j.id === idJogador);
 
-        if (!jogVenda || !meuTime) return { sucesso: false, msg: "Erro ao processar." };
+        if (!vendedor || !comprador || !jogador) return { sucesso: false, msg: "Erro de dados." };
 
-        if (meuTime.financas.caixa < jogVenda.valorMercado) {
-            return { sucesso: false, msg: "Dinheiro insuficiente!" };
+        // 1. Validação Financeira
+        if (comprador.financas.caixa < valorOferta) {
+            return { sucesso: false, msg: "Seu clube não tem dinheiro suficiente em caixa." };
         }
 
-        // 1. Desconta Grana
-        meuTime.financas.caixa -= jogVenda.valorMercado;
-        meuTime.financas.despesas.transferencias = (meuTime.financas.despesas.transferencias || 0) + jogVenda.valorMercado;
-
-        // 2. Remove do time original (Global)
-        const timeOrigem = this.encontrarTime(gameState, jogVenda.timeOrigem);
-        if (timeOrigem) {
-            timeOrigem.elenco = timeOrigem.elenco.filter(j => j.id !== idJogador);
-            // Compensa time origem (opcional, mas bom pra realismo)
-            if(timeOrigem.financas) timeOrigem.financas.caixa += jogVenda.valorMercado;
+        // 2. Análise da IA
+        const valorMercado = this.calcularValorPasse(jogador);
+        
+        // Fator: Importância no time (é o craque?)
+        const ordenado = [...vendedor.elenco].sort((a,b) => b.forca - a.forca);
+        const rank = ordenado.findIndex(j => j.id === idJogador);
+        const isCraque = (rank <= 2); // Top 3 do time
+        
+        // Fator: Tamanho do elenco (não pode vender se tiver poucos)
+        if (vendedor.elenco.length <= 16) {
+            return { sucesso: false, msg: `O ${vendedor.nome} recusou. O elenco deles está muito curto.` };
         }
 
-        // 3. Adiciona ao meu time
-        // Limpa propriedades temporárias de venda
-        delete jogVenda.timeOrigem;
-        delete jogVenda.paisOrigem;
-        delete jogVenda.valorMercado;
-        
-        // Recalcula salário para o novo contrato
-        jogVenda.salario = jogVenda.forca * 1500; 
-        
-        meuTime.elenco.push(jogVenda);
-        
-        // 4. Remove do Mercado
-        gameState.mercado = gameState.mercado.filter(j => j.id !== idJogador);
+        // Lógica de Preço
+        let pedidoMinimo = valorMercado;
+        if (isCraque) pedidoMinimo = valorMercado * 1.4; // Pede 40% a mais se for craque
+        else pedidoMinimo = valorMercado * 1.05; // Pede 5% a mais no mínimo
 
-        this.salvarJogo(gameState);
-        return { sucesso: true, msg: `Contratado! ${jogVenda.nome} agora é do ${meuTime.nome}.` };
+        // Rivalidade (Se for do mesmo país, cobra mais caro)
+        if (vendedor.pais === comprador.pais) pedidoMinimo *= 1.15;
+
+        // Decisão
+        if (valorOferta >= pedidoMinimo) {
+            // FECHOU NEGÓCIO!
+            this.transferirJogador(comprador, vendedor, jogador, valorOferta);
+            this.salvarJogo(gameState);
+            return { sucesso: true, msg: `PROPOSTA ACEITA! ${jogador.nome} assinou com seu time.` };
+        } else {
+            // RECUSOU
+            const diferenca = 1 - (valorOferta / pedidoMinimo);
+            if (diferenca < 0.15) return { sucesso: false, msg: `O ${vendedor.nome} pede um pouco mais. Estão quase aceitando.` };
+            if (diferenca < 0.40) return { sucesso: false, msg: `Proposta recusada. O valor está abaixo do esperado.` };
+            return { sucesso: false, msg: `O presidente do ${vendedor.nome} riu da sua oferta. Valor muito baixo.` };
+        }
+    },
+
+    transferirJogador: function(comprador, vendedor, jogador, valor) {
+        // Financeiro
+        comprador.financas.caixa -= valor;
+        comprador.financas.despesas.transferencias = (comprador.financas.despesas.transferencias || 0) + valor;
+        
+        // O PC ganha dinheiro (simulado)
+        if (!vendedor.financas) this.inicializarFinancas(vendedor);
+        vendedor.financas.caixa += valor;
+
+        // Move Jogador
+        vendedor.elenco = vendedor.elenco.filter(j => j.id !== jogador.id);
+        
+        // Ajusta contrato novo
+        jogador.salario = Math.floor(jogador.forca * 1800); // Salário aumenta na transferência
+        comprador.elenco.push(jogador);
     },
 
     venderJogadorUsuario: function(gameState, idJogador) {
@@ -149,27 +131,17 @@ const Engine = {
         
         if (!jogador) return { sucesso: false };
 
-        // Venda imediata simplificada (para o "mercado externo")
-        // Valor um pouco abaixo do mercado para ser instantâneo
-        const valorVenda = Math.floor(this.calcularValorPasse(jogador) * 0.8);
+        const valorVenda = Math.floor(this.calcularValorPasse(jogador) * 0.85); // Venda rápida = 85% do valor
         
         meuTime.financas.caixa += valorVenda;
-        meuTime.financas.receitas.transferencias = (meuTime.financas.receitas.transferencias || 0) + valorVenda;
-        
-        // Remove do elenco
         meuTime.elenco = meuTime.elenco.filter(j => j.id !== idJogador);
         
         this.salvarJogo(gameState);
         return { sucesso: true, valor: valorVenda, nome: jogador.nome };
     },
 
-    // --- 3. SIMULAÇÃO E PROCESSAMENTO ---
-
+    // --- 3. PROCESSAMENTO (Mantido igual) ---
     processarSemana: function(gameState) {
-        // ... (Mantém a lógica de simular jogos anterior) ...
-        // Vou resumir a função aqui para não ficar gigante, 
-        // mas você deve manter a lógica de simularPlacarRapido que já fizemos
-        
         const semanaReal = gameState.semanaAtual - 1;
         Object.keys(gameState.mundo).forEach(pais => {
             const liga = gameState.mundo[pais];
@@ -187,20 +159,13 @@ const Engine = {
                 });
             }
         });
-
-        // ATUALIZA MERCADO SEMANALMENTE
-        // Remove alguns não vendidos e adiciona novos
-        if (gameState.semanaAtual % 2 === 0) { // A cada 2 semanas renova
-            this.atualizarMercado(gameState);
-        }
-
         gameState.semanaAtual++;
         this.construirCalendarioUsuario(gameState);
         this.salvarJogo(gameState);
         return { fim: false };
     },
 
-    // --- AUXILIARES (Mantidos) ---
+    // --- AUXILIARES (Padrão) ---
     simularPlacarRapido: function(tC, tF) {
         const fC = tC.forca + 5; const fF = tF.forca; const diff = fC - fF;
         let lC = 1.3+(diff/30), lF = 1.0-(diff/30);
@@ -217,9 +182,7 @@ const Engine = {
         for(let p in gameState.mundo) { const t=gameState.mundo[p].times.find(x=>x.nome===nome); if(t)return t; } return null;
     },
     encontrarTimeNoPais: function(gameState, pais, nome) { return gameState.mundo[pais].times.find(t=>t.nome===nome); },
-    
-    // Funções de Elenco, Finanças e Tática mantidas iguais...
-    gerarCalendarioPontosCorridos: function(times) { /* Copiar do anterior */ 
+    gerarCalendarioPontosCorridos: function(times) { 
         if (times.length % 2 !== 0) times.push({ nome: "Folga", fantasma: true });
         const n = times.length; const rodadas = []; const jogosPorRodada = n / 2;
         let indices = times.map((_, i) => i);
@@ -251,7 +214,7 @@ const Engine = {
         return e;
     },
     calcularForcaElenco: function(e) { const t=e.slice(0,11); let s=0; t.forEach(p=>s+=p.forca); return Math.floor(s/Math.max(1,t.length)); },
-    inicializarFinancas: function(t) { t.financas={caixa:15000000,moeda:"R$",receitas:{tv:5000000,bilheteria:0},despesas:{folhaSalarial:0}}; let f=0; t.elenco.forEach(p=>{p.salario=p.forca*1000;f+=p.salario}); t.financas.despesas.folhaSalarial=f*13; },
+    inicializarFinancas: function(t) { t.financas={caixa:20000000,moeda:"R$",receitas:{tv:5000000,bilheteria:0},despesas:{folhaSalarial:0}}; let f=0; t.elenco.forEach(p=>{p.salario=p.forca*1000;f+=p.salario}); t.financas.despesas.folhaSalarial=f*13; },
     definirFuncoesAutomaticas: function(t){ if(t.elenco.length>0){t.funcoes.capitao=t.elenco[0].id;t.funcoes.penalti=t.elenco[0].id;t.funcoes.falta=t.elenco[0].id;t.funcoes.escanteio=t.elenco[0].id;} },
     distribuirGols: function(t,q){ for(let i=0;i<q;i++){const a=t.elenco[Math.floor(Math.random()*Math.min(11,t.elenco.length))];if(a)a.gols++;} },
     formatarDinheiro: function(v,m){ return (m||"R$")+" "+(v||0).toLocaleString(); },
