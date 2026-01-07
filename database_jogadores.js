@@ -1,5 +1,6 @@
+// 1. ESTRUTURA DOS TIMES (Séries A, B, C, D e Internacionais)
 const database = {
-    brasil:{
+    brasil: {
         // --- ELITE (SÉRIE A) ---
         serieA: [
             { nome: "Flamengo", forca: 85, escudo: "https://upload.wikimedia.org/wikipedia/commons/2/2e/Flamengo_braz_logo.svg", orcamento: "R$ 1.2 Bi" },
@@ -23,6 +24,7 @@ const database = {
             { nome: "Amazonas", forca: 71, escudo: "https://upload.wikimedia.org/wikipedia/pt/2/2c/Amazonas_fc_logo.png", orcamento: "R$ 40 Mi" },
             { nome: "Chapecoense", forca: 71, escudo: "https://upload.wikimedia.org/wikipedia/commons/3/37/Associa%C3%A7%C3%A3o_Chapecoense_de_Futebol_logo.svg", orcamento: "R$ 45 Mi" }
         ],
+
         // --- ACESSO (SÉRIE B) ---
         serieB: [
             { nome: "Fortaleza", forca: 78, escudo: "https://upload.wikimedia.org/wikipedia/commons/4/42/Fortaleza_Esporte_Clube_logo.svg", orcamento: "R$ 150 Mi" },
@@ -46,6 +48,7 @@ const database = {
             { nome: "Londrina", forca: 67, escudo: "https://upload.wikimedia.org/wikipedia/commons/b/b3/Londrina_Esporte_Clube.svg", orcamento: "R$ 25 Mi" },
             { nome: "São Bernardo", forca: 67, escudo: "https://upload.wikimedia.org/wikipedia/commons/e/ee/S%C3%A3o_Bernardo_Futebol_Clube_logo.svg", orcamento: "R$ 25 Mi" }
         ],
+
         // --- RAIZ (SÉRIE C) ---
         serieC: [
             { nome: "Guarani", forca: 68, escudo: "https://upload.wikimedia.org/wikipedia/commons/3/31/Escudo_do_Guarani_Futebol_Clube.svg", orcamento: "R$ 20 Mi" },
@@ -69,6 +72,7 @@ const database = {
             { nome: "Brasiliense", forca: 60, escudo: "https://upload.wikimedia.org/wikipedia/commons/d/d3/Brasiliense_Futebol_Clube_logo.svg", orcamento: "R$ 6 Mi" },
             { nome: "Treze", forca: 60, escudo: "https://upload.wikimedia.org/wikipedia/commons/3/30/Treze_Futebol_Clube_logo.svg", orcamento: "R$ 5 Mi" }
         ],
+
         // --- BASE (SÉRIE D) ---
         serieD: [
             { nome: "Santa Cruz", forca: 60, escudo: "https://upload.wikimedia.org/wikipedia/commons/0/07/Santa_Cruz_Futebol_Clube.svg", orcamento: "R$ 5 Mi" },
@@ -91,7 +95,9 @@ const database = {
             { nome: "Manauara", forca: 56, escudo: "https://upload.wikimedia.org/wikipedia/commons/b/b3/Manauara_Esporte_Clube_logo.svg", orcamento: "R$ 2 Mi" },
             { nome: "Cascavel", forca: 56, escudo: "https://upload.wikimedia.org/wikipedia/commons/d/d4/Futebol_Clube_Cascavel_logo.svg", orcamento: "R$ 2 Mi" },
             { nome: "Cianorte", forca: 55, escudo: "https://upload.wikimedia.org/wikipedia/commons/0/0e/Cianorte_Futebol_Clube_logo.png", orcamento: "R$ 1.5 Mi" }
-        ],            
+        ]
+    },
+    // Outros países
     espanha: [
         { nome: "Real Madrid", forca: 92, escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/5/56/Real_Madrid_CF.svg/1200px-Real_Madrid_CF.svg.png", orcamento: "€ 800 Mi" },
         { nome: "Barcelona", forca: 89, escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/4/47/FC_Barcelona_%28crest%29.svg/1200px-FC_Barcelona_%28crest%29.svg.png", orcamento: "€ 700 Mi" },
@@ -112,7 +118,7 @@ const database = {
     ]
 };
 
-// ELENCOS DETALHADOS
+// 2. ELENCOS DETALHADOS DOS JOGADORES (PROJEÇÃO 2026)
 const PlayersDB = {
     "Flamengo": [
         { nome: "Rossi", pos: "GOL", forca: 81, idade: 30, carac: "Pegador de Pênaltis" },
