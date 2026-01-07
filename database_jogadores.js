@@ -91,8 +91,7 @@ const database = {
             { nome: "Manauara", forca: 56, escudo: "https://upload.wikimedia.org/wikipedia/commons/b/b3/Manauara_Esporte_Clube_logo.svg", orcamento: "R$ 2 Mi" },
             { nome: "Cascavel", forca: 56, escudo: "https://upload.wikimedia.org/wikipedia/commons/d/d4/Futebol_Clube_Cascavel_logo.svg", orcamento: "R$ 2 Mi" },
             { nome: "Cianorte", forca: 55, escudo: "https://upload.wikimedia.org/wikipedia/commons/0/0e/Cianorte_Futebol_Clube_logo.png", orcamento: "R$ 1.5 Mi" }
-        ]
-            
+        ],            
     espanha: [
         { nome: "Real Madrid", forca: 92, escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/5/56/Real_Madrid_CF.svg/1200px-Real_Madrid_CF.svg.png", orcamento: "€ 800 Mi" },
         { nome: "Barcelona", forca: 89, escudo: "https://upload.wikimedia.org/wikipedia/en/thumb/4/47/FC_Barcelona_%28crest%29.svg/1200px-FC_Barcelona_%28crest%29.svg.png", orcamento: "€ 700 Mi" },
