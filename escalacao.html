@@ -14,6 +14,10 @@
         header { height: 60px; background: rgba(22,27,34,0.95); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index: 10; }
         .btn-back { background:none; border:1px solid #444; color:#fff; padding:8px 15px; border-radius:5px; cursor:pointer; font-weight:bold; transition:0.2s; }
         .btn-back:hover { background:#333; }
+        
+        .header-controls { display:flex; gap:15px; align-items:center; }
+        .formation-select { background:#000; color:var(--gold); border:1px solid var(--border); padding:8px; border-radius:5px; font-weight:bold; cursor:pointer; }
+
         .btn-save { background:var(--green); border:none; color:#000; padding:10px 30px; border-radius:30px; cursor:pointer; font-weight:900; text-transform:uppercase; box-shadow:0 0 15px rgba(46,204,113,0.4); transition:0.2s; }
         .btn-save:hover { transform:scale(1.05); box-shadow:0 0 25px rgba(46,204,113,0.6); }
 
@@ -45,6 +49,7 @@
             background: linear-gradient(180deg, #27ae60 0%, #2ecc71 100%);
             border: 4px solid #fff; border-radius: 8px;
             position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            transition: all 0.5s ease; /* Animação suave na troca de formação */
         }
         .pitch::before { content:''; position:absolute; top:50%; left:0; width:100%; height:2px; background:rgba(255,255,255,0.4); }
         .pitch::after { content:''; position:absolute; top:50%; left:50%; width:100px; height:100px; border:2px solid rgba(255,255,255,0.4); border-radius:50%; transform:translate(-50%, -50%); }
@@ -55,7 +60,8 @@
         .slot {
             position: absolute; width: 70px; height: 70px; transform: translate(-50%, -50%);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.2s; z-index: 2;
+            cursor: pointer; transition: top 0.5s ease, left 0.5s ease; /* Animação de movimento */
+            z-index: 2;
         }
         .slot-circle {
             width: 40px; height: 40px; background: rgba(0,0,0,0.4);
@@ -71,21 +77,11 @@
         /* PAINEL DE FUNÇÕES (DIREITA) */
         .role-group { margin-bottom: 20px; }
         .role-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; display: block; font-weight: bold; }
-        .role-select {
-            width: 100%; background: var(--card); border: 1px solid #444; color: #fff;
-            padding: 8px; border-radius: 4px; font-size: 0.9rem; outline: none;
-        }
+        .role-select { width: 100%; background: var(--card); border: 1px solid #444; color: #fff; padding: 8px; border-radius: 4px; font-size: 0.9rem; outline: none; }
         .role-select:focus { border-color: var(--green); }
         
-        /* Auto Escalar Btn */
         .btn-auto { background:#333; color:#fff; border:1px solid #555; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.7rem; }
         .btn-auto:hover { background:#444; border-color:#fff; }
-
-        /* Formação 4-3-3 Padrão */
-        #pos-GK { bottom: 2%; left: 50%; }
-        #pos-LB { bottom: 20%; left: 15%; } #pos-CB1 { bottom: 15%; left: 38%; } #pos-CB2 { bottom: 15%; left: 62%; } #pos-RB { bottom: 20%; left: 85%; }
-        #pos-CDM { bottom: 35%; left: 50%; } #pos-CM1 { bottom: 50%; left: 30%; } #pos-CM2 { bottom: 50%; left: 70%; }
-        #pos-LW { top: 20%; left: 15%; } #pos-ST { top: 15%; left: 50%; } #pos-RW { top: 20%; left: 85%; }
 
     </style>
 </head>
@@ -93,21 +89,30 @@
 
     <header>
         <button class="btn-back" onclick="window.location.href='dashboard.html'">⬅ Voltar</button>
-        <div style="font-weight:bold; color:var(--text-muted); font-size:0.9rem;">
-            FORÇA: <span id="team-str" style="color:#fff; font-size:1.1rem;">0</span>
+        
+        <div class="header-controls">
+            <select id="formation-select" class="formation-select" onchange="mudarFormacao()">
+                <option value="4-3-3">4-3-3 (Padrão)</option>
+                <option value="4-4-2">4-4-2 (Clássico)</option>
+                <option value="3-5-2">3-5-2 (Defensivo)</option>
+                <option value="4-2-3-1">4-2-3-1 (Moderno)</option>
+                <option value="3-4-3">3-4-3 (Ofensivo)</option>
+            </select>
+            <div style="font-weight:bold; color:var(--text-muted); font-size:0.9rem;">
+                FORÇA: <span id="team-str" style="color:#fff; font-size:1.1rem;">0</span>
+            </div>
         </div>
+
         <button class="btn-save" onclick="salvarTudo()">SALVAR TÁTICA</button>
     </header>
 
     <div class="container">
-        
         <div class="panel">
             <div class="panel-header">
                 <span>Elenco</span>
                 <button class="btn-auto" onclick="autoEscalar()">⚡ AUTO</button>
             </div>
-            <div class="scroll-area" id="roster">
-                </div>
+            <div class="scroll-area" id="roster"></div>
         </div>
 
         <div class="field-area">
@@ -115,63 +120,106 @@
                 <div class="box box-top"></div>
                 <div class="box box-bottom"></div>
 
-                <div class="slot" id="pos-GK" data-role="GOL"><div class="slot-circle">GOL</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
-                <div class="slot" id="pos-LB" data-role="LE"><div class="slot-circle">LE</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
-                <div class="slot" id="pos-CB1" data-role="ZAG"><div class="slot-circle">ZAG</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
-                <div class="slot" id="pos-CB2" data-role="ZAG"><div class="slot-circle">ZAG</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
-                <div class="slot" id="pos-RB" data-role="LD"><div class="slot-circle">LD</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
-                <div class="slot" id="pos-CDM" data-role="VOL"><div class="slot-circle">VOL</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
-                <div class="slot" id="pos-CM1" data-role="MEI"><div class="slot-circle">MEI</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
-                <div class="slot" id="pos-CM2" data-role="MEI"><div class="slot-circle">MEI</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
-                <div class="slot" id="pos-LW" data-role="ATA"><div class="slot-circle">PTE</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
-                <div class="slot" id="pos-ST" data-role="ATA"><div class="slot-circle">ATA</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
-                <div class="slot" id="pos-RW" data-role="ATA"><div class="slot-circle">PTD</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-1"><div class="slot-circle">GOL</div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-2"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-3"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-4"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-5"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-6"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-7"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-8"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-9"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-10"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
+                <div class="slot" id="slot-11"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="captain-badge">C</div></div>
             </div>
         </div>
 
         <div class="panel panel-right">
-            <div class="panel-header">Funções & Bolas Paradas</div>
+            <div class="panel-header">Funções</div>
             <div class="scroll-area">
-                
-                <div class="role-group">
-                    <label class="role-label">© Capitão</label>
-                    <select id="role-capitao" class="role-select" onchange="atualizarIconesFuncao()"></select>
-                </div>
-
-                <div class="role-group">
-                    <label class="role-label">⚽ Pênaltis</label>
-                    <select id="role-penalti" class="role-select"></select>
-                </div>
-
-                <div class="role-group">
-                    <label class="role-label">🎯 Faltas</label>
-                    <select id="role-falta" class="role-select"></select>
-                </div>
-
-                <div class="role-group">
-                    <label class="role-label">🚩 Escanteio Direito</label>
-                    <select id="role-escanteioD" class="role-select"></select>
-                </div>
-
-                <div class="role-group">
-                    <label class="role-label">🚩 Escanteio Esquerdo</label>
-                    <select id="role-escanteioE" class="role-select"></select>
-                </div>
-
-                <div style="margin-top:20px; padding:15px; background:rgba(255,255,255,0.05); border-radius:6px; font-size:0.8rem; color:#888;">
-                    ℹ️ Escolha jogadores com boa técnica e liderança. O capitão influencia a moral do time.
-                </div>
-
+                <div class="role-group"><label class="role-label">© Capitão</label><select id="role-capitao" class="role-select" onchange="atualizarIconesFuncao()"></select></div>
+                <div class="role-group"><label class="role-label">⚽ Pênaltis</label><select id="role-penalti" class="role-select"></select></div>
+                <div class="role-group"><label class="role-label">🎯 Faltas</label><select id="role-falta" class="role-select"></select></div>
+                <div class="role-group"><label class="role-label">🚩 Escanteio Dir</label><select id="role-escanteioD" class="role-select"></select></div>
+                <div class="role-group"><label class="role-label">🚩 Escanteio Esq</label><select id="role-escanteioE" class="role-select"></select></div>
             </div>
         </div>
-
     </div>
 
     <script>
         let gameState, meuTime;
-        let escalacaoAtual = {}; // { "pos-GK": "id123" }
+        let escalacaoAtual = {}; 
         let funcoesAtuais = { capitao: null, penalti: null, falta: null, escanteioD: null, escanteioE: null };
-        let dragSrcEl = null;
+        let formacaoAtual = "4-3-3";
+
+        // COORDENADAS DAS FORMAÇÕES
+        const layouts = {
+            "4-3-3": [
+                { id:"slot-1", top:"90%", left:"50%", role:"GOL" }, // GK
+                { id:"slot-2", top:"75%", left:"15%", role:"LE" },  // LE
+                { id:"slot-3", top:"80%", left:"38%", role:"ZAG" }, // ZAG
+                { id:"slot-4", top:"80%", left:"62%", role:"ZAG" }, // ZAG
+                { id:"slot-5", top:"75%", left:"85%", role:"LD" },  // LD
+                { id:"slot-6", top:"60%", left:"50%", role:"VOL" }, // VOL
+                { id:"slot-7", top:"45%", left:"30%", role:"MEI" }, // MEI
+                { id:"slot-8", top:"45%", left:"70%", role:"MEI" }, // MEI
+                { id:"slot-9", top:"20%", left:"15%", role:"ATA" }, // PTE
+                { id:"slot-10", top:"15%", left:"50%", role:"ATA" }, // ATA
+                { id:"slot-11", top:"20%", left:"85%", role:"ATA" }  // PTD
+            ],
+            "4-4-2": [
+                { id:"slot-1", top:"90%", left:"50%", role:"GOL" },
+                { id:"slot-2", top:"75%", left:"15%", role:"LE" },
+                { id:"slot-3", top:"80%", left:"38%", role:"ZAG" },
+                { id:"slot-4", top:"80%", left:"62%", role:"ZAG" },
+                { id:"slot-5", top:"75%", left:"85%", role:"LD" },
+                { id:"slot-6", top:"50%", left:"35%", role:"VOL" },
+                { id:"slot-7", top:"50%", left:"65%", role:"VOL" },
+                { id:"slot-8", top:"35%", left:"15%", role:"MEI" }, // LM
+                { id:"slot-9", top:"35%", left:"85%", role:"MEI" }, // RM
+                { id:"slot-10", top:"15%", left:"40%", role:"ATA" },
+                { id:"slot-11", top:"15%", left:"60%", role:"ATA" }
+            ],
+            "3-5-2": [
+                { id:"slot-1", top:"90%", left:"50%", role:"GOL" },
+                { id:"slot-2", top:"80%", left:"25%", role:"ZAG" },
+                { id:"slot-3", top:"80%", left:"50%", role:"ZAG" },
+                { id:"slot-4", top:"80%", left:"75%", role:"ZAG" },
+                { id:"slot-5", top:"60%", left:"35%", role:"VOL" },
+                { id:"slot-6", top:"60%", left:"65%", role:"VOL" },
+                { id:"slot-7", top:"45%", left:"10%", role:"MEI" }, // Ala Esq
+                { id:"slot-8", top:"45%", left:"90%", role:"MEI" }, // Ala Dir
+                { id:"slot-9", top:"35%", left:"50%", role:"MEI" }, // CAM
+                { id:"slot-10", top:"15%", left:"40%", role:"ATA" },
+                { id:"slot-11", top:"15%", left:"60%", role:"ATA" }
+            ],
+            "4-2-3-1": [
+                { id:"slot-1", top:"90%", left:"50%", role:"GOL" },
+                { id:"slot-2", top:"80%", left:"15%", role:"LE" },
+                { id:"slot-3", top:"80%", left:"38%", role:"ZAG" },
+                { id:"slot-4", top:"80%", left:"62%", role:"ZAG" },
+                { id:"slot-5", top:"80%", left:"85%", role:"LD" },
+                { id:"slot-6", top:"65%", left:"35%", role:"VOL" },
+                { id:"slot-7", top:"65%", left:"65%", role:"VOL" },
+                { id:"slot-8", top:"40%", left:"50%", role:"MEI" }, // CAM
+                { id:"slot-9", top:"30%", left:"15%", role:"ATA" }, // Ponta
+                { id:"slot-10", top:"15%", left:"50%", role:"ATA" }, // ST
+                { id:"slot-11", top:"30%", left:"85%", role:"ATA" }  // Ponta
+            ],
+            "3-4-3": [
+                { id:"slot-1", top:"90%", left:"50%", role:"GOL" },
+                { id:"slot-2", top:"80%", left:"20%", role:"ZAG" },
+                { id:"slot-3", top:"80%", left:"50%", role:"ZAG" },
+                { id:"slot-4", top:"80%", left:"80%", role:"ZAG" },
+                { id:"slot-5", top:"55%", left:"15%", role:"MEI" }, // Ala
+                { id:"slot-6", top:"55%", left:"40%", role:"VOL" },
+                { id:"slot-7", top:"55%", left:"60%", role:"VOL" },
+                { id:"slot-8", top:"55%", left:"85%", role:"MEI" }, // Ala
+                { id:"slot-9", top:"20%", left:"20%", role:"ATA" },
+                { id:"slot-10", top:"15%", left:"50%", role:"ATA" },
+                { id:"slot-11", top:"20%", left:"80%", role:"ATA" }
+            ]
+        };
 
         window.onload = function() {
             gameState = Engine.carregarJogo();
@@ -179,13 +227,21 @@
             meuTime = Engine.encontrarTime(gameState, gameState.meuTime);
             
             carregarDadosSalvos();
+            aplicarLayout(formacaoAtual);
             renderizarLista();
             atualizarCampo();
             povoarDropdowns();
         };
 
         function carregarDadosSalvos() {
-            // Escalação
+            // Formação
+            const formSalva = localStorage.getItem('brfutebol_esquema');
+            if(formSalva) {
+                formacaoAtual = formSalva;
+                document.getElementById('formation-select').value = formacaoAtual;
+            }
+
+            // Jogadores
             const formacaoSalva = localStorage.getItem('brfutebol_formacao');
             if (formacaoSalva) {
                 try { escalacaoAtual = JSON.parse(formacaoSalva); } catch(e) {}
@@ -200,13 +256,27 @@
             }
         }
 
-        // --- RENDERIZAÇÃO ---
+        function mudarFormacao() {
+            const select = document.getElementById('formation-select');
+            formacaoAtual = select.value;
+            aplicarLayout(formacaoAtual);
+            atualizarCampo(); // Atualiza os labels das posições
+        }
+
+        function aplicarLayout(nomeFormacao) {
+            const layout = layouts[nomeFormacao];
+            layout.forEach(posData => {
+                const slot = document.getElementById(posData.id);
+                slot.style.top = posData.top;
+                slot.style.left = posData.left;
+                slot.dataset.role = posData.role; // Atualiza a "função" do slot
+            });
+        }
+
         function renderizarLista() {
             const container = document.getElementById('roster');
             container.innerHTML = '';
             const emCampoIds = Object.values(escalacaoAtual);
-            
-            // Ordena
             const lista = [...meuTime.elenco].sort((a,b) => b.forca - a.forca);
 
             lista.forEach(jog => {
@@ -216,7 +286,6 @@
                 div.id = `card-${jog.id}`;
                 if (emCampoIds.includes(jog.id)) div.classList.add('used');
 
-                // Cor da Saúde
                 const saude = jog.saude !== undefined ? jog.saude : 100;
                 let corSaude = '#2ecc71';
                 if(saude < 80) corSaude = '#f1c40f';
@@ -231,9 +300,7 @@
 
                 div.addEventListener('dragstart', handleDragStart);
                 div.addEventListener('dragend', handleDragEnd);
-                // Mobile tap
                 div.onclick = () => selecionarParaTroca(jog.id);
-
                 container.appendChild(div);
             });
         }
@@ -251,19 +318,16 @@
                     slot.querySelector('.slot-circle').innerText = jog.pos;
                     slot.querySelector('.slot-name').innerText = jog.nome.split(' ')[0];
                     
-                    // Verifica capitão visualmente
                     const selectCapitao = document.getElementById('role-capitao');
-                    if (jog.id === selectCapitao.value || jog.id === funcoesAtuais.capitao) {
-                        slot.classList.add('is-captain');
-                    } else {
-                        slot.classList.remove('is-captain');
-                    }
+                    if (jog.id === selectCapitao.value || jog.id === funcoesAtuais.capitao) slot.classList.add('is-captain');
+                    else slot.classList.remove('is-captain');
 
                     forcaTotal += jog.forca;
                     count++;
                 } else {
                     slot.classList.remove('filled');
                     slot.classList.remove('is-captain');
+                    // Mostra a posição tática do slot (ex: "ZAG" ou "MEI" dependendo da formação)
                     slot.querySelector('.slot-circle').innerText = slot.dataset.role;
                     slot.querySelector('.slot-name').innerText = "Vazio";
                 }
@@ -274,21 +338,16 @@
         }
 
         function povoarDropdowns() {
-            // Pega apenas os jogadores que estão no campo
             const titularesIds = Object.values(escalacaoAtual);
             const titulares = meuTime.elenco.filter(j => titularesIds.includes(j.id));
-            
-            // Ordena por força para facilitar escolha
             titulares.sort((a,b) => b.forca - a.forca);
 
             const selects = ['capitao', 'penalti', 'falta', 'escanteioD', 'escanteioE'];
 
             selects.forEach(tipo => {
                 const el = document.getElementById(`role-${tipo}`);
-                const valorAtual = el.value || funcoesAtuais[tipo]; // Mantém o que estava selecionado se possível
-                
+                const valorAtual = el.value || funcoesAtuais[tipo];
                 el.innerHTML = '<option value="">-- Selecione --</option>';
-                
                 titulares.forEach(jog => {
                     const opt = document.createElement('option');
                     opt.value = jog.id;
@@ -296,18 +355,12 @@
                     if (jog.id === valorAtual) opt.selected = true;
                     el.appendChild(opt);
                 });
-
-                // Se o valor selecionado anteriormente não está mais no campo, reseta
-                if (valorAtual && !titularesIds.includes(valorAtual)) {
-                    el.value = "";
-                }
+                if (valorAtual && !titularesIds.includes(valorAtual)) el.value = "";
             });
-            
             atualizarIconesFuncao();
         }
 
         function atualizarIconesFuncao() {
-            // Atualiza visual do campo (Badge de Capitão)
             const idCapitao = document.getElementById('role-capitao').value;
             document.querySelectorAll('.slot').forEach(slot => {
                 const jogId = escalacaoAtual[slot.id];
@@ -316,106 +369,95 @@
             });
         }
 
-        // --- LÓGICA DE DRAG & DROP E CLIQUES ---
-        function handleDragStart(e) {
-            this.classList.add('dragging');
-            e.dataTransfer.setData('text/plain', this.id.replace('card-', ''));
-        }
+        // --- Drag & Drop ---
+        function handleDragStart(e) { this.classList.add('dragging'); e.dataTransfer.setData('text/plain', this.id.replace('card-', '')); }
         function handleDragEnd(e) { this.classList.remove('dragging'); }
-
         document.querySelectorAll('.slot').forEach(slot => {
             slot.addEventListener('dragover', e => { e.preventDefault(); slot.style.transform = 'translate(-50%, -50%) scale(1.1)'; });
             slot.addEventListener('dragleave', e => { slot.style.transform = 'translate(-50%, -50%) scale(1)'; });
             slot.addEventListener('drop', handleDrop);
             slot.onclick = () => removerJogador(slot.id);
         });
-
         function handleDrop(e) {
             e.preventDefault();
             this.style.transform = 'translate(-50%, -50%) scale(1)';
             const jogId = e.dataTransfer.getData('text/plain');
-            
-            // Remove de outro slot se já estiver escalado
             Object.keys(escalacaoAtual).forEach(k => { if(escalacaoAtual[k]===jogId) delete escalacaoAtual[k]; });
-            
             escalacaoAtual[this.id] = jogId;
-            renderizarLista();
-            atualizarCampo();
-            povoarDropdowns(); // Atualiza dropdowns pois entrou gente nova
+            renderizarLista(); atualizarCampo(); povoarDropdowns();
         }
-
         function removerJogador(slotId) {
-            if (escalacaoAtual[slotId]) {
-                delete escalacaoAtual[slotId];
-                renderizarLista();
-                atualizarCampo();
-                povoarDropdowns(); // Atualiza dropdowns pois saiu gente
-            }
+            if (escalacaoAtual[slotId]) { delete escalacaoAtual[slotId]; renderizarLista(); atualizarCampo(); povoarDropdowns(); }
         }
 
-        // --- SISTEMA DE SELEÇÃO POR CLIQUE (MOBILE) ---
+        // --- Mobile Click ---
         let selectedId = null;
         function selecionarParaTroca(id) {
             if (selectedId === id) { selectedId = null; renderizarLista(); return; }
             selectedId = id;
             document.querySelectorAll('.player-card').forEach(c => c.style.borderColor = '#333');
             document.getElementById(`card-${id}`).style.borderColor = 'var(--gold)';
-            
-            // Sobrescreve click dos slots temporariamente
             document.querySelectorAll('.slot').forEach(slot => {
                 slot.onclick = function() {
                     if (selectedId) {
                         Object.keys(escalacaoAtual).forEach(k => { if(escalacaoAtual[k]===selectedId) delete escalacaoAtual[k]; });
                         escalacaoAtual[this.id] = selectedId;
-                        selectedId = null;
-                        renderizarLista();
-                        atualizarCampo();
-                        povoarDropdowns();
-                        // Restaura clique normal
+                        selectedId = null; renderizarLista(); atualizarCampo(); povoarDropdowns();
                         document.querySelectorAll('.slot').forEach(s => s.onclick = () => removerJogador(s.id));
-                    } else {
-                        removerJogador(this.id);
-                    }
+                    } else { removerJogador(this.id); }
                 }
             });
         }
 
+        // --- Auto Escalar Inteligente ---
         function autoEscalar(silencioso = false) {
-            if(!silencioso && !confirm("Auto-escalar o time com os melhores jogadores saudáveis?")) return;
+            if(!silencioso && !confirm("Auto-escalar o time para o esquema " + formacaoAtual + "?")) return;
             
             escalacaoAtual = {};
             const usados = [];
-            const map = { 'pos-GK':['GOL'], 'pos-LB':['LE','ZAG'], 'pos-CB1':['ZAG'], 'pos-CB2':['ZAG'], 'pos-RB':['LD','ZAG'], 'pos-CDM':['VOL','MEI'], 'pos-CM1':['MEI','VOL'], 'pos-CM2':['MEI','ATA'], 'pos-LW':['ATA'], 'pos-ST':['ATA'], 'pos-RW':['ATA'] };
+            const layout = layouts[formacaoAtual]; // Usa o layout atual para saber as posições necessárias
 
-            Object.keys(map).forEach(slotId => {
-                const prefs = map[slotId];
-                let melhor = null;
-                for(let pos of prefs) {
-                    const c = meuTime.elenco.filter(j => j.pos === pos && !usados.includes(j.id) && (j.saude === undefined || j.saude > 50));
-                    c.sort((a,b) => b.forca - a.forca);
-                    if(c.length > 0) { melhor = c[0]; break; }
+            layout.forEach(posData => {
+                // Tenta achar jogador da posição correta com saúde > 50
+                let melhor = meuTime.elenco.find(j => j.pos === posData.role && !usados.includes(j.id) && (j.saude === undefined || j.saude > 50));
+                
+                // Se não achar (ex: 4-3-3 pede ponta e só tenho meia), improvisa
+                if (!melhor) {
+                    // Improvisações comuns
+                    if(posData.role === 'ATA') melhor = meuTime.elenco.find(j => (j.pos === 'MEI' || j.pos === 'ST') && !usados.includes(j.id));
+                    if(posData.role === 'MEI') melhor = meuTime.elenco.find(j => (j.pos === 'VOL' || j.pos === 'ATA') && !usados.includes(j.id));
+                    if(posData.role === 'VOL') melhor = meuTime.elenco.find(j => (j.pos === 'MEI' || j.pos === 'ZAG') && !usados.includes(j.id));
+                    if(posData.role === 'LE' || posData.role === 'LD') melhor = meuTime.elenco.find(j => j.pos === 'ZAG' && !usados.includes(j.id));
                 }
-                if(melhor) { escalacaoAtual[slotId] = melhor.id; usados.push(melhor.id); }
+
+                // Último caso: pega o melhor overall disponível de linha
+                if (!melhor && posData.role !== 'GOL') {
+                    melhor = meuTime.elenco.find(j => j.pos !== 'GOL' && !usados.includes(j.id) && j.saude > 40);
+                }
+
+                if (melhor) {
+                    escalacaoAtual[posData.id] = melhor.id;
+                    usados.push(melhor.id);
+                }
             });
 
             renderizarLista();
             atualizarCampo();
             povoarDropdowns();
             
-            // Auto-define Capitão (Melhor Overall)
-            if(usados.length > 0) {
-                const capitao = meuTime.elenco.find(j => j.id === usados[0]); // Já está ordenado por força na lógica acima? Não necessariamente, mas é um bom chute
-                document.getElementById('role-capitao').value = capitao.id;
+            // Auto-define Capitão se vazio
+            if(!document.getElementById('role-capitao').value && usados.length > 0) {
+               document.getElementById('role-capitao').value = usados[0];
             }
         }
 
         function salvarTudo() {
-            // Salva Escalação
             const titulares = Object.keys(escalacaoAtual).length;
             if (titulares < 11) alert("Atenção: Time incompleto!");
+            
             localStorage.setItem('brfutebol_formacao', JSON.stringify(escalacaoAtual));
+            localStorage.setItem('brfutebol_esquema', formacaoAtual); // Salva a tática (4-3-3, etc)
 
-            // Salva Funções
             const funcoes = {
                 capitao: document.getElementById('role-capitao').value,
                 penalti: document.getElementById('role-penalti').value,
@@ -425,12 +467,10 @@
             };
             localStorage.setItem('brfutebol_funcoes', JSON.stringify(funcoes));
 
-            // Feedback
             const btn = document.querySelector('.btn-save');
             btn.innerText = "SALVO! ✅";
             setTimeout(() => { btn.innerText = "SALVAR TÁTICA"; window.location.href='dashboard.html'; }, 800);
         }
-
     </script>
 </body>
 </html>
