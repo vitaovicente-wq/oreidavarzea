@@ -3,189 +3,445 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRFutebol - Tática</title>
+    <title>BRFutebol - Tática Pro</title>
     <script src="database_jogadores.js"></script>
     <script src="engine.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --bg:#0d1115; --panel:#161b22; --card:#1e272e; --text:#ecf0f1; --green:#2ecc71; --gold:#f1c40f; --red:#e74c3c; --blue:#3498db; --border:#30363d; }
-        * { box-sizing: border-box; }
-        body { font-family:'Segoe UI',sans-serif; background:var(--bg); color:var(--text); margin:0; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+        :root {
+            --bg-dark: #0f1216;
+            --bg-panel: rgba(30, 35, 45, 0.7);
+            --accent: #00ff88; /* Verde Neon */
+            --accent-glow: rgba(0, 255, 136, 0.4);
+            --text-main: #ffffff;
+            --text-dim: #8b9bb4;
+            --border: 1px solid rgba(255, 255, 255, 0.1);
+            --card-gradient: linear-gradient(145deg, #2a2f3a, #1c2028);
+            --pitch-grass: #1a4d2e;
+            --pitch-line: rgba(255,255,255,0.25);
+        }
 
-        /* HEADER */
-        header { height: 50px; flex-shrink: 0; background: rgba(22,27,34,0.95); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; padding:0 20px; z-index: 10; }
-        .btn-back { background:none; border:1px solid #444; color:#fff; padding:5px 12px; border-radius:4px; cursor:pointer; font-weight:bold; font-size: 0.8rem; }
-        .btn-back:hover { background:#333; }
-        
-        .header-controls { display:flex; gap:15px; align-items:center; }
-        .formation-select { background:#000; color:var(--gold); border:1px solid var(--border); padding:5px; border-radius:4px; font-weight:bold; cursor:pointer; outline:none; font-size: 0.85rem;}
+        * { box-sizing: border-box; user-select: none; }
 
-        .btn-save { background:var(--green); border:none; color:#000; padding:6px 20px; border-radius:20px; cursor:pointer; font-weight:800; font-size:0.8rem; text-transform:uppercase; box-shadow:0 0 10px rgba(46,204,113,0.3); }
-        .btn-save:hover { transform:scale(1.05); }
-
-        /* LAYOUT PRINCIPAL - GARANTE QUE OCUPE 100% DA TELA SEM VAZAR */
-        .container { 
-            display: grid; 
-            grid-template-columns: 280px 1fr 250px; 
-            height: calc(100vh - 50px); /* Tira o tamanho do header */
-            width: 100%;
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 255, 136, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(52, 152, 219, 0.03) 0%, transparent 40%);
+            color: var(--text-main);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
         }
-        
-        /* PAINÉIS LATERAIS */
-        .panel { background:var(--panel); border-right:1px solid var(--border); display:flex; flex-direction:column; height: 100%; overflow: hidden; }
-        .panel-right { border-left:1px solid var(--border); border-right:none; }
-        .panel-header { padding:10px; border-bottom:1px solid var(--border); font-weight:bold; text-transform:uppercase; color:var(--gold); display:flex; justify-content:space-between; align-items:center; font-size: 0.9rem; flex-shrink: 0; }
-        .scroll-area { flex:1; overflow-y:auto; padding:10px; }
 
-        /* LISTA DE JOGADORES */
-        .player-card {
-            background:var(--card); padding:8px; margin-bottom:6px; border-radius:4px; border:1px solid #333;
-            display:flex; align-items:center; cursor:grab; user-select:none; transition:0.2s;
+        /* --- HEADER FUTURISTA --- */
+        header {
+            height: 60px;
+            background: rgba(15, 18, 22, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            z-index: 20;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
         }
-        .player-card:hover { border-color:var(--green); background:#252e33; }
-        .player-card.used { opacity:0.5; filter:grayscale(1); border-style: dashed; }
-        
-        .p-pos { background:#000; color:#aaa; font-size:0.7rem; padding:0; border-radius:3px; font-weight:bold; width:30px; text-align:center; margin-right:8px; display: flex; align-items: center; justify-content: center; height: 30px; }
-        .p-info { flex:1; display:flex; flex-direction:column; gap:2px; min-width: 0; }
-        .p-name { font-weight:600; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .p-carac { font-size: 0.7rem; color: var(--blue); font-style: italic; }
-        
-        .health-wrapper { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
-        .health-icon { font-size: 0.7rem; line-height: 1; }
-        .health-track { flex:1; height: 4px; background: #000; border-radius: 2px; overflow: hidden; }
-        .health-fill { height: 100%; border-radius: 2px; }
-        .health-val { font-size: 0.65rem; color: #888; width: 25px; text-align: right; }
-        .p-ovr { font-weight:900; color:var(--gold); font-size:1rem; margin-left: 8px; }
 
-        /* ÁREA DO CAMPO (CENTRO) - CORREÇÃO DE SCROLL */
-        .field-area { 
-            background: #0a0a0a; 
-            position: relative; 
-            overflow: hidden; 
+        .header-title { 
+            font-family: 'Rajdhani', sans-serif; 
+            font-weight: 700; 
+            font-size: 1.4rem; 
+            text-transform: uppercase; 
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-btn {
+            background: transparent;
+            border: var(--border);
+            color: var(--text-dim);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 0.8rem;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .back-btn:hover { border-color: var(--text-main); color: var(--text-main); background: rgba(255,255,255,0.05); }
+
+        .tactics-control { display: flex; gap: 20px; align-items: center; }
+        
+        .select-wrapper { position: relative; }
+        .formation-select {
+            background: #111;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            padding: 8px 30px 8px 15px;
+            border-radius: 4px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            outline: none;
+            appearance: none;
+            box-shadow: 0 0 10px var(--accent-glow);
+            text-transform: uppercase;
+        }
+        .select-arrow { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: var(--accent); pointer-events: none; font-size: 0.8rem; }
+
+        .team-rating {
+            background: #222;
+            padding: 5px 15px;
+            border-radius: 4px;
+            border: var(--border);
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-dim);
+        }
+        .rating-val { color: #fff; font-weight: 800; font-size: 1.1rem; margin-left: 5px; }
+
+        .save-btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 4px;
+            font-weight: 800;
+            font-family: 'Rajdhani', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 0 20px var(--accent-glow);
+            transition: all 0.3s ease;
+        }
+        .save-btn:hover { transform: translateY(-2px); box-shadow: 0 0 30px var(--accent-glow); background: #fff; }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        .workspace {
+            display: grid;
+            grid-template-columns: 320px 1fr 280px; /* Larguras fixas laterais, meio fluido */
+            height: calc(100vh - 60px);
+            gap: 2px;
+        }
+
+        .panel {
+            background: var(--bg-panel);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            border-right: var(--border);
+            overflow: hidden;
+        }
+        .panel-right { border-right: none; border-left: var(--border); }
+
+        .panel-header {
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: var(--border);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 1rem;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .auto-pick-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .auto-pick-btn:hover { background: var(--accent); color: #000; }
+
+        .scroll-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        /* Scrollbar fina */
+        .scroll-content::-webkit-scrollbar { width: 6px; }
+        .scroll-content::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+        .scroll-content::-webkit-scrollbar-track { background: transparent; }
+
+        /* --- LISTA DE JOGADORES (COMPACTA E DINÂMICA) --- */
+        .roster-item {
+            display: flex;
+            align-items: center;
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 8px 10px;
+            cursor: grab;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .roster-item:hover { background: rgba(255,255,255,0.08); padding-left: 15px; }
+        .roster-item.dragging { opacity: 0.5; background: #000; }
+        .roster-item.in-field { opacity: 0.4; filter: grayscale(1); }
+        .roster-item.in-field::after { content:'EM CAMPO'; position: absolute; right: 10px; font-size: 0.6rem; font-weight: 800; color: rgba(255,255,255,0.2); pointer-events: none; }
+
+        .pos-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #222;
+            border: 1px solid #444;
+            color: #aaa;
+            font-size: 0.7rem;
+            font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .player-details { flex: 1; min-width: 0; }
+        .player-name { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .player-meta { display: flex; gap: 10px; font-size: 0.75rem; color: var(--text-dim); margin-top: 2px; }
+        .trait { color: #3498db; }
+
+        .player-status { text-align: right; min-width: 45px; }
+        .ovr-badge { font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 1.1rem; color: #fff; }
+        
+        /* Barra de Vida Fina */
+        .health-line-bg { width: 100%; height: 3px; background: #333; margin-top: 4px; border-radius: 2px; }
+        .health-line-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+
+        /* --- O CAMPO (ESTÁDIO) --- */
+        .pitch-container {
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
-            width: 100%;
-            height: 100%;
+            background: #000;
+            perspective: 1000px; /* Prepara para 3D se quiser */
+            position: relative;
         }
 
-        /* O CAMPO EM SI (RESPONSIVO) */
+        /* GRAMADO MODERNO */
         .pitch {
-            /* Tamanho inteligente: Cresce até 95% da largura ou altura, o que limitar primeiro */
             width: 100%;
             height: 100%;
-            max-width: 90vh; /* Impede que fique largo demais se a tela for wide */
-            max-height: 90%; 
-            aspect-ratio: 1.5; /* Mantém formato retangular de campo */
-            
-            background: linear-gradient(90deg, #27ae60 0%, #2ecc71 50%, #27ae60 100%);
-            border: 3px solid #fff; border-radius: 4px;
-            position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            transition: all 0.5s ease;
+            max-width: 1100px;
+            /* Proporção de Campo de Futebol Real (105x68 -> ~1.54) */
+            aspect-ratio: 1.54; 
+            background-color: var(--pitch-grass);
+            /* Padrão de grama xadrez sutil */
+            background-image: 
+                linear-gradient(90deg, rgba(0,0,0,0.05) 50%, transparent 50%),
+                linear-gradient(rgba(0,0,0,0.05) 50%, transparent 50%);
+            background-size: 10% 100%, 100% 20%; 
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 50px 100px -20px rgba(0,0,0,0.7);
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
-        
-        /* LINHAS DO CAMPO */
-        .pitch::before { content:''; position:absolute; left:50%; top:0; width:2px; height:100%; background:rgba(255,255,255,0.4); transform:translateX(-50%); }
-        .pitch::after { content:''; position:absolute; top:50%; left:50%; width:18%; padding-top: 18%; border:2px solid rgba(255,255,255,0.4); border-radius:50%; transform:translate(-50%, -50%); }
-        .box { position:absolute; width:15%; height:45%; border:2px solid rgba(255,255,255,0.4); top:50%; transform:translateY(-50%); }
-        .box-left { left:0; border-left:none; } 
-        .box-right { right:0; border-right:none; }
 
-        /* SLOTS */
-        .slot {
-            position: absolute; width: 12%; height: 15%; /* Tamanho relativo ao campo */
+        /* Linhas do Campo */
+        .line { position: absolute; background: var(--pitch-line); }
+        .center-line { width: 2px; height: 100%; left: 50%; transform: translateX(-50%); }
+        .center-circle { width: 15%; padding-top: 15%; border: 2px solid var(--pitch-line); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); background: transparent; }
+        .box-area { width: 15%; height: 45%; border: 2px solid var(--pitch-line); top: 50%; transform: translateY(-50%); position: absolute; }
+        .box-left { left: 0; border-left: none; }
+        .box-right { right: 0; border-right: none; }
+        .goal-area { width: 5%; height: 20%; border: 2px solid var(--pitch-line); top: 50%; transform: translateY(-50%); position: absolute; }
+        .goal-left { left: 0; border-left: none; }
+        .goal-right { right: 0; border-right: none; }
+
+        /* CARDS NO CAMPO (DRAG TARGETS) */
+        .field-slot {
+            position: absolute;
+            width: 100px; height: 90px;
             transform: translate(-50%, -50%);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; transition: top 0.5s ease, left 0.5s ease; z-index: 2;
+            z-index: 5;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Movimento elástico */
         }
-        .slot-circle {
-            width: 35px; height: 35px; background: rgba(0,0,0,0.4);
-            border: 2px dashed rgba(255,255,255,0.4); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 0.7rem; font-weight: bold; position: relative;
-        }
-        .slot.filled .slot-circle { background: var(--card); border: 2px solid var(--green); color:var(--gold); }
-        
-        .slot-name { background: rgba(0,0,0,0.8); color: #fff; padding: 1px 5px; border-radius: 3px; font-size: 0.65rem; margin-top: 2px; white-space: nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 100%; }
-        
-        /* SAÚDE MINI */
-        .slot-health-container { display: none; align-items: center; gap: 2px; background: rgba(0,0,0,0.7); padding: 1px 3px; border-radius: 3px; margin-top: 1px; }
-        .slot.filled .slot-health-container { display: flex; }
-        .slot-health-icon { font-size: 0.5rem; }
-        .slot-health-bar { width: 30px; height: 3px; background: #333; border-radius: 1px; }
-        .slot-health-fill { height: 100%; border-radius: 1px; }
-        
-        .captain-badge { position:absolute; top:-5px; right:-5px; background:var(--gold); color:#000; font-weight:bold; font-size:0.6rem; width:14px; height:14px; border-radius:50%; display:flex; align-items:center; justify-content:center; display:none; border:1px solid #fff; }
-        .slot.is-captain .captain-badge { display:flex; }
 
-        /* DIREITA */
-        .role-group { margin-bottom: 15px; }
-        .role-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 3px; display: block; font-weight: bold; }
-        .role-select { width: 100%; background: var(--card); border: 1px solid #444; color: #fff; padding: 6px; border-radius: 4px; font-size: 0.85rem; outline: none; }
-        .role-select:focus { border-color: var(--green); }
-        .btn-auto { background:#333; color:#fff; border:1px solid #555; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.7rem; }
-        .btn-auto:hover { background:#444; border-color:#fff; }
+        /* Estilo do Card no Campo (Estilo Ultimate Team Simplificado) */
+        .player-kit {
+            width: 50px; height: 50px;
+            background: #1e2329;
+            border-radius: 50%;
+            border: 2px dashed rgba(255,255,255,0.3);
+            display: flex; align-items: center; justify-content: center;
+            color: rgba(255,255,255,0.3);
+            font-weight: 800; font-size: 0.8rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+            transition: 0.2s;
+        }
+        
+        .field-slot.filled .player-kit {
+            background: #1e2329; /* Pode por imagem da camisa aqui */
+            border: 2px solid var(--accent);
+            color: #fff;
+            transform: scale(1.1);
+            box-shadow: 0 10px 20px rgba(0, 255, 136, 0.2);
+        }
+
+        .kit-number { font-family: 'Rajdhani'; font-size: 1.2rem; }
+        
+        .player-label {
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(4px);
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-top: 6px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            min-width: 80px;
+        }
+        .label-name { font-size: 0.75rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .label-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; }
+        .label-ovr { color: var(--gold); font-weight: 800; font-size: 0.7rem; }
+        
+        /* Barra de Saúde Micro */
+        .micro-health { width: 30px; height: 3px; background: #444; border-radius: 2px; }
+        .micro-health-fill { height: 100%; border-radius: 2px; }
+
+        /* Badge de Capitão */
+        .c-badge {
+            position: absolute; top: -5px; right: -5px;
+            background: var(--gold); color: #000;
+            width: 18px; height: 18px;
+            font-size: 0.7rem; font-weight: 900;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid #fff;
+            display: none;
+            z-index: 10;
+        }
+        .field-slot.is-captain .c-badge { display: flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+
+        @keyframes popIn { from{transform:scale(0);} to{transform:scale(1);} }
+
+        /* --- PAINEL DIREITO (FUNÇÕES) --- */
+        .role-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .role-title { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; display: block; }
+        .role-select {
+            width: 100%;
+            background: #111;
+            border: 1px solid #333;
+            color: #fff;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .role-select:focus { border-color: var(--accent); }
 
     </style>
 </head>
 <body>
 
     <header>
-        <button class="btn-back" onclick="window.location.href='dashboard.html'">⬅ Voltar</button>
-        <div class="header-controls">
-            <select id="formation-select" class="formation-select" onchange="mudarFormacao()">
-                <option value="4-3-3">4-3-3 (Padrão)</option>
-                <option value="4-4-2">4-4-2 (Clássico)</option>
-                <option value="3-5-2">3-5-2 (Defensivo)</option>
-                <option value="4-2-3-1">4-2-3-1 (Moderno)</option>
-                <option value="3-4-3">3-4-3 (Ofensivo)</option>
-            </select>
-            <div style="font-weight:bold; color:var(--text-muted); font-size:0.8rem;">
-                FORÇA: <span id="team-str" style="color:#fff; font-size:1rem;">0</span>
+        <button class="back-btn" onclick="window.location.href='dashboard.html'">
+            <span>❮</span> VOLTAR
+        </button>
+
+        <div class="tactics-control">
+            <div class="select-wrapper">
+                <select id="formation-select" class="formation-select" onchange="mudarFormacao()">
+                    <option value="4-3-3">4-3-3 Ofensivo</option>
+                    <option value="4-4-2">4-4-2 Clássico</option>
+                    <option value="3-5-2">3-5-2 Controle</option>
+                    <option value="4-2-3-1">4-2-3-1 Moderno</option>
+                    <option value="3-4-3">3-4-3 Pressão</option>
+                </select>
+                <span class="select-arrow">▼</span>
+            </div>
+
+            <div class="team-rating">
+                FORÇA <span class="rating-val" id="team-str">0</span>
             </div>
         </div>
-        <button class="btn-save" onclick="salvarTudo()">SALVAR</button>
+
+        <button class="save-btn" onclick="salvarTudo()">SALVAR TÁTICA</button>
     </header>
 
-    <div class="container">
+    <div class="workspace">
+        
         <div class="panel">
             <div class="panel-header">
-                <span>Elenco</span>
-                <button class="btn-auto" onclick="autoEscalar()">⚡ AUTO</button>
+                <span>SEU ELENCO</span>
+                <button class="auto-pick-btn" onclick="autoEscalar()">⚡ AUTO-COMPLETAR</button>
             </div>
-            <div class="scroll-area" id="roster"></div>
+            <div class="scroll-content" id="roster-list">
+                </div>
         </div>
 
-        <div class="field-area">
+        <div class="pitch-container">
             <div class="pitch">
-                <div class="box box-left"></div>
-                <div class="box box-right"></div>
+                <div class="line center-line"></div>
+                <div class="center-circle"></div>
+                <div class="box-area box-left"></div> <div class="goal-area goal-left"></div>
+                <div class="box-area box-right"></div> <div class="goal-area goal-right"></div>
 
-                <div class="slot" id="slot-1"><div class="slot-circle">GOL</div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-2"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-3"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-4"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-5"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-6"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-7"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-8"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-9"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-10"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
-                <div class="slot" id="slot-11"><div class="slot-circle"></div><div class="slot-name">Vazio</div><div class="slot-health-container"><div class="slot-health-icon">❤️</div><div class="slot-health-bar"><div class="slot-health-fill"></div></div></div><div class="captain-badge">C</div></div>
+                <div class="field-slot" id="slot-1"><div class="player-kit"><span class="kit-number">1</span><div class="c-badge">C</div></div><div class="player-label"><span class="label-name">GOL</span></div></div>
+                <div class="field-slot" id="slot-2"><div class="player-kit"><span class="kit-number">2</span><div class="c-badge">C</div></div><div class="player-label"><span class="label-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-3"><div class="player-kit"><span class="kit-number">3</span><div class="c-badge">C</div></div><div class="player-label"><span class="label-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-4"><div class="player-kit"><span class="kit-number">4</span><div class="c-badge">C</div></div><div class="player-label"><span class="label-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-5"><div class="player-kit"><span class="kit-number">5</span><div class="c-badge">C</div></div><div class="player-label"><span class="label-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-6"><div class="player-kit"><span class="kit-number">6</span><div class="c-badge">C</div></div><div class="player-label"><span class="label-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-7"><div class="player-kit"><span class="kit-number">7</span><div class="c-badge">C</div></div><div class="player-label"><span class="label-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-8"><div class="player-kit"><span class="kit-number">8</span><div class="c-badge">C</div></div><div class="player-label"><span class="label-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-9"><div class="player-kit"><span class="kit-number">9</span><div class="c-badge">C</div></div><div class="player-label"><span class="label-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-10"><div class="player-kit"><span class="kit-number">10</span><div class="c-badge">C</div></div><div class="player-label"><span class="label-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-11"><div class="player-kit"><span class="kit-number">11</span><div class="c-badge">C</div></div><div class="player-label"><span class="label-name">Vazio</span></div></div>
+
             </div>
         </div>
 
         <div class="panel panel-right">
-            <div class="panel-header">Funções</div>
-            <div class="scroll-area">
-                <div class="role-group"><label class="role-label">© Capitão</label><select id="role-capitao" class="role-select" onchange="atualizarIconesFuncao()"></select></div>
-                <div class="role-group"><label class="role-label">⚽ Pênaltis</label><select id="role-penalti" class="role-select"></select></div>
-                <div class="role-group"><label class="role-label">🎯 Faltas</label><select id="role-falta" class="role-select"></select></div>
-                <div class="role-group"><label class="role-label">🚩 Escanteio Dir</label><select id="role-escanteioD" class="role-select"></select></div>
-                <div class="role-group"><label class="role-label">🚩 Escanteio Esq</label><select id="role-escanteioE" class="role-select"></select></div>
+            <div class="panel-header">BOLAS PARADAS</div>
+            <div class="scroll-content">
+                <div class="role-card">
+                    <label class="role-title">© Capitão (Liderança)</label>
+                    <select id="role-capitao" class="role-select" onchange="atualizarIconesFuncao()"></select>
+                </div>
+                <div class="role-card">
+                    <label class="role-title">⚽ Pênaltis</label>
+                    <select id="role-penalti" class="role-select"></select>
+                </div>
+                <div class="role-card">
+                    <label class="role-title">🎯 Faltas Frontais</label>
+                    <select id="role-falta" class="role-select"></select>
+                </div>
+                <div class="role-card">
+                    <label class="role-title">🚩 Escanteio Direito</label>
+                    <select id="role-escanteioD" class="role-select"></select>
+                </div>
+                <div class="role-card">
+                    <label class="role-title">🚩 Escanteio Esquerdo</label>
+                    <select id="role-escanteioE" class="role-select"></select>
+                </div>
+                
+                <div style="margin-top:20px; font-size:0.8rem; color:#666; text-align:center; border-top:1px solid #333; padding-top:15px;">
+                    Dica: Arraste os jogadores da lista para o campo para montar seu time.
+                </div>
             </div>
         </div>
+
     </div>
 
     <script>
@@ -218,273 +474,4 @@
                 {id:"slot-6",top:"35%",left:"45%",role:"VOL"},
                 {id:"slot-7",top:"65%",left:"45%",role:"VOL"},
                 {id:"slot-8",top:"15%",left:"60%",role:"MEI"}, 
-                {id:"slot-9",top:"85%",left:"60%",role:"MEI"},
-                {id:"slot-10",top:"35%",left:"85%",role:"ATA"},
-                {id:"slot-11",top:"65%",left:"85%",role:"ATA"}
-            ],
-            "3-5-2": [
-                {id:"slot-1",top:"50%",left:"5%",role:"GOL"},
-                {id:"slot-2",top:"20%",left:"20%",role:"ZAG"},
-                {id:"slot-3",top:"50%",left:"18%",role:"ZAG"},
-                {id:"slot-4",top:"80%",left:"20%",role:"ZAG"},
-                {id:"slot-5",top:"35%",left:"40%",role:"VOL"},
-                {id:"slot-6",top:"65%",left:"40%",role:"VOL"},
-                {id:"slot-7",top:"10%",left:"50%",role:"MEI"},
-                {id:"slot-8",top:"90%",left:"50%",role:"MEI"},
-                {id:"slot-9",top:"50%",left:"60%",role:"MEI"},
-                {id:"slot-10",top:"35%",left:"85%",role:"ATA"},
-                {id:"slot-11",top:"65%",left:"85%",role:"ATA"}
-            ],
-            "4-2-3-1": [
-                {id:"slot-1",top:"50%",left:"5%",role:"GOL"},
-                {id:"slot-2",top:"10%",left:"25%",role:"LE"},
-                {id:"slot-3",top:"35%",left:"20%",role:"ZAG"},
-                {id:"slot-4",top:"65%",left:"20%",role:"ZAG"},
-                {id:"slot-5",top:"90%",left:"25%",role:"LD"},
-                {id:"slot-6",top:"35%",left:"40%",role:"VOL"},
-                {id:"slot-7",top:"65%",left:"40%",role:"VOL"},
-                {id:"slot-8",top:"50%",left:"60%",role:"MEI"},
-                {id:"slot-9",top:"20%",left:"75%",role:"ATA"},
-                {id:"slot-10",top:"50%",left:"85%",role:"ATA"},
-                {id:"slot-11",top:"80%",left:"75%",role:"ATA"}
-            ],
-            "3-4-3": [
-                {id:"slot-1",top:"50%",left:"5%",role:"GOL"},
-                {id:"slot-2",top:"20%",left:"20%",role:"ZAG"},
-                {id:"slot-3",top:"50%",left:"18%",role:"ZAG"},
-                {id:"slot-4",top:"80%",left:"20%",role:"ZAG"},
-                {id:"slot-5",top:"15%",left:"45%",role:"MEI"},
-                {id:"slot-6",top:"40%",left:"45%",role:"VOL"},
-                {id:"slot-7",top:"60%",left:"45%",role:"VOL"},
-                {id:"slot-8",top:"85%",left:"45%",role:"MEI"},
-                {id:"slot-9",top:"20%",left:"80%",role:"ATA"},
-                {id:"slot-10",top:"50%",left:"85%",role:"ATA"},
-                {id:"slot-11",top:"80%",left:"80%",role:"ATA"}
-            ]
-        };
-
-        window.onload = function() {
-            gameState = Engine.carregarJogo();
-            if (!gameState) { window.location.href = 'index.html'; return; }
-            meuTime = Engine.encontrarTime(gameState, gameState.meuTime);
-            
-            carregarDadosSalvos();
-            aplicarLayout(formacaoAtual);
-            renderizarLista();
-            atualizarCampo();
-            povoarDropdowns();
-        };
-
-        function carregarDadosSalvos() {
-            const formSalva = localStorage.getItem('brfutebol_esquema');
-            if(formSalva) { formacaoAtual = formSalva; document.getElementById('formation-select').value = formacaoAtual; }
-            const formacaoJog = localStorage.getItem('brfutebol_formacao');
-            if (formacaoJog) { try { escalacaoAtual = JSON.parse(formacaoJog); } catch(e) {} } else { autoEscalar(true); }
-            const funcSalva = localStorage.getItem('brfutebol_funcoes');
-            if (funcSalva) { try { funcoesAtuais = JSON.parse(funcSalva); } catch(e) {} }
-        }
-
-        function mudarFormacao() {
-            formacaoAtual = document.getElementById('formation-select').value;
-            aplicarLayout(formacaoAtual);
-            atualizarCampo();
-        }
-
-        function aplicarLayout(nome) {
-            layouts[nome].forEach(p => {
-                const s = document.getElementById(p.id);
-                s.style.top = p.top; s.style.left = p.left; s.dataset.role = p.role;
-            });
-        }
-
-        function renderizarLista() {
-            const container = document.getElementById('roster');
-            container.innerHTML = '';
-            const emCampoIds = Object.values(escalacaoAtual);
-            const lista = [...meuTime.elenco].sort((a,b) => b.forca - a.forca);
-
-            lista.forEach(jog => {
-                const div = document.createElement('div');
-                div.className = 'player-card';
-                div.draggable = true;
-                div.id = `card-${jog.id}`;
-                if (emCampoIds.includes(jog.id)) div.classList.add('used');
-
-                const saude = jog.saude !== undefined ? jog.saude : 100;
-                let corSaude = '#2ecc71';
-                if(saude < 80) corSaude = '#f1c40f';
-                if(saude < 60) corSaude = '#e74c3c';
-
-                div.innerHTML = `
-                    <div class="p-pos">${jog.pos}</div>
-                    <div class="p-info">
-                        <div class="p-name">${jog.nome}</div>
-                        <div class="p-carac">${jog.carac || 'Normal'}</div>
-                        <div class="health-wrapper">
-                            <span class="health-icon" style="color:${corSaude}">❤️</span>
-                            <div class="health-track">
-                                <div class="health-fill" style="width:${saude}%; background:${corSaude};"></div>
-                            </div>
-                            <span class="health-val">${Math.floor(saude)}%</span>
-                        </div>
-                    </div>
-                    <div class="p-ovr">${jog.forca}</div>
-                `;
-
-                div.addEventListener('dragstart', handleDragStart);
-                div.addEventListener('dragend', handleDragEnd);
-                div.onclick = () => selecionarParaTroca(jog.id);
-                container.appendChild(div);
-            });
-        }
-
-        function atualizarCampo() {
-            let forcaTotal = 0, count = 0;
-            document.querySelectorAll('.slot').forEach(slot => {
-                const jogId = escalacaoAtual[slot.id];
-                const jog = jogId ? meuTime.elenco.find(j => j.id === jogId) : null;
-                const healthFill = slot.querySelector('.slot-health-fill');
-                const healthIcon = slot.querySelector('.slot-health-icon');
-
-                if (jog) {
-                    slot.classList.add('filled');
-                    slot.querySelector('.slot-circle').innerText = jog.pos;
-                    slot.querySelector('.slot-name').innerText = jog.nome.split(' ')[0];
-                    
-                    const saude = jog.saude !== undefined ? jog.saude : 100;
-                    let corBarra = '#2ecc71';
-                    if(saude < 80) corBarra = '#f1c40f';
-                    if(saude < 60) corBarra = '#e74c3c';
-                    
-                    healthFill.style.width = `${saude}%`;
-                    healthFill.style.background = corBarra;
-                    healthIcon.style.color = corBarra;
-
-                    const selectCapitao = document.getElementById('role-capitao');
-                    if (jog.id === selectCapitao.value || jog.id === funcoesAtuais.capitao) slot.classList.add('is-captain');
-                    else slot.classList.remove('is-captain');
-
-                    forcaTotal += jog.forca; count++;
-                } else {
-                    slot.classList.remove('filled');
-                    slot.classList.remove('is-captain');
-                    slot.querySelector('.slot-circle').innerText = slot.dataset.role;
-                    slot.querySelector('.slot-name').innerText = "Vazio";
-                }
-            });
-            const media = count > 0 ? Math.floor(forcaTotal / count) : 0;
-            document.getElementById('team-str').innerText = count === 11 ? media : `${media}*`;
-        }
-
-        function povoarDropdowns() {
-            const titularesIds = Object.values(escalacaoAtual);
-            const titulares = meuTime.elenco.filter(j => titularesIds.includes(j.id));
-            titulares.sort((a,b) => b.forca - a.forca);
-
-            ['capitao', 'penalti', 'falta', 'escanteioD', 'escanteioE'].forEach(tipo => {
-                const el = document.getElementById(`role-${tipo}`);
-                const valorAtual = el.value || funcoesAtuais[tipo];
-                el.innerHTML = '<option value="">-- Selecione --</option>';
-                titulares.forEach(jog => {
-                    const opt = document.createElement('option');
-                    opt.value = jog.id;
-                    opt.innerText = `[${jog.pos}] ${jog.nome}`;
-                    if (jog.id === valorAtual) opt.selected = true;
-                    el.appendChild(opt);
-                });
-                if (valorAtual && !titularesIds.includes(valorAtual)) el.value = "";
-            });
-            atualizarIconesFuncao();
-        }
-
-        function atualizarIconesFuncao() {
-            const idCapitao = document.getElementById('role-capitao').value;
-            document.querySelectorAll('.slot').forEach(slot => {
-                const jogId = escalacaoAtual[slot.id];
-                if (jogId && jogId === idCapitao) slot.classList.add('is-captain');
-                else slot.classList.remove('is-captain');
-            });
-        }
-
-        // --- DRAG & DROP ---
-        function handleDragStart(e) { this.classList.add('dragging'); e.dataTransfer.setData('text/plain', this.id.replace('card-', '')); }
-        function handleDragEnd(e) { this.classList.remove('dragging'); }
-        document.querySelectorAll('.slot').forEach(slot => {
-            slot.addEventListener('dragover', e => { e.preventDefault(); slot.style.transform = 'translate(-50%, -50%) scale(1.1)'; });
-            slot.addEventListener('dragleave', e => { slot.style.transform = 'translate(-50%, -50%) scale(1)'; });
-            slot.addEventListener('drop', handleDrop);
-            slot.onclick = () => removerJogador(slot.id);
-        });
-        function handleDrop(e) {
-            e.preventDefault();
-            this.style.transform = 'translate(-50%, -50%) scale(1)';
-            const jogId = e.dataTransfer.getData('text/plain');
-            Object.keys(escalacaoAtual).forEach(k => { if(escalacaoAtual[k]===jogId) delete escalacaoAtual[k]; });
-            escalacaoAtual[this.id] = jogId;
-            renderizarLista(); atualizarCampo(); povoarDropdowns();
-        }
-        function removerJogador(slotId) {
-            if (escalacaoAtual[slotId]) { delete escalacaoAtual[slotId]; renderizarLista(); atualizarCampo(); povoarDropdowns(); }
-        }
-
-        // --- MOBILE CLICK ---
-        let selectedId = null;
-        function selecionarParaTroca(id) {
-            if (selectedId === id) { selectedId = null; renderizarLista(); return; }
-            selectedId = id;
-            document.querySelectorAll('.player-card').forEach(c => c.style.borderColor = '#333');
-            document.getElementById(`card-${id}`).style.borderColor = 'var(--gold)';
-            document.querySelectorAll('.slot').forEach(slot => {
-                slot.onclick = function() {
-                    if (selectedId) {
-                        Object.keys(escalacaoAtual).forEach(k => { if(escalacaoAtual[k]===selectedId) delete escalacaoAtual[k]; });
-                        escalacaoAtual[this.id] = selectedId;
-                        selectedId = null; renderizarLista(); atualizarCampo(); povoarDropdowns();
-                        document.querySelectorAll('.slot').forEach(s => s.onclick = () => removerJogador(s.id));
-                    } else { removerJogador(this.id); }
-                }
-            });
-        }
-
-        function autoEscalar(silencioso = false) {
-            if(!silencioso && !confirm("Auto-escalar com melhores jogadores saudáveis?")) return;
-            escalacaoAtual = {};
-            const usados = [];
-            const layout = layouts[formacaoAtual];
-            
-            layout.forEach(posData => {
-                let melhor = meuTime.elenco.find(j => j.pos === posData.role && !usados.includes(j.id) && (j.saude === undefined || j.saude > 50));
-                if(!melhor) {
-                    if(posData.role === 'ATA') melhor = meuTime.elenco.find(j => (j.pos==='MEI'||j.pos==='ST') && !usados.includes(j.id));
-                    if(posData.role === 'MEI') melhor = meuTime.elenco.find(j => (j.pos==='VOL'||j.pos==='ATA') && !usados.includes(j.id));
-                    if(posData.role === 'VOL') melhor = meuTime.elenco.find(j => (j.pos==='MEI'||j.pos==='ZAG') && !usados.includes(j.id));
-                    if(posData.role === 'LE' || posData.role === 'LD') melhor = meuTime.elenco.find(j => j.pos==='ZAG' && !usados.includes(j.id));
-                }
-                if(!melhor && posData.role !== 'GOL') melhor = meuTime.elenco.find(j => j.pos!=='GOL' && !usados.includes(j.id) && j.saude > 40);
-                if(melhor) { escalacaoAtual[posData.id] = melhor.id; usados.push(melhor.id); }
-            });
-
-            renderizarLista(); atualizarCampo(); povoarDropdowns();
-            if(!document.getElementById('role-capitao').value && usados.length > 0) document.getElementById('role-capitao').value = usados[0];
-        }
-
-        function salvarTudo() {
-            const titulares = Object.keys(escalacaoAtual).length;
-            if (titulares < 11) alert("Atenção: Time incompleto!");
-            localStorage.setItem('brfutebol_formacao', JSON.stringify(escalacaoAtual));
-            localStorage.setItem('brfutebol_esquema', formacaoAtual);
-            const funcoes = {
-                capitao: document.getElementById('role-capitao').value,
-                penalti: document.getElementById('role-penalti').value,
-                falta: document.getElementById('role-falta').value,
-                escanteioD: document.getElementById('role-escanteioD').value,
-                escanteioE: document.getElementById('role-escanteioE').value
-            };
-            localStorage.setItem('brfutebol_funcoes', JSON.stringify(funcoes));
-            const btn = document.querySelector('.btn-save');
-            btn.innerText = "SALVO! ✅";
-            setTimeout(() => { btn.innerText = "SALVAR"; window.location.href='dashboard.html'; }, 800);
-        }
-    </script>
-</body>
-</html>
+                {id:"slot-9",top:"
