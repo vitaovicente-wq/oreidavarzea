@@ -16,6 +16,7 @@
             --green: #2ecc71;
             --gold: #f1c40f;
             --red: #e74c3c;
+            --blue: #3498db;
             --text: #ecf0f1;
             --text-muted: #8b949e;
             --border: #30363d;
@@ -156,7 +157,8 @@
         td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; vertical-align: middle; }
         
         .pos-tag { background: #333; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; width: 35px; text-align: center; display: inline-block; }
-        
+        .trait-tag { color: var(--blue); font-size: 0.8rem; font-style: italic; }
+
         /* BARRINHA DE SAÚDE */
         .health-bar-container { width: 100%; background: #333; height: 6px; border-radius: 3px; overflow: hidden; margin-top: 5px; }
         .health-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
@@ -237,8 +239,8 @@
                                     <th>NOME</th>
                                     <th>IDADE</th>
                                     <th>OVR</th>
-                                    <th>SALÁRIO</th>
-                                    <th style="width:100px;">SAÚDE</th>
+                                    <th>CARAC.</th> <th>SALÁRIO</th>
+                                    <th style="width:80px;">SAÚDE</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -294,7 +296,7 @@
             // 2. Busca o time do usuário no Engine
             meuTime = Engine.encontrarTime(gameState, gameState.meuTime);
             
-            // Tratamento de erro caso o time não exista (bug de save antigo)
+            // Tratamento de erro
             if (!meuTime) {
                 alert("Erro: Time não encontrado. Inicie um novo jogo.");
                 window.location.href = 'index.html';
@@ -319,7 +321,6 @@
             const semana = gameState.semanaAtual - 1;
             const evento = gameState.calendarioUsuario[semana];
 
-            // Se não tem evento, é fim de temporada
             if (!evento) {
                 document.getElementById('card-proximo-jogo').style.display = 'none';
                 document.getElementById('card-fim-temporada').style.display = 'flex';
@@ -328,7 +329,6 @@
 
             document.getElementById('match-competition').innerText = `${evento.nome} (${evento.tipo})`;
 
-            // Procura o jogo do meu time na rodada
             const jogo = evento.jogos.find(j => j.casa === meuTime.nome || j.fora === meuTime.nome);
 
             if (jogo) {
@@ -339,7 +339,6 @@
                 document.getElementById('home-name').innerText = jogo.casa;
                 document.getElementById('away-name').innerText = jogo.fora;
 
-                // Tenta carregar escudos, usa genérico se falhar
                 const escudoAdv = advObj ? advObj.escudo : 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
                 
                 if (souCasa) {
@@ -350,7 +349,6 @@
                     document.getElementById('away-logo').src = meuTime.escudo;
                 }
             } else {
-                // Caso de Folga
                 document.getElementById('home-name').innerText = "FOLGA";
                 document.getElementById('home-logo').src = "";
                 document.getElementById('away-name').innerText = "---";
@@ -365,7 +363,6 @@
             tbody.innerHTML = '';
             document.getElementById('squad-count').innerText = `${meuTime.elenco.length} Jogadores`;
 
-            // Ordenação: Goleiros > Zagueiros > Meias > Ataque > Força
             const ordemPos = { 'GOL': 1, 'ZAG': 2, 'LD': 3, 'LE': 3, 'VOL': 4, 'MEI': 5, 'ATA': 6 };
             
             meuTime.elenco.sort((a, b) => {
@@ -376,16 +373,14 @@
             });
 
             meuTime.elenco.forEach(jog => {
-                // Cor do Overall
                 let corOvr = '#fff';
                 if (jog.forca >= 80) corOvr = 'var(--green)';
                 else if (jog.forca >= 75) corOvr = 'var(--gold)';
 
-                // Lógica da Barra de Saúde
                 const saude = jog.saude !== undefined ? jog.saude : 100;
-                let corBarra = '#2ecc71'; // Verde
-                if(saude < 80) corBarra = '#f1c40f'; // Amarelo
-                if(saude < 60) corBarra = '#e74c3c'; // Vermelho
+                let corBarra = '#2ecc71'; 
+                if(saude < 80) corBarra = '#f1c40f'; 
+                if(saude < 60) corBarra = '#e74c3c';
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -393,6 +388,7 @@
                     <td style="font-weight:500;">${jog.nome}</td>
                     <td style="color:#888;">${jog.idade}</td>
                     <td style="color:${corOvr}; font-weight:bold;">${jog.forca}</td>
+                    <td class="trait-tag">${jog.carac || '-'}</td>
                     <td style="color:#aaa; font-family:monospace; font-size:0.8rem;">${Engine.formatarDinheiro(jog.salario)}</td>
                     <td>
                         <div class="health-bar-container" title="Saúde: ${Math.floor(saude)}%">
@@ -408,8 +404,7 @@
             if (!meuTime.financas) Engine.inicializarFinancas(meuTime);
             
             document.getElementById('fin-caixa').innerText = Engine.formatarDinheiro(meuTime.financas.caixa);
-            // Mostra folha salarial mensal aproximada
-            const folhaMensal = Math.floor(meuTime.financas.despesas.folhaSalarial / 13);
+            const folhaMensal = Math.floor(meuTime.financas.despesas.folhaSalarial / 12);
             document.getElementById('fin-folha').innerText = Engine.formatarDinheiro(folhaMensal);
         }
 
@@ -417,7 +412,6 @@
             const btn = document.querySelector('.play-btn');
             
             if(btn.innerText.includes("FOLGA")) {
-                // Lógica de simular folga
                 btn.disabled = true;
                 btn.innerText = "SIMULANDO...";
                 setTimeout(() => {
@@ -425,7 +419,6 @@
                     window.location.reload();
                 }, 1000);
             } else {
-                // Ir para a tela de partida
                 window.location.href = 'partida.html';
             }
         }
