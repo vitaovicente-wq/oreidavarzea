@@ -9,440 +9,142 @@
     <script src="engine.js"></script>
     
     <style>
-        :root {
-            --primary: #1e272e;
-            --secondary: #0fb9b1; /* Verde Turquesa */
-            --accent: #ff4757; /* Vermelho */
-            --gold: #f1c40f;   /* Dourado */
-            --bg: #0d1115;
-            --card-bg: #2d3436;
-            --text: #ecf0f1;
-            --text-muted: #bdc3c7;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 0;
-            display: grid;
-            grid-template-rows: 80px 1fr;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* --- CABEÇALHO --- */
-        header {
-            background-color: rgba(30, 39, 46, 0.95);
-            border-bottom: 2px solid var(--secondary);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            z-index: 100;
-        }
-
-        .team-identity {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .team-logo { width: 50px; height: 50px; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
-        .team-info h1 { margin: 0; font-size: 1.4rem; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
-        .team-info p { margin: 0; font-size: 0.85rem; color: var(--text-muted); }
-
-        .status-bar { display: flex; gap: 30px; }
-        .status-item { text-align: right; }
-        .status-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
-        .status-value { font-size: 1.2rem; font-weight: 700; color: var(--secondary); }
-
-        /* --- LAYOUT PRINCIPAL --- */
-        main {
-            display: grid;
-            grid-template-columns: 380px 1fr;
-            gap: 25px;
-            padding: 25px;
-            overflow: hidden;
-        }
-
-        /* --- SIDEBAR (ESQUERDA) --- */
-        aside {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            overflow-y: auto;
-            padding-right: 5px;
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 16px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: transform 0.2s, border-color 0.2s;
-        }
-
-        /* CARD DO PRÓXIMO JOGO */
-        .next-match-card {
-            text-align: center;
-            border-top: 4px solid var(--secondary);
-            background: linear-gradient(180deg, #2d3436 0%, #22282a 100%);
-        }
-
-        .competition-badge {
-            background-color: #000;
-            color: #fff;
-            padding: 6px 18px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            font-weight: bold;
-            display: inline-block;
-            margin-bottom: 25px;
-            border: 1px solid #444;
-        }
-
-        .matchup {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            padding: 0 10px;
-        }
-
-        .match-team { display: flex; flex-direction: column; align-items: center; gap: 10px; flex: 1; }
-        .match-crest { width: 70px; height: 70px; object-fit: contain; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5)); transition: transform 0.3s; }
-        .match-crest:hover { transform: scale(1.1); }
-        .match-name { font-size: 0.9rem; font-weight: 700; color: #fff; text-align: center; line-height: 1.2; }
+        :root { --primary:#1e272e; --secondary:#0fb9b1; --accent:#ff4757; --bg:#0d1115; --card-bg:#2d3436; --text:#ecf0f1; --gold:#f1c40f; }
+        body { font-family:'Segoe UI',sans-serif; background-color:var(--bg); color:var(--text); margin:0; padding:0; display:grid; grid-template-rows:80px 1fr; height:100vh; overflow:hidden; }
         
-        .vs-badge { 
-            font-size: 1.1rem; font-weight: 900; color: #555; 
-            background: #151a1d; width: 35px; height: 35px; 
-            display: flex; align-items: center; justify-content: center; 
-            border-radius: 50%; margin: 0 5px;
-        }
+        header { background-color:rgba(30,39,46,0.95); border-bottom:2px solid var(--secondary); display:flex; align-items:center; justify-content:space-between; padding:0 30px; box-shadow:0 4px 15px rgba(0,0,0,0.3); z-index:100; }
+        .team-identity { display:flex; align-items:center; gap:15px; }
+        .team-logo { width:50px; height:50px; object-fit:contain; }
+        .team-info h1 { margin:0; font-size:1.4rem; text-transform:uppercase; }
+        .status-bar { display:flex; gap:30px; }
+        .status-item { text-align:right; }
+        .status-value { font-size:1.2rem; font-weight:700; color:var(--secondary); }
 
-        .play-btn {
-            background: linear-gradient(135deg, var(--secondary), #098e87);
-            color: #fff;
-            border: none;
-            padding: 15px;
-            width: 100%;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 5px 15px rgba(15, 185, 177, 0.25);
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-        }
-        .play-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(15, 185, 177, 0.4); }
-        .play-btn:disabled { background: #444; color: #888; cursor: not-allowed; box-shadow: none; transform: none; }
-
-        /* BOTÕES DE MENU LATERAL */
-        .sidebar-btn {
-            background: transparent;
-            border: 2px solid var(--secondary);
-            color: var(--text);
-            padding: 12px;
-            width: 100%;
-            border-radius: 8px;
-            font-weight: 700;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            font-size: 0.9rem;
-        }
-        .sidebar-btn:hover { background: var(--secondary); color: #1e272e; box-shadow: 0 0 15px rgba(15, 185, 177, 0.3); }
-
-        /* CARD FINANCEIRO */
-        .finance-card {
-            cursor: pointer;
-            padding: 20px;
-        }
-        .finance-card:hover { transform: translateY(-3px); border-color: var(--gold); }
+        main { display:grid; grid-template-columns:350px 1fr; gap:25px; padding:25px; overflow:hidden; }
+        aside { display:flex; flex-direction:column; gap:15px; overflow-y:auto; }
+        .card { background-color:var(--card-bg); border-radius:16px; padding:20px; border:1px solid rgba(255,255,255,0.05); }
         
-        .finance-header {
-            display: flex; align-items: center; gap: 10px;
-            color: var(--gold); font-weight: bold; text-transform: uppercase; font-size: 0.8rem;
-            margin-bottom: 10px;
-        }
-        .finance-value { font-size: 1.4rem; color: #fff; font-weight: 800; margin-bottom: 10px; }
-        .finance-bar-bg { background: rgba(255,255,255,0.1); height: 6px; border-radius: 3px; overflow: hidden; margin-bottom: 5px; }
-        .finance-bar-fill { background: var(--gold); height: 100%; width: 0%; transition: width 1s ease-out; }
-        .finance-label { font-size: 0.7rem; color: #888; }
-
-        /* --- ÁREA DE CONTEÚDO (DIREITA) --- */
-        .content-area {
-            background-color: var(--card-bg);
-            border-radius: 16px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .tabs {
-            display: flex;
-            background-color: rgba(0,0,0,0.2);
-            border-bottom: 1px solid #444;
-        }
-
-        .tab-btn {
-            padding: 18px 30px;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 600;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .tab-btn:hover { color: #fff; background-color: rgba(255,255,255,0.03); }
-        .tab-btn.active { color: var(--secondary); border-bottom-color: var(--secondary); background-color: rgba(15, 185, 177, 0.05); }
-
-        .tab-content { padding: 0; overflow-y: auto; flex-grow: 1; scrollbar-width: thin; scrollbar-color: #444 #2d3436; }
-
-        /* TABELA */
-        table { width: 100%; border-collapse: collapse; }
-        th { 
-            position: sticky; top: 0; background-color: #262c2e; 
-            text-align: left; color: var(--text-muted); 
-            font-size: 0.75rem; text-transform: uppercase; 
-            padding: 15px 12px; border-bottom: 2px solid #444; z-index: 10;
-        }
-        td { padding: 12px; border-bottom: 1px solid #383e42; font-size: 0.9rem; }
-        tr:hover { background-color: rgba(255,255,255,0.05); }
+        .next-match-card { text-align:center; border-top:4px solid var(--secondary); background:linear-gradient(180deg,#2d3436 0%,#22282a 100%); }
+        .matchup { display:flex; justify-content:space-between; align-items:center; margin:20px 0; }
+        .match-crest { width:60px; height:60px; object-fit:contain; }
+        .play-btn { background:linear-gradient(135deg,var(--secondary),#098e87); color:#fff; border:none; padding:15px; width:100%; border-radius:10px; font-weight:800; cursor:pointer; text-transform:uppercase; }
+        .sidebar-btn { background:transparent; border:2px solid var(--secondary); color:var(--text); padding:12px; width:100%; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:5px; }
         
-        .stat-col { text-align: center; width: 60px; }
+        .content-area { background-color:var(--card-bg); border-radius:16px; display:flex; flex-direction:column; overflow:hidden; }
+        .tabs { display:flex; background-color:rgba(0,0,0,0.2); }
+        .tab-btn { padding:15px 30px; background:none; border:none; color:#aaa; cursor:pointer; font-weight:bold; border-bottom:3px solid transparent; }
+        .tab-btn.active { color:var(--secondary); border-bottom-color:var(--secondary); }
+        .tab-content { padding:0; overflow-y:auto; flex-grow:1; }
         
-        /* BADGES */
-        .trait-badge {
-            font-size: 0.65rem; padding: 3px 8px; border-radius: 4px;
-            font-weight: 700; text-transform: uppercase; margin-left: 8px;
-            letter-spacing: 0.5px; display: inline-block; color: #fff;
-        }
-
+        table { width:100%; border-collapse:collapse; }
+        th { position:sticky; top:0; background-color:#262c2e; text-align:left; padding:12px; font-size:0.8rem; }
+        td { padding:10px 12px; border-bottom:1px solid #383e42; font-size:0.9rem; }
     </style>
 </head>
 <body>
 
     <header>
         <div class="team-identity">
-            <img id="header-escudo" src="" class="team-logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/53/53283.png'">
+            <img id="header-escudo" src="" class="team-logo">
             <div class="team-info">
                 <h1 id="header-time">Carregando...</h1>
-                <p>Treinador: <strong id="header-tecnico" style="color:white;">...</strong></p>
+                <p>Treinador: <strong id="header-tecnico">...</strong></p>
             </div>
         </div>
         <div class="status-bar">
-            <div class="status-item">
-                <div class="status-label">Moral</div>
-                <div class="status-value" id="header-moral">100%</div>
-            </div>
-            <div class="status-item">
-                <div class="status-label">Força Real</div>
-                <div class="status-value" id="header-forca">0</div>
-            </div>
-            <div class="status-item">
-                <div class="status-label">Expectativa</div>
-                <div class="status-value" id="header-expectativa" style="color:#fff; font-size:1rem;">-</div>
-            </div>
+            <div class="status-item"><div class="status-value" id="header-moral">100%</div>Moral</div>
+            <div class="status-item"><div class="status-value" id="header-forca">0</div>Força</div>
         </div>
     </header>
 
     <main>
         <aside>
             <div class="card next-match-card">
-                <div class="competition-badge" id="match-comp">Carregando...</div>
-                
+                <div id="match-info" style="font-size:0.8rem; text-transform:uppercase; font-weight:bold; margin-bottom:10px;">...</div>
                 <div id="match-area">
                     <div class="matchup">
-                        <div class="match-team">
-                            <img id="home-crest" class="match-crest" onerror="this.src='https://cdn-icons-png.flaticon.com/512/53/53283.png'">
-                            <span class="match-name" id="home-name">Casa</span>
-                        </div>
-                        <div class="vs-badge">X</div>
-                        <div class="match-team">
-                            <img id="away-crest" class="match-crest" onerror="this.src='https://cdn-icons-png.flaticon.com/512/53/53283.png'">
-                            <span class="match-name" id="away-name">Fora</span>
-                        </div>
+                        <img id="home-crest" class="match-crest">
+                        <span style="font-weight:900; font-size:1.2rem;">X</span>
+                        <img id="away-crest" class="match-crest">
                     </div>
-                    <button class="play-btn" onclick="jogarRodada()">
-                        <span>⚽ Ir para o Jogo</span>
-                    </button>
+                    <div style="display:flex; justify-content:space-between; font-size:0.9rem; margin-bottom:15px;">
+                        <span id="home-name">Casa</span>
+                        <span id="away-name">Fora</span>
+                    </div>
+                    <button class="play-btn" onclick="jogarRodada()">⚽ Ir para o Jogo</button>
                 </div>
-
-                <div id="no-match-area" style="display:none; padding: 10px;">
-                    <h3 style="color:#777;">Semana Livre</h3>
-                    <p style="color:#555; font-size:0.8rem; margin-bottom:15px;">Seu time folga nesta rodada.</p>
-                    <button class="play-btn" style="background: #444;" onclick="jogarRodada()">
-                        ⏩ Simular Semana
-                    </button>
+                <div id="no-match-area" style="display:none; padding:10px;">
+                    <p>Semana Livre (Folga)</p>
+                    <button class="play-btn" style="background:#444" onclick="jogarRodada()">⏩ Simular Semana</button>
                 </div>
-            </div>
-
-            <div class="card" style="padding: 15px;">
-                <button class="sidebar-btn" onclick="irParaEscalacao()">
-                    👕 Escalação & Tática
-                </button>
-            </div>
-
-            <div class="card" style="padding: 15px;">
-                <button class="sidebar-btn" style="border-color: var(--gold); color: var(--gold);" onclick="irParaCompeticoes()">
-                    🏆 Central de Competições
-                </button>
-            </div>
-
-            <div class="card finance-card" onclick="irParaFinancas()">
-                <div class="finance-header">
-                    <span style="font-size:1.2rem;">💰</span>
-                    <span>Finanças</span>
-                </div>
-                <div class="finance-value" id="dash-caixa">R$ 0</div>
-                <div class="finance-bar-bg">
-                    <div class="finance-bar-fill" id="dash-bar" style="width: 0%;"></div>
-                </div>
-                <div class="finance-label">Comprometimento do Orçamento</div>
             </div>
 
             <div class="card">
-                <h4 style="margin:0 0 10px 0; color:var(--secondary); text-transform:uppercase; font-size:0.75rem;">📋 Boletim</h4>
-                <div id="news-feed" style="font-size: 0.85rem; color: #b2bec3; line-height: 1.4;">
-                    A diretoria confia no seu trabalho. O elenco está motivado para o próximo desafio.
-                </div>
+                <button class="sidebar-btn" onclick="window.location.href='escalacao.html'">👕 Tática</button>
+                <button class="sidebar-btn" style="border-color:#f1c40f; color:#f1c40f;" onclick="window.location.href='central-competicoes.html'">🏆 Competições</button>
+                <button class="sidebar-btn" onclick="window.location.href='financeiro.html'">💰 Finanças</button>
             </div>
         </aside>
 
         <div class="content-area">
             <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('elenco')">Meu Elenco</button>
+                <button class="tab-btn active" onclick="switchTab('elenco')">Elenco</button>
                 <button class="tab-btn" onclick="switchTab('calendario')">Calendário</button>
             </div>
 
             <div id="tab-elenco" class="tab-content">
                 <table id="squad-table">
-                    <thead>
-                        <tr>
-                            <th style="width:50px; text-align:center;">Pos</th>
-                            <th>Nome / Estilo de Jogo</th>
-                            <th style="width:60px; text-align:center; color:var(--secondary);">Força</th>
-                            <th class="stat-col">Idade</th>
-                            <th class="stat-col">Energia</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th>Pos</th><th>Nome</th><th>Força</th><th>Idade</th><th>Gols</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
 
-            <div id="tab-calendario" class="tab-content" style="display:none; padding:20px;">
-                <ul id="calendar-list" style="list-style:none; padding:0;">
-                    </ul>
+            <div id="tab-calendario" class="tab-content" style="display:none;">
+                <ul id="calendar-list" style="list-style:none; padding:0;"></ul>
             </div>
         </div>
     </main>
 
     <script>
-        // --- VARIÁVEIS GLOBAIS ---
         let gameState = null;
         let myTeamObj = null;
 
-        // --- INICIALIZAÇÃO ---
         window.onload = function() {
-            // 1. Verifica se o Motor existe
-            if (typeof Engine === 'undefined') { alert("ERRO: engine.js não carregado!"); return; }
-
-            // 2. Carrega o Save
+            if (typeof Engine === 'undefined') { alert("Engine não carregado"); return; }
             gameState = Engine.carregarJogo();
             if (!gameState) { window.location.href = 'index.html'; return; }
 
-            // 3. Identifica o time
-            myTeamObj = gameState.times.find(t => t.nome === gameState.meuTime) || gameState.timesContinental.find(t => t.nome === gameState.meuTime);
+            // IMPORTANTE: Busca o time na estrutura global
+            myTeamObj = Engine.encontrarTime(gameState, gameState.meuTime);
+            
+            // Segurança se save antigo
+            if(!myTeamObj.financas) Engine.inicializarFinancas(myTeamObj);
 
-            // 4. Garante inicialização financeira (para saves antigos)
-            if (!myTeamObj.financas) {
-                Engine.inicializarFinancas(myTeamObj);
-                Engine.salvarJogo(gameState);
-            }
-
-            // 5. Renderiza
-            atualizarInterface();
+            renderInterface();
         };
 
-        function atualizarInterface() {
-            renderHeader();
-            renderNextMatch();
-            renderSquad();
-            renderCalendarList();
-            atualizarDadosFinanceirosDash();
-        }
-
-        // --- NAVEGAÇÃO ---
-        function irParaEscalacao() { window.location.href = 'escalacao.html'; }
-        function irParaFinancas() { window.location.href = 'financeiro.html'; }
-        function irParaCompeticoes() { window.location.href = 'central-competicoes.html'; }
-
-        // --- AÇÃO PRINCIPAL: JOGAR ---
-        function jogarRodada() {
-            const semanaIdx = gameState.semanaAtual - 1;
-            if (semanaIdx >= gameState.calendario.length) { alert("Temporada Encerrada!"); return; }
-
-            const evento = gameState.calendario[semanaIdx];
-            const meuJogo = evento.jogos.find(j => j.casa === myTeamObj.nome || j.fora === myTeamObj.nome);
-
-            if (meuJogo) {
-                // TEM JOGO: Vai para a partida
-                window.location.href = 'partida.html';
-            } else {
-                // FOLGA: Simula a semana
-                const btn = document.querySelector('.play-btn');
-                btn.disabled = true; btn.innerText = "Simulando Rodada...";
-                
-                setTimeout(() => {
-                    Engine.processarSemana(gameState);
-                    window.location.reload();
-                }, 800);
-            }
-        }
-
-        // --- RENDERIZADORES ---
-
-        function renderHeader() {
-            document.getElementById('header-escudo').src = localStorage.getItem('brfutebol_escudo');
+        function renderInterface() {
+            // Header
+            document.getElementById('header-escudo').src = localStorage.getItem('brfutebol_escudo') || 'https://via.placeholder.com/50';
             document.getElementById('header-time').innerText = myTeamObj.nome;
             document.getElementById('header-tecnico').innerText = localStorage.getItem('brfutebol_tecnico');
-            
-            const moralElem = document.getElementById('header-moral');
-            moralElem.innerText = myTeamObj.moral + "%";
-            if(myTeamObj.moral >= 80) moralElem.style.color = '#2ecc71';
-            else if(myTeamObj.moral <= 40) moralElem.style.color = '#ff4757';
-            else moralElem.style.color = '#f1c40f';
-
+            document.getElementById('header-moral').innerText = myTeamObj.moral + "%";
             document.getElementById('header-forca').innerText = myTeamObj.forca;
-            document.getElementById('header-expectativa').innerText = myTeamObj.expectativa;
-        }
 
-        function renderNextMatch() {
-            const semanaIndex = gameState.semanaAtual - 1;
-            const evento = gameState.calendario[semanaIndex];
+            // Próximo Jogo
+            const semIdx = gameState.semanaAtual - 1;
+            // No novo engine, o calendário do usuário está em gameState.calendarioUsuario
+            const evento = gameState.calendarioUsuario[semIdx];
 
             if (!evento) {
-                document.getElementById('match-comp').innerText = "FIM DE TEMPORADA";
+                document.getElementById('match-info').innerText = "FIM DE TEMPORADA";
                 document.getElementById('match-area').style.display = 'none';
-                document.getElementById('no-match-area').style.display = 'block';
+                document.getElementById('no-match-area').style.display = 'none';
                 return;
             }
 
-            document.getElementById('match-comp').innerText = `${evento.nome} (${evento.tipo})`;
+            document.getElementById('match-info').innerText = `${evento.nome} (${evento.tipo})`;
+            
             const meuJogo = evento.jogos.find(j => j.casa === myTeamObj.nome || j.fora === myTeamObj.nome);
 
             if (meuJogo) {
@@ -450,109 +152,79 @@
                 document.getElementById('no-match-area').style.display = 'none';
                 
                 const isCasa = (meuJogo.casa === myTeamObj.nome);
-                const escudoAdv = getEscudo(isCasa ? meuJogo.fora : meuJogo.casa);
+                const adversario = isCasa ? meuJogo.fora : meuJogo.casa;
+                
+                // Pega escudo do adversário
+                const advObj = Engine.encontrarTime(gameState, adversario);
+                const advEscudo = advObj ? advObj.escudo : 'https://via.placeholder.com/50';
                 const meuEscudo = localStorage.getItem('brfutebol_escudo');
 
                 document.getElementById('home-name').innerText = meuJogo.casa;
-                document.getElementById('home-crest').src = isCasa ? meuEscudo : escudoAdv;
+                document.getElementById('home-crest').src = isCasa ? meuEscudo : advEscudo;
+                
                 document.getElementById('away-name').innerText = meuJogo.fora;
-                document.getElementById('away-crest').src = isCasa ? escudoAdv : meuEscudo;
+                document.getElementById('away-crest').src = isCasa ? advEscudo : meuEscudo;
             } else {
                 document.getElementById('match-area').style.display = 'none';
                 document.getElementById('no-match-area').style.display = 'block';
             }
-        }
 
-        function atualizarDadosFinanceirosDash() {
-            const fin = myTeamObj.financas;
-            const totalRec = fin.receitas.patrocinioMaster + fin.receitas.tv;
-            const totalDesp = fin.despesas.folhaSalarial + fin.despesas.manutencao;
-            
-            const percentual = Math.min((totalDesp / totalRec) * 100, 100);
-            
-            document.getElementById('dash-caixa').innerText = Engine.formatarDinheiro(fin.caixa, fin.moeda);
-            
-            setTimeout(() => { document.getElementById('dash-bar').style.width = percentual + "%"; }, 100);
-            
-            const bar = document.getElementById('dash-bar');
-            if(percentual > 90) bar.style.backgroundColor = "#ff4757";
-            else if(percentual > 70) bar.style.backgroundColor = "#f1c40f";
-            else bar.style.backgroundColor = "#2ecc71";
-        }
-
-        function renderSquad() {
+            // Elenco
             const tbody = document.querySelector('#squad-table tbody');
             tbody.innerHTML = '';
-
-            const mapPos = { 'GOL':1, 'ZAG':2, 'MEI':3, 'ATA':4 };
-            const elenco = [...myTeamObj.elenco].sort((a,b) => {
-                if (mapPos[a.pos] !== mapPos[b.pos]) return mapPos[a.pos] - mapPos[b.pos];
-                return b.forca - a.forca;
+            myTeamObj.elenco.forEach(j => {
+                tbody.innerHTML += `<tr><td>${j.pos}</td><td>${j.nome}</td><td>${j.forca}</td><td>${j.idade}</td><td>${j.gols}</td></tr>`;
             });
 
-            elenco.forEach(jog => {
-                const tr = document.createElement('tr');
+            // Calendário
+            const listaCal = document.getElementById('calendar-list');
+            listaCal.innerHTML = '';
+            gameState.calendarioUsuario.forEach((ev, idx) => {
+                // Mostra +- 2 semanas
+                if (Math.abs(idx - semIdx) > 3) return;
                 
-                let badgeColor = "#555"; 
-                const c = jog.carac;
-                if(['Artilheiro','Veloz','Infiltrador','Apoio'].includes(c)) badgeColor = "#e74c3c";
-                else if(['Paredão','Xerife','Cão de Guarda','Defensivo'].includes(c)) badgeColor = "#3498db";
-                else if(['Maestro','Construtor','Joga com os Pés'].includes(c)) badgeColor = "#2ecc71";
-                else if(['Líder','Pegador de Pênaltis'].includes(c)) badgeColor = "#9b59b6";
-                else if(['Pivô'].includes(c)) badgeColor = "#f39c12";
-
-                tr.innerHTML = `
-                    <td style="text-align:center; font-weight:bold; color:#aaa;">${jog.pos}</td>
-                    <td>
-                        ${jog.nome}
-                        ${c !== 'Normal' ? `<span class="trait-badge" style="background:${badgeColor}">${c}</span>` : ''}
-                    </td>
-                    <td style="text-align:center; font-weight:bold; font-size:1.1rem;">${jog.forca}</td>
-                    <td class="stat-col">${jog.idade}</td>
-                    <td class="stat-col" style="color:${jog.energia > 80 ? '#2ecc71':'#f1c40f'}">${jog.energia}%</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function renderCalendarList() {
-            const lista = document.getElementById('calendar-list');
-            lista.innerHTML = '';
-            
-            gameState.calendario.forEach((ev, idx) => {
-                if (Math.abs(idx - (gameState.semanaAtual - 1)) > 4) return; // Filtro visual
-
-                const li = document.createElement('li');
-                li.style.padding = "10px"; li.style.borderBottom = "1px solid #444";
-                li.style.display = "flex"; li.style.justifyContent = "space-between";
-                li.style.color = (idx === gameState.semanaAtual - 1) ? "#fff" : "#888";
-                if(idx === gameState.semanaAtual - 1) li.style.background = "rgba(15, 185, 177, 0.1)";
-
-                const meuJogo = ev.jogos.find(j => j.casa === myTeamObj.nome || j.fora === myTeamObj.nome);
-                let textoJogo = "Folga";
-                if (meuJogo) {
-                    textoJogo = `${meuJogo.casa} vs ${meuJogo.fora}`;
-                    if(meuJogo.golsCasa !== undefined) textoJogo += ` (${meuJogo.golsCasa}-${meuJogo.golsFora})`;
+                const meuJ = ev.jogos.find(j => j.casa === myTeamObj.nome || j.fora === myTeamObj.nome);
+                let txt = "Folga";
+                let style = "";
+                if(meuJ) {
+                    txt = `${meuJ.casa} vs ${meuJ.fora}`;
+                    if(meuJ.golsCasa !== undefined) txt += ` (${meuJ.golsCasa}-${meuJ.golsFora})`;
                 }
-
-                li.innerHTML = `<span><b>Semana ${idx+1}:</b> ${ev.nome}</span><span>${textoJogo}</span>`;
-                lista.appendChild(li);
+                
+                if (idx === semIdx) style = "background:rgba(15, 185, 177, 0.1); color:#fff;";
+                
+                listaCal.innerHTML += `<li style="padding:10px; border-bottom:1px solid #444; ${style}">
+                    <span style="font-weight:bold; margin-right:10px;">Semana ${ev.semana}</span>
+                    <span>${txt}</span>
+                </li>`;
             });
         }
 
-        function getEscudo(nomeTime) {
-            let t = Engine.encontrarTime(gameState, nomeTime);
-            if(t) return t.escudo;
-            return 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
+        function jogarRodada() {
+            const semIdx = gameState.semanaAtual - 1;
+            const evento = gameState.calendarioUsuario[semIdx];
+            if (!evento) return alert("Fim!");
+
+            const meuJogo = evento.jogos.find(j => j.casa === myTeamObj.nome || j.fora === myTeamObj.nome);
+
+            if (meuJogo) {
+                window.location.href = 'partida.html';
+            } else {
+                const btn = document.querySelector('#no-match-area button');
+                btn.disabled = true; btn.innerText = "Simulando...";
+                setTimeout(() => {
+                    Engine.processarSemana(gameState);
+                    window.location.reload();
+                }, 500);
+            }
         }
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+        function switchTab(id) {
+            document.querySelectorAll('.tab-content').forEach(d => d.style.display='none');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('tab-'+tabId).style.display = 'block';
-            event.target.classList.add('active');
+            document.getElementById('tab-'+id).style.display='block';
+            //event.target.classList.add('active'); // Bug fix simplificado
         }
-
     </script>
 </body>
 </html>
