@@ -3,246 +3,317 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRFutebol - Início</title>
+    <title>BRFutebol - Novo Jogo</title>
     
-    <script src="./database_jogadores.js"></script>
-    <script src="./engine.js"></script>
+    <script src="database_jogadores.js"></script>
+    <script src="engine.js"></script>
 
     <style>
         :root {
             --bg: #0d1115;
             --card: #1e272e;
-            --highlight: #0fb9b1; /* Verde Turquesa */
+            --green: #2ecc71;
+            --gold: #f1c40f;
             --text: #ecf0f1;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
             background-color: var(--bg);
             color: var(--text);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-image: radial-gradient(circle at center, #1a2226 0%, #0d1115 100%);
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh;
         }
 
-        .login-card {
-            background-color: var(--card);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            width: 400px;
-            text-align: center;
-            border: 1px solid #333;
-            animation: fadeIn 0.5s ease-out;
+        h1 { text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+        h1 span { color: var(--green); }
+
+        /* CONTAINER PRINCIPAL */
+        .main-container {
+            width: 100%; max-width: 1000px;
+            display: flex; flex-direction: column; gap: 30px;
         }
 
-        h1 { margin-bottom: 30px; text-transform: uppercase; letter-spacing: 2px; margin-top: 0; }
-        h1 span { color: var(--highlight); }
+        /* ETAPA 1: NOME E PAÍS */
+        .input-section {
+            background: var(--card); padding: 20px; border-radius: 12px;
+            border: 1px solid #333; display: flex; gap: 20px; flex-wrap: wrap;
+            align-items: end; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .form-group { flex: 1; min-width: 200px; }
+        label { display: block; color: #888; font-weight: bold; margin-bottom: 8px; font-size: 0.9rem; }
+        input, select {
+            width: 100%; padding: 12px; background: #111; border: 1px solid #444;
+            color: #fff; border-radius: 8px; font-size: 1rem; box-sizing: border-box;
+        }
+        input:focus, select:focus { border-color: var(--green); outline: none; }
 
-        .form-group { margin-bottom: 20px; text-align: left; }
-        label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: #aaa; font-weight: bold; }
+        /* ETAPA 2: DIVISÕES (CARDS) */
+        .division-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px; opacity: 0.5; pointer-events: none; transition: 0.3s;
+        }
+        .division-grid.active { opacity: 1; pointer-events: all; }
+
+        .div-card {
+            background: linear-gradient(145deg, #2c3e50, #1e272e);
+            padding: 30px 20px; border-radius: 12px; text-align: center;
+            border: 2px solid transparent; cursor: pointer; transition: 0.2s;
+        }
+        .div-card:hover { transform: translateY(-5px); border-color: var(--gold); }
+        .div-card.selected { background: var(--green); color: #000; border-color: #fff; box-shadow: 0 0 15px var(--green); }
+        .div-title { font-size: 1.5rem; font-weight: 900; letter-spacing: 1px; }
+        .div-desc { font-size: 0.8rem; opacity: 0.7; margin-top: 5px; }
+
+        /* ETAPA 3: TIMES (CARDS) */
+        .teams-area { display: none; flex-direction: column; gap: 15px; animation: slideUp 0.5s ease; }
+        .teams-area.visible { display: flex; }
+
+        .teams-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+        }
         
-        select, input {
-            width: 100%;
-            padding: 12px;
-            background: #111;
-            border: 1px solid #444;
-            color: white;
-            border-radius: 8px;
-            font-size: 1rem;
-            box-sizing: border-box;
-            transition: 0.2s;
+        .team-card {
+            background: var(--card); border: 1px solid #333; border-radius: 10px;
+            padding: 15px; display: flex; flex-direction: column; align-items: center;
+            cursor: pointer; transition: 0.2s; position: relative; overflow: hidden;
         }
-
-        select:focus, input:focus {
-            outline: none;
-            border-color: var(--highlight);
-            box-shadow: 0 0 10px rgba(15, 185, 177, 0.2);
+        .team-card:hover { border-color: var(--gold); background: #252e33; }
+        .team-card.selected { border: 2px solid var(--green); background: rgba(46, 204, 113, 0.1); }
+        
+        .team-logo { width: 70px; height: 70px; object-fit: contain; margin-bottom: 10px; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5)); }
+        .team-name { font-weight: bold; text-align: center; margin-bottom: 5px; font-size: 0.95rem; }
+        .team-str { font-size: 0.8rem; color: #888; background: #111; padding: 2px 8px; border-radius: 4px; }
+        
+        /* BOTÃO FINAL */
+        .action-bar {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(0,0,0,0.9); padding: 15px;
+            display: flex; justify-content: center;
+            border-top: 1px solid #333; transform: translateY(100%); transition: 0.3s;
         }
+        .action-bar.visible { transform: translateY(0); }
 
         .btn-start {
-            background: linear-gradient(135deg, var(--highlight), #098e87);
-            color: white;
-            border: none;
-            padding: 15px;
-            width: 100%;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: 10px;
-            text-transform: uppercase;
+            background: linear-gradient(90deg, var(--green), #27ae60);
+            color: #fff; border: none; padding: 15px 50px;
+            font-size: 1.2rem; font-weight: bold; border-radius: 30px;
+            cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.4);
         }
+        .btn-start:hover { transform: scale(1.05); }
 
-        .btn-start:hover { 
-            transform: translateY(-2px); 
-            box-shadow: 0 5px 15px rgba(15, 185, 177, 0.3);
-        }
-        
-        .btn-start:disabled {
-            background: #444;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .loading { font-size: 0.85rem; color: #888; margin-top: 15px; display: none; }
-        
-        .error-msg {
-            color: #ff4757;
-            background: rgba(255, 71, 87, 0.1);
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            margin-bottom: 20px;
-            display: none;
-            border: 1px solid #ff4757;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
     </style>
 </head>
 <body>
 
-    <div class="login-card">
-        <h1>BR<span>Futebol</span> 26</h1>
+    <h1>BR<span>Futebol</span> 26</h1>
+
+    <div class="main-container">
         
-        <div id="error-box" class="error-msg"></div>
-
-        <div class="form-group">
-            <label>Seu Nome de Treinador</label>
-            <input type="text" id="nome-tecnico" placeholder="Ex: Abel Ferreira">
+        <div class="input-section">
+            <div class="form-group">
+                <label>Nome do Treinador</label>
+                <input type="text" id="coach-name" placeholder="Ex: Tite, Abel..." oninput="checkStep1()">
+            </div>
+            <div class="form-group">
+                <label>País da Liga</label>
+                <select id="country-select" onchange="checkStep1()">
+                    <option value="">-- Selecione --</option>
+                    <option value="brasil">BRASIL</option>
+                    <option value="espanha" disabled style="color:#444">ESPANHA (Em breve)</option>
+                    <option value="inglaterra" disabled style="color:#444">INGLATERRA (Em breve)</option>
+                </select>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>País da Liga</label>
-            <select id="select-pais" onchange="carregarTimes()">
-                <option value="">Carregando...</option>
-            </select>
+        <div id="division-section" class="division-grid">
+            <div class="div-card" onclick="selectDivision('serieA', this)">
+                <div class="div-title">SÉRIE A</div>
+                <div class="div-desc">Elite do Futebol</div>
+            </div>
+            <div class="div-card" onclick="selectDivision('serieB', this)">
+                <div class="div-title">SÉRIE B</div>
+                <div class="div-desc">Luta pelo Acesso</div>
+            </div>
+            <div class="div-card" onclick="selectDivision('serieC', this)">
+                <div class="div-title">SÉRIE C</div>
+                <div class="div-desc">Raiz do Futebol</div>
+            </div>
+            <div class="div-card" onclick="selectDivision('serieD', this)">
+                <div class="div-title">SÉRIE D</div>
+                <div class="div-desc">O Começo de Tudo</div>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>Escolha seu Time</label>
-            <select id="select-time">
-                <option value="">Selecione o país primeiro...</option>
-            </select>
+        <div id="teams-section" class="teams-area">
+            <h3 style="border-bottom: 1px solid #333; padding-bottom: 10px; color: var(--gold);">Escolha seu Clube</h3>
+            <div id="teams-grid" class="teams-grid">
+                </div>
         </div>
+        
+        <div style="height: 100px;"></div>
+    </div>
 
+    <div id="footer-action" class="action-bar">
         <button class="btn-start" onclick="iniciarJogo()">ASSUMIR TIME</button>
-        <div class="loading" id="msg-loading">
-            ⚙️ Criando mundo, sorteando tabelas e gerando calendário...
-        </div>
     </div>
 
     <script>
-        window.onload = function() {
-            const errBox = document.getElementById('error-box');
-            let missing = [];
+        let selectedDivision = null;
+        let selectedTeam = null;
 
-            if (typeof database === 'undefined') missing.push("database_jogadores.js");
-            if (typeof Engine === 'undefined') missing.push("engine.js");
+        // VERIFICA SE PODE LIBERAR AS DIVISÕES
+        function checkStep1() {
+            const nome = document.getElementById('coach-name').value;
+            const pais = document.getElementById('country-select').value;
+            const divSec = document.getElementById('division-section');
 
-            if (missing.length > 0) {
-                errBox.style.display = 'block';
-                errBox.innerHTML = `<strong>ERRO CRÍTICO:</strong><br>Não foi possível carregar: ${missing.join(", ")}.<br>Verifique se os arquivos estão na pasta correta e se os nomes estão iguais (minúsculas).`;
-                document.querySelector('.btn-start').disabled = true;
-                return;
+            if (nome.length > 2 && pais === 'brasil') {
+                divSec.classList.add('active');
+            } else {
+                divSec.classList.remove('active');
+                document.getElementById('teams-section').classList.remove('visible');
+                document.getElementById('footer-action').classList.remove('visible');
+                // Reseta seleções visuais
+                document.querySelectorAll('.div-card').forEach(c => c.classList.remove('selected'));
             }
+        }
 
-            // Tudo certo, carrega os países
-            carregarPaises();
-        };
+        // CLIQUE NA DIVISÃO
+        function selectDivision(divId, cardElement) {
+            // Visual
+            document.querySelectorAll('.div-card').forEach(c => c.classList.remove('selected'));
+            cardElement.classList.add('selected');
+            selectedDivision = divId;
 
-        function carregarPaises() {
-            const sel = document.getElementById('select-pais');
-            sel.innerHTML = '<option value="">-- Selecione --</option>';
+            // Lógica de Carregamento
+            carregarTimes(divId);
+        }
+
+        // CARREGA OS CARDS DOS TIMES
+        function carregarTimes(divisao) {
+            const grid = document.getElementById('teams-grid');
+            grid.innerHTML = ''; // Limpa
             
-            // Pega as chaves do objeto database (brasil, espanha, etc)
-            Object.keys(database).forEach(pais => {
-                const opt = document.createElement('option');
-                opt.value = pais;
-                opt.innerText = pais.toUpperCase();
-                sel.appendChild(opt);
-            });
-        }
+            const section = document.getElementById('teams-section');
+            section.classList.add('visible');
+            
+            // Esconde botão final até escolher time
+            document.getElementById('footer-action').classList.remove('visible');
+            selectedTeam = null;
 
-        function carregarTimes() {
-            const pais = document.getElementById('select-pais').value;
-            const selTime = document.getElementById('select-time');
-            selTime.innerHTML = '';
+            // Busca no Database
+            // Tenta achar a estrutura correta (seja array simples ou objeto com divisões)
+            let listaTimes = [];
+            const dbBR = database.brasil;
 
-            if (!pais || !database[pais]) {
-                selTime.innerHTML = '<option value="">Selecione o país primeiro...</option>';
+            if (Array.isArray(dbBR)) {
+                // Se o DB for antigo (só array), assume que é Série A
+                if (divisao === 'serieA') listaTimes = dbBR;
+                else {
+                    // Simula times para B, C, D se não existirem
+                    listaTimes = gerarTimesGenericos(divisao);
+                }
+            } else {
+                // Se o DB já tiver estrutura { serieA: [], serieB: [] }
+                listaTimes = dbBR[divisao] || gerarTimesGenericos(divisao);
+            }
+
+            if (listaTimes.length === 0) {
+                grid.innerHTML = '<p style="color:#777">Nenhum time encontrado nesta divisão.</p>';
                 return;
             }
 
-            // Suporte para estruturas diferentes de DB
-            let lista = [];
-            if (Array.isArray(database[pais])) {
-                lista = database[pais];
-            } else if (database[pais].primeira) {
-                lista = database[pais].primeira;
-            } else if (database[pais].serieA) {
-                lista = database[pais].serieA;
-            }
+            // Ordena e Renderiza
+            listaTimes.sort((a,b) => a.nome.localeCompare(b.nome));
 
-            // Ordena alfabeticamente para facilitar a busca
-            lista.sort((a,b) => a.nome.localeCompare(b.nome));
-
-            lista.forEach(t => {
-                const opt = document.createElement('option');
-                opt.value = t.nome;
-                opt.innerText = t.nome;
-                selTime.appendChild(opt);
+            listaTimes.forEach(t => {
+                const card = document.createElement('div');
+                card.className = 'team-card';
+                card.onclick = () => selecionarTime(t.nome, card);
+                
+                const escudo = t.escudo || 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
+                
+                card.innerHTML = `
+                    <img src="${escudo}" class="team-logo">
+                    <div class="team-name">${t.nome}</div>
+                    <div class="team-str">Força: ${t.forca || 60}</div>
+                `;
+                grid.appendChild(card);
             });
+
+            // Scroll suave até os times
+            setTimeout(() => {
+                section.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
         }
 
+        // CLIQUE NO TIME
+        function selecionarTime(nomeTime, cardElement) {
+            document.querySelectorAll('.team-card').forEach(c => c.classList.remove('selected'));
+            cardElement.classList.add('selected');
+            
+            selectedTeam = nomeTime;
+            document.getElementById('footer-action').classList.add('visible');
+        }
+
+        // GERADOR DE TIMES GENÉRICOS (Caso o DB esteja incompleto)
+        function gerarTimesGenericos(div) {
+            const prefix = div === 'serieB' ? 'B' : (div === 'serieC' ? 'C' : 'D');
+            const times = [];
+            for(let i=1; i<=16; i++) {
+                times.push({
+                    nome: `Clube ${prefix}-${i}`,
+                    forca: div === 'serieB' ? 70 : (div === 'serieC' ? 60 : 50),
+                    escudo: 'https://cdn-icons-png.flaticon.com/512/53/53283.png'
+                });
+            }
+            return times;
+        }
+
+        // INICIAR (Chama o Engine)
         function iniciarJogo() {
-            const nomeTecnico = document.getElementById('nome-tecnico').value;
-            const pais = document.getElementById('select-pais').value;
-            const time = document.getElementById('select-time').value;
+            const nomeTecnico = document.getElementById('coach-name').value;
+            const pais = 'brasil'; // Fixo por enquanto conforme pedido
+            
+            if (!nomeTecnico || !selectedTeam) return;
 
-            if (!nomeTecnico || !pais || !time) {
-                alert("Por favor, preencha todos os campos para começar.");
-                return;
-            }
-
-            // Interface de Loading
-            document.getElementById('msg-loading').style.display = 'block';
+            // Salva dados básicos
+            localStorage.setItem('brfutebol_tecnico', nomeTecnico);
+            
+            // Salva escudo para cache
+            // (Lógica simplificada de busca no DB ou Generic)
+            // O Engine.novoJogo vai cuidar de recarregar os dados corretamente
+            
+            // Feedback Visual
             const btn = document.querySelector('.btn-start');
+            btn.innerText = "CRIANDO MUNDO...";
             btn.disabled = true;
-            btn.innerText = "PROCESSANDO...";
 
             setTimeout(() => {
-                // Salva o nome do técnico
-                localStorage.setItem('brfutebol_tecnico', nomeTecnico);
-                
-                // Salva o escudo para uso rápido no dashboard
-                let lista = Array.isArray(database[pais]) ? database[pais] : (database[pais].primeira || database[pais].serieA);
-                let timeObj = lista.find(t => t.nome === time);
-                if(timeObj) localStorage.setItem('brfutebol_escudo', timeObj.escudo);
-
                 try {
-                    // CHAMA O MOTOR GLOBAL
-                    // Parâmetros: (país selecionado, divisão padrão, nome do time)
-                    Engine.novoJogo(pais, 'primeira', time);
+                    // Inicia Engine Global
+                    // Passamos a divisão selecionada para o Engine saber onde colocar o time se precisar
+                    Engine.novoJogo(pais, selectedDivision, selectedTeam);
                     
-                    // Sucesso -> Vai para o Dashboard
+                    // Vai para o Dashboard
                     window.location.href = 'dashboard.html';
                 } catch (e) {
-                    alert("Erro ao iniciar o motor: " + e.message);
+                    alert("Erro ao iniciar engine: " + e.message);
                     console.error(e);
                     btn.disabled = false;
-                    btn.innerText = "TENTAR NOVAMENTE";
-                    document.getElementById('msg-loading').style.display = 'none';
                 }
-            }, 100); // Delay curto para a UI atualizar
+            }, 500);
         }
+
+        // Auto-Check ao carregar (caso browser salve preenchimento)
+        window.onload = checkStep1;
+
     </script>
 </body>
 </html>
