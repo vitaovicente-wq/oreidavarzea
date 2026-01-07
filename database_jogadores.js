@@ -393,7 +393,7 @@ const PlayersDB = {
         { nome: "Julimar", pos: "ATA", forca: 76, idade: 24, carac: "Físico" },
         { nome: "Emersonn", pos: "ATA", forca: 74, idade: 21, carac: "Promessa" },
         { nome: "Di Yorio", pos: "ATA", forca: 75, idade: 29, carac: "Raçudo" }
-    ]
-       
+    ],
+   ] 
 };
 };
