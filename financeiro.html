@@ -11,15 +11,15 @@
     <style>
         :root {
             --bg: #0d1115;
-            --card-bg: #2d3436;
+            --card: #1e272e;
             --text: #ecf0f1;
-            --gold: #f1c40f;
             --green: #2ecc71;
             --red: #ff4757;
+            --gold: #f1c40f;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0; padding: 0;
@@ -27,160 +27,137 @@
             height: 100vh; overflow: hidden;
         }
 
+        /* HEADER */
         header {
             background-color: rgba(30, 39, 46, 0.95);
             border-bottom: 2px solid var(--gold);
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 30px;
         }
+        .btn-back { background: #444; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-back:hover { background: #555; }
 
-        .back-btn { background: #444; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .back-btn:hover { background: #555; }
-
+        /* LAYOUT */
         main {
             padding: 30px;
-            overflow-y: auto;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%; box-sizing: border-box;
+            gap: 25px;
+            max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box;
+            overflow-y: auto;
         }
 
-        /* CARD PRINCIPAL (CAIXA) */
+        /* CARDS */
+        .card {
+            background: var(--card); border-radius: 12px; padding: 25px;
+            border: 1px solid #333; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        /* CARD PRINCIPAL (FULL WIDTH) */
         .hero-card {
             grid-column: 1 / -1;
             background: linear-gradient(135deg, #2d3436 0%, #000 100%);
             border: 1px solid var(--gold);
-            border-radius: 16px;
-            padding: 30px;
             display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 10px 30px rgba(241, 196, 15, 0.1);
         }
-
-        .hero-info h2 { margin: 0; color: #888; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; }
-        .hero-info .value { font-size: 3rem; font-weight: 800; color: #fff; margin-top: 5px; }
-        .hero-icon { font-size: 3rem; }
-
-        /* SEÇÕES */
-        .section-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 25px;
-            border: 1px solid #444;
-        }
-        
-        .section-header { 
-            display: flex; justify-content: space-between; align-items: center; 
-            margin-bottom: 20px; border-bottom: 1px solid #444; padding-bottom: 15px; 
-        }
-        .section-title { font-size: 1.1rem; font-weight: bold; color: #fff; display: flex; align-items: center; gap: 10px; }
+        .hero-val { font-size: 3rem; font-weight: 800; color: #fff; margin-top: 5px; }
+        .hero-label { text-transform: uppercase; color: #888; font-size: 0.9rem; letter-spacing: 1px; }
 
         /* LISTAS DE VALORES */
-        .finance-row {
-            display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 0.95rem;
-        }
-        .finance-row span:last-child { font-weight: bold; font-family: monospace; font-size: 1rem; }
-        
-        .val-green { color: var(--green); }
-        .val-red { color: var(--red); }
+        .finance-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1rem; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .finance-row:last-child { border: none; }
+        .val-plus { color: var(--green); font-weight: bold; font-family: monospace; }
+        .val-minus { color: var(--red); font-weight: bold; font-family: monospace; }
 
-        /* BARRA DE PROGRESSO */
-        .progress-container { margin-top: 10px; }
-        .progress-label { display: flex; justify-content: space-between; font-size: 0.8rem; color: #aaa; margin-bottom: 5px; }
-        .progress-bg { background: #444; height: 8px; border-radius: 4px; overflow: hidden; }
-        .progress-fill { height: 100%; border-radius: 4px; }
+        /* BARRA DE ORÇAMENTO */
+        .budget-bar { height: 10px; background: #333; border-radius: 5px; overflow: hidden; margin-top: 20px; }
+        .budget-fill { height: 100%; transition: width 1s; }
 
-        /* TABELA DE SALÁRIOS */
+        /* TABELA SALÁRIOS */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { text-align: left; color: #888; font-size: 0.8rem; padding-bottom: 10px; border-bottom: 1px solid #444; }
-        td { padding: 10px 0; border-bottom: 1px solid #333; font-size: 0.9rem; }
-        .salary-val { text-align: right; color: #fff; font-family: monospace; }
+        th { text-align: left; color: #888; font-size: 0.8rem; padding-bottom: 10px; border-bottom: 2px solid #444; }
+        td { padding: 12px 0; border-bottom: 1px solid #333; }
+        .salary-val { text-align: right; font-family: monospace; color: #fff; }
 
     </style>
 </head>
 <body>
 
     <header>
-        <button class="back-btn" onclick="voltar()">⬅ Voltar ao Dashboard</button>
+        <button class="btn-back" onclick="window.location.href='dashboard.html'">⬅ Dashboard</button>
         <h1 style="color:white; font-size:1.2rem; text-transform:uppercase;">Departamento Financeiro</h1>
-        <div style="width: 100px;"></div> </header>
+        <div style="width:100px"></div>
+    </header>
 
     <main>
-        <div class="hero-card">
-            <div class="hero-info">
-                <h2>Dinheiro em Caixa (Disponível)</h2>
-                <div class="value" id="val-caixa">R$ 0</div>
-                <p style="color:#aaa; margin:5px 0 0 0; font-size:0.9rem;">Orçamento Anual: <span id="val-orcamento">R$ 0</span></p>
+        <div class="card hero-card">
+            <div>
+                <div class="hero-label">Dinheiro em Caixa</div>
+                <div class="hero-val" id="val-caixa">R$ 0</div>
             </div>
-            <div class="hero-icon">🏦</div>
+            <div style="text-align:right;">
+                <div class="hero-label">Balanço da Temporada</div>
+                <div id="val-projecao" style="font-size:1.5rem; font-weight:bold; margin-top:5px;">R$ 0</div>
+            </div>
         </div>
 
-        <div class="section-card">
-            <div class="section-header">
-                <div class="section-title"><span style="color:var(--green)">▲</span> Receitas Previstas</div>
-            </div>
+        <div class="card">
+            <h3 style="color:var(--green); margin-top:0;">▲ Receitas</h3>
             
             <div class="finance-row">
-                <span>📺 Direitos de TV</span>
-                <span class="val-green" id="rec-tv">R$ 0</span>
+                <span>📺 Cotas de TV</span>
+                <span class="val-plus" id="rec-tv">0</span>
             </div>
             <div class="finance-row">
                 <span>👕 Patrocínio Master</span>
-                <span class="val-green" id="rec-patrocinio">R$ 0</span>
+                <span class="val-plus" id="rec-patro">0</span>
             </div>
             <div class="finance-row">
-                <span>🎟️ Bilheteria (Acumulada)</span>
-                <span class="val-green" id="rec-bilheteria">R$ 0</span>
+                <span>🎟️ Bilheteria (Acumulado)</span>
+                <span class="val-plus" id="rec-bilh">0</span>
             </div>
-            <div class="finance-row" style="border-top:1px solid #444; padding-top:10px; margin-top:20px;">
-                <span>TOTAL RECEITAS</span>
-                <span class="val-green" id="rec-total" style="font-size:1.2rem;">R$ 0</span>
+            <div class="finance-row">
+                <span>🏆 Premiações</span>
+                <span class="val-plus" id="rec-premios">0</span>
             </div>
         </div>
 
-        <div class="section-card">
-            <div class="section-header">
-                <div class="section-title"><span style="color:var(--red)">▼</span> Despesas Anuais</div>
-            </div>
-
+        <div class="card">
+            <h3 style="color:var(--red); margin-top:0;">▼ Despesas (Anual)</h3>
+            
             <div class="finance-row">
                 <span>👥 Folha Salarial (Elenco)</span>
-                <span class="val-red" id="desp-salarios">R$ 0</span>
+                <span class="val-minus" id="desp-folha">0</span>
             </div>
-            
-            <div class="progress-container">
-                <div class="progress-label">
-                    <span>Impacto no Orçamento</span>
-                    <span id="impacto-pct">0%</span>
-                </div>
-                <div class="progress-bg">
-                    <div class="progress-fill" id="bar-impacto" style="width: 0%; background: var(--red);"></div>
-                </div>
+            <div class="finance-row">
+                <span>🏟️ Manutenção Estádio/CT</span>
+                <span class="val-minus" id="desp-manu">0</span>
+            </div>
+            <div class="finance-row">
+                <span>🔄 Transferências</span>
+                <span class="val-minus" id="desp-transf">0</span>
             </div>
 
-            <div class="finance-row" style="margin-top:20px;">
-                <span>🏟️ Manutenção / Estádio</span>
-                <span class="val-red" id="desp-manutencao">R$ 0</span>
-            </div>
-            <div class="finance-row" style="border-top:1px solid #444; padding-top:10px; margin-top:20px;">
-                <span>TOTAL DESPESAS</span>
-                <span class="val-red" id="desp-total" style="font-size:1.2rem;">R$ 0</span>
+            <div style="margin-top:25px;">
+                <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#aaa; margin-bottom:5px;">
+                    <span>Comprometimento da Receita</span>
+                    <span id="lbl-pct">0%</span>
+                </div>
+                <div class="budget-bar">
+                    <div id="bar-pct" class="budget-fill" style="width:0%; background:var(--green);"></div>
+                </div>
             </div>
         </div>
 
-        <div class="section-card" style="grid-column: 1 / -1;">
-            <div class="section-header">
-                <div class="section-title">⭐ Maiores Salários do Elenco</div>
-            </div>
-            <table id="table-salarios">
+        <div class="card" style="grid-column: 1 / -1;">
+            <h3 style="color:var(--gold); margin-top:0;">⭐ Folha de Pagamento</h3>
+            <table id="salary-table">
                 <thead>
                     <tr>
                         <th>Jogador</th>
                         <th>Posição</th>
                         <th>Status</th>
-                        <th style="text-align:right;">Salário Mensal (Estimado)</th>
+                        <th style="text-align:right;">Salário Mensal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -197,67 +174,67 @@
             const gameState = Engine.carregarJogo();
             if (!gameState) { window.location.href = 'index.html'; return; }
 
-            const myTeamObj = gameState.times.find(t => t.nome === gameState.meuTime) || gameState.timesContinental.find(t => t.nome === gameState.meuTime);
-
-            // Se não tiver finanças inicializadas (save antigo), inicializa agora
-            if(!myTeamObj.financas) {
-                Engine.inicializarFinancas(myTeamObj);
+            // Busca o time na estrutura global nova
+            const time = Engine.encontrarTime(gameState, gameState.meuTime);
+            
+            // Inicializa se necessário (compatibilidade)
+            if(!time.financas) {
+                Engine.inicializarFinancas(time);
                 Engine.salvarJogo(gameState);
             }
 
-            renderizarTela(myTeamObj);
+            renderizarTela(time);
         };
 
         function renderizarTela(time) {
             const f = time.financas;
-            const moeda = f.moeda;
+            const m = f.moeda || "R$";
 
-            // Hero
-            document.getElementById('val-caixa').innerText = Engine.formatarDinheiro(f.caixa, moeda);
-            document.getElementById('val-orcamento').innerText = Engine.formatarDinheiro(f.orcamentoAnual, moeda);
+            // 1. Valores Principais
+            document.getElementById('val-caixa').innerText = Engine.formatarDinheiro(f.caixa, m);
+            document.getElementById('rec-tv').innerText = Engine.formatarDinheiro(f.receitas.tv, m);
+            document.getElementById('rec-patro').innerText = Engine.formatarDinheiro(f.receitas.patrocinioMaster, m);
+            document.getElementById('rec-bilh').innerText = Engine.formatarDinheiro(f.receitas.bilheteria, m);
+            document.getElementById('rec-premios').innerText = Engine.formatarDinheiro(f.receitas.premios || 0, m);
 
-            // Receitas
-            document.getElementById('rec-tv').innerText = Engine.formatarDinheiro(f.receitas.tv, moeda);
-            document.getElementById('rec-patrocinio').innerText = Engine.formatarDinheiro(f.receitas.patrocinioMaster, moeda);
-            document.getElementById('rec-bilheteria').innerText = Engine.formatarDinheiro(f.receitas.bilheteria, moeda);
+            document.getElementById('desp-folha').innerText = Engine.formatarDinheiro(f.despesas.folhaSalarial, m);
+            document.getElementById('desp-manu').innerText = Engine.formatarDinheiro(f.despesas.manutencao, m);
+            document.getElementById('desp-transf').innerText = Engine.formatarDinheiro(f.despesas.transferencias || 0, m);
+
+            // 2. Projeção (Receita Total - Despesa Total)
+            const totalRec = f.receitas.tv + f.receitas.patrocinioMaster + f.receitas.bilheteria + (f.receitas.premios||0);
+            const totalDesp = f.despesas.folhaSalarial + f.despesas.manutencao + (f.despesas.transferencias||0);
+            const balanco = totalRec - totalDesp;
+
+            const elProj = document.getElementById('val-projecao');
+            elProj.innerText = (balanco > 0 ? "+" : "") + Engine.formatarDinheiro(balanco, m);
+            elProj.style.color = balanco >= 0 ? "#2ecc71" : "#ff4757";
+
+            // 3. Barra de Percentual
+            const pct = Math.min(100, Math.floor((totalDesp / totalRec) * 100));
+            document.getElementById('lbl-pct').innerText = pct + "%";
+            document.getElementById('bar-pct').style.width = pct + "%";
             
-            const totalRec = f.receitas.tv + f.receitas.patrocinioMaster + f.receitas.bilheteria + f.receitas.premios;
-            document.getElementById('rec-total').innerText = Engine.formatarDinheiro(totalRec, moeda);
+            if(pct > 90) document.getElementById('bar-pct').style.backgroundColor = "#ff4757";
+            else if(pct > 70) document.getElementById('bar-pct').style.backgroundColor = "#f1c40f";
+            else document.getElementById('bar-pct').style.backgroundColor = "#2ecc71";
 
-            // Despesas
-            document.getElementById('desp-salarios').innerText = Engine.formatarDinheiro(f.despesas.folhaSalarial, moeda);
-            document.getElementById('desp-manutencao').innerText = Engine.formatarDinheiro(f.despesas.manutencao, moeda);
+            // 4. Tabela de Salários
+            const tbody = document.querySelector('#salary-table tbody');
             
-            const totalDesp = f.despesas.folhaSalarial + f.despesas.manutencao + f.despesas.transferencias;
-            document.getElementById('desp-total').innerText = Engine.formatarDinheiro(totalDesp, moeda);
-
-            // Barra de Impacto (Salários vs Receita Total Prevista)
-            const impacto = (f.despesas.folhaSalarial / totalRec) * 100;
-            document.getElementById('impacto-pct').innerText = impacto.toFixed(1) + "%";
-            document.getElementById('bar-impacto').style.width = Math.min(impacto, 100) + "%";
-            
-            if(impacto > 80) document.getElementById('bar-impacto').style.backgroundColor = "#ff4757"; // Perigo
-            else if(impacto > 60) document.getElementById('bar-impacto').style.backgroundColor = "#f1c40f"; // Atenção
-            else document.getElementById('bar-impacto').style.backgroundColor = "#2ecc71"; // Saudável
-
-            // Tabela de Salários (Top 10)
-            const tbody = document.querySelector('#table-salarios tbody');
-            const elencoOrdenado = [...time.elenco].sort((a,b) => b.salario - a.salario).slice(0, 10);
+            // Ordena por salário
+            const elencoOrdenado = [...time.elenco].sort((a,b) => b.salario - a.salario);
 
             elencoOrdenado.forEach(jog => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td><b>${jog.nome}</b> <span style="font-size:0.8rem; color:#aaa;">(${jog.forca})</span></td>
+                    <td><b>${jog.nome}</b> <small style="color:#777">(${jog.forca})</small></td>
                     <td>${jog.pos}</td>
                     <td>${jog.carac !== 'Normal' ? '⭐ Estrela' : 'Base'}</td>
-                    <td class="salary-val">${Engine.formatarDinheiro(jog.salario, moeda)}</td>
+                    <td class="salary-val">${Engine.formatarDinheiro(jog.salario, m)}</td>
                 `;
                 tbody.appendChild(tr);
             });
-        }
-
-        function voltar() {
-            window.location.href = 'dashboard.html';
         }
     </script>
 </body>
