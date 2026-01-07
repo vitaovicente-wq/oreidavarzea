@@ -1,13 +1,5 @@
 const Engine = {
-    // --- CONFIGURAÇÕES ---
-    configCompeticoes: {
-        brasil: { nome: "Brasileirão", cont: "Libertadores" },
-        argentina: { nome: "Liga Profesional", cont: "Libertadores" },
-        espanha: { nome: "La Liga", cont: "Champions League" },
-        inglaterra: { nome: "Premier League", cont: "Champions League" }
-    },
-
-    // --- 1. SETUP ---
+    // --- 1. SETUP E INICIALIZAÇÃO ---
     novoJogo: function(paisUsuario, divisao, timeJogador) {
         const gameState = {
             paisUsuario: paisUsuario,
@@ -19,20 +11,18 @@ const Engine = {
             mercado: []
         };
 
-        Object.keys(database).forEach(pais => {
-            let timesRaw = Array.isArray(database[pais]) ? database[pais] : (database[pais].primeira || database[pais].serieA);
-            if (timesRaw && timesRaw.length > 0) {
-                const timesProcessados = JSON.parse(JSON.stringify(timesRaw)).map(t => this.inicializarTime(t, pais));
-                // Embaralha times antes de gerar calendário para mudar a ordem
-                timesProcessados.sort(() => Math.random() - 0.5);
-                const calendarioLiga = this.gerarCalendarioPontosCorridos(timesProcessados);
-                gameState.mundo[pais] = {
-                    times: timesProcessados,
-                    calendario: calendarioLiga,
-                    tabela: []
-                };
-            }
-        });
+        // Carrega todas as divisões do país escolhido
+        const ligasPais = database[paisUsuario];
+        
+        // Se for o formato novo (objeto com serieA, serieB...), processa todas
+        if (ligasPais.serieA) {
+            Object.keys(ligasPais).forEach(divNome => {
+                this.carregarLiga(gameState, paisUsuario, ligasPais[divNome]);
+            });
+        } else {
+            // Suporte legado (formato antigo array único)
+            this.carregarLiga(gameState, paisUsuario, ligasPais);
+        }
 
         this.construirCalendarioUsuario(gameState);
         this.atualizarMercado(gameState);
@@ -44,10 +34,40 @@ const Engine = {
         return gameState;
     },
 
+    carregarLiga: function(gameState, pais, listaTimes) {
+        if (!listaTimes || listaTimes.length === 0) return;
+        
+        const timesProcessados = JSON.parse(JSON.stringify(listaTimes)).map(t => this.inicializarTime(t, pais));
+        timesProcessados.sort(() => Math.random() - 0.5);
+        
+        const calendarioLiga = this.gerarCalendarioPontosCorridos(timesProcessados);
+        
+        // Se já existe o país no mundo, mescla os times (para busca global), mas guarda calendário separado se precisasse
+        // Para simplificar, vamos colocar tudo num "pool" do país por enquanto, ou separar por chave se quiséssemos simular divisões reais
+        // Aqui vou jogar tudo no objeto do país para o mercado funcionar globalmente
+        if (!gameState.mundo[pais]) {
+            gameState.mundo[pais] = { times: [], calendario: [], tabela: [] };
+        }
+        
+        // Adiciona times e funde calendários (simplificação para o MVP)
+        gameState.mundo[pais].times.push(...timesProcessados);
+        // O calendário idealmente seria por divisão, aqui vamos simplificar anexando
+        // (Nota: Num sistema complexo, cada div teria seu objeto. Aqui, focamos no time do jogador)
+        if(gameState.mundo[pais].calendario.length === 0) {
+            gameState.mundo[pais].calendario = calendarioLiga;
+        }
+    },
+
     inicializarTime: function(t, pais) {
         t.stats = { p:0, j:0, v:0, e:0, d:0, gp:0, gc:0, s:0 };
-        // Se já tem elenco (carregado de save anterior), mantém. Se não, gera.
         if(!t.elenco) t.elenco = this.gerarElenco(t.nome, t.forca || 60);
+        
+        // GARANTIR SAÚDE E IDADE
+        t.elenco.forEach(j => {
+            if (j.saude === undefined) j.saude = 100;
+            if (!j.idade) j.idade = 18 + Math.floor(Math.random() * 15);
+        });
+
         t.forca = this.calcularForcaElenco(t.elenco);
         t.moral = 100;
         t.pais = pais;
@@ -56,139 +76,46 @@ const Engine = {
         return t;
     },
 
-    // --- 2. VIRADA DE TEMPORADA (NOVO!) ---
-
-    virarTemporada: function(gameState) {
-        // 1. Premiações Financeiras e Histórico
-        Object.keys(gameState.mundo).forEach(pais => {
-            const liga = gameState.mundo[pais];
-            const classificacao = [...liga.times].sort((a,b) => b.stats.p - a.stats.p);
-            
-            // Paga prêmios (Ex: 1º lugar ganha 50 mi, último 5 mi)
-            classificacao.forEach((time, index) => {
-                const premio = Math.floor(50000000 - (index * 2000000));
-                if(time.financas) time.financas.caixa += Math.max(1000000, premio);
-                
-                // Reseta Stats da Tabela
-                time.stats = { p:0, j:0, v:0, e:0, d:0, gp:0, gc:0, s:0 };
-            });
-
-            // 2. Evolução e Envelhecimento
-            liga.times.forEach(time => {
-                this.processarEvolucaoElenco(time);
-            });
-
-            // 3. Novo Calendário (Embaralhado)
-            liga.times.sort(() => Math.random() - 0.5); // Sorteia ordem
-            liga.calendario = this.gerarCalendarioPontosCorridos(liga.times);
-        });
-
-        // 4. Atualiza Ano e Reinicia Semana
-        gameState.ano++;
-        gameState.semanaAtual = 1;
-        
-        this.construirCalendarioUsuario(gameState);
-        this.salvarJogo(gameState);
-        
-        return { ano: gameState.ano };
-    },
-
-    processarEvolucaoElenco: function(time) {
-        const novosJovens = [];
-        
-        // Filtra aposentados e evolui os que ficam
-        time.elenco = time.elenco.filter(jog => {
-            // Envelhece
-            jog.idade++;
-
-            // Lógica de Aposentadoria (Chance alta após 36 anos)
-            if (jog.idade >= 36) {
-                if (Math.random() < 0.4) {
-                    // APOSENTOU: Gera um Regen (Jovem da base) para repor
-                    novosJovens.push(this.gerarRegen(time.nome, jog.pos));
-                    return false; // Remove da lista
-                }
-            }
-            if (jog.idade >= 40) { // Aposentadoria compulsória
-                novosJovens.push(this.gerarRegen(time.nome, jog.pos));
-                return false; 
-            }
-
-            // Lógica de Evolução (Força)
-            let evolucao = 0;
-            if (jog.idade <= 21) evolucao = Math.floor(Math.random() * 4); // Cresce muito (+0 a +3)
-            else if (jog.idade <= 24) evolucao = Math.floor(Math.random() * 3); // Cresce bem
-            else if (jog.idade <= 29) evolucao = Math.random() > 0.7 ? 1 : 0; // Auge (estável)
-            else if (jog.idade >= 32) evolucao = Math.floor(Math.random() * -3); // Declínio
-
-            jog.forca += evolucao;
-            
-            // Limites
-            if (jog.forca > 99) jog.forca = 99;
-            if (jog.forca < 30) jog.forca = 30;
-            
-            // Recalcula Salário (Renovação de contrato)
-            jog.salario = Math.floor(jog.forca * 1200);
-
-            return true; // Mantém no time
-        });
-
-        // Adiciona os Regens ao elenco
-        time.elenco = [...time.elenco, ...novosJovens];
-        
-        // Atualiza força geral do time
-        time.forca = this.calcularForcaElenco(time.elenco);
-    },
-
-    gerarRegen: function(nomeTime, pos) {
-        // Cria um jogador de 16-18 anos
-        const nomesRegen = ["Novato", "Júnior", "Neto", "Filho", "Promessa", "Garoto", "Base"];
-        const nome = nomesRegen[Math.floor(Math.random() * nomesRegen.length)] + " " + Math.floor(Math.random()*100);
-        
-        return {
-            id: `${nomeTime}_regen_${Math.random()}`,
-            nome: nome,
-            pos: pos,
-            forca: Math.floor(Math.random() * 15) + 55, // Nasce com força 55-70
-            carac: Math.random() > 0.8 ? "Veloz" : "Normal",
-            gols: 0,
-            idade: Math.floor(Math.random() * 3) + 16, // 16, 17 ou 18
-            salario: 10000
-        };
-    },
-
-    // --- DEMAIS FUNÇÕES DO MOTOR (MERCADO, PARTIDA, ETC) ---
-    // (Mantenha o restante do código igual ao anterior: calcularValorPasse, processarProposta, 
-    // processarSemana, simularPlacarRapido, etc. Copie do passo anterior se precisar, 
-    // mas certifique-se de que 'processarSemana' chame 'construirCalendarioUsuario' no final)
+    // --- 2. SISTEMA DE PARTIDA E CANSAÇO ---
 
     processarSemana: function(gameState) {
         const semanaReal = gameState.semanaAtual - 1;
-        
-        // Se a semana não existe no calendário, é fim de temporada
         const ligaUser = gameState.mundo[gameState.paisUsuario];
+        
         if (!ligaUser.calendario[semanaReal]) {
             return { fim: true, fimTemporada: true };
         }
 
+        // 1. Recuperação Física Semanal (Todos recuperam um pouco)
+        this.recuperarFisicoGeral(gameState);
+
+        // 2. Processar Jogos
         Object.keys(gameState.mundo).forEach(pais => {
             const liga = gameState.mundo[pais];
             if (liga.calendario[semanaReal]) {
                 liga.calendario[semanaReal].forEach(jogo => {
                     if (jogo.golsCasa !== undefined) return;
+                    
                     const tC = this.encontrarTimeNoPais(gameState, pais, jogo.casa);
                     const tF = this.encontrarTimeNoPais(gameState, pais, jogo.fora);
+                    
                     if (tC && tF) {
                         const r = this.simularPlacarRapido(tC, tF);
                         jogo.golsCasa = r.gc; jogo.golsFora = r.gf;
+                        
                         if(jogo.comp === 'LIGA') this.computarJogo(tC, tF, r.gc, r.gf);
-                        this.distribuirGols(tC, r.gc); this.distribuirGols(tF, r.gf);
+                        
+                        this.distribuirGols(tC, r.gc);
+                        this.distribuirGols(tF, r.gf);
+
+                        // APLICA CANSAÇO NOS TITULARES
+                        this.aplicarCansacoPosJogo(tC);
+                        this.aplicarCansacoPosJogo(tF);
                     }
                 });
             }
         });
 
-        // Mercado Semanal
         if (gameState.semanaAtual % 2 === 0) this.atualizarMercado(gameState);
 
         gameState.semanaAtual++;
@@ -197,10 +124,111 @@ const Engine = {
         return { fim: false };
     },
 
-    // ... (Copie aqui as funções auxiliares: atualizarMercado, calcularValorPasse, 
-    // comprarJogador, encontrarTime, etc do código anterior) ...
+    aplicarCansacoPosJogo: function(time) {
+        // Considera os 11 primeiros como titulares
+        for (let i = 0; i < 11 && i < time.elenco.length; i++) {
+            const jog = time.elenco[i];
+            
+            // FÓRMULA DE DESGASTE:
+            // Base: 5 pontos
+            // Idade: +0.5 pontos por ano acima de 25
+            let perda = 5;
+            if (jog.idade > 25) {
+                perda += (jog.idade - 25) * 0.6;
+            }
+            if (jog.idade > 32) {
+                perda += 2; // Penalidade extra para veteranos
+            }
+
+            jog.saude -= perda;
+            if (jog.saude < 0) jog.saude = 0;
+        }
+    },
+
+    recuperarFisicoGeral: function(gameState) {
+        Object.keys(gameState.mundo).forEach(pais => {
+            gameState.mundo[pais].times.forEach(time => {
+                time.elenco.forEach(jog => {
+                    // Jovens recuperam muito rápido (20-25 pontos)
+                    // Velhos recuperam devagar (10-15 pontos)
+                    let recuperacao = 20;
+                    if (jog.idade > 30) recuperacao = 12;
+                    else if (jog.idade > 26) recuperacao = 15;
+
+                    jog.saude += recuperacao;
+                    if (jog.saude > 100) jog.saude = 100;
+                });
+            });
+        });
+    },
+
+    // --- DEMAIS FUNÇÕES (Mantidas e Ajustadas) ---
     
-    // (Abaixo estão as funções essenciais abreviadas para caber, use as completas do passo anterior)
+    virarTemporada: function(gameState) {
+        Object.keys(gameState.mundo).forEach(pais => {
+            const liga = gameState.mundo[pais];
+            const classificacao = [...liga.times].sort((a,b) => b.stats.p - a.stats.p);
+            
+            classificacao.forEach((time, index) => {
+                const premio = Math.floor(50000000 - (index * 2000000));
+                if(time.financas) time.financas.caixa += Math.max(1000000, premio);
+                time.stats = { p:0, j:0, v:0, e:0, d:0, gp:0, gc:0, s:0 };
+                
+                // Reset de Saúde na virada do ano
+                time.elenco.forEach(j => j.saude = 100);
+            });
+
+            liga.times.forEach(time => this.processarEvolucaoElenco(time));
+            liga.times.sort(() => Math.random() - 0.5);
+            liga.calendario = this.gerarCalendarioPontosCorridos(liga.times);
+        });
+
+        gameState.ano++;
+        gameState.semanaAtual = 1;
+        this.construirCalendarioUsuario(gameState);
+        this.salvarJogo(gameState);
+        return { ano: gameState.ano };
+    },
+
+    processarEvolucaoElenco: function(time) {
+        const novosJovens = [];
+        time.elenco = time.elenco.filter(jog => {
+            jog.idade++;
+            if (jog.idade >= 36 && Math.random() < 0.4) {
+                novosJovens.push(this.gerarRegen(time.nome, jog.pos));
+                return false; 
+            }
+            if (jog.idade >= 40) { 
+                novosJovens.push(this.gerarRegen(time.nome, jog.pos));
+                return false; 
+            }
+
+            let evolucao = 0;
+            if (jog.idade <= 21) evolucao = Math.floor(Math.random() * 4);
+            else if (jog.idade <= 24) evolucao = Math.floor(Math.random() * 3);
+            else if (jog.idade >= 32) evolucao = Math.floor(Math.random() * -3);
+
+            jog.forca += evolucao;
+            if (jog.forca > 99) jog.forca = 99;
+            if (jog.forca < 30) jog.forca = 30;
+            jog.salario = Math.floor(jog.forca * 1200);
+            return true;
+        });
+        time.elenco = [...time.elenco, ...novosJovens];
+        time.forca = this.calcularForcaElenco(time.elenco);
+    },
+
+    gerarRegen: function(nomeTime, pos) {
+        const nomesRegen = ["Novato", "Júnior", "Neto", "Filho", "Promessa", "Garoto", "Base"];
+        const nome = nomesRegen[Math.floor(Math.random() * nomesRegen.length)] + " " + Math.floor(Math.random()*100);
+        return {
+            id: `${nomeTime}_regen_${Math.random()}`,
+            nome: nome, pos: pos, forca: Math.floor(Math.random() * 15) + 55,
+            carac: Math.random() > 0.8 ? "Veloz" : "Normal",
+            gols: 0, idade: Math.floor(Math.random() * 3) + 16, salario: 10000, saude: 100
+        };
+    },
+
     atualizarMercado: function(gs){ gs.mercado=[]; const p=Object.keys(gs.mundo); for(let i=0;i<15;i++){const pr=p[Math.floor(Math.random()*p.length)]; const tr=gs.mundo[pr].times[Math.floor(Math.random()*gs.mundo[pr].times.length)]; if(tr.nome===gs.meuTime)continue; const jr=tr.elenco[Math.floor(Math.random()*tr.elenco.length)]; if(!gs.mercado.find(x=>x.id===jr.id)){const jv=JSON.parse(JSON.stringify(jr)); jv.timeOrigem=tr.nome; jv.paisOrigem=pr; jv.valorMercado=this.calcularValorPasse(jv); gs.mercado.push(jv);}}},
     calcularValorPasse: function(j){ let b=Math.pow(j.forca,3),f=j.idade<23?1.4:(j.idade>31?0.7:1); return Math.floor(b*35*f/10000)*10000; },
     processarProposta: function(gs,nv,id,val){ const v=this.encontrarTime(gs,nv), c=this.encontrarTime(gs,gs.meuTime), j=v.elenco.find(x=>x.id===id); if(c.financas.caixa<val)return{sucesso:false,msg:"Sem dinheiro."}; const vm=this.calcularValorPasse(j); let min=vm*(v.elenco.length<18?2:1.1); if(val>=min){ this.transferirJogador(c,v,j,val); this.salvarJogo(gs); return{sucesso:true,msg:"Aceito!"}; } return{sucesso:false,msg:"Recusado."}; },
@@ -212,7 +240,7 @@ const Engine = {
     encontrarTimeNoPais: function(gs, p, n) { return gs.mundo[p].times.find(t=>t.nome===n); },
     gerarCalendarioPontosCorridos: function(times) { if (times.length % 2 !== 0) times.push({ nome: "Folga", fantasma: true }); const n = times.length; const rodadas = []; const jogosPorRodada = n / 2; let indices = times.map((_, i) => i); for (let r = 0; r < n - 1; r++) { let rodada = []; for (let i = 0; i < jogosPorRodada; i++) { const t1 = indices[i]; const t2 = indices[n - 1 - i]; if (!times[t1].fantasma && !times[t2].fantasma) { if (r % 2 === 0) rodada.push({ casa: times[t1].nome, fora: times[t2].nome }); else rodada.push({ casa: times[t2].nome, fora: times[t1].nome }); } } rodadas.push(rodada); indices.splice(1, 0, indices.pop()); } const returno = rodadas.map(r => r.map(j => ({ casa: j.fora, fora: j.casa }))); return [...rodadas, ...returno]; },
     construirCalendarioUsuario: function(gs) { const l = gs.mundo[gs.paisUsuario]; gs.calendarioUsuario = []; l.calendario.forEach((rod, i) => { gs.calendarioUsuario.push({ semana: i+1, tipo: 'LIGA', nome: `Rodada ${i+1}`, jogos: rod }); }); },
-    gerarElenco: function(nome, forcaBase) { if(typeof PlayersDB!=='undefined' && PlayersDB[nome]) return PlayersDB[nome].map((j,i)=>({id:nome+i,nome:j.nome,pos:j.pos,forca:j.forca,carac:j.carac||"Normal",gols:0,idade:25,energia:100})); let e=[]; const p=["GOL","ZAG","MEI","ATA"]; for(let i=0;i<20;i++){ let pos=p[i%4]; if(i<2)pos="GOL"; e.push({id:nome+i,nome:`Jog ${i} ${nome.substring(0,3)}`,pos:pos,forca:Math.max(40,forcaBase+Math.floor(Math.random()*10)-5),carac:"Normal",gols:0,idade:20+Math.floor(Math.random()*10),energia:100}); } return e; },
+    gerarElenco: function(nome, forcaBase) { if(typeof PlayersDB!=='undefined' && PlayersDB[nome]) return PlayersDB[nome].map((j,i)=>({id:nome+i,nome:j.nome,pos:j.pos,forca:j.forca,carac:j.carac||"Normal",gols:0,idade:j.idade||25,saude:100})); let e=[]; const p=["GOL","ZAG","MEI","ATA"]; for(let i=0;i<20;i++){ let pos=p[i%4]; if(i<2)pos="GOL"; e.push({id:nome+i,nome:`Jog ${i} ${nome.substring(0,3)}`,pos:pos,forca:Math.max(40,forcaBase+Math.floor(Math.random()*10)-5),carac:"Normal",gols:0,idade:18+Math.floor(Math.random()*15),saude:100}); } return e; },
     calcularForcaElenco: function(e) { const t=e.slice(0,11); let s=0; t.forEach(p=>s+=p.forca); return Math.floor(s/Math.max(1,t.length)); },
     inicializarFinancas: function(t) { t.financas={caixa:20000000,moeda:"R$",receitas:{tv:5000000,bilheteria:0,premios:0,transferencias:0},despesas:{folhaSalarial:0,manutencao:200000,transferencias:0}}; let f=0; t.elenco.forEach(p=>{p.salario=p.forca*1000;f+=p.salario}); t.financas.despesas.folhaSalarial=f*13; },
     definirFuncoesAutomaticas: function(t){ if(t.elenco.length>0){t.funcoes.capitao=t.elenco[0].id;t.funcoes.penalti=t.elenco[0].id;t.funcoes.falta=t.elenco[0].id;t.funcoes.escanteio=t.elenco[0].id;} },
