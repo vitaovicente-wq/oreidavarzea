@@ -3,466 +3,367 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRFutebol - Prancheta Tática</title>
+    <title>BRFutebol - Táticas</title>
     
     <script src="database_jogadores.js"></script>
     <script src="engine.js"></script>
 
     <style>
         :root {
-            --primary: #1e272e;
-            --secondary: #0fb9b1;
-            --highlight: #f1c40f;
             --bg: #0d1115;
-            --card-bg: #2d3436;
+            --panel: #1e272e;
+            --field: #27ae60;
+            --line: rgba(255,255,255,0.4);
             --text: #ecf0f1;
+            --accent: #f1c40f;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background-color: var(--bg);
             color: var(--text);
             margin: 0; padding: 0;
-            display: grid; grid-template-rows: 70px 1fr;
-            height: 100vh; overflow: hidden;
-            user-select: none;
+            height: 100vh;
+            display: grid;
+            grid-template-rows: 60px 1fr;
+            overflow: hidden;
         }
 
         /* HEADER */
         header {
-            background-color: rgba(30, 39, 46, 0.95);
-            border-bottom: 2px solid var(--secondary);
+            background: rgba(30, 39, 46, 0.95);
+            border-bottom: 2px solid var(--accent);
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 30px;
+            padding: 0 20px;
         }
+        .btn-back { background: #444; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-save { background: var(--accent); color: #1e272e; border: none; padding: 8px 25px; border-radius: 5px; cursor: pointer; font-weight: 800; text-transform: uppercase; }
+        .btn-save:hover { transform: scale(1.05); }
 
-        .header-controls { display: flex; align-items: center; gap: 15px; }
-
-        select {
-            background: #1e272e; color: white; border: 1px solid #555;
-            padding: 8px 15px; border-radius: 6px; font-size: 0.9rem; cursor: pointer;
-        }
-
-        .action-btn { padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; border: none; transition: 0.2s; display: flex; align-items: center; gap:5px; }
-        .btn-back { background: #444; color: #fff; }
-        .btn-roles { background: #8e44ad; color: #fff; } /* Botão Roxo para Funções */
-        .btn-roles:hover { background: #9b59b6; }
-        .btn-save { background: var(--secondary); color: #1e272e; text-transform: uppercase; }
-        .btn-save:hover { box-shadow: 0 0 15px rgba(15, 185, 177, 0.4); transform: scale(1.05); }
-
-        /* LAYOUT */
+        /* LAYOUT PRINCIPAL */
         main {
             display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 20px; padding: 20px; height: 100%; box-sizing: border-box;
+            grid-template-columns: 1fr 300px; /* Campo | Banco */
+            gap: 10px;
+            padding: 10px;
+            overflow: hidden;
         }
 
-        /* CAMPO */
+        /* CAMPO DE JOGO */
         .field-container {
-            background: linear-gradient(180deg, #27ae60 0%, #2ecc71 100%);
-            border: 4px solid #fff; border-radius: 12px;
-            position: relative; box-shadow: inset 0 0 80px rgba(0,0,0,0.5);
-            margin: 0 auto; width: 100%; max-width: 750px; height: 100%;
+            position: relative;
+            background: var(--field);
+            border-radius: 10px;
+            border: 5px solid #1a5c36;
+            overflow: hidden;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+            display: flex; justify-content: center;
         }
 
-        .line { position: absolute; background: rgba(255,255,255,0.4); pointer-events: none; }
-        .mid-line { width: 100%; height: 2px; top: 50%; }
-        .circle { width: 100px; height: 100px; border: 2px solid rgba(255,255,255,0.4); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-        .area-top { width: 40%; height: 16%; border: 2px solid rgba(255,255,255,0.4); border-top: none; top: 0; left: 30%; }
-        .area-bottom { width: 40%; height: 16%; border: 2px solid rgba(255,255,255,0.4); border-bottom: none; bottom: 0; left: 30%; }
+        /* Linhas do Campo */
+        .field-line-center { position: absolute; top: 50%; width: 100%; height: 2px; background: var(--line); }
+        .field-circle { position: absolute; top: 50%; left: 50%; width: 100px; height: 100px; border: 2px solid var(--line); border-radius: 50%; transform: translate(-50%, -50%); }
+        .field-area-top { position: absolute; top: 0; left: 50%; width: 250px; height: 100px; border: 2px solid var(--line); border-top: none; transform: translateX(-50%); }
+        .field-area-bottom { position: absolute; bottom: 0; left: 50%; width: 250px; height: 100px; border: 2px solid var(--line); border-bottom: none; transform: translateX(-50%); }
 
-        /* JOGADOR NO CAMPO */
+        /* JOGADOR NO CAMPO (TOKEN) */
         .player-token {
-            position: absolute; width: 55px; height: 55px;
-            background: #fff; border: 3px solid #333; border-radius: 50%;
+            position: absolute;
+            width: 90px; height: 80px;
+            transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            z-index: 10;
+        }
+        .player-token:hover { transform: translate(-50%, -50%) scale(1.1); z-index: 20; }
+        .player-token.selected { filter: drop-shadow(0 0 10px var(--accent)); }
+
+        .token-shirt {
+            width: 35px; height: 35px; background: #fff; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 800; color: #333; font-size: 0.9rem;
-            cursor: grab; box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-            transform: translate(-50%, -50%); z-index: 10;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            font-weight: bold; font-size: 0.9rem; color: #333;
+            border: 3px solid #333; box-shadow: 0 4px 5px rgba(0,0,0,0.4);
+        }
+        .token-info {
+            background: rgba(0,0,0,0.7); color: #fff;
+            padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;
+            margin-top: 4px; text-align: center; white-space: nowrap;
+        }
+        .token-pos { font-size: 0.65rem; color: #aaa; text-transform: uppercase; }
+
+        /* SIDEBAR (BANCO E OPÇÕES) */
+        .sidebar {
+            background: var(--panel);
+            border-radius: 10px;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            border: 1px solid #333;
         }
 
-        .player-token:active { cursor: grabbing; z-index: 100; transform: translate(-50%, -50%) scale(1.1); }
-        .player-token.selected { border-color: var(--highlight); box-shadow: 0 0 0 4px var(--highlight); animation: pulse 1s infinite; }
-        .player-token.hover-swap { background-color: var(--highlight); border-color: #fff; transform: translate(-50%, -50%) scale(1.2); }
-
-        .player-label {
-            position: absolute; top: 58px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.8); color: white; padding: 3px 8px;
-            border-radius: 4px; font-size: 0.8rem; white-space: nowrap; pointer-events: none;
-            display: flex; flex-direction: column; align-items: center; gap: 2px;
+        .sidebar-header {
+            padding: 15px; background: #222; border-bottom: 1px solid #333;
         }
-        .player-label span { font-size: 0.65rem; color: #bdc3c7; }
-
-        /* BADGES DE FUNÇÃO (Capitão, Penalti, etc) */
-        .role-icons {
-            position: absolute; top: -10px; right: -10px;
-            display: flex; flex-direction: column; gap: 2px;
-            pointer-events: none;
-        }
-        .role-badge {
-            width: 18px; height: 18px; border-radius: 50%;
-            font-size: 0.65rem; font-weight: bold; color: #fff;
-            display: flex; align-items: center; justify-content: center;
-            border: 1px solid rgba(0,0,0,0.3);
-        }
-        .role-c { background: #f1c40f; color: #000; } /* Capitão */
-        .role-p { background: #2ecc71; } /* Pênalti */
-        .role-f { background: #3498db; } /* Falta */
-        .role-e { background: #fff; color: #000; } /* Escanteio */
-
-        /* SIDEBAR */
-        .sidebar { background: var(--card-bg); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #444; }
-        .sidebar-header { padding: 15px; background: rgba(0,0,0,0.2); border-bottom: 1px solid #444; display: flex; justify-content: space-between; align-items: center; }
-        .sidebar-header h3 { margin: 0; font-size: 0.9rem; text-transform: uppercase; color: var(--text-muted); }
-        .sidebar-header.active-mode { background-color: var(--highlight); }
-        .sidebar-header.active-mode h3 { color: #1e272e; font-weight: 800; }
-        .player-list { overflow-y: auto; flex-grow: 1; }
-        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid #333; font-size: 0.9rem; cursor: pointer; background: #2d3436; transition: 0.2s; }
-        .list-item:hover { background: rgba(255,255,255,0.05); }
-        .list-item.selected { background: rgba(241, 196, 15, 0.1); border-left: 4px solid var(--highlight); }
-        .pos-badge { font-weight: bold; width: 35px; color: #888; font-size: 0.8rem; text-align: center; }
-        .name-area { display: flex; flex-direction: column; }
-        .trait-mini { font-size: 0.65rem; color: #aaa; }
-        .ovr-badge { font-weight: bold; color: var(--secondary); font-size: 1.1rem; }
-
-        /* MODAL DE FUNÇÕES */
-        #roles-modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 5000; align-items: center; justify-content: center;
-        }
-        .roles-box {
-            background: #2d3436; padding: 30px; border-radius: 12px; width: 400px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid #444;
-        }
-        .roles-row { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .roles-row label { color: #bdc3c7; font-weight: bold; }
-        .roles-select { background: #1e272e; color: white; padding: 8px; border: 1px solid #555; border-radius: 6px; width: 220px; }
         
-        /* Instrução Flutuante */
-        #instruction-toast {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.9); color: white; padding: 10px 20px;
-            border-radius: 30px; font-weight: bold; border: 1px solid var(--highlight);
-            display: none; box-shadow: 0 5px 20px rgba(0,0,0,0.5); z-index: 1000;
+        select {
+            width: 100%; padding: 8px; background: #111; color: #fff; border: 1px solid #444; border-radius: 5px;
         }
 
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0px rgba(241, 196, 15, 0.7); } 100% { box-shadow: 0 0 0 10px rgba(241, 196, 15, 0); } }
+        .bench-list {
+            flex-grow: 1; overflow-y: auto; padding: 10px;
+        }
+
+        .bench-item {
+            background: rgba(255,255,255,0.05);
+            padding: 10px; margin-bottom: 5px; border-radius: 5px;
+            display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; border: 1px solid transparent;
+        }
+        .bench-item:hover { background: rgba(255,255,255,0.1); }
+        .bench-item.selected { border-color: var(--accent); background: rgba(241, 196, 15, 0.1); }
+
+        .b-pos { font-weight: bold; color: #888; width: 30px; font-size: 0.8rem; }
+        .b-name { flex-grow: 1; font-size: 0.9rem; }
+        .b-ovr { font-weight: bold; color: var(--accent); }
+
+        .status-msg {
+            position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+            background: #2ecc71; color: #fff; padding: 10px 20px; border-radius: 20px;
+            font-weight: bold; display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
 
     </style>
 </head>
 <body>
 
     <header>
-        <div class="header-controls">
-            <button class="action-btn btn-back" onclick="voltar()">⬅ Voltar</button>
-            <h1 style="margin:0; font-size:1.2rem; text-transform:uppercase;">Prancheta</h1>
-        </div>
-
-        <div class="header-controls">
-            <button class="action-btn btn-roles" onclick="abrirModalFuncoes()">⭐ Funções</button>
-            
-            <label style="font-size:0.9rem; color:#aaa;">Formação:</label>
-            <select id="formationSelect" onchange="aplicarFormacaoAutomatica()">
-                <option value="4-4-2">4-4-2 Clássico</option>
-                <option value="4-3-3">4-3-3 Ofensivo</option>
-                <option value="3-5-2">3-5-2 Equilibrado</option>
-                <option value="3-4-3">3-4-3 Pressão</option>
-                <option value="5-4-1">5-4-1 Retranca</option>
-            </select>
-            <button class="action-btn btn-save" onclick="salvarTime()">💾 Salvar</button>
-        </div>
+        <button class="btn-back" onclick="voltar()">⬅ Dashboard</button>
+        <h2 style="margin:0; text-transform:uppercase; font-size:1.2rem;">Prancheta Tática</h2>
+        <button class="btn-save" onclick="salvarTime()">💾 Salvar</button>
     </header>
 
     <main>
-        <div class="field-container" id="campo" onclick="cliqueNoCampoVazio(event)">
-            <div class="line mid-line"></div>
-            <div class="line circle"></div>
-            <div class="line area-top"></div>
-            <div class="line area-bottom"></div>
+        <div class="field-container" id="field">
+            <div class="field-area-top"></div>
+            <div class="field-line-center"></div>
+            <div class="field-circle"></div>
+            <div class="field-area-bottom"></div>
+            
             </div>
 
         <div class="sidebar">
-            <div class="sidebar-header" id="sidebarHeader">
-                <h3 id="sidebarTitle">Banco de Reservas</h3>
+            <div class="sidebar-header">
+                <label style="font-size:0.8rem; color:#aaa;">Formação Tática</label>
+                <select id="formation-select" onchange="mudarFormacao()">
+                    <option value="442">4-4-2 Clássico</option>
+                    <option value="433">4-3-3 Ofensivo</option>
+                    <option value="352">3-5-2 Equilibrado</option>
+                    <option value="541">5-4-1 Retranca</option>
+                </select>
+                
+                <button onclick="autoEscalar()" style="width:100%; margin-top:10px; padding:8px; background:#444; color:#fff; border:none; cursor:pointer; border-radius:4px;">
+                    ⚡ Auto-Escalar (Melhores)
+                </button>
             </div>
-            <div class="player-list" id="listaReservas"></div>
+
+            <div style="padding:10px; background:#151a1d; font-size:0.8rem; font-weight:bold; color:#aaa; text-align:center;">
+                BANCO DE RESERVAS
+            </div>
+            
+            <div class="bench-list" id="bench">
+                </div>
         </div>
     </main>
 
-    <div id="instruction-toast">Selecione quem entra...</div>
-
-    <div id="roles-modal">
-        <div class="roles-box">
-            <h2 style="margin-top:0; color:#fff; border-bottom:1px solid #444; padding-bottom:10px;">Bolas Paradas & Capitão</h2>
-            
-            <div class="roles-row">
-                <label>🟡 Capitão:</label>
-                <select id="sel-capitao" class="roles-select"></select>
-            </div>
-            <div class="roles-row">
-                <label>🟢 Pênaltis:</label>
-                <select id="sel-penalti" class="roles-select"></select>
-            </div>
-            <div class="roles-row">
-                <label>🔵 Faltas:</label>
-                <select id="sel-falta" class="roles-select"></select>
-            </div>
-            <div class="roles-row">
-                <label>⚪ Escanteios:</label>
-                <select id="sel-escanteio" class="roles-select"></select>
-            </div>
-
-            <div style="text-align:right; margin-top:20px;">
-                <button class="action-btn btn-back" onclick="fecharModalFuncoes()" style="display:inline-block;">Cancelar</button>
-                <button class="action-btn btn-save" onclick="salvarFuncoes()" style="display:inline-block;">Confirmar</button>
-            </div>
-        </div>
-    </div>
+    <div id="toast" class="status-msg">Time salvo com sucesso!</div>
 
     <script>
-        // --- COORDENADAS ---
+        let gameState = null;
+        let myTeamObj = null;
+        let selecionadoIndex = null; // Índice do jogador clicado (0-10 campo, 11+ banco)
+
+        // COORDENADAS DAS FORMAÇÕES (Top %, Left %)
+        // O campo é vertical: Top 0% = Gol Adversário (não usamos), Bottom 100% = Nosso Gol
+        // Vamos usar Bottom-Up: Goleiro fica perto de 90%, Atacante perto de 10%
         const formations = {
-            "4-4-2": [ {x:50,y:90,p:'GOL'}, {x:15,y:75,p:'LE'}, {x:38,y:80,p:'ZAG'}, {x:62,y:80,p:'ZAG'}, {x:85,y:75,p:'LD'}, {x:15,y:45,p:'ME'}, {x:38,y:55,p:'VOL'}, {x:62,y:55,p:'VOL'}, {x:85,y:45,p:'MD'}, {x:35,y:15,p:'ATA'}, {x:65,y:15,p:'ATA'} ],
-            "4-3-3": [ {x:50,y:90,p:'GOL'}, {x:15,y:75,p:'LE'}, {x:38,y:80,p:'ZAG'}, {x:62,y:80,p:'ZAG'}, {x:85,y:75,p:'LD'}, {x:50,y:60,p:'VOL'}, {x:30,y:45,p:'MC'}, {x:70,y:45, p:'MC'}, {x:15,y:20,p:'PE'}, {x:50,y:15,p:'ATA'}, {x:85,y:20,p:'PD'} ],
-            "3-5-2": [ {x:50,y:90,p:'GOL'}, {x:25,y:80,p:'ZAG'}, {x:50,y:82,p:'ZAG'}, {x:75,y:80,p:'ZAG'}, {x:10,y:50,p:'AE'}, {x:35,y:60,p:'VOL'}, {x:65,y:60,p:'VOL'}, {x:90,y:50,p:'AD'}, {x:50,y:40,p:'MAT'}, {x:35,y:15,p:'ATA'}, {x:65,y:15,p:'ATA'} ],
-            "3-4-3": [ {x:50,y:90,p:'GOL'}, {x:20,y:80,p:'ZAG'}, {x:50,y:82,p:'ZAG'}, {x:80,y:80,p:'ZAG'}, {x:10,y:50,p:'ME'}, {x:40,y:55,p:'MC'}, {x:60,y:55,p:'MC'}, {x:90,y:50,p:'MD'}, {x:20,y:20,p:'PE'}, {x:50,y:15,p:'ATA'}, {x:80,y:20,p:'PD'} ],
-            "5-4-1": [ {x:50,y:90,p:'GOL'}, {x:10,y:70,p:'LE'}, {x:30,y:80,p:'ZAG'}, {x:50,y:82,p:'LIB'}, {x:70,y:80,p:'ZAG'}, {x:90,y:70,p:'LD'}, {x:20,y:50,p:'ME'}, {x:40,y:55,p:'VOL'}, {x:60,y:55,p:'VOL'}, {x:80,y:50,p:'MD'}, {x:50,y:15,p:'ATA'} ]
+            '442': [
+                {t: 90, l: 50}, // GOL
+                {t: 75, l: 20}, {t: 75, l: 40}, {t: 75, l: 60}, {t: 75, l: 80}, // DEF
+                {t: 50, l: 20}, {t: 50, l: 40}, {t: 50, l: 60}, {t: 50, l: 80}, // MEI
+                {t: 20, l: 35}, {t: 20, l: 65}  // ATA
+            ],
+            '433': [
+                {t: 90, l: 50},
+                {t: 75, l: 15}, {t: 75, l: 38}, {t: 75, l: 62}, {t: 75, l: 85},
+                {t: 50, l: 30}, {t: 55, l: 50}, {t: 50, l: 70},
+                {t: 20, l: 20}, {t: 15, l: 50}, {t: 20, l: 80}
+            ],
+            '352': [
+                {t: 90, l: 50},
+                {t: 75, l: 30}, {t: 80, l: 50}, {t: 75, l: 70}, // 3 Zag
+                {t: 50, l: 15}, {t: 55, l: 35}, {t: 55, l: 65}, {t: 50, l: 85}, {t: 40, l: 50}, // 5 Meia
+                {t: 20, l: 35}, {t: 20, l: 65}
+            ],
+            '541': [
+                {t: 92, l: 50},
+                {t: 80, l: 10}, {t: 80, l: 30}, {t: 80, l: 50}, {t: 80, l: 70}, {t: 80, l: 90},
+                {t: 60, l: 20}, {t: 60, l: 40}, {t: 60, l: 60}, {t: 60, l: 80},
+                {t: 20, l: 50}
+            ]
         };
 
-        let gameState = null, myTeamObj = null, titulares = [], reservas = [];
-        let selectedFieldIdx = null, selectedBenchIdx = null;
-        let isDragging = false, dragIdx = null, startX, startY, originalLeft, originalTop;
-
-        // Armazena as funções temporariamente enquanto edita
-        let currentRoles = { capitao: null, penalti: null, falta: null, escanteio: null };
-
         window.onload = function() {
-            if (typeof Engine === 'undefined') { alert("Erro de Engine"); return; }
+            if (typeof Engine === 'undefined') { alert("Engine Off"); return; }
             gameState = Engine.carregarJogo();
             if (!gameState) { window.location.href = 'index.html'; return; }
 
-            myTeamObj = gameState.times.find(t => t.nome === gameState.meuTime) || gameState.timesContinental.find(t => t.nome === gameState.meuTime);
-
-            titulares = myTeamObj.elenco.slice(0, 11);
-            reservas = myTeamObj.elenco.slice(11);
-
-            // Carrega funções do save ou inicializa se vazio
-            if (!myTeamObj.funcoes) {
-                Engine.inicializarTime(myTeamObj); // Fallback para criar estrutura
-            }
-            currentRoles = { ...myTeamObj.funcoes };
-
-            if(!titulares[0].x) aplicarCoordenadasPadrao("4-4-2");
-
-            renderizarCampo();
-            renderizarBanco();
+            // Acha o time na nova estrutura global
+            myTeamObj = Engine.encontrarTime(gameState, gameState.meuTime);
+            
+            renderizarTudo();
         };
 
-        // --- RENDERIZAÇÃO ---
+        function renderizarTudo() {
+            renderizarCampo();
+            renderizarBanco();
+        }
 
         function renderizarCampo() {
-            const field = document.getElementById('campo');
-            const tokens = document.querySelectorAll('.player-token');
-            tokens.forEach(t => t.remove());
+            const field = document.getElementById('field');
+            // Limpa jogadores antigos (mantém as linhas do campo que são div filhos)
+            // Maneira segura: remove apenas elements com class player-token
+            document.querySelectorAll('.player-token').forEach(e => e.remove());
 
-            titulares.forEach((jog, idx) => {
-                const div = document.createElement('div');
-                div.className = `player-token ${selectedFieldIdx === idx ? 'selected' : ''}`;
-                div.style.left = jog.x + '%';
-                div.style.top = jog.y + '%';
-                div.id = `player-${idx}`;
-                if (jog.pos === 'GOL') div.style.background = "#f1c40f";
+            // Pega a formação selecionada
+            const formCode = document.getElementById('formation-select').value;
+            const coords = formations[formCode];
 
-                // Ícones de Função (Badges)
-                let badgesHtml = '<div class="role-icons">';
-                if(jog.id === currentRoles.capitao) badgesHtml += '<div class="role-badge role-c">C</div>';
-                if(jog.id === currentRoles.penalti) badgesHtml += '<div class="role-badge role-p">P</div>';
-                if(jog.id === currentRoles.falta) badgesHtml += '<div class="role-badge role-f">F</div>';
-                if(jog.id === currentRoles.escanteio) badgesHtml += '<div class="role-badge role-e">E</div>';
-                badgesHtml += '</div>';
+            // Os primeiros 11 do array 'elenco' são os titulares
+            for(let i=0; i<11; i++) {
+                if(!myTeamObj.elenco[i]) break; // Segurança
 
-                div.innerHTML = `
-                    ${badgesHtml}
-                    ${jog.role || jog.pos.substring(0,2)} 
-                    <div class="player-label">
-                        <b>${jog.nome.split(' ')[0]}</b>
-                        <span>${jog.forca} | ${jog.carac ? jog.carac.substring(0,8) : 'Norm'}</span>
+                const jog = myTeamObj.elenco[i];
+                const pos = coords[i];
+
+                const token = document.createElement('div');
+                token.className = `player-token ${selecionadoIndex === i ? 'selected' : ''}`;
+                token.style.top = pos.t + '%';
+                token.style.left = pos.l + '%';
+                token.onclick = () => clicarJogador(i);
+
+                // Cor da camisa baseada no overall
+                let borderColor = "#333";
+                if(jog.forca >= 85) borderColor = "#f1c40f"; // Ouro
+                else if(jog.forca >= 75) borderColor = "#2ecc71"; // Verde
+
+                token.innerHTML = `
+                    <div class="token-shirt" style="border-color:${borderColor}">
+                        ${jog.forca}
+                    </div>
+                    <div class="token-info">
+                        <div>${jog.nome.split(' ')[0]}</div>
+                        <div class="token-pos">${jog.pos}</div>
                     </div>
                 `;
-
-                div.onmousedown = (e) => iniciarArrasto(e, idx, div);
-                div.onclick = (e) => { e.stopPropagation(); }
-                field.appendChild(div);
-            });
+                field.appendChild(token);
+            }
         }
 
         function renderizarBanco() {
-            const list = document.getElementById('listaReservas');
-            list.innerHTML = '';
-            reservas.sort((a,b) => b.forca - a.forca);
+            const bench = document.getElementById('bench');
+            bench.innerHTML = '';
 
-            reservas.forEach((jog, idx) => {
-                const div = document.createElement('div');
-                div.className = `list-item ${selectedBenchIdx === idx ? 'selected' : ''}`;
-                div.innerHTML = `
-                    <div style="display:flex; gap:10px; align-items:center;">
-                        <span class="pos-badge">${jog.pos}</span>
-                        <div class="name-area">
-                            <span>${jog.nome}</span>
-                            <span class="trait-mini">${jog.carac}</span>
-                        </div>
-                    </div>
-                    <span class="ovr-badge">${jog.forca}</span>
+            // Do índice 11 até o fim são reservas
+            for(let i=11; i<myTeamObj.elenco.length; i++) {
+                const jog = myTeamObj.elenco[i];
+                
+                const item = document.createElement('div');
+                item.className = `bench-item ${selecionadoIndex === i ? 'selected' : ''}`;
+                item.onclick = () => clicarJogador(i);
+                
+                item.innerHTML = `
+                    <span class="b-pos">${jog.pos}</span>
+                    <span class="b-name">${jog.nome}</span>
+                    <span class="b-ovr">${jog.forca}</span>
                 `;
-                div.onclick = () => selecionarReserva(idx);
-                list.appendChild(div);
-            });
+                bench.appendChild(item);
+            }
         }
 
-        // --- GESTÃO DE FUNÇÕES (ROLES) ---
+        function clicarJogador(index) {
+            // Se não tinha ninguém selecionado, seleciona este
+            if (selecionadoIndex === null) {
+                selecionadoIndex = index;
+                renderizarTudo(); // Atualiza visual (bordas)
+                return;
+            }
 
-        function abrirModalFuncoes() {
-            const modal = document.getElementById('roles-modal');
-            
-            // Popula os selects apenas com os titulares
-            const selects = ['sel-capitao', 'sel-penalti', 'sel-falta', 'sel-escanteio'];
-            const keys = ['capitao', 'penalti', 'falta', 'escanteio'];
+            // Se clicou no mesmo, deseleciona
+            if (selecionadoIndex === index) {
+                selecionadoIndex = null;
+                renderizarTudo();
+                return;
+            }
 
-            selects.forEach((selId, i) => {
-                const sel = document.getElementById(selId);
-                sel.innerHTML = '';
-                titulares.forEach(jog => {
-                    const opt = document.createElement('option');
-                    opt.value = jog.id;
-                    opt.innerText = `${jog.pos} - ${jog.nome} (${jog.forca})`;
-                    if(jog.id === currentRoles[keys[i]]) opt.selected = true;
-                    sel.appendChild(opt);
-                });
-            });
-
-            modal.style.display = 'flex';
+            // Se clicou em outro, TROCA DE POSIÇÃO
+            trocarJogadores(selecionadoIndex, index);
+            selecionadoIndex = null; // Limpa seleção
         }
 
-        function fecharModalFuncoes() {
-            document.getElementById('roles-modal').style.display = 'none';
+        function trocarJogadores(idx1, idx2) {
+            // Troca simples no array
+            const temp = myTeamObj.elenco[idx1];
+            myTeamObj.elenco[idx1] = myTeamObj.elenco[idx2];
+            myTeamObj.elenco[idx2] = temp;
+
+            renderizarTudo();
         }
 
-        function salvarFuncoes() {
-            currentRoles.capitao = document.getElementById('sel-capitao').value;
-            currentRoles.penalti = document.getElementById('sel-penalti').value;
-            currentRoles.falta = document.getElementById('sel-falta').value;
-            currentRoles.escanteio = document.getElementById('sel-escanteio').value;
-            
-            myTeamObj.funcoes = currentRoles; // Salva no objeto local
-            renderizarCampo(); // Atualiza os badges
-            fecharModalFuncoes();
-        }
-
-        // --- SISTEMA HÍBRIDO (DRAG E CLICK) ---
-        // (Código idêntico ao anterior para movimentação e troca)
-        function iniciarArrasto(e, idx, element) {
-            e.preventDefault(); isDragging = true; hasMoved = false; dragIdx = idx;
-            startX = e.clientX; startY = e.clientY;
-            originalLeft = element.style.left; originalTop = element.style.top;
-            document.onmousemove = (e) => moverElemento(e, element);
-            document.onmouseup = (e) => finalizarArrasto(e, idx, element);
-        }
-        function moverElemento(e, element) {
-            if (!isDragging) return;
-            if (Math.abs(e.clientX - startX) > 5 || Math.abs(e.clientY - startY) > 5) hasMoved = true;
-            const field = document.getElementById('campo');
-            const rect = field.getBoundingClientRect();
-            let newX = ((e.clientX - rect.left) / rect.width) * 100;
-            let newY = ((e.clientY - rect.top) / rect.height) * 100;
-            if (newX < 0) newX = 0; if (newX > 100) newX = 100; if (newY < 0) newY = 0; if (newY > 100) newY = 100;
-            element.style.left = newX + "%"; element.style.top = newY + "%"; element.style.zIndex = 1000;
-            detectarHover(element, dragIdx);
-        }
-        function finalizarArrasto(e, idx, element) {
-            isDragging = false; document.onmousemove = null; document.onmouseup = null; element.style.zIndex = "";
-            if (!hasMoved) { element.style.left = originalLeft; element.style.top = originalTop; selecionarTitular(idx); return; }
-            const alvoIdx = detectarColisao(element, idx);
-            if (alvoIdx !== null) trocarPosicoesCampo(idx, alvoIdx);
-            else atualizarCoordenadas(idx, element.style.left, element.style.top);
+        function mudarFormacao() {
             renderizarCampo();
         }
-        function detectarColisao(draggedEl, myIdx) {
-            const dragRect = draggedEl.getBoundingClientRect();
-            const centroX = dragRect.left + dragRect.width / 2; const centroY = dragRect.top + dragRect.height / 2;
-            let alvoEncontrado = null;
-            document.querySelectorAll('.player-token').forEach((token) => {
-                const tokenIdx = parseInt(token.id.replace('player-', ''));
-                if (tokenIdx === myIdx) return;
-                const rect = token.getBoundingClientRect();
-                if (centroX >= rect.left && centroX <= rect.right && centroY >= rect.top && centroY <= rect.bottom) alvoEncontrado = tokenIdx;
-            });
-            return alvoEncontrado;
+
+        function autoEscalar() {
+            // Usa o algoritmo do Engine para escolher os melhores 11
+            const melhores = Engine.escolherMelhores11(myTeamObj.elenco);
+            
+            // Coloca os melhores nos primeiros 11 índices
+            // E o resto depois
+            const novosTitularesIDs = melhores.map(j => j.id);
+            const reservas = myTeamObj.elenco.filter(j => !novosTitularesIDs.includes(j.id));
+            
+            // Reconstrói o array: Melhores + Resto
+            myTeamObj.elenco = [...melhores, ...reservas];
+            
+            renderizarTudo();
         }
-        function detectarHover(draggedEl, myIdx) {
-            const alvoIdx = detectarColisao(draggedEl, myIdx);
-            document.querySelectorAll('.player-token').forEach(t => t.classList.remove('hover-swap'));
-            if (alvoIdx !== null) document.getElementById(`player-${alvoIdx}`).classList.add('hover-swap');
-        }
-        function trocarPosicoesCampo(idx1, idx2) {
-            const pos1 = { x: titulares[idx1].x, y: titulares[idx1].y, role: titulares[idx1].role };
-            const pos2 = { x: titulares[idx2].x, y: titulares[idx2].y, role: titulares[idx2].role };
-            const temp = titulares[idx1]; titulares[idx1] = titulares[idx2]; titulares[idx2] = temp;
-            titulares[idx1].x = pos1.x; titulares[idx1].y = pos1.y; titulares[idx1].role = pos1.role;
-            titulares[idx2].x = pos2.x; titulares[idx2].y = pos2.y; titulares[idx2].role = pos2.role;
-        }
-        function atualizarCoordenadas(idx, leftStyle, topStyle) {
-            titulares[idx].x = parseFloat(leftStyle); titulares[idx].y = parseFloat(topStyle);
-        }
-        function selecionarTitular(idx) {
-            if (selectedBenchIdx !== null) { realizarSubstituicao(idx, selectedBenchIdx); limparSelecao(); return; }
-            selectedFieldIdx = (selectedFieldIdx === idx) ? null : idx; atualizarInterfaceVisual();
-        }
-        function selecionarReserva(idx) {
-            if (selectedFieldIdx !== null) { realizarSubstituicao(selectedFieldIdx, idx); limparSelecao(); return; }
-            selectedBenchIdx = (selectedBenchIdx === idx) ? null : idx; atualizarInterfaceVisual();
-        }
-        function realizarSubstituicao(idxTitular, idxReserva) {
-            const titularSaindo = titulares[idxTitular];
-            const reservaSaindo = reservas[idxReserva];
-            titulares[idxTitular] = reservaSaindo;
-            reservas[idxReserva] = titularSaindo;
-            titulares[idxTitular].x = titularSaindo.x;
-            titulares[idxTitular].y = titularSaindo.y;
-            titulares[idxTitular].role = titularSaindo.role;
-            renderizarCampo(); renderizarBanco();
-        }
-        function limparSelecao() { selectedFieldIdx = null; selectedBenchIdx = null; atualizarInterfaceVisual(); }
-        function atualizarInterfaceVisual() {
-            renderizarCampo(); renderizarBanco();
-            const header = document.getElementById('sidebarHeader'); const title = document.getElementById('sidebarTitle');
-            if (selectedFieldIdx !== null) { header.classList.add('active-mode'); title.innerText = "🔁 Quem entra?"; }
-            else if (selectedBenchIdx !== null) { header.classList.add('active-mode'); title.innerText = "🔁 Quem sai?"; }
-            else { header.classList.remove('active-mode'); title.innerText = "Banco de Reservas"; }
-        }
-        function cliqueNoCampoVazio(e) { if (e.target.id === 'campo') { limparSelecao(); } }
-        
-        // --- SALVAR ---
-        function aplicarFormacaoAutomatica() {
-            const formacao = document.getElementById('formationSelect').value;
-            aplicarCoordenadasPadrao(formacao);
-            renderizarCampo();
-        }
-        function aplicarCoordenadasPadrao(nomeFormacao) {
-            const coords = formations[nomeFormacao];
-            titulares.forEach((jog, idx) => {
-                if (coords[idx]) { jog.x = coords[idx].x; jog.y = coords[idx].y; jog.role = coords[idx].p; }
-            });
-        }
+
         function salvarTime() {
-            const novoElenco = [...titulares, ...reservas];
-            myTeamObj.elenco = novoElenco;
-            myTeamObj.funcoes = currentRoles; // Salva funções
+            // Salva coordenadas da tática atual nos jogadores titulares
+            // Isso ajuda o engine a saber que o usuário definiu uma tática personalizada
+            const formCode = document.getElementById('formation-select').value;
+            const coords = formations[formCode];
+
+            // Marca os 11 primeiros com X e Y (apenas flag pro Engine saber que tá escalado)
+            for(let i=0; i<11; i++) {
+                if(myTeamObj.elenco[i]) {
+                    myTeamObj.elenco[i].x = coords[i].l;
+                    myTeamObj.elenco[i].y = coords[i].t;
+                }
+            }
+
+            // Salva no LocalStorage
             Engine.salvarJogo(gameState);
-            alert("✅ Time e Funções Salvas!");
-            voltar();
+
+            // Feedback Visual
+            const toast = document.getElementById('toast');
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2000);
         }
-        function voltar() { window.location.href = 'dashboard.html'; }
+
+        function voltar() {
+            window.location.href = 'dashboard.html';
+        }
 
     </script>
 </body>
