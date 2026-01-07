@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRFutebol - Competições</title>
+    <title>BRFutebol - Central</title>
     
     <script src="database_jogadores.js"></script>
     <script src="engine.js"></script>
@@ -11,10 +11,11 @@
     <style>
         :root {
             --bg: #0d1115;
-            --card-bg: #2d3436;
+            --panel: #1e272e;
             --text: #ecf0f1;
-            --secondary: #0fb9b1;
             --gold: #f1c40f;
+            --green: #2ecc71;
+            --red: #ff4757;
         }
 
         body {
@@ -33,8 +34,17 @@
             display: flex; align-items: center; justify-content: space-between;
             padding: 0 30px;
         }
+        
+        .header-left { display: flex; align-items: center; gap: 20px; }
         .back-btn { background: #444; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
         .back-btn:hover { background: #555; }
+
+        /* SELETOR DE PAÍS */
+        select {
+            background: #111; color: var(--gold); border: 1px solid #444;
+            padding: 10px; border-radius: 6px; font-weight: bold; text-transform: uppercase;
+            cursor: pointer;
+        }
 
         /* LAYOUT */
         main {
@@ -42,282 +52,202 @@
             height: 100%; overflow: hidden;
         }
 
-        /* SIDEBAR DE COMPETIÇÕES */
-        .comp-sidebar {
-            background: #1e272e; border-right: 1px solid #444;
-            display: flex; flex-direction: column;
-        }
-        .comp-btn {
+        /* SIDEBAR */
+        .sidebar { background: var(--panel); border-right: 1px solid #333; display: flex; flex-direction: column; }
+        .nav-btn {
             background: transparent; border: none; border-bottom: 1px solid #333;
             color: #aaa; padding: 20px; text-align: left; cursor: pointer;
             font-size: 1rem; font-weight: bold; transition: 0.2s;
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: space-between;
         }
-        .comp-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
-        .comp-btn.active { background: var(--secondary); color: #1e272e; }
+        .nav-btn:hover { background: rgba(255,255,255,0.05); color: #fff; }
+        .nav-btn.active { background: var(--green); color: #1e272e; }
 
-        /* ÁREA DE CONTEÚDO */
-        .content-panel {
-            padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 30px;
-        }
+        /* CONTEÚDO */
+        .content { padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 30px; }
 
-        /* CARDS DE DADOS */
-        .data-card {
-            background: var(--card-bg); border-radius: 12px; padding: 20px;
-            border: 1px solid #444; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        .card {
+            background: var(--panel); border-radius: 12px; padding: 20px;
+            border: 1px solid #333; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
-        .data-header {
+        .card-header {
             font-size: 1.1rem; font-weight: bold; color: var(--gold);
             margin-bottom: 15px; border-bottom: 1px solid #444; padding-bottom: 10px;
-            display: flex; justify-content: space-between;
         }
 
         /* TABELA */
         table { width: 100%; border-collapse: collapse; }
         th { text-align: left; color: #888; font-size: 0.8rem; padding: 10px; border-bottom: 2px solid #444; }
-        td { padding: 10px; border-bottom: 1px solid #333; font-size: 0.9rem; }
-        .pos { width: 30px; font-weight: bold; color: #fff; }
-        .pts { font-weight: bold; color: var(--secondary); }
+        td { padding: 8px 10px; border-bottom: 1px solid #333; font-size: 0.9rem; }
+        .pos { width: 30px; font-weight: bold; }
+        .pts { font-weight: bold; color: var(--green); }
         tr:nth-child(even) { background: rgba(255,255,255,0.02); }
 
-        /* ARTILHARIA */
-        .scorer-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333; }
-        .scorer-name { font-weight: bold; }
-        .scorer-team { color: #888; font-size: 0.8rem; }
-        .scorer-goals { font-weight: bold; color: var(--gold); }
-
-        /* MATA-MATA (BRACKET) */
-        .bracket-row { 
-            display: flex; justify-content: space-between; align-items: center; 
-            background: #222; padding: 10px; margin-bottom: 5px; border-radius: 6px; border-left: 4px solid #555;
-        }
-        .bracket-team { font-weight: bold; display: flex; align-items: center; gap: 10px; width: 40%; }
-        .bracket-score { font-family: monospace; font-size: 1.1rem; color: #fff; width: 20%; text-align: center; }
-        .bracket-win { color: var(--green); border-left-color: var(--green); }
-
-        /* CONFRONTOS */
-        .fixture-card {
-            background: #151a1d; padding: 10px; margin-bottom: 10px; border-radius: 6px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .fix-score { background: #000; padding: 5px 10px; border-radius: 4px; font-weight: bold; }
+        /* ARTILHARIA & JOGOS */
+        .row-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #333; font-size: 0.9rem; }
+        .score-badge { background: #000; padding: 3px 8px; border-radius: 4px; font-weight: bold; }
 
     </style>
 </head>
 <body>
 
     <header>
-        <button class="back-btn" onclick="voltar()">⬅ Voltar ao Dashboard</button>
-        <h1 style="color:white; font-size:1.2rem; text-transform:uppercase;">Central de Competições</h1>
-        <div style="width: 100px;"></div>
+        <div class="header-left">
+            <button class="back-btn" onclick="window.location.href='dashboard.html'">⬅ Voltar</button>
+            <h2 style="margin:0; font-size:1.2rem; text-transform:uppercase;">Mundo</h2>
+        </div>
+        
+        <select id="country-select" onchange="mudarPais()">
+            </select>
     </header>
 
     <main>
-        <div class="comp-sidebar" id="sidebar-comps">
-            </div>
-
-        <div class="content-panel" id="content-area">
-            <div style="text-align:center; color:#555; margin-top:50px;">Selecione uma competição ao lado.</div>
+        <div class="sidebar">
+            <button class="nav-btn active" onclick="carregarAba('LIGA')">Liga Nacional <span>🏆</span></button>
+            <button class="nav-btn" style="opacity:0.5; cursor:not-allowed;">Copa (Em breve) <span>🥊</span></button>
         </div>
+
+        <div class="content" id="content-area">
+            </div>
     </main>
 
     <script>
         let gameState = null;
+        let paisAtual = null;
 
         window.onload = function() {
-            if (typeof Engine === 'undefined') return alert("Engine Off");
+            if (typeof Engine === 'undefined') { alert("Engine Off"); return; }
             gameState = Engine.carregarJogo();
-            if (!gameState) return window.location.href = 'index.html';
+            if (!gameState) { window.location.href = 'index.html'; return; }
 
-            renderSidebar();
-            // Seleciona a Liga por padrão
-            carregarCompeticao('LIGA');
+            // Define o país inicial (o do usuário)
+            paisAtual = gameState.paisUsuario;
+            
+            carregarSeletor();
+            renderizarTela();
         };
 
-        function renderSidebar() {
-            const sb = document.getElementById('sidebar-comps');
-            const config = gameState.config;
+        function carregarSeletor() {
+            const sel = document.getElementById('country-select');
+            // Pega chaves do objeto 'mundo' (países carregados)
+            Object.keys(gameState.mundo).forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p;
+                opt.innerText = p.toUpperCase();
+                if(p === paisAtual) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
+
+        function mudarPais() {
+            paisAtual = document.getElementById('country-select').value;
+            renderizarTela();
+        }
+
+        function renderizarTela() {
+            const container = document.getElementById('content-area');
+            container.innerHTML = '';
+
+            renderizarTabela(container);
+            renderizarArtilharia(container);
+            renderizarRodada(container);
+        }
+
+        function renderizarTabela(container) {
+            // Pega classificação do Engine Global
+            const lista = Engine.getClassificacao(gameState, paisAtual);
             
-            sb.innerHTML = `
-                <button class="comp-btn active" id="btn-LIGA" onclick="carregarCompeticao('LIGA')">
-                    ${gameState.pais === 'brasil' ? 'Brasileirão' : 'Liga Nacional'} <span>🏆</span>
-                </button>
-                <button class="comp-btn" id="btn-COPA" onclick="carregarCompeticao('COPA')">
-                    ${config.copa} <span>🥊</span>
-                </button>
-                <button class="comp-btn" id="btn-CONTINENTAL" onclick="carregarCompeticao('CONTINENTAL')">
-                    ${config.cont} <span>🌎</span>
-                </button>
-                <button class="comp-btn" id="btn-SUPERCOPA" onclick="carregarCompeticao('SUPERCOPA')">
-                    ${config.supercopa} <span>✨</span>
-                </button>
-            `;
-        }
-
-        function carregarCompeticao(tipo) {
-            // Atualiza botões
-            document.querySelectorAll('.comp-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('btn-'+tipo).classList.add('active');
-
-            const content = document.getElementById('content-area');
-            content.innerHTML = ''; // Limpa
-
-            // Lógica de Renderização por Tipo
-            if (tipo === 'LIGA') {
-                renderizarTabelaLiga(content);
-                renderizarArtilharia(content, 'LIGA'); // Passa o contexto se quiser filtrar (aqui global)
-                renderizarJogosDaRodada(content, 'LIGA');
-            } else {
-                renderizarMataMata(content, tipo);
-                renderizarJogosDaRodada(content, tipo);
-            }
-        }
-
-        // --- RENDERIZADORES ---
-
-        function renderizarTabelaLiga(container) {
             const card = document.createElement('div');
-            card.className = 'data-card';
-            card.innerHTML = `
-                <div class="data-header">Classificação</div>
+            card.className = 'card';
+            
+            let html = `
+                <div class="card-header">Classificação: ${paisAtual.toUpperCase()}</div>
                 <table>
-                    <thead><tr><th class="pos">#</th><th>Time</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>SG</th></tr></thead>
-                    <tbody id="table-body"></tbody>
-                </table>
+                    <thead><tr><th class="pos">#</th><th>Clube</th><th>P</th><th>J</th><th>V</th><th>E</th><th>D</th><th>SG</th></tr></thead>
+                    <tbody>
             `;
-            container.appendChild(card);
-
-            const tbody = card.querySelector('#table-body');
-            const lista = Engine.getClassificacao(gameState); // Usa função do Engine
 
             lista.forEach((t, i) => {
-                const tr = document.createElement('tr');
-                // Highlight se for G4 ou Z4
-                let corPos = "#fff";
-                if(i < 4) corPos = "#2ecc71";
-                if(i >= lista.length - 4) corPos = "#ff4757";
+                let color = "#fff";
+                if(i < 4) color = "#2ecc71"; // G4
+                else if(i >= lista.length - 4) color = "#ff4757"; // Z4
 
-                tr.innerHTML = `
-                    <td class="pos" style="color:${corPos}">${i+1}</td>
-                    <td>${t.nome}</td>
-                    <td class="pts">${t.stats.liga.p}</td>
-                    <td>${t.stats.liga.j}</td>
-                    <td>${t.stats.liga.v}</td>
-                    <td>${t.stats.liga.e}</td>
-                    <td>${t.stats.liga.d}</td>
-                    <td>${t.stats.liga.s}</td>
+                html += `
+                    <tr>
+                        <td class="pos" style="color:${color}">${i+1}</td>
+                        <td>${t.nome}</td>
+                        <td class="pts">${t.stats.p}</td>
+                        <td>${t.stats.j}</td>
+                        <td>${t.stats.v}</td>
+                        <td>${t.stats.e}</td>
+                        <td>${t.stats.d}</td>
+                        <td>${t.stats.s}</td>
+                    </tr>
                 `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function renderizarMataMata(container, tipo) {
-            const card = document.createElement('div');
-            card.className = 'data-card';
-            
-            // Filtra jogos desse tipo no histórico
-            // Precisamos agrupar por Fase (Oitavas, Quartas, etc)
-            // Varre o calendário para achar jogos passados e futuros dessa comp
-            const jogosCopa = gameState.calendario.filter(ev => ev.tipo === tipo);
-            
-            if (jogosCopa.length === 0) {
-                card.innerHTML = `<div class="data-header">Chaveamento</div><p style="color:#777">Sorteio ainda não realizado ou competição não iniciada.</p>`;
-                container.appendChild(card);
-                return;
-            }
-
-            let html = `<div class="data-header">Resultados & Chaveamento (${gameState.config[tipo.toLowerCase()] || tipo})</div>`;
-            
-            jogosCopa.forEach(ev => {
-                html += `<h4 style="margin:15px 0 5px 0; color:#888; text-transform:uppercase; font-size:0.8rem;">${ev.nome}</h4>`;
-                ev.jogos.forEach(j => {
-                    const placar = (j.golsCasa !== undefined) ? `<span class="bracket-score">${j.golsCasa} - ${j.golsFora}</span>` : `<span class="bracket-score">v</span>`;
-                    // Detecta vencedor (simplificado)
-                    let classeC = '', classeF = '';
-                    if(j.golsCasa > j.golsFora) classeC = 'bracket-win';
-                    if(j.golsFora > j.golsCasa) classeF = 'bracket-win';
-
-                    html += `
-                        <div class="bracket-row ${classeC || classeF}">
-                            <div class="bracket-team" style="text-align:right; justify-content:flex-end;">${j.casa}</div>
-                            ${placar}
-                            <div class="bracket-team">${j.fora}</div>
-                        </div>
-                    `;
-                });
             });
 
+            html += `</tbody></table>`;
             card.innerHTML = html;
             container.appendChild(card);
         }
 
         function renderizarArtilharia(container) {
             const card = document.createElement('div');
-            card.className = 'data-card';
-            card.innerHTML = `<div class="data-header">Artilheiros da Temporada</div>`;
+            card.className = 'card';
+            card.innerHTML = `<div class="card-header">Artilheiros</div>`;
 
-            // Coleta todos os jogadores de todos os times que tenham gols
+            // Coleta artilheiros do país selecionado
             let artilheiros = [];
+            const liga = gameState.mundo[paisAtual];
             
-            // Função auxiliar para varrer array de times
-            const varrerTimes = (listaTimes) => {
-                listaTimes.forEach(t => {
-                    t.elenco.forEach(j => {
-                        if(j.gols > 0) artilheiros.push({ nome: j.nome, time: t.nome, gols: j.gols });
-                    });
+            liga.times.forEach(t => {
+                t.elenco.forEach(j => {
+                    if(j.gols > 0) artilheiros.push({ nome: j.nome, time: t.nome, gols: j.gols });
                 });
-            };
-
-            varrerTimes(gameState.times);
-            varrerTimes(gameState.timesContinental);
-
-            // Ordena
-            artilheiros.sort((a,b) => b.gols - a.gols);
-            
-            // Top 10
-            artilheiros.slice(0, 10).forEach((a, i) => {
-                const div = document.createElement('div');
-                div.className = 'scorer-row';
-                div.innerHTML = `
-                    <div><span style="width:20px; display:inline-block; color:#777;">${i+1}.</span> <span class="scorer-name">${a.nome}</span> <span class="scorer-team">(${a.time})</span></div>
-                    <span class="scorer-goals">${a.gols}</span>
-                `;
-                card.appendChild(div);
             });
 
-            if(artilheiros.length === 0) card.innerHTML += '<div style="color:#555">Nenhum gol marcado ainda.</div>';
+            artilheiros.sort((a,b) => b.gols - a.gols);
 
-            container.appendChild(card);
-        }
-
-        function renderizarJogosDaRodada(container, tipo) {
-            // Busca jogos da semana atual ou próximos jogos desse tipo
-            const card = document.createElement('div');
-            card.className = 'data-card';
-            card.innerHTML = `<div class="data-header">Confrontos (Semana ${gameState.semanaAtual})</div>`;
-
-            const eventoSemana = gameState.calendario[gameState.semanaAtual - 1];
-            
-            if (eventoSemana && eventoSemana.tipo === tipo) {
-                eventoSemana.jogos.forEach(j => {
-                    const placar = (j.golsCasa !== undefined) ? `${j.golsCasa} - ${j.golsFora}` : 'x';
-                    const div = document.createElement('div');
-                    div.className = 'fixture-card';
-                    div.innerHTML = `
-                        <span style="width:40%; text-align:right;">${j.casa}</span>
-                        <span class="fix-score">${placar}</span>
-                        <span style="width:40%;">${j.fora}</span>
-                    `;
-                    card.appendChild(div);
-                });
+            if(artilheiros.length === 0) {
+                card.innerHTML += `<div style="color:#777">Nenhum gol marcado na liga ainda.</div>`;
             } else {
-                card.innerHTML += `<div style="color:#777">Não há jogos desta competição nesta rodada.</div>`;
+                artilheiros.slice(0, 5).forEach((a, i) => {
+                    card.innerHTML += `
+                        <div class="row-item">
+                            <div><b>${i+1}. ${a.nome}</b> <small style="color:#888">(${a.time})</small></div>
+                            <b style="color:var(--gold)">${a.gols}</b>
+                        </div>
+                    `;
+                });
             }
-
             container.appendChild(card);
         }
 
-        function voltar() { window.location.href = 'dashboard.html'; }
+        function renderizarRodada(container) {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `<div class="card-header">Últimos Resultados</div>`;
+
+            // Pega a rodada anterior (semanaAtual - 1 é a próxima, então pegamos -2 ou 0)
+            const semanaPassada = gameState.semanaAtual > 1 ? gameState.semanaAtual - 2 : 0;
+            const jogos = gameState.mundo[paisAtual].calendario[semanaPassada];
+
+            if(!jogos || jogos.length === 0) {
+                card.innerHTML += `<div style="color:#777">Nenhum jogo realizado recentemente.</div>`;
+            } else {
+                jogos.forEach(j => {
+                    const placar = j.golsCasa !== undefined ? `${j.golsCasa} - ${j.golsFora}` : 'vs';
+                    card.innerHTML += `
+                        <div class="row-item" style="background:rgba(0,0,0,0.2); padding:10px; margin-bottom:5px; border-radius:5px;">
+                            <span style="width:40%; text-align:right;">${j.casa}</span>
+                            <span class="score-badge">${placar}</span>
+                            <span style="width:40%;">${j.fora}</span>
+                        </div>
+                    `;
+                });
+            }
+            container.appendChild(card);
+        }
 
     </script>
 </body>
