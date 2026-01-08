@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BRFutebol - Painel do Treinador</title>
     
+    <script src="database_jogadores.js"></script>
     <script src="engine.js"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -256,8 +257,14 @@
     </div>
 
     <script>
-        // --- LÓGICA DO DASHBOARD ---
-        
+        // --- 1. FIX DE COMPATIBILIDADE (IGUAL AO INDEX) ---
+        if (typeof database !== 'undefined') {
+            window.Database = database;
+        } else if (typeof Database !== 'undefined') {
+            window.database = Database;
+        }
+        // --------------------------------------------------
+
         let gameState = null;
         let meuTime = null;
 
@@ -267,7 +274,7 @@
 
         function carregarDados() {
             try {
-                // 1. Carrega o Save da Engine
+                // 1. Carrega o Save
                 gameState = Engine.carregarJogo();
                 if (!gameState) {
                     alert("Nenhum jogo salvo encontrado. Redirecionando...");
@@ -276,19 +283,15 @@
                 }
 
                 // 2. Encontra o time do jogador
-                // A Engine salva o ID do time em gameState.meuTime
-                // A função Engine.encontrarTime varre as divisões pra achar o objeto completo
                 meuTime = Engine.encontrarTime(gameState, gameState.meuTime);
 
                 if (!meuTime) throw new Error("Time não encontrado no save.");
 
-                // 3. Puxa dados do LocalStorage (Nome do técnico e escudo que salvamos no index)
+                // 3. Puxa dados do LocalStorage
                 const tecnico = localStorage.getItem('brfutebol_tecnico') || "Treinador";
                 const escudo = localStorage.getItem('brfutebol_escudo') || "https://cdn-icons-png.flaticon.com/512/53/53283.png";
 
-                // --- ATUALIZA A TELA (DOM) ---
-
-                // Cabeçalho
+                // --- ATUALIZA A TELA ---
                 document.getElementById('dash-team-name').innerText = meuTime.nome;
                 document.getElementById('dash-coach').innerText = tecnico;
                 document.getElementById('dash-escudo').src = escudo;
@@ -296,13 +299,8 @@
                 document.getElementById('dash-week').innerText = gameState.rodada;
                 document.getElementById('team-ovr').innerText = meuTime.forca || 60;
 
-                // Tabela (Simulação Rápida)
                 atualizarTabela();
-
-                // Próximo Jogo
                 atualizarProximoJogo();
-
-                // Notícias
                 gerarNoticias(meuTime.nome, tecnico);
 
             } catch (e) {
@@ -315,28 +313,29 @@
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
 
-            // Pega a tabela da competição atual (Brasileirão Série A, por exemplo)
-            // Se a engine ainda não gerou tabela, criamos uma lista fictícia com os times da divisão
             let timesTabela = [];
             
-            // Tenta pegar da Engine ou gera lista simples
-            const divisaoAtual = 'serieA'; // Simplificação
-            if (gameState.competicoes && gameState.competicoes.brasil && gameState.competicoes.brasil[divisaoAtual]) {
-                 // Lógica se a Engine já tiver estrutura de competição
-                 timesTabela = gameState.competicoes.brasil[divisaoAtual].times;
-            } else {
-                 // Pega a lista crua de times do banco de dados/save
-                 // Procura onde meu time está
-                 timesTabela = encontrarDivisaoDoTime(meuTime.id);
+            // Tenta pegar a tabela real da Engine ou uma lista simples
+            // Como usamos o "fix" no index, a divisão deve estar em 'serieA' ou na divisão escolhida
+            if (window.Database && window.Database.brasil) {
+                // Procura em qual divisão o meu time está
+                const divs = ['serieA', 'serieB', 'serieC', 'serieD'];
+                for(let d of divs) {
+                    if(window.Database.brasil[d] && window.Database.brasil[d].find(t => t.id === meuTime.id || t.nome === meuTime.nome)) {
+                        timesTabela = window.Database.brasil[d];
+                        break;
+                    }
+                }
+                // Se não achou (ex: save antigo), pega da serieA padrão
+                if(timesTabela.length === 0 && window.Database.brasil.serieA) timesTabela = window.Database.brasil.serieA;
             }
 
-            // Ordena por "pontos" (simulado se não existir)
+            // Ordena e mostra
             timesTabela.sort((a,b) => (b.pontos || 0) - (a.pontos || 0));
 
-            // Renderiza top 5 e o meu time
             timesTabela.slice(0, 5).forEach((t, index) => {
                 const tr = document.createElement('tr');
-                if(t.id === meuTime.id) tr.className = 'my-team-row';
+                if((t.id && t.id === meuTime.id) || t.nome === meuTime.nome) tr.className = 'my-team-row';
                 tr.innerHTML = `
                     <td><span class="pos-num">${index + 1}</span></td>
                     <td>${t.nome}</td>
@@ -347,21 +346,31 @@
         }
 
         function atualizarProximoJogo() {
-            // Como ainda não temos calendário complexo, vamos simular um oponente aleatório da mesma divisão
-            const divisao = encontrarDivisaoDoTime(meuTime.id);
-            // Filtra para não pegar meu próprio time
-            const oponentes = divisao.filter(t => t.id !== meuTime.id);
-            // Pega um aleatório (ou baseada na rodada se tiver salvo)
-            const oponente = oponentes[Math.floor(Math.random() * oponentes.length)] || { nome: "Visitante", escudo: "" };
+            // Pega oponente aleatório (simulação)
+            let oponente = { nome: "Visitante", escudo: "" };
+            
+            if (window.Database && window.Database.brasil) {
+                 // Tenta achar lista de times da minha divisão
+                 const divs = ['serieA', 'serieB', 'serieC', 'serieD'];
+                 let minhaDiv = [];
+                 for(let d of divs) {
+                    if(window.Database.brasil[d] && window.Database.brasil[d].find(t => t.nome === meuTime.nome)) {
+                        minhaDiv = window.Database.brasil[d];
+                        break;
+                    }
+                 }
+                 if(minhaDiv.length > 0) {
+                     const rivais = minhaDiv.filter(t => t.nome !== meuTime.nome);
+                     oponente = rivais[Math.floor(Math.random() * rivais.length)];
+                 }
+            }
 
-            // Renderiza
             document.getElementById('home-name').innerText = meuTime.nome;
             document.getElementById('home-logo').src = document.getElementById('dash-escudo').src;
             
             document.getElementById('away-name').innerText = oponente.nome;
             document.getElementById('away-logo').src = oponente.escudo || "https://cdn-icons-png.flaticon.com/512/53/53283.png";
 
-            // Salva quem é o oponente no localStorage para a tela de partida usar depois
             localStorage.setItem('brfutebol_oponente_nome', oponente.nome);
         }
 
@@ -381,22 +390,7 @@
             });
         }
 
-        // Função auxiliar para achar a lista de times onde estou
-        function encontrarDivisaoDoTime(id) {
-            // Varre o objeto de save procurando a lista que contem meu ID
-            if(gameState.ligas) {
-                for(let div in gameState.ligas) {
-                    if(gameState.ligas[div].find(t => t.id === id)) return gameState.ligas[div];
-                }
-            }
-            // Fallback: retorna array vazio ou tenta pegar do Database global se existir
-            if(typeof Database !== 'undefined' && Database.brasil && Database.brasil.serieA) return Database.brasil.serieA;
-            return [];
-        }
-
         function irParaPartida() {
-            // Simplesmente vai para a tela de jogo (que faremos a seguir se vc quiser)
-            // Por enquanto, pode ir para escalação ou um alert
             if(confirm("Confirmar escalação e ir para o jogo?")) {
                 alert("Simulando partida... (Próximo passo: Criar partida.html)");
                 // window.location.href = 'partida.html'; 
@@ -409,7 +403,6 @@
                 window.location.href = 'index.html';
             }
         }
-
     </script>
 </body>
 </html>
