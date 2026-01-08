@@ -7,13 +7,11 @@
     
     <script src="database_jogadores.js"></script>
     <script src="engine.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
-        /* --- CSS GERAL --- */
         :root {
             --bg-dark: #0f1216;
             --bg-panel: rgba(30, 35, 45, 0.95);
@@ -73,7 +71,7 @@
         }
         .save-btn:hover { transform: scale(1.05); background: #fff; }
 
-        /* LAYOUT PRINCIPAL */
+        /* WORKSPACE */
         .workspace {
             display: grid;
             grid-template-columns: 280px 1fr 280px; 
@@ -82,7 +80,7 @@
             overflow: hidden;
         }
 
-        /* PAINÉIS LATERAIS */
+        /* PAINÉIS */
         .panel {
             background: var(--bg-panel);
             border-right: var(--border);
@@ -107,7 +105,7 @@
         .scroll-content::-webkit-scrollbar { width: 5px; }
         .scroll-content::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
 
-        /* LISTA DE JOGADORES */
+        /* LISTA JOGADORES */
         .roster-item {
             display: flex; align-items: center;
             background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, transparent 100%);
@@ -127,7 +125,7 @@
         .health-bar-fill { height: 100%; border-radius: 2px; }
         .ovr-badge { font-family: 'Rajdhani'; font-weight: 800; font-size: 1.1rem; color: var(--gold); margin-left: 10px; }
 
-        /* ÁREA DO CAMPO */
+        /* ÁREA CENTRAL */
         .field-area {
             background: #0a0a0a;
             position: relative;
@@ -135,29 +133,39 @@
             padding: 10px; gap: 10px; overflow: hidden;
         }
 
-        /* --- CAMPO REALISTA (CSS ATUALIZADO) --- */
+        /* --- CAMPO HORIZONTAL --- */
         .pitch {
-            width: 95%; height: 75%; max-width: 600px; aspect-ratio: 2/3;
+            width: 95%; height: auto; aspect-ratio: 1.55; /* Formato Widescreen */
+            max-height: 75%;
             background-color: #2e7d32;
-            background-image: repeating-linear-gradient(to bottom, #2e7d32, #2e7d32 10%, #368e3c 10%, #368e3c 20%);
-            border: 2px solid rgba(255,255,255,0.7); position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-radius: 4px; overflow: hidden;
+            /* Listras Verticais para campo horizontal */
+            background-image: repeating-linear-gradient(to right, #2e7d32, #2e7d32 10%, #368e3c 10%, #368e3c 20%);
+            border: 2px solid rgba(255,255,255,0.7);
+            position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.6); border-radius: 4px; overflow: hidden;
             transition: all 0.5s ease;
         }
         
-        .pitch * { pointer-events: none; } /* Linhas não bloqueiam clique */
+        .pitch * { pointer-events: none; }
         .pitch-line { position: absolute; border: 2px solid rgba(255,255,255,0.6); }
-        .half-line { top: 50%; width: 100%; height: 2px; background: rgba(255,255,255,0.6); border: none; transform: translateY(-50%); }
+        
+        /* Meio Campo Vertical */
+        .half-line { top: 0; left: 50%; height: 100%; width: 2px; background: rgba(255,255,255,0.6); border: none; transform: translateX(-50%); }
         .center-circle { top: 50%; left: 50%; width: 100px; height: 100px; border-radius: 50%; transform: translate(-50%, -50%); }
         .center-spot { top: 50%; left: 50%; width: 6px; height: 6px; background: rgba(255,255,255,0.8); border-radius: 50%; transform: translate(-50%, -50%); }
         
-        .penalty-area { width: 60%; height: 16%; left: 20%; }
-        .penalty-area.top { top: -2px; border-top: none; }
-        .penalty-area.bottom { bottom: -2px; border-bottom: none; }
-        .goal-area { width: 30%; height: 6%; left: 35%; }
-        .goal-area.top { top: -2px; border-top: none; }
-        .goal-area.bottom { bottom: -2px; border-bottom: none; }
+        /* Áreas (Esquerda e Direita) */
+        .penalty-area { width: 16%; height: 50%; top: 25%; }
+        .penalty-area.left { left: -2px; border-left: none; }
+        .penalty-area.right { right: -2px; border-right: none; }
         
+        .goal-area { width: 6%; height: 22%; top: 39%; }
+        .goal-area.left { left: -2px; border-left: none; }
+        .goal-area.right { right: -2px; border-right: none; }
+        
+        .penalty-spot { width: 4px; height: 4px; background: rgba(255,255,255,0.8); border-radius: 50%; top: 50%; transform: translateY(-50%); }
+        .penalty-spot.left { left: 11%; }
+        .penalty-spot.right { right: 11%; }
+
         .corner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.6); border-radius: 50%; position: absolute; }
         .corner-tl { top: -10px; left: -10px; }
         .corner-tr { top: -10px; right: -10px; }
@@ -166,7 +174,7 @@
 
         /* BANCO */
         .bench-container {
-            width: 95%; max-width: 600px; height: 18%; 
+            width: 95%; height: 18%; max-width: 900px;
             display: flex; flex-direction: column;
         }
         .bench-title { font-size: 0.7rem; color: #666; font-weight: 800; letter-spacing: 1px; margin-bottom: 5px; margin-left: 5px; }
@@ -176,12 +184,12 @@
             display: flex; align-items: center; justify-content: space-around; padding: 0 5px;
         }
 
-        /* SLOTS E JOGADORES */
+        /* SLOTS */
         .field-slot {
-            position: absolute; width: 70px; height: 70px;
+            position: absolute; width: 65px; height: 65px;
             transform: translate(-50%, -50%);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; z-index: 10; pointer-events: auto !important; /* Vital para o clique funcionar acima das linhas */
+            cursor: pointer; z-index: 10; pointer-events: auto !important;
             transition: top 0.4s, left 0.4s;
         }
         .bench-slot {
@@ -191,7 +199,7 @@
         }
 
         .player-kit {
-            width: 36px; height: 36px; background: #222;
+            width: 34px; height: 34px; background: #222;
             border: 2px dashed rgba(255,255,255,0.2); border-radius: 50%;
             color: #555; display: flex; align-items: center; justify-content: center;
             font-weight: 800; font-size: 0.7rem; position: relative;
@@ -214,6 +222,7 @@
             padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.1);
             text-align: center; min-width: 60px;
         }
+        .bench-slot .slot-info-box { font-size: 0.6rem; min-width: 45px; padding: 1px 2px; }
         .slot-name { display: block; font-size: 0.65rem; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px; }
         .slot-pos-mini { font-size: 0.55rem; color: #aaa; text-transform: uppercase; }
         .captain-c {
@@ -284,12 +293,15 @@
                 <div class="pitch-line half-line"></div>
                 <div class="pitch-line center-circle"></div>
                 <div class="pitch-line center-spot"></div>
-                <div class="pitch-line penalty-area top"></div>
-                <div class="pitch-line goal-area top"></div>
-                <div class="pitch-line penalty-spot top"></div>
-                <div class="pitch-line penalty-area bottom"></div>
-                <div class="pitch-line goal-area bottom"></div>
-                <div class="pitch-line penalty-spot bottom"></div>
+                
+                <div class="pitch-line penalty-area left"></div>
+                <div class="pitch-line goal-area left"></div>
+                <div class="pitch-line penalty-spot left"></div>
+
+                <div class="pitch-line penalty-area right"></div>
+                <div class="pitch-line goal-area right"></div>
+                <div class="pitch-line penalty-spot right"></div>
+
                 <div class="corner corner-tl"></div>
                 <div class="corner corner-tr"></div>
                 <div class="corner corner-bl"></div>
@@ -309,7 +321,7 @@
             </div>
 
             <div class="bench-container">
-                <div class="bench-title">BANCO DE RESERVAS (ARRASTE AQUI)</div>
+                <div class="bench-title">BANCO DE RESERVAS</div>
                 <div class="bench-box">
                     <div class="bench-slot" id="bench-1" data-role="RES"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
                     <div class="bench-slot" id="bench-2" data-role="RES"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
@@ -371,18 +383,85 @@
         if (typeof Database !== 'undefined') window.database = Database;
 
         let gameState, meuTime;
-        let escalacaoAtual = {}; 
+        let escalacaoAtual = {};
         let funcoesAtuais = { capitao: null, penalti: null, falta: null, escanteioD: null, escanteioE: null };
         let taticasAtuais = { mentalidade: 3, intensidade: 2 };
         let formacaoAtual = "4-3-3";
         let radarChart = null;
 
+        // --- MAPA HORIZONTAL (Joga da Esquerda para Direita) ---
+        // Goleiro: left ~5-8%
+        // Defesa: left ~20-25%
+        // Meio: left ~45-55%
+        // Ataque: left ~80-85%
+        // Lateral Esq (Top): top ~15%
+        // Lateral Dir (Bottom): top ~85%
         const layouts = {
-            "4-3-3": [{id:"slot-1",t:"90%",l:"50%",r:"GOL"},{id:"slot-2",t:"70%",l:"15%",r:"LE"},{id:"slot-3",t:"70%",l:"38%",r:"ZAG"},{id:"slot-4",t:"70%",l:"62%",r:"ZAG"},{id:"slot-5",t:"70%",l:"85%",r:"LD"},{id:"slot-6",t:"45%",l:"30%",r:"VOL"},{id:"slot-7",t:"45%",l:"50%",r:"MEI"},{id:"slot-8",t:"45%",l:"70%",r:"MEI"},{id:"slot-9",t:"15%",l:"20%",r:"ATA"},{id:"slot-10",t:"15%",l:"50%",r:"ATA"},{id:"slot-11",t:"15%",l:"80%",r:"ATA"}],
-            "4-4-2": [{id:"slot-1",t:"90%",l:"50%",r:"GOL"},{id:"slot-2",t:"70%",l:"15%",r:"LE"},{id:"slot-3",t:"70%",l:"38%",r:"ZAG"},{id:"slot-4",t:"70%",l:"62%",r:"ZAG"},{id:"slot-5",t:"70%",l:"85%",r:"LD"},{id:"slot-6",t:"45%",l:"15%",r:"MEI"},{id:"slot-7",t:"45%",l:"38%",r:"VOL"},{id:"slot-8",t:"45%",l:"62%",r:"VOL"},{id:"slot-9",t:"45%",l:"85%",r:"MEI"},{id:"slot-10",t:"15%",l:"35%",r:"ATA"},{id:"slot-11",t:"15%",l:"65%",r:"ATA"}],
-            "3-5-2": [{id:"slot-1",t:"90%",l:"50%",r:"GOL"},{id:"slot-2",t:"75%",l:"25%",r:"ZAG"},{id:"slot-3",t:"75%",l:"50%",r:"ZAG"},{id:"slot-4",t:"75%",l:"75%",r:"ZAG"},{id:"slot-5",t:"50%",l:"10%",r:"MEI"},{id:"slot-6",t:"50%",l:"30%",r:"VOL"},{id:"slot-7",t:"50%",l:"50%",r:"VOL"},{id:"slot-8",t:"50%",l:"70%",r:"VOL"},{id:"slot-9",t:"50%",l:"90%",r:"MEI"},{id:"slot-10",t:"15%",l:"35%",r:"ATA"},{id:"slot-11",t:"15%",l:"65%",r:"ATA"}],
-            "4-2-3-1":[{id:"slot-1",t:"90%",l:"50%",r:"GOL"},{id:"slot-2",t:"75%",l:"15%",r:"LE"},{id:"slot-3",t:"75%",l:"38%",r:"ZAG"},{id:"slot-4",t:"75%",l:"62%",r:"ZAG"},{id:"slot-5",t:"75%",l:"85%",r:"LD"},{id:"slot-6",t:"55%",l:"35%",r:"VOL"},{id:"slot-7",t:"55%",l:"65%",r:"VOL"},{id:"slot-8",t:"35%",l:"20%",r:"MEI"},{id:"slot-9",t:"35%",l:"50%",r:"MEI"},{id:"slot-10",t:"35%",l:"80%",r:"MEI"},{id:"slot-11",t:"10%",l:"50%",r:"ATA"}],
-            "3-4-3": [{id:"slot-1",t:"90%",l:"50%",r:"GOL"},{id:"slot-2",t:"75%",l:"20%",r:"ZAG"},{id:"slot-3",t:"75%",l:"50%",r:"ZAG"},{id:"slot-4",t:"75%",l:"80%",r:"ZAG"},{id:"slot-5",t:"50%",l:"10%",r:"MEI"},{id:"slot-6",t:"50%",l:"35%",r:"VOL"},{id:"slot-7",t:"50%",l:"65%",r:"VOL"},{id:"slot-8",t:"50%",l:"90%",r:"MEI"},{id:"slot-9",t:"15%",l:"20%",r:"ATA"},{id:"slot-10",t:"15%",l:"50%",r:"ATA"},{id:"slot-11",t:"15%",l:"80%",r:"ATA"}]
+            "4-3-3": [
+                {id:"slot-1",l:"6%",t:"50%",r:"GOL"}, // Goleiro
+                {id:"slot-2",l:"25%",t:"15%",r:"LE"},  // LE (Top)
+                {id:"slot-3",l:"20%",t:"38%",r:"ZAG"}, // Zagueiro
+                {id:"slot-4",l:"20%",t:"62%",r:"ZAG"}, // Zagueiro
+                {id:"slot-5",l:"25%",t:"85%",r:"LD"},  // LD (Bottom)
+                {id:"slot-6",l:"40%",t:"50%",r:"VOL"}, // Volante (Centro)
+                {id:"slot-7",l:"55%",t:"30%",r:"MEI"}, // Meia Esq
+                {id:"slot-8",l:"55%",t:"70%",r:"MEI"}, // Meia Dir
+                {id:"slot-9",l:"85%",t:"20%",r:"ATA"}, // Ponta Esq (Top)
+                {id:"slot-10",l:"85%",t:"50%",r:"ATA"},// Centroavante
+                {id:"slot-11",l:"85%",t:"80%",r:"ATA"} // Ponta Dir (Bottom)
+            ],
+            "4-4-2": [
+                {id:"slot-1",l:"6%",t:"50%",r:"GOL"},
+                {id:"slot-2",l:"25%",t:"15%",r:"LE"},
+                {id:"slot-3",l:"20%",t:"38%",r:"ZAG"},
+                {id:"slot-4",l:"20%",t:"62%",r:"ZAG"},
+                {id:"slot-5",l:"25%",t:"85%",r:"LD"},
+                {id:"slot-6",l:"45%",t:"30%",r:"VOL"},
+                {id:"slot-7",l:"45%",t:"70%",r:"VOL"},
+                {id:"slot-8",l:"60%",t:"15%",r:"MEI"},
+                {id:"slot-9",l:"60%",t:"85%",r:"MEI"},
+                {id:"slot-10",l:"85%",t:"35%",r:"ATA"},
+                {id:"slot-11",l:"85%",t:"65%",r:"ATA"}
+            ],
+            "3-5-2": [
+                {id:"slot-1",l:"6%",t:"50%",r:"GOL"},
+                {id:"slot-2",l:"20%",t:"20%",r:"ZAG"},
+                {id:"slot-3",l:"18%",t:"50%",r:"ZAG"},
+                {id:"slot-4",l:"20%",t:"80%",r:"ZAG"},
+                {id:"slot-5",l:"45%",t:"15%",r:"MEI"},
+                {id:"slot-6",l:"40%",t:"35%",r:"VOL"},
+                {id:"slot-7",l:"40%",t:"65%",r:"VOL"},
+                {id:"slot-8",l:"45%",t:"85%",r:"MEI"},
+                {id:"slot-9",l:"60%",t:"50%",r:"MEI"},
+                {id:"slot-10",l:"85%",t:"35%",r:"ATA"},
+                {id:"slot-11",l:"85%",t:"65%",r:"ATA"}
+            ],
+            "4-2-3-1": [
+                {id:"slot-1",l:"6%",t:"50%",r:"GOL"},
+                {id:"slot-2",l:"25%",t:"15%",r:"LE"},
+                {id:"slot-3",l:"20%",t:"38%",r:"ZAG"},
+                {id:"slot-4",l:"20%",t:"62%",r:"ZAG"},
+                {id:"slot-5",l:"25%",t:"85%",r:"LD"},
+                {id:"slot-6",l:"40%",t:"35%",r:"VOL"},
+                {id:"slot-7",l:"40%",t:"65%",r:"VOL"},
+                {id:"slot-8",l:"65%",t:"20%",r:"MEI"},
+                {id:"slot-9",l:"60%",t:"50%",r:"MEI"},
+                {id:"slot-10",l:"65%",t:"80%",r:"MEI"},
+                {id:"slot-11",l:"88%",t:"50%",r:"ATA"}
+            ],
+            "3-4-3": [
+                {id:"slot-1",l:"6%",t:"50%",r:"GOL"},
+                {id:"slot-2",l:"20%",t:"20%",r:"ZAG"},
+                {id:"slot-3",l:"18%",t:"50%",r:"ZAG"},
+                {id:"slot-4",l:"20%",t:"80%",r:"ZAG"},
+                {id:"slot-5",l:"45%",t:"15%",r:"MEI"},
+                {id:"slot-6",l:"45%",t:"40%",r:"VOL"},
+                {id:"slot-7",l:"45%",t:"60%",r:"VOL"},
+                {id:"slot-8",l:"45%",t:"85%",r:"MEI"},
+                {id:"slot-9",l:"85%",t:"20%",r:"ATA"},
+                {id:"slot-10",l:"85%",t:"50%",r:"ATA"},
+                {id:"slot-11",l:"85%",t:"80%",r:"ATA"}
+            ]
         };
 
         window.onload = function() {
@@ -392,10 +471,11 @@
 
                 let timeDB = encontrarTimeNoDatabase(gameState.meuTime);
                 let timeSave = Engine.encontrarTime(gameState, gameState.meuTime);
-                
                 meuTime = timeSave || timeDB;
-                
-                // RESTAURAÇÃO DE ELENCO DO DB
+
+                if(!meuTime) throw new Error("Time não encontrado.");
+
+                // RESTAURAÇÃO DE ELENCO
                 if(!meuTime.elenco || meuTime.elenco.length === 0) {
                     if(timeDB && timeDB.elenco && timeDB.elenco.length > 0) {
                         meuTime.elenco = timeDB.elenco;
@@ -436,13 +516,12 @@
         function carregarDadosSalvos() {
             const fs = localStorage.getItem('brfutebol_esquema');
             if(fs) { formacaoAtual = fs; document.getElementById('formation-select').value = formacaoAtual; }
-            const fj = localStorage.getItem('brfutebol_formacao');
             
+            const fj = localStorage.getItem('brfutebol_formacao');
             if(fj) { 
                 try{ escalacaoAtual = JSON.parse(fj); }catch(e){ escalacaoAtual = {}; }
             }
-            
-            // SE A ESCALAÇÃO ESTIVER VAZIA, AUTO-ESCALA APENAS TITULARES
+            // SE ESTIVER VAZIO, AUTO ESCALA SÓ TITULARES
             if (Object.keys(escalacaoAtual).length === 0) {
                 autoEscalar(true);
             }
@@ -486,6 +565,7 @@
             container.innerHTML = '';
             
             const emCampo = Object.values(escalacaoAtual);
+            // FILTRO: Só mostra quem NÃO está escalado
             let lista = meuTime.elenco.filter(j => !emCampo.includes(j.uid));
 
             const ordem = {'GOL':1, 'LD':2, 'LE':2, 'ZAG':3, 'VOL':4, 'MEI':5, 'ATA':6};
@@ -650,7 +730,6 @@
         }
 
         function handleDragStart(e) { e.dataTransfer.setData('text/plain', this.id.replace('card-','')); }
-        
         const allSlots = [...document.querySelectorAll('.field-slot'), ...document.querySelectorAll('.bench-slot')];
         allSlots.forEach(s => {
             s.addEventListener('dragover', e => { e.preventDefault(); s.style.transform='translate(-50%,-50%) scale(1.1)'; });
@@ -676,7 +755,7 @@
             if(!silencioso && !confirm("Auto-escalar?")) return;
             escalacaoAtual = {};
             const usados = [];
-            // APENAS TITULARES PARA DEIXAR BANCO VAZIO NA LISTA
+            // SÓ OS 11 TITULARES PARA DEIXAR A LISTA CHEIA
             layouts[formacaoAtual].forEach(p => {
                 let m = meuTime.elenco.find(j => j.pos===p.r && !usados.includes(j.uid) && (j.saude||100)>50);
                 if(!m) m = meuTime.elenco.find(j => j.pos!=='GOL' && !usados.includes(j.uid) && (j.saude||100)>40);
