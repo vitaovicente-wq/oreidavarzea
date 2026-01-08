@@ -22,7 +22,7 @@
 
         * { box-sizing: border-box; }
 
-        /* SCROLLBAR PERSONALIZADA */
+        /* SCROLLBAR */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #111; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
@@ -77,10 +77,9 @@
             color: var(--accent);
         }
 
-        /* CONTEÚDO PRINCIPAL */
+        /* MAIN */
         .main-content { padding: 30px; overflow-y: auto; }
 
-        /* HEADER */
         .dash-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 30px;
@@ -113,7 +112,7 @@
             display: flex; justify-content: space-between;
         }
 
-        /* PRÓXIMO JOGO */
+        /* NEXT MATCH */
         .next-match {
             display: flex; align-items: center; justify-content: space-between;
             background: linear-gradient(90deg, #1e2329 0%, #161b22 100%);
@@ -140,11 +139,10 @@
         }
         .play-btn:hover { transform: scale(1.02); background: #fff; }
 
-        /* TABELAS */
+        /* TABLES */
         .mini-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         .mini-table th { text-align: left; color: #666; padding: 8px; font-size: 0.75rem; text-transform: uppercase; }
         .mini-table td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .pos-num { font-weight: 700; width: 30px; display: inline-block; }
         .my-team-row { background: rgba(0, 255, 136, 0.1); color: var(--accent); font-weight: bold; }
 
         /* NEWS */
@@ -175,7 +173,6 @@
     </div>
 
     <div class="main-content">
-        
         <div class="dash-header">
             <div class="team-profile">
                 <img id="dash-escudo" src="" class="team-shield">
@@ -191,9 +188,7 @@
         </div>
 
         <div class="grid-container">
-            
             <div style="display: flex; flex-direction: column; gap: 20px;">
-                
                 <div class="card">
                     <div class="card-title">PRÓXIMA RODADA (BRASILEIRÃO)</div>
                     <div class="next-match">
@@ -209,22 +204,18 @@
                     </div>
                     <button class="play-btn" onclick="irParaPartida()">JOGAR PARTIDA</button>
                 </div>
-
                 <div class="card">
                     <div class="card-title">NOTÍCIAS DO CLUBE</div>
                     <div id="news-feed"></div>
                 </div>
-
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 20px;">
-                
                 <div class="card" style="max-height: 350px; overflow-y: auto;">
                     <div class="card-title">PLANTEL</div>
                     <table class="mini-table">
                         <thead><tr><th>POS</th><th>NOME</th><th>OVR</th></tr></thead>
-                        <tbody id="squad-body">
-                            </tbody>
+                        <tbody id="squad-body"></tbody>
                     </table>
                 </div>
 
@@ -232,58 +223,33 @@
                     <div class="card-title">CLASSIFICAÇÃO</div>
                     <table class="mini-table">
                         <thead><tr><th>POS</th><th>TIME</th><th>P</th></tr></thead>
-                        <tbody id="table-body">
-                            </tbody>
+                        <tbody id="table-body"></tbody>
                     </table>
                 </div>
 
                 <div class="card">
-                    <div class="card-title">STATUS GERAL</div>
+                    <div class="card-title">RELATÓRIO DO ELENCO</div>
                     <div style="text-align: center; padding: 10px;">
                         <div style="font-size: 2.5rem; font-weight: 800; color: var(--accent);" id="team-ovr">0</div>
                         <div style="color: #666; font-size: 0.8rem; text-transform: uppercase;">Força Geral</div>
                     </div>
-                    <div style="margin-top: 15px; border-top: 1px solid #333; padding-top: 10px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 5px;">
-                            <span style="color:#aaa">Confiança</span><span style="color:#fff">100%</span>
-                        </div>
-                        <div style="width: 100%; height: 4px; background: #333; border-radius: 2px;">
-                            <div style="width: 100%; height: 100%; background: var(--accent); border-radius: 2px;"></div>
-                        </div>
-                    </div>
                 </div>
-
             </div>
-
         </div>
     </div>
 
     <script>
-        // --- 1. PATCH DE COMPATIBILIDADE ---
+        // --- 1. COMPATIBILIDADE ---
         if (typeof database !== 'undefined') window.Database = database;
         if (typeof Database !== 'undefined') window.database = Database;
 
-        // --- 2. INICIALIZAÇÃO E CORREÇÃO DE DADOS ---
+        // --- 2. INICIALIZAÇÃO ---
         window.onload = function() {
-            // Garante estrutura de divisões
+            // Garante divisões
             if (window.Database && window.Database.brasil && Array.isArray(window.Database.brasil)) {
-                console.log("⚠️ Adaptando banco para Dashboard...");
                 const todos = window.Database.brasil;
                 window.Database.brasil = { 'serieA': todos, 'serieB': [], 'serieC': [], 'serieD': [] };
             }
-            
-            // Garante que todo time tenha array de elenco vazio no mínimo (evita crash)
-            if(window.Database && window.Database.brasil) {
-                 const divs = ['serieA', 'serieB', 'serieC', 'serieD'];
-                 divs.forEach(div => {
-                    if (window.Database.brasil[div]) {
-                        window.Database.brasil[div].forEach(time => {
-                            if (!time.elenco || !Array.isArray(time.elenco)) time.elenco = [];
-                        });
-                    }
-                 });
-            }
-
             carregarDados();
         };
 
@@ -292,18 +258,16 @@
 
         function carregarDados() {
             try {
-                // Carregar Save
                 gameState = Engine.carregarJogo();
                 if (!gameState) {
-                    alert("Nenhum save encontrado. Inicie um Novo Jogo.");
+                    alert("Save não encontrado. Redirecionando...");
                     window.location.href = 'index.html';
                     return;
                 }
 
-                // Encontrar Time
                 meuTime = Engine.encontrarTime(gameState, gameState.meuTime);
                 
-                // Fallback (plano B) se a engine falhar em achar o objeto
+                // Fallback de busca de time
                 if (!meuTime && gameState.meuTime) {
                     const divs = ['serieA', 'serieB', 'serieC', 'serieD'];
                     for(let d of divs) {
@@ -314,45 +278,77 @@
                     }
                 }
 
-                if (!meuTime) throw new Error("Erro crítico: Time não localizado.");
+                if (!meuTime) throw new Error("Time não localizado.");
 
-                // Carregar Infos Visuais
+                // --- AQUI ESTÁ A CORREÇÃO PRINCIPAL ---
+                // Verifica se o time tem elenco. Se não tiver, tenta buscar na Database global (PlayersDB)
+                if ((!meuTime.elenco || meuTime.elenco.length === 0)) {
+                    
+                    // Caso 1: Existe uma variável PlayersDB (padrão em alguns databases)
+                    if (typeof PlayersDB !== 'undefined' && PlayersDB[meuTime.nome]) {
+                        console.log("Copiando jogadores reais de PlayersDB...");
+                        meuTime.elenco = PlayersDB[meuTime.nome];
+                    } 
+                    // Caso 2: Os jogadores estão dentro do próprio objeto do time no arquivo original
+                    else {
+                        // Tenta achar o time "original" no database carregado agora
+                        const timeOriginal = encontrarTimeOriginal(meuTime.nome);
+                        if(timeOriginal && timeOriginal.elenco && timeOriginal.elenco.length > 0) {
+                            console.log("Restaurando elenco do arquivo original...");
+                            meuTime.elenco = timeOriginal.elenco;
+                        }
+                    }
+                }
+                // ---------------------------------------
+
                 const tecnico = localStorage.getItem('brfutebol_tecnico') || "Técnico";
-                const escudo = localStorage.getItem('brfutebol_escudo') || "";
+                const escudo = localStorage.getItem('brfutebol_escudo') || "https://cdn-icons-png.flaticon.com/512/53/53283.png";
 
-                // Preencher HTML
                 document.getElementById('dash-team-name').innerText = meuTime.nome;
                 document.getElementById('dash-coach').innerText = tecnico;
-                document.getElementById('dash-escudo').src = escudo || "https://cdn-icons-png.flaticon.com/512/53/53283.png";
-                document.getElementById('dash-money').innerText = meuTime.orcamento || "R$ 0";
+                document.getElementById('dash-escudo').src = escudo;
+                document.getElementById('dash-money').innerText = meuTime.orcamento || "R$ 5 Mi";
                 document.getElementById('dash-week').innerText = gameState.rodada;
-                document.getElementById('team-ovr').innerText = meuTime.forca || 0;
+                document.getElementById('team-ovr').innerText = meuTime.forca || 60;
 
-                // Funções de atualização
                 atualizarTabela();
                 atualizarProximoJogo();
                 gerarNoticias(meuTime.nome, tecnico);
-                atualizarListaElenco(); // <--- AQUI ESTÁ A MÁGICA
+                atualizarListaElenco();
 
             } catch (e) {
                 console.error(e);
-                alert("Erro no Dashboard: " + e.message);
             }
         }
 
-        // --- FUNÇÃO PARA LISTAR JOGADORES (CARD NOVO) ---
+        // Função auxiliar para buscar o time no arquivo JS original
+        function encontrarTimeOriginal(nome) {
+            if(window.Database && window.Database.brasil) {
+                // Se for objeto com divisões
+                const divs = ['serieA', 'serieB', 'serieC', 'serieD'];
+                for(let d of divs) {
+                    if(window.Database.brasil[d]) {
+                        const t = window.Database.brasil[d].find(x => x.nome === nome);
+                        if(t) return t;
+                    }
+                }
+                // Se for array direto (caso de alguns databases)
+                if(Array.isArray(window.Database.brasil)) {
+                    return window.Database.brasil.find(x => x.nome === nome);
+                }
+            }
+            return null;
+        }
+
         function atualizarListaElenco() {
             const tbody = document.getElementById('squad-body');
             tbody.innerHTML = '';
 
             if (meuTime.elenco && meuTime.elenco.length > 0) {
-                // Ordena por força
                 const elencoOrdenado = [...meuTime.elenco].sort((a,b) => b.forca - a.forca);
 
                 elencoOrdenado.forEach(jog => {
                     const tr = document.createElement('tr');
-                    
-                    // Cores por posição
                     let cor = '#888';
                     if(jog.pos === 'GOL') cor = '#e67e22'; 
                     else if(['ZAG','LE','LD'].includes(jog.pos)) cor = '#3498db'; 
@@ -367,7 +363,7 @@
                     tbody.appendChild(tr);
                 });
             } else {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#666; padding:10px;">Sem jogadores no elenco.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#666; padding:10px;">Nenhum jogador encontrado no banco de dados.</td></tr>';
             }
         }
 
@@ -376,7 +372,6 @@
             tbody.innerHTML = '';
             let timesTabela = [];
 
-            // Pega times da divisão atual
             if (window.Database && window.Database.brasil) {
                 const divs = ['serieA', 'serieB', 'serieC', 'serieD'];
                 for(let d of divs) {
@@ -400,7 +395,6 @@
 
         function atualizarProximoJogo() {
             let oponente = { nome: "Visitante", escudo: "" };
-            // Simula oponente
             if (window.Database && window.Database.brasil) {
                  const divs = ['serieA', 'serieB', 'serieC', 'serieD'];
                  let minhaDiv = [];
@@ -415,12 +409,10 @@
                      if(rivais.length > 0) oponente = rivais[Math.floor(Math.random() * rivais.length)];
                  }
             }
-
             document.getElementById('home-name').innerText = meuTime.nome;
             document.getElementById('home-logo').src = document.getElementById('dash-escudo').src;
             document.getElementById('away-name').innerText = oponente.nome;
             document.getElementById('away-logo').src = oponente.escudo || "https://cdn-icons-png.flaticon.com/512/53/53283.png";
-            
             localStorage.setItem('brfutebol_oponente_nome', oponente.nome);
         }
 
@@ -442,7 +434,6 @@
         function irParaPartida() {
             if(confirm("Confirmar escalação e ir para o jogo?")) {
                 alert("Simulando partida... (Aqui entraria a tela partida.html)");
-                // window.location.href = 'partida.html';
             }
         }
 
