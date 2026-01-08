@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRFutebol - Painel do Treinador</title>
+    <title>BRFutebol - Painel</title>
     
     <script src="database_jogadores.js"></script>
     <script src="engine.js"></script>
@@ -22,11 +22,9 @@
 
         * { box-sizing: border-box; }
 
-        /* SCROLLBAR */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #111; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -122,7 +120,6 @@
         .match-team { text-align: center; width: 30%; z-index: 2; }
         .match-team img { width: 60px; height: 60px; margin-bottom: 10px; }
         .match-team h3 { margin: 0; font-size: 1.1rem; }
-        
         .vs-badge {
             font-family: 'Rajdhani'; font-size: 2rem; font-weight: 900; color: #333;
             background: #000; width: 50px; height: 50px; display: flex;
@@ -141,16 +138,10 @@
 
         /* TABLES */
         .mini-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        .mini-table th { text-align: left; color: #666; padding: 8px; font-size: 0.75rem; text-transform: uppercase; }
-        .mini-table td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .mini-table th { text-align: left; color: #666; padding: 8px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+        .mini-table td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+        
         .my-team-row { background: rgba(0, 255, 136, 0.1); color: var(--accent); font-weight: bold; }
-
-        /* NEWS */
-        .news-item {
-            padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
-            font-size: 0.9rem; color: #ccc;
-        }
-        .news-date { font-size: 0.75rem; color: #666; margin-bottom: 3px; display: block; }
 
         @media (max-width: 800px) {
             body { grid-template-columns: 1fr; }
@@ -167,6 +158,8 @@
         <button class="nav-btn" onclick="window.location.href='escalacao.html'">👕 Escalação</button>
         <button class="nav-btn" onclick="alert('Mercado fechado nesta versão!')">💰 Transferências</button>
         <button class="nav-btn" onclick="alert('Em breve!')">🏆 Classificação</button>
+        <button class="nav-btn" onclick="alert('Sala de Imprensa: Nenhuma coletiva agendada para hoje.')">📰 Sala de Imprensa</button>
+        
         <div style="margin-top: auto;">
             <button class="nav-btn" onclick="resetGame()" style="color: #ff4757;">✖ Sair do Jogo</button>
         </div>
@@ -190,6 +183,7 @@
         <div class="grid-container">
             
             <div style="display: flex; flex-direction: column; gap: 20px;">
+                
                 <div class="card">
                     <div class="card-title">PRÓXIMA RODADA (BRASILEIRÃO)</div>
                     <div class="next-match">
@@ -205,19 +199,23 @@
                     </div>
                     <button class="play-btn" onclick="irParaPartida()">JOGAR PARTIDA</button>
                 </div>
-                
-                <div class="card">
-                    <div class="card-title">NOTÍCIAS DO CLUBE</div>
-                    <div id="news-feed"></div>
-                </div>
 
-                <div class="card" style="max-height: 400px; overflow-y: auto;">
+                <div class="card" style="max-height: 500px; overflow-y: auto;">
                     <div class="card-title">ELENCO DO CLUBE</div>
                     <table class="mini-table">
-                        <thead><tr><th>POS</th><th>NOME</th><th>OVR</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th width="10%">POS</th>
+                                <th width="40%">NOME</th>
+                                <th width="10%">OVR</th>
+                                <th width="15%">SAÚDE</th>
+                                <th width="25%">CARAC.</th>
+                            </tr>
+                        </thead>
                         <tbody id="squad-body"></tbody>
                     </table>
                 </div>
+
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 20px;">
@@ -251,13 +249,12 @@
     </div>
 
     <script>
-        // --- COMPATIBILIDADE ---
+        // --- 1. COMPATIBILIDADE ---
         if (typeof database !== 'undefined') window.Database = database;
         if (typeof Database !== 'undefined') window.database = Database;
 
-        // --- INICIALIZAÇÃO ---
+        // --- 2. INICIALIZAÇÃO ---
         window.onload = function() {
-            // Garante estrutura de divisões se estiver quebrado
             if (window.Database && window.Database.brasil && Array.isArray(window.Database.brasil)) {
                 const todos = window.Database.brasil;
                 window.Database.brasil = { 'serieA': todos, 'serieB': [], 'serieC': [], 'serieD': [] };
@@ -277,13 +274,12 @@
                     return;
                 }
 
-                // Busca o time no DB atualizado pelo nome salvo
                 meuTime = encontrarTimeNoDatabase(gameState.meuTime);
                 if (!meuTime) meuTime = Engine.encontrarTime(gameState, gameState.meuTime);
 
                 if (!meuTime) throw new Error("Time não localizado.");
 
-                // Gera backup de elenco se estiver vazio (pra times C/D)
+                // Gera backup de elenco se estiver vazio
                 if (!meuTime.elenco || meuTime.elenco.length === 0) {
                     meuTime.elenco = gerarElencoBackup(meuTime.nome);
                 }
@@ -299,9 +295,8 @@
                 document.getElementById('team-ovr').innerText = meuTime.forca || 60;
 
                 atualizarTabela();
-                carregarOuGerarProximoJogo(); // NOVA FUNÇÃO INTELIGENTE
-                gerarNoticias(meuTime.nome, tecnico);
-                atualizarListaElenco();
+                carregarOuGerarProximoJogo();
+                atualizarListaElenco(); // Atualizado
 
             } catch (e) {
                 console.error(e);
@@ -319,6 +314,7 @@
             return null;
         }
 
+        // --- NOVA FUNÇÃO DE ELENCO COM SAÚDE E CARACTERÍSTICA ---
         function atualizarListaElenco() {
             const tbody = document.getElementById('squad-body');
             tbody.innerHTML = '';
@@ -327,16 +323,26 @@
 
             elenco.forEach(jog => {
                 const tr = document.createElement('tr');
-                let cor = '#888';
-                if(jog.pos === 'GOL') cor = '#e67e22';
-                else if(jog.pos === 'ATA') cor = '#e74c3c';
-                else if(jog.pos === 'MEI') cor = '#2ecc71';
-                else cor = '#3498db';
+                
+                // Cores Posição
+                let corPos = '#888';
+                if(jog.pos === 'GOL') corPos = '#e67e22';
+                else if(jog.pos === 'ATA') corPos = '#e74c3c';
+                else if(jog.pos === 'MEI') corPos = '#2ecc71';
+                else corPos = '#3498db';
+
+                // Cores Saúde (0 a 100)
+                let saude = jog.saude !== undefined ? jog.saude : 100;
+                let corSaude = '#2ecc71'; // Verde
+                if(saude < 80) corSaude = '#f1c40f'; // Amarelo
+                if(saude < 50) corSaude = '#e74c3c'; // Vermelho
 
                 tr.innerHTML = `
-                    <td><b style="color:${cor}">${jog.pos}</b></td>
-                    <td>${jog.nome}</td>
-                    <td><span style="background:#222; padding:2px 6px; border-radius:4px; color:${jog.forca>80?'#f1c40f':'#ccc'}">${jog.forca}</span></td>
+                    <td><b style="color:${corPos}">${jog.pos}</b></td>
+                    <td style="font-weight:600; color:#fff;">${jog.nome}</td>
+                    <td><span style="background:#222; padding:2px 6px; border-radius:4px; font-weight:700; color:${jog.forca>80?'#f1c40f':'#ccc'}">${jog.forca}</span></td>
+                    <td style="color:${corSaude}; font-weight:700;">${saude}%</td>
+                    <td style="font-size:0.85rem; color:#8b9bb4; text-transform:uppercase;">${jog.carac || '-'}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -347,7 +353,6 @@
             tbody.innerHTML = '';
             let timesTabela = [];
 
-            // Pega a divisão do meu time
             const db = window.database || window.Database;
             if (db && db.brasil) {
                 for(let serie in db.brasil) {
@@ -358,7 +363,6 @@
                 }
             }
 
-            // Simula pontos (apenas visual por enquanto)
             timesTabela.sort((a,b) => (b.pontos || b.forca) - (a.pontos || a.forca));
 
             timesTabela.slice(0, 5).forEach((t, i) => {
@@ -369,24 +373,17 @@
             });
         }
 
-        // --- CORREÇÃO DO JOGO MUDANDO SOZINHO ---
         function carregarOuGerarProximoJogo() {
-            // 1. Tenta ler do localStorage
             const oponenteSalvoNome = localStorage.getItem('brfutebol_oponente_atual');
-            
             let oponente = null;
 
-            // Se já tem um salvo, tenta achar ele no banco de dados pra pegar o escudo
             if (oponenteSalvoNome) {
                 oponente = encontrarTimeNoDatabase(oponenteSalvoNome);
             }
 
-            // Se não tem salvo ou não achou, gera um novo e salva
             if (!oponente) {
                 oponente = gerarNovoOponente();
-                if (oponente) {
-                    localStorage.setItem('brfutebol_oponente_atual', oponente.nome);
-                }
+                if (oponente) localStorage.setItem('brfutebol_oponente_atual', oponente.nome);
             }
 
             if (oponente) {
@@ -400,44 +397,22 @@
         function gerarNovoOponente() {
             const db = window.database || window.Database;
             let rivais = [];
-            // Acha minha divisão
             for(let serie in db.brasil) {
                 if(db.brasil[serie].find(t => t.nome === meuTime.nome)) {
                     rivais = db.brasil[serie].filter(t => t.nome !== meuTime.nome);
                     break;
                 }
             }
-            if (rivais.length > 0) {
-                return rivais[Math.floor(Math.random() * rivais.length)];
-            }
+            if (rivais.length > 0) return rivais[Math.floor(Math.random() * rivais.length)];
             return { nome: "Visitante", escudo: "" };
         }
 
         function irParaPartida() {
             if(confirm("Confirmar escalação e ir para o jogo?")) {
-                // Aqui a gente "gasta" o jogo atual, permitindo gerar um novo na volta
                 localStorage.removeItem('brfutebol_oponente_atual');
                 alert("Simulando partida... (Aqui entraria a tela partida.html)");
-                // window.location.href = 'partida.html';
-                // Recarrega pra simular avanço
                 location.reload();
             }
-        }
-
-        function gerarNoticias(time, tecnico) {
-            const feed = document.getElementById('news-feed');
-            feed.innerHTML = '';
-            const noticias = [
-                { data: 'Hoje', texto: `${tecnico} assume o comando do ${time}.` },
-                { data: 'Ontem', texto: 'Elenco se apresenta para a temporada.' },
-                { data: 'Semana passada', texto: 'Diretoria estipula metas ambiciosas.' }
-            ];
-            noticias.forEach(n => {
-                const div = document.createElement('div');
-                div.className = 'news-item';
-                div.innerHTML = `<span class="news-date">${n.data}</span>${n.texto}`;
-                feed.appendChild(div);
-            });
         }
 
         function gerarElencoBackup(nomeTime) {
