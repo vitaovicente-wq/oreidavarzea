@@ -5,12 +5,264 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BRFutebol - Tática Pro</title>
     
-    <link rel="stylesheet" href="escalacao.css">
+    <script src="database_jogadores.js"></script>
+    <script src="engine.js"></script>
     
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
-    <script src="database_jogadores.js"></script>
-    <script src="engine.js"></script>
+    <style>
+        /* --- CSS INTEGRADO --- */
+        :root {
+            --bg-dark: #0f1216;
+            --bg-panel: rgba(30, 35, 45, 0.95);
+            --accent: #00ff88;
+            --accent-glow: rgba(0, 255, 136, 0.4);
+            --text-main: #ffffff;
+            --text-dim: #8b9bb4;
+            --border: 1px solid rgba(255, 255, 255, 0.1);
+            --pitch-grass: #1a4d2e;
+            --gold: #f1c40f;
+            --red: #e74c3c;
+            --blue: #3498db;
+            --pos-ok: #2ecc71;
+            --pos-med: #f1c40f;
+            --pos-bad: #e74c3c;
+        }
+
+        * { box-sizing: border-box; user-select: none; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 50% 50%, #1a202c 0%, #0f1216 100%);
+            color: var(--text-main);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            height: 50px; flex-shrink: 0;
+            background: rgba(15, 18, 22, 0.98);
+            border-bottom: var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 20px; z-index: 100;
+        }
+
+        .back-btn {
+            background: rgba(255,255,255,0.05); border: var(--border); color: var(--text-dim);
+            padding: 6px 15px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.8rem;
+            transition: 0.2s; display: flex; align-items: center; gap: 5px;
+        }
+        .back-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: #fff; }
+
+        .center-controls { display: flex; gap: 20px; align-items: center; }
+        .formation-select {
+            background: #000; color: var(--accent); border: 1px solid var(--accent);
+            padding: 5px 15px; border-radius: 4px; font-family: 'Rajdhani', sans-serif;
+            font-weight: 700; font-size: 0.9rem; cursor: pointer; outline: none; text-transform: uppercase;
+        }
+        .team-rating { font-family: 'Rajdhani'; font-weight: 700; font-size: 1.1rem; color: #fff; }
+        
+        .save-btn {
+            background: var(--accent); color: #000; border: none; padding: 6px 25px;
+            border-radius: 4px; font-weight: 800; text-transform: uppercase; cursor: pointer;
+            font-size: 0.8rem; letter-spacing: 1px; transition: 0.2s;
+        }
+        .save-btn:hover { transform: scale(1.05); background: #fff; }
+
+        /* LAYOUT PRINCIPAL */
+        .workspace {
+            display: grid;
+            grid-template-columns: 280px 1fr 280px; /* Colunas fixas nas laterais */
+            height: calc(100vh - 50px);
+            width: 100%;
+            overflow: hidden;
+        }
+
+        /* PAINÉIS */
+        .panel {
+            background: var(--bg-panel);
+            border-right: var(--border);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .panel-right { border-right: none; border-left: var(--border); }
+
+        .panel-header {
+            padding: 10px 15px; border-bottom: var(--border); background: rgba(0,0,0,0.2);
+            font-family: 'Rajdhani', sans-serif; font-weight: 700; text-transform: uppercase;
+            color: var(--text-dim); display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;
+        }
+
+        .btn-auto {
+            background: rgba(255,255,255,0.1); border: none; color: #fff;
+            padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; cursor: pointer;
+        }
+        .btn-auto:hover { background: var(--accent); color: #000; }
+
+        .scroll-content { flex: 1; overflow-y: auto; padding: 10px; }
+        .scroll-content::-webkit-scrollbar { width: 5px; }
+        .scroll-content::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+
+        /* LISTA (CARD LATERAL) */
+        .roster-item {
+            display: flex; align-items: center;
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 8px; cursor: grab; margin-bottom: 4px; border-radius: 4px;
+        }
+        .roster-item:hover { background: rgba(255,255,255,0.08); border-left: 2px solid var(--accent); }
+        
+        .pos-badge {
+            width: 26px; height: 26px; background: #222; border: 1px solid #444; color: #aaa;
+            border-radius: 4px; font-size: 0.7rem; font-weight: 800;
+            display: flex; align-items: center; justify-content: center; margin-right: 10px; flex-shrink: 0;
+        }
+        .player-info { flex: 1; min-width: 0; }
+        .player-name { font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .health-bar-container { height: 3px; background: #111; width: 100%; margin-top: 3px; border-radius: 2px; }
+        .health-bar-fill { height: 100%; border-radius: 2px; }
+        .ovr-badge { font-family: 'Rajdhani'; font-weight: 800; font-size: 1.1rem; color: var(--gold); margin-left: 10px; }
+
+        /* ÁREA CENTRAL (CAMPO + BANCO) */
+        .field-area {
+            background: #0a0a0a;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start; /* Alinha no topo */
+            padding: 10px;
+            gap: 10px;
+            overflow: hidden;
+        }
+
+        /* CAMPO */
+        .pitch {
+            width: 98%;
+            height: 70%; /* Ocupa 70% da altura disponível */
+            max-width: 900px;
+            aspect-ratio: 1.5;
+            background: linear-gradient(90deg, #27ae60 0%, #2ecc71 50%, #27ae60 100%);
+            border: 3px solid rgba(255,255,255,0.7); border-radius: 6px;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transition: all 0.5s ease;
+        }
+        /* Linhas */
+        .pitch::before { content:''; position:absolute; left:50%; top:0; width:2px; height:100%; background:rgba(255,255,255,0.3); transform:translateX(-50%); }
+        .pitch::after { content:''; position:absolute; top:50%; left:50%; width:18%; padding-top:18%; border:2px solid rgba(255,255,255,0.3); border-radius:50%; transform:translate(-50%, -50%); }
+        .box { position:absolute; width:15%; height:45%; border:2px solid rgba(255,255,255,0.3); top:50%; transform:translateY(-50%); }
+        .box-left { left:0; border-left:none; } .box-right { right:0; border-right:none; }
+
+        /* BANCO DE RESERVAS */
+        .bench-container {
+            width: 98%; max-width: 900px;
+            height: 20%; /* Ocupa 20% da altura */
+            display: flex; flex-direction: column;
+        }
+        .bench-title { font-size: 0.7rem; color: #666; font-weight: 800; letter-spacing: 1px; margin-bottom: 5px; margin-left: 5px; }
+        .bench-box {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border: 1px dashed rgba(255,255,255,0.1);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: space-around;
+            padding: 0 5px;
+        }
+
+        /* SLOTS (JOGADORES) */
+        .field-slot {
+            position: absolute; width: 80px; height: 80px;
+            transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; z-index: 5; transition: top 0.4s, left 0.4s;
+        }
+        
+        .bench-slot {
+            position: relative; width: 60px; height: 100%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+
+        /* CARD/KIT DO JOGADOR */
+        .player-kit {
+            width: 40px; height: 40px;
+            background: #222;
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 50%;
+            color: #555;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.7rem;
+            position: relative;
+            transition: 0.2s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        /* ESTADOS DO SLOT */
+        .filled .player-kit { background: #1e2329; border: 2px solid var(--accent); color: #fff; transform: scale(1.1); box-shadow: 0 0 15px rgba(0,255,136,0.3); }
+        .filled.pos-wrong .player-kit { border-color: var(--pos-bad); box-shadow: 0 0 15px rgba(231, 76, 60, 0.4); }
+        .filled.pos-medium .player-kit { border-color: var(--pos-med); box-shadow: 0 0 15px rgba(241, 196, 15, 0.4); }
+
+        .kit-number { font-family: 'Rajdhani'; font-size: 1rem; }
+
+        /* SCORE (BOLINHA DOURADA) */
+        .kit-score {
+            position: absolute; top: -5px; right: -5px;
+            width: 18px; height: 18px;
+            background: var(--gold); color: #000;
+            border-radius: 50%; border: 2px solid #1e2329;
+            font-size: 0.65rem; font-weight: 900;
+            display: none; align-items: center; justify-content: center;
+            z-index: 2;
+        }
+        .filled .kit-score { display: flex; }
+
+        /* INFO BOX */
+        .slot-info-box {
+            margin-top: 5px;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);
+            padding: 2px 6px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.1);
+            text-align: center; min-width: 65px;
+        }
+        .bench-slot .slot-info-box { font-size: 0.7rem; min-width: 50px; padding: 1px 4px; }
+
+        .slot-name { display: block; font-size: 0.7rem; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65px; }
+        .mini-health { width: 100%; height: 3px; background: #333; margin-top: 2px; border-radius: 2px; }
+        .mini-health-fill { height: 100%; border-radius: 2px; }
+
+        /* CAPITÃO */
+        .captain-c {
+            position: absolute; top: -5px; left: -5px;
+            background: #fff; color: #000;
+            width: 16px; height: 16px; font-size: 0.6rem; font-weight: 900;
+            border-radius: 50%; border: 1px solid #000;
+            display: none; align-items: center; justify-content: center; z-index: 2;
+        }
+        .is-captain .captain-c { display: flex; }
+
+        /* DIREITA / ABAS */
+        .tabs { display: flex; border-bottom: var(--border); }
+        .tab-btn { flex: 1; background: transparent; border: none; color: var(--text-dim); padding: 10px; font-family: 'Rajdhani'; font-weight: 700; cursor: pointer; border-bottom: 2px solid transparent; transition: 0.2s; }
+        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(0,255,136,0.05); }
+        .tab-content { display: none; padding: 10px; height: 100%; overflow-y: auto; }
+        .tab-content.active { display: block; }
+
+        .role-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 10px; margin-bottom: 10px; border-radius: 6px; }
+        .role-label { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 5px; }
+        .role-select { width: 100%; background: #111; border: 1px solid #333; color: #fff; padding: 6px; border-radius: 4px; font-size: 0.8rem; outline: none; }
+        
+        /* SLIDERS */
+        input[type=range] { width: 100%; -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; margin-top: -5px; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: #333; border-radius: 2px; }
+        .range-labels { display: flex; justify-content: space-between; font-size: 0.65rem; color: #666; margin-top: 5px; }
+        .tactic-value { float: right; color: #fff; font-weight: bold; }
+
+    </style>
 </head>
 <body>
 
@@ -44,29 +296,30 @@
             <div class="pitch">
                 <div class="box box-left"></div> <div class="box box-right"></div>
                 
-                <div class="field-slot" id="slot-1"><div class="player-kit"><span class="kit-number">1</span><div class="kit-score"></div><div class="captain-c">C</div></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
-                <div class="field-slot" id="slot-2"><div class="player-kit"><span class="kit-number">2</span><div class="kit-score"></div><div class="captain-c">C</div></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
-                <div class="field-slot" id="slot-3"><div class="player-kit"><span class="kit-number">3</span><div class="kit-score"></div><div class="captain-c">C</div></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
-                <div class="field-slot" id="slot-4"><div class="player-kit"><span class="kit-number">4</span><div class="kit-score"></div><div class="captain-c">C</div></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
-                <div class="field-slot" id="slot-5"><div class="player-kit"><span class="kit-number">5</span><div class="kit-score"></div><div class="captain-c">C</div></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
-                <div class="field-slot" id="slot-6"><div class="player-kit"><span class="kit-number">6</span><div class="kit-score"></div><div class="captain-c">C</div></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
-                <div class="field-slot" id="slot-7"><div class="player-kit"><span class="kit-number">7</span><div class="kit-score"></div><div class="captain-c">C</div></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
-                <div class="field-slot" id="slot-8"><div class="player-kit"><span class="kit-number">8</span><div class="kit-score"></div><div class="captain-c">C</div></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
-                <div class="field-slot" id="slot-9"><div class="player-kit"><span class="kit-number">9</span><div class="kit-score"></div><div class="captain-c">C</div></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
-                <div class="field-slot" id="slot-10"><div class="player-kit"><span class="kit-number">10</span><div class="kit-score"></div><div class="captain-c">C</div></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
-                <div class="field-slot" id="slot-11"><div class="player-kit"><span class="kit-number">11</span><div class="kit-score"></div><div class="captain-c">C</div></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-1"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-2"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-3"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-4"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-5"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-6"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-7"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-8"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-9"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-10"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+                <div class="field-slot" id="slot-11"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
             </div>
 
-            <div class="bench-label">BANCO DE RESERVAS (7)</div>
-
-            <div class="bench-area">
-                <div class="bench-slot" id="bench-1" data-role="RES"><div class="player-kit"><span class="kit-number">12</span><div class="kit-score"></div></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
-                <div class="bench-slot" id="bench-2" data-role="RES"><div class="player-kit"><span class="kit-number">13</span><div class="kit-score"></div></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
-                <div class="bench-slot" id="bench-3" data-role="RES"><div class="player-kit"><span class="kit-number">14</span><div class="kit-score"></div></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
-                <div class="bench-slot" id="bench-4" data-role="RES"><div class="player-kit"><span class="kit-number">15</span><div class="kit-score"></div></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
-                <div class="bench-slot" id="bench-5" data-role="RES"><div class="player-kit"><span class="kit-number">16</span><div class="kit-score"></div></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
-                <div class="bench-slot" id="bench-6" data-role="RES"><div class="player-kit"><span class="kit-number">17</span><div class="kit-score"></div></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
-                <div class="bench-slot" id="bench-7" data-role="RES"><div class="player-kit"><span class="kit-number">18</span><div class="kit-score"></div></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+            <div class="bench-container">
+                <div class="bench-title">BANCO DE RESERVAS (7)</div>
+                <div class="bench-box">
+                    <div class="bench-slot" id="bench-1" data-role="RES"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+                    <div class="bench-slot" id="bench-2" data-role="RES"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+                    <div class="bench-slot" id="bench-3" data-role="RES"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+                    <div class="bench-slot" id="bench-4" data-role="RES"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+                    <div class="bench-slot" id="bench-5" data-role="RES"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+                    <div class="bench-slot" id="bench-6" data-role="RES"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+                    <div class="bench-slot" id="bench-7" data-role="RES"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span></div></div>
+                </div>
             </div>
         </div>
 
@@ -77,21 +330,21 @@
             </div>
 
             <div id="tab-funcoes" class="tab-content active">
-                <div class="role-card"><label class="role-title">© Capitão</label><select id="role-capitao" class="role-select" onchange="atualizarIconesFuncao()"></select></div>
-                <div class="role-card"><label class="role-title">⚽ Pênaltis</label><select id="role-penalti" class="role-select"></select></div>
-                <div class="role-card"><label class="role-title">🎯 Faltas</label><select id="role-falta" class="role-select"></select></div>
-                <div class="role-card"><label class="role-title">🚩 Escanteio D</label><select id="role-escanteioD" class="role-select"></select></div>
-                <div class="role-card"><label class="role-title">🚩 Escanteio E</label><select id="role-escanteioE" class="role-select"></select></div>
+                <div class="role-card"><label class="role-label">© Capitão</label><select id="role-capitao" class="role-select" onchange="atualizarIconesFuncao()"></select></div>
+                <div class="role-card"><label class="role-label">⚽ Pênaltis</label><select id="role-penalti" class="role-select"></select></div>
+                <div class="role-card"><label class="role-label">🎯 Faltas</label><select id="role-falta" class="role-select"></select></div>
+                <div class="role-card"><label class="role-label">🚩 Escanteio D</label><select id="role-escanteioD" class="role-select"></select></div>
+                <div class="role-card"><label class="role-label">🚩 Escanteio E</label><select id="role-escanteioE" class="role-select"></select></div>
             </div>
 
             <div id="tab-estrategia" class="tab-content">
                 <div class="role-card">
-                    <label class="role-title">MENTALIDADE: <span id="val-mentalidade" class="tactic-value">Equilibrada</span></label>
+                    <label class="role-label">MENTALIDADE <span id="val-mentalidade" class="tactic-value">Equilibrada</span></label>
                     <input type="range" id="slider-mentalidade" min="1" max="5" value="3" oninput="atualizarLabelsTatica()">
                     <div class="range-labels"><span>Def</span><span>Eq</span><span>Atq</span></div>
                 </div>
                 <div class="role-card">
-                    <label class="role-title">INTENSIDADE: <span id="val-intensidade" class="tactic-value">Normal</span></label>
+                    <label class="role-label">INTENSIDADE <span id="val-intensidade" class="tactic-value">Normal</span></label>
                     <input type="range" id="slider-intensidade" min="1" max="3" value="2" oninput="atualizarLabelsTatica()">
                     <div class="range-labels"><span>Leve</span><span>Normal</span><span>Alta</span></div>
                 </div>
@@ -102,12 +355,11 @@
 
     <script>
         let gameState, meuTime;
-        let escalacaoAtual = {}; // Formato: { "slot-1": "id", "bench-1": "id" }
+        let escalacaoAtual = {}; 
         let funcoesAtuais = { capitao: null, penalti: null, falta: null, escanteioD: null, escanteioE: null };
         let taticasAtuais = { mentalidade: 3, intensidade: 2 };
         let formacaoAtual = "4-3-3";
 
-        // CONFIGURAÇÃO DE LAYOUTS (COORDENADAS)
         const layouts = {
             "4-3-3": [{id:"slot-1",t:"50%",l:"5%",r:"GOL"},{id:"slot-2",t:"15%",l:"25%",r:"LE"},{id:"slot-3",t:"35%",l:"20%",r:"ZAG"},{id:"slot-4",t:"65%",l:"20%",r:"ZAG"},{id:"slot-5",t:"85%",l:"25%",r:"LD"},{id:"slot-6",t:"50%",l:"40%",r:"VOL"},{id:"slot-7",t:"30%",l:"55%",r:"MEI"},{id:"slot-8",t:"70%",l:"55%",r:"MEI"},{id:"slot-9",t:"20%",l:"80%",r:"ATA"},{id:"slot-10",t:"50%",l:"85%",r:"ATA"},{id:"slot-11",t:"80%",l:"80%",r:"ATA"}],
             "4-4-2": [{id:"slot-1",t:"50%",l:"5%",r:"GOL"},{id:"slot-2",t:"10%",l:"25%",r:"LE"},{id:"slot-3",t:"35%",l:"20%",r:"ZAG"},{id:"slot-4",t:"65%",l:"20%",r:"ZAG"},{id:"slot-5",t:"90%",l:"25%",r:"LD"},{id:"slot-6",t:"35%",l:"45%",r:"VOL"},{id:"slot-7",t:"65%",l:"45%",r:"VOL"},{id:"slot-8",t:"15%",l:"60%",r:"MEI"},{id:"slot-9",t:"85%",l:"60%",r:"MEI"},{id:"slot-10",t:"35%",l:"85%",r:"ATA"},{id:"slot-11",t:"65%",l:"85%",r:"ATA"}],
@@ -119,7 +371,7 @@
         window.onload = function() {
             try {
                 gameState = Engine.carregarJogo();
-                if(!gameState) throw new Error("Save não encontrado");
+                if(!gameState) throw new Error("Sem jogo salvo");
                 meuTime = Engine.encontrarTime(gameState, gameState.meuTime);
                 
                 carregarDadosSalvos();
@@ -128,7 +380,7 @@
                 atualizarCampo();
                 povoarDropdowns();
                 atualizarLabelsTatica();
-            } catch(e) { console.error(e); alert("Erro ao carregar: "+e.message); window.location.href='index.html'; }
+            } catch(e) { console.error(e); alert("Erro: " + e.message); window.location.href='index.html'; }
         };
 
         function carregarDadosSalvos() {
@@ -146,8 +398,7 @@
             document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
             document.getElementById('tab-'+t).classList.add('active');
-            const idx = t==='funcoes'?0:1;
-            document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+            document.querySelectorAll('.tab-btn')[t==='funcoes'?0:1].classList.add('active');
         }
 
         function atualizarLabelsTatica() {
@@ -171,16 +422,13 @@
             });
         }
 
-        // --- RENDERIZAÇÃO DA LISTA DE NÃO RELACIONADOS ---
         function renderizarLista() {
             const container = document.getElementById('roster-list');
             container.innerHTML = '';
-            
-            // Filtra quem já está no time (Campo ou Banco)
             const emCampo = Object.values(escalacaoAtual);
             let lista = meuTime.elenco.filter(j => !emCampo.includes(j.id));
 
-            // Ordena Posição > Força
+            // Ordena GOL > LD/LE > ZAG > VOL > MEI > ATA > Força
             const ordem = {'GOL':1, 'LD':2, 'LE':2, 'ZAG':3, 'VOL':4, 'MEI':5, 'ATA':6};
             lista.sort((a,b) => {
                 const pa = ordem[a.pos]||99, pb = ordem[b.pos]||99;
@@ -189,7 +437,7 @@
             });
 
             if(lista.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding:20px; color:#555; font-style:italic;">Elenco completo escalado!</div>';
+                container.innerHTML = '<div style="text-align:center; padding:20px; color:#555; font-style:italic;">Todos escalados!</div>';
                 return;
             }
 
@@ -198,11 +446,15 @@
                 div.className = 'roster-item';
                 div.draggable = true;
                 div.id = `card-${jog.id}`;
+                
+                const saude = jog.saude !== undefined ? jog.saude : 100;
+                let cor = saude < 60 ? '#e74c3c' : (saude < 80 ? '#f1c40f' : '#2ecc71');
+
                 div.innerHTML = `
                     <div class="pos-badge">${jog.pos}</div>
                     <div class="player-info">
                         <div class="player-name">${jog.nome}</div>
-                        <div class="health-bar-container"><div class="health-bar-fill" style="width:${jog.saude||100}%; background:${getCorSaude(jog.saude)}"></div></div>
+                        <div class="health-bar-container"><div class="health-bar-fill" style="width:${saude}%; background:${cor}"></div></div>
                     </div>
                     <div class="ovr-badge">${jog.forca}</div>
                 `;
@@ -212,7 +464,6 @@
             });
         }
 
-        // --- RENDERIZAÇÃO DO CAMPO E BANCO ---
         function atualizarCampo() {
             let soma = 0, count = 0;
             const slots = [...document.querySelectorAll('.field-slot'), ...document.querySelectorAll('.bench-slot')];
@@ -235,16 +486,20 @@
                         else { slot.classList.add('pos-wrong'); }
                     }
 
-                    // ATUALIZA KIT COM SCORE
+                    // KIT ATUALIZADO (NUMERO + SCORE)
                     kit.innerHTML = `
                         <span class="kit-number">${jog.pos}</span>
-                        <div class="kit-score" style="position:absolute; top:-5px; right:-5px; background:var(--gold); color:#000; width:18px; height:18px; border-radius:50%; font-size:0.65rem; font-weight:900; display:flex; align-items:center; justify-content:center; border:2px solid #1e2329;">${jog.forca}</div>
+                        <div class="kit-score">${jog.forca}</div>
                         <div class="captain-c">C</div>
                     `;
 
                     info.querySelector('.slot-name').innerText = jog.nome.split(' ')[0];
                     const hb = info.querySelector('.mini-health-fill');
-                    if(hb) { hb.style.width = (jog.saude||100)+'%'; hb.style.background = getCorSaude(jog.saude); }
+                    if(hb) {
+                        const s = jog.saude || 100;
+                        hb.style.width = s + '%';
+                        hb.style.background = s < 60 ? '#e74c3c' : (s < 80 ? '#f1c40f' : '#2ecc71');
+                    }
 
                     const cId = document.getElementById('role-capitao').value || funcoesAtuais.capitao;
                     if(jog.id === cId) slot.classList.add('is-captain');
@@ -255,24 +510,20 @@
                     info.querySelector('.slot-name').innerText = "Vazio";
                 }
             });
-            document.getElementById('team-str').innerText = count===11 ? Math.floor(soma/11) : "-";
+            document.getElementById('team-str').innerText = count === 11 ? Math.floor(soma/11) : "-";
         }
 
         function posicaoAceitavel(role, pos) {
-            const comp = {
-                'GOL':[], 'ZAG':['LE','LD','VOL'], 'LE':['LD','ZAG','MEI'], 'LD':['LE','ZAG','MEI'],
-                'VOL':['ZAG','MEI'], 'MEI':['VOL','ATA'], 'ATA':['MEI','ST']
-            };
+            const comp = { 'GOL':[], 'ZAG':['LE','LD','VOL'], 'LE':['LD','ZAG','MEI'], 'LD':['LE','ZAG','MEI'], 'VOL':['ZAG','MEI'], 'MEI':['VOL','ATA'], 'ATA':['MEI','ST'] };
             return comp[pos] && comp[pos].includes(role);
         }
 
         function getCorSaude(s) { if(s===undefined) s=100; return s<60 ? '#e74c3c' : (s<80 ? '#f1c40f' : '#2ecc71'); }
 
         function povoarDropdowns() {
-            // Só quem está no campo (slot-x) pode ter função
             const titulares = Object.values(escalacaoAtual).filter(id => {
-                const key = Object.keys(escalacaoAtual).find(k => escalacaoAtual[k] === id);
-                return key && key.startsWith('slot-');
+                const k = Object.keys(escalacaoAtual).find(key => escalacaoAtual[key] === id);
+                return k && k.startsWith('slot-');
             }).map(id => meuTime.elenco.find(j => j.id === id));
             
             titulares.sort((a,b) => b.forca - a.forca);
@@ -302,7 +553,6 @@
 
         // DRAG & DROP
         function handleDragStart(e) { e.dataTransfer.setData('text/plain', this.id.replace('card-','')); }
-        
         const allSlots = [...document.querySelectorAll('.field-slot'), ...document.querySelectorAll('.bench-slot')];
         allSlots.forEach(s => {
             s.addEventListener('dragover', e => { e.preventDefault(); s.style.transform='translate(-50%,-50%) scale(1.1)'; });
@@ -320,20 +570,16 @@
         }
 
         function removerJogador(sid) {
-            if(escalacaoAtual[sid]) {
-                delete escalacaoAtual[sid];
-                renderizarLista(); atualizarCampo(); povoarDropdowns();
-            }
+            if(escalacaoAtual[sid]) { delete escalacaoAtual[sid]; renderizarLista(); atualizarCampo(); povoarDropdowns(); }
         }
 
-        // MOBILE CLICK
+        // MOBILE
         let selId = null;
         function selecionarParaTroca(id) {
             if(selId===id) { selId=null; renderizarLista(); return; }
             selId=id;
             document.querySelectorAll('.roster-item').forEach(c=>c.style.background='transparent');
             const c=document.getElementById(`card-${id}`); if(c) c.style.background='rgba(0,255,136,0.15)';
-            
             allSlots.forEach(s => {
                 s.onclick = function() {
                     if(selId) {
@@ -350,32 +596,25 @@
             if(!silencioso && !confirm("Auto-escalar?")) return;
             escalacaoAtual = {};
             const usados = [];
-            
             // 1. Titulares
             layouts[formacaoAtual].forEach(p => {
                 let m = meuTime.elenco.find(j => j.pos===p.r && !usados.includes(j.id) && (j.saude||100)>50);
                 if(!m) m = meuTime.elenco.find(j => j.pos!=='GOL' && !usados.includes(j.id) && (j.saude||100)>40);
                 if(m) { escalacaoAtual[p.id] = m.id; usados.push(m.id); }
             });
-
-            // 2. Banco (7 Slots)
+            // 2. Banco
             for(let i=1; i<=7; i++) {
                 let m = meuTime.elenco.find(j => !usados.includes(j.id));
                 if(m) { escalacaoAtual[`bench-${i}`] = m.id; usados.push(m.id); }
             }
-
             renderizarLista(); atualizarCampo(); povoarDropdowns();
             const cap = document.getElementById('role-capitao');
             if(cap && !cap.value && usados.length>0) cap.value = usados[0];
         }
 
         function salvarTudo() {
-            const titulares = Object.keys(escalacaoAtual).filter(k => k.startsWith('slot-')).length;
-            if(titulares < 11) alert("Time titular incompleto ("+titulares+"/11).");
-            
             localStorage.setItem('brfutebol_formacao', JSON.stringify(escalacaoAtual));
             localStorage.setItem('brfutebol_esquema', formacaoAtual);
-            
             const f = {
                 capitao: document.getElementById('role-capitao').value,
                 penalti: document.getElementById('role-penalti').value,
@@ -384,13 +623,11 @@
                 escanteioE: document.getElementById('role-escanteioE').value
             };
             localStorage.setItem('brfutebol_funcoes', JSON.stringify(f));
-
             const t = {
                 mentalidade: document.getElementById('slider-mentalidade').value,
                 intensidade: document.getElementById('slider-intensidade').value
             };
             localStorage.setItem('brfutebol_taticas', JSON.stringify(t));
-
             const b = document.querySelector('.save-btn');
             b.innerText = "SALVO!";
             setTimeout(() => { b.innerText="SALVAR"; window.location.href='dashboard.html'; }, 800);
