@@ -25,7 +25,7 @@
             color: var(--text);
             margin: 0; padding: 20px;
             display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh; padding-bottom: 120px;
+            min-height: 100vh; padding-bottom: 140px;
         }
 
         h1 { text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
@@ -33,7 +33,7 @@
 
         .main-container { width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 30px; }
 
-        /* INPUTS */
+        /* Inputs de Cadastro */
         .input-section {
             background: var(--card); padding: 20px; border-radius: 12px;
             border: 1px solid #333; display: flex; gap: 20px; flex-wrap: wrap;
@@ -47,10 +47,10 @@
         }
         input:focus, select:focus { border-color: var(--green); outline: none; }
 
-        /* DIVISÕES */
+        /* Grid de Divisões */
         .division-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px; opacity: 0.5; pointer-events: none; transition: 0.3s;
+            gap: 15px; opacity: 0.4; pointer-events: none; transition: 0.3s;
         }
         .division-grid.active { opacity: 1; pointer-events: all; }
 
@@ -64,10 +64,9 @@
         .div-title { font-size: 1.5rem; font-weight: 900; }
         .div-desc { font-size: 0.8rem; opacity: 0.7; }
 
-        /* TIMES */
+        /* Lista de Times */
         .teams-area { display: none; flex-direction: column; gap: 15px; animation: slideUp 0.5s ease; }
         .teams-area.visible { display: flex; }
-
         .teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
         
         .team-card {
@@ -77,12 +76,11 @@
         }
         .team-card:hover { border-color: var(--gold); background: #252e33; }
         .team-card.selected { border: 2px solid var(--green); background: rgba(46, 204, 113, 0.1); transform: scale(1.05); z-index: 10; }
-        
         .team-logo { width: 50px; height: 50px; object-fit: contain; margin-bottom: 5px; }
         .team-name { font-weight: bold; text-align: center; font-size: 0.9rem; }
         .team-ovr { font-size: 0.75rem; background: #000; padding: 2px 6px; border-radius: 4px; color: #aaa; margin-top: 5px; }
 
-        /* PAINEL SCOUT */
+        /* Painel Scout (Rodapé) */
         .scout-report {
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: rgba(15, 20, 25, 0.98); border-top: 3px solid var(--green);
@@ -91,15 +89,10 @@
             z-index: 100; box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
         }
         .scout-report.visible { transform: translateY(0); }
-
-        .report-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
-            width: 100%; max-width: 1000px; margin-bottom: 20px;
-        }
-        
+        .report-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; width: 100%; max-width: 1000px; margin-bottom: 20px; }
         .report-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #333; }
-        .rp-label { font-size: 0.75rem; text-transform: uppercase; color: #888; margin-bottom: 5px; letter-spacing: 1px; }
-        .rp-value { font-size: 1.1rem; font-weight: 800; color: #fff; }
+        .rp-label { font-size: 0.75rem; text-transform: uppercase; color: #888; margin-bottom: 5px; }
+        .rp-value { font-size: 1.1rem; font-weight: 800; }
         
         .rp-obj-title { color: var(--gold); }
         .rp-obj-sub { color: var(--blue); }
@@ -113,13 +106,11 @@
             cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
             box-shadow: 0 0 25px rgba(46, 204, 113, 0.3); transition: 0.2s;
         }
-        .btn-start:hover { transform: scale(1.05); box-shadow: 0 0 35px rgba(46, 204, 113, 0.5); }
-
-        @media (max-width: 700px) {
-            .report-grid { grid-template-columns: 1fr 1fr; }
-        }
+        .btn-start:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 0 35px rgba(46, 204, 113, 0.5); }
+        .btn-start:disabled { opacity: 0.6; cursor: not-allowed; }
 
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 700px) { .report-grid { grid-template-columns: 1fr 1fr; } }
     </style>
 </head>
 <body>
@@ -127,7 +118,6 @@
     <h1>BR<span>Futebol</span> 26</h1>
 
     <div class="main-container">
-        
         <div class="input-section">
             <div class="form-group">
                 <label>Nome do Treinador</label>
@@ -139,7 +129,6 @@
                     <option value="">-- Selecione --</option>
                     <option value="brasil">BRASIL</option>
                     <option value="espanha" disabled style="color:#555">ESPANHA (Em breve)</option>
-                    <option value="inglaterra" disabled style="color:#555">INGLATERRA (Em breve)</option>
                 </select>
             </div>
         </div>
@@ -155,60 +144,42 @@
             <h3 style="border-bottom: 1px solid #333; padding-bottom: 10px; color: var(--gold);">Selecione o Clube</h3>
             <div id="teams-grid" class="teams-grid"></div>
         </div>
-        
     </div>
 
     <div id="scout-panel" class="scout-report">
         <div class="report-grid">
-            <div class="report-item">
-                <div class="rp-label">Objetivo da Diretoria</div>
-                <div class="rp-value" id="info-obj">---</div>
-            </div>
-            <div class="report-item">
-                <div class="rp-label">Orçamento Inicial</div>
-                <div class="rp-value" style="color:var(--green)" id="info-orcamento">---</div>
-            </div>
-            <div class="report-item">
-                <div class="rp-label">Estádio</div>
-                <div class="rp-value" style="color:#aaa" id="info-estadio">---</div>
-            </div>
-            <div class="report-item">
-                <div class="rp-label">Craque do Time</div>
-                <div class="rp-value" style="color:var(--gold)" id="info-craque">---</div>
-            </div>
+            <div class="report-item"><div class="rp-label">Objetivo da Diretoria</div><div class="rp-value" id="info-obj">---</div></div>
+            <div class="report-item"><div class="rp-label">Orçamento Inicial</div><div class="rp-value" style="color:var(--green)" id="info-orcamento">---</div></div>
+            <div class="report-item"><div class="rp-label">Estádio</div><div class="rp-value" style="color:#aaa" id="info-estadio">---</div></div>
+            <div class="report-item"><div class="rp-label">Craque do Time</div><div class="rp-value" style="color:var(--gold)" id="info-craque">---</div></div>
         </div>
         <button class="btn-start" onclick="iniciarJogo()">ASSUMIR COMANDO</button>
     </div>
 
     <script>
-        // --- PATCH DE CORREÇÃO (CRUCIAL PARA FUNCIONAR) ---
-        // Se a engine procurar 'Database' (maiúsculo) mas só tiver 'database' (minúsculo),
-        // essa linha faz a conexão entre os dois.
+        // --- [FIX DE COMPATIBILIDADE] ---
         if (typeof database !== 'undefined') {
-            window.Database = database;
-        } else if (typeof Database !== 'undefined') {
-            window.database = Database;
-        } else {
-            console.error("ERRO CRÍTICO: Nenhum banco de dados foi carregado. Verifique o arquivo database_jogadores.js");
+            window.Database = JSON.parse(JSON.stringify(database)); 
+            if (Array.isArray(window.Database.brasil)) {
+                const tempA = window.Database.brasil;
+                window.Database.brasil = { serieA: tempA, serieB: [], serieC: [], serieD: [] };
+            }
         }
-        // -------------------------------------------------
+        if (typeof PlayersDB === 'undefined') window.PlayersDB = {};
+        // --------------------------------
 
         let selectedDivision = null;
         let selectedTeamObj = null;
 
         const estadiosDB = {
-            "Flamengo": "Maracanã", "Fluminense": "Maracanã", "Vasco": "São Januário", "Botafogo": "Nilton Santos",
-            "Palmeiras": "Allianz Parque", "Corinthians": "Neo Química Arena", "São Paulo": "Morumbi", "Santos": "Vila Belmiro",
-            "Grêmio": "Arena do Grêmio", "Internacional": "Beira-Rio", "Atlético-MG": "Arena MRV", "Cruzeiro": "Mineirão",
-            "Bahia": "Fonte Nova", "Vitória": "Barradão", "Fortaleza": "Castelão", "Ceará": "Castelão",
-            "Athletico-PR": "Ligga Arena", "Coritiba": "Couto Pereira"
+            "Flamengo": "Maracanã", "Palmeiras": "Allianz Parque", "Corinthians": "Neo Química Arena",
+            "São Paulo": "Morumbi", "Grêmio": "Arena do Grêmio", "Atlético-MG": "Arena MRV"
         };
 
         function checkStep1() {
             const nome = document.getElementById('coach-name').value;
             const pais = document.getElementById('country-select').value;
             const divSec = document.getElementById('division-section');
-
             if (nome.length > 2 && pais === 'brasil') {
                 divSec.classList.add('active');
             } else {
@@ -228,40 +199,25 @@
         function carregarTimes(divisao) {
             const grid = document.getElementById('teams-grid');
             grid.innerHTML = '';
-            
-            const section = document.getElementById('teams-section');
-            section.classList.add('visible');
+            document.getElementById('teams-section').classList.add('visible');
             document.getElementById('scout-panel').classList.remove('visible');
-
-            // Usa 'database' minúsculo que agora é seguro
-            if (typeof database === 'undefined' || !database.brasil) {
-                console.error("Database não carregado corretamente.");
-                grid.innerHTML = '<p style="color:red">Erro: Database não carregada.</p>';
-                return;
-            }
 
             let listaTimes = [];
             const dbBR = database.brasil;
 
             if (Array.isArray(dbBR)) {
-                if (divisao === 'serieA') listaTimes = dbBR;
-                else listaTimes = gerarTimesGenericos(divisao);
+                listaTimes = (divisao === 'serieA') ? dbBR : gerarTimesGenericos(divisao);
             } else {
-                // Se for objeto {serieA: [...], serieB: [...]}
                 listaTimes = dbBR[divisao] || gerarTimesGenericos(divisao);
             }
 
             listaTimes.sort((a,b) => a.nome.localeCompare(b.nome));
 
-            if(listaTimes.length === 0) grid.innerHTML = '<p>Vazio</p>';
-
             listaTimes.forEach(t => {
                 const card = document.createElement('div');
                 card.className = 'team-card';
                 card.onclick = () => selecionarTime(t, card);
-                
                 const escudo = t.escudo || 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
-                
                 card.innerHTML = `
                     <img src="${escudo}" class="team-logo">
                     <div class="team-name">${t.nome}</div>
@@ -281,19 +237,18 @@
 
         function atualizarRelatorio(t) {
             const elObj = document.getElementById('info-obj');
-            const forca = t.forca || 60;
-            if (forca >= 82) { elObj.innerText = "🏆 TÍTULO"; elObj.className = "rp-value rp-obj-title"; }
-            else if (forca >= 78) { elObj.innerText = "🌎 LIBERTADORES"; elObj.className = "rp-value rp-obj-sub"; }
-            else if (forca >= 74) { elObj.innerText = "✈️ SUL-AMERICANA"; elObj.className = "rp-value rp-obj-mid"; }
+            const f = t.forca || 60;
+            if (f >= 82) { elObj.innerText = "🏆 TÍTULO"; elObj.className = "rp-value rp-obj-title"; }
+            else if (f >= 78) { elObj.innerText = "🌎 LIBERTADORES"; elObj.className = "rp-value rp-obj-sub"; }
+            else if (f >= 74) { elObj.innerText = "✈️ SUL-AMERICANA"; elObj.className = "rp-value rp-obj-mid"; }
             else { elObj.innerText = "🛡️ NÃO CAIR"; elObj.className = "rp-value rp-obj-low"; }
 
             document.getElementById('info-orcamento').innerText = t.orcamento || "R$ 10 Mi";
             document.getElementById('info-estadio').innerText = estadiosDB[t.nome] || `Arena ${t.nome}`;
 
             const elCraque = document.getElementById('info-craque');
-            // Verifica PlayersDB (jogadores reais) ou usa destaque genérico
-            if (typeof PlayersDB !== 'undefined' && PlayersDB[t.nome]) {
-                const craque = PlayersDB[t.nome].reduce((prev, current) => (prev.forca > current.forca) ? prev : current);
+            if (window.PlayersDB[t.nome] && window.PlayersDB[t.nome].length > 0) {
+                const craque = window.PlayersDB[t.nome].reduce((prev, curr) => (prev.forca > curr.forca) ? prev : curr);
                 elCraque.innerText = craque.nome;
             } else {
                 elCraque.innerText = t.destaque || "Capitão";
@@ -301,13 +256,10 @@
         }
 
         function gerarTimesGenericos(div) {
-            const prefix = div === 'serieB' ? 'B' : (div === 'serieC' ? 'C' : 'D');
+            const prefix = div.replace('serie', '');
             const times = [];
-            for(let i=1; i<=16; i++) {
-                times.push({
-                    nome: `Clube ${prefix}-${i}`, forca: div === 'serieB' ? 70 : (div === 'serieC' ? 60 : 50),
-                    escudo: 'https://cdn-icons-png.flaticon.com/512/53/53283.png', orcamento: "R$ 5 Mi"
-                });
+            for(let i=1; i<=20; i++) {
+                times.push({ nome: `Clube ${prefix}-${i}`, forca: 60, orcamento: "R$ 5 Mi" });
             }
             return times;
         }
@@ -316,41 +268,29 @@
             const nomeTecnico = document.getElementById('coach-name').value;
             if (!nomeTecnico || !selectedTeamObj) return;
 
+            // Segurança contra erro de forEach
+            if (!window.PlayersDB[selectedTeamObj.nome]) window.PlayersDB[selectedTeamObj.nome] = [];
+
             const btn = document.querySelector('.btn-start');
             btn.innerText = "CONTRATANDO...";
             btn.disabled = true;
-
-            // Limpeza de cache para evitar conflito com jogo anterior
-            localStorage.removeItem('brfutebol_formacao'); 
-            localStorage.removeItem('brfutebol_esquema');
-            localStorage.removeItem('brfutebol_funcoes');
-            localStorage.removeItem('brfutebol_taticas');
 
             localStorage.setItem('brfutebol_tecnico', nomeTecnico);
             localStorage.setItem('brfutebol_escudo', selectedTeamObj.escudo);
 
             setTimeout(() => {
                 try {
-                    // Tenta iniciar a Engine
-                    // IMPORTANTE: Verifica se selectedDivision não é nulo
-                    if(!selectedDivision) selectedDivision = 'serieA';
-
                     Engine.novoJogo('brasil', selectedDivision, selectedTeamObj.nome);
                     window.location.href = 'dashboard.html';
                 } catch (e) {
                     console.error(e);
-                    alert("Erro ao iniciar jogo: " + e.message + ". Veja o console (F12) para detalhes.");
-                    btn.innerText = "ERRO (Tente Novamente)";
+                    alert("Erro ao iniciar jogo: " + e.message);
+                    btn.innerText = "ERRO (Ver Console)";
                     btn.disabled = false;
                 }
             }, 800);
         }
-
-        window.onload = function() {
-            checkStep1();
-            // Log para debug
-            console.log("Database carregado:", typeof database !== 'undefined' ? "OK" : "FALHA");
-        };
+        window.onload = checkStep1;
     </script>
 </body>
 </html>
