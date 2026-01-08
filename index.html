@@ -3,319 +3,335 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRFutebol 2026 - O Início</title>
+    <title>BRFutebol - Novo Jogo</title>
     
     <script src="database_jogadores.js"></script>
     <script src="engine.js"></script>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg-dark: #0f1216;
-            --accent: #00ff88;
-            --accent-glow: rgba(0, 255, 136, 0.6);
-            --text-main: #ffffff;
-            --glass: rgba(20, 25, 35, 0.7);
-            --border: 1px solid rgba(255, 255, 255, 0.1);
+            --bg: #0d1115;
+            --card: #1e272e;
+            --green: #2ecc71;
+            --gold: #f1c40f;
+            --red: #ff4757;
+            --text: #ecf0f1;
+            --blue: #3498db;
         }
-
-        * { box-sizing: border-box; user-select: none; }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            /* Fundo com imagem de estádio escurecida */
-            background-image: 
-                linear-gradient(to bottom, rgba(15, 18, 22, 0.6) 0%, #0f1216 100%),
-                url('https://images.unsplash.com/photo-1518091043644-c1d4457512c6?q=80&w=2000&auto=format&fit=crop');
-            background-size: cover;
-            background-position: center;
-            color: var(--text-main);
-            margin: 0;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; padding-bottom: 120px;
         }
 
-        /* Container Principal */
-        .main-menu {
-            display: flex;
-            gap: 50px;
-            align-items: center;
-            width: 90%;
-            max-width: 1200px;
-            z-index: 10;
-        }
+        h1 { text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+        h1 span { color: var(--green); }
 
-        /* Lado Esquerdo: Título */
-        .title-area {
-            flex: 1;
-            animation: slideInLeft 1s ease-out;
-        }
+        .main-container { width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 30px; }
 
-        .game-title {
-            font-family: 'Rajdhani', sans-serif;
-            font-weight: 900;
-            font-size: 6rem;
-            line-height: 0.9;
-            color: #fff;
-            text-transform: uppercase;
-            text-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            margin-bottom: 10px;
+        /* ETAPA 1: INPUTS */
+        .input-section {
+            background: var(--card); padding: 20px; border-radius: 12px;
+            border: 1px solid #333; display: flex; gap: 20px; flex-wrap: wrap;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        .game-title span { color: var(--accent); text-shadow: 0 0 30px var(--accent-glow); }
+        .form-group { flex: 1; min-width: 200px; }
+        label { display: block; color: #888; font-weight: bold; margin-bottom: 8px; font-size: 0.9rem; }
+        input, select {
+            width: 100%; padding: 12px; background: #111; border: 1px solid #444;
+            color: #fff; border-radius: 8px; font-size: 1rem; box-sizing: border-box;
+        }
+        input:focus, select:focus { border-color: var(--green); outline: none; }
+
+        /* ETAPA 2: DIVISÕES */
+        .division-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px; opacity: 0.5; pointer-events: none; transition: 0.3s;
+        }
+        .division-grid.active { opacity: 1; pointer-events: all; }
+
+        .div-card {
+            background: linear-gradient(145deg, #2c3e50, #1e272e);
+            padding: 30px 20px; border-radius: 12px; text-align: center;
+            border: 2px solid transparent; cursor: pointer; transition: 0.2s;
+        }
+        .div-card:hover { transform: translateY(-5px); border-color: var(--gold); }
+        .div-card.selected { background: var(--green); color: #000; border-color: #fff; box-shadow: 0 0 15px var(--green); }
+        .div-title { font-size: 1.5rem; font-weight: 900; }
+        .div-desc { font-size: 0.8rem; opacity: 0.7; }
+
+        /* ETAPA 3: TIMES */
+        .teams-area { display: none; flex-direction: column; gap: 15px; animation: slideUp 0.5s ease; }
+        .teams-area.visible { display: flex; }
+
+        .teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
         
-        .game-subtitle {
-            font-size: 1.2rem;
-            letter-spacing: 5px;
-            text-transform: uppercase;
-            color: #ccc;
-            margin-left: 5px;
-            font-weight: 600;
+        .team-card {
+            background: var(--card); border: 1px solid #333; border-radius: 8px;
+            padding: 10px; display: flex; flex-direction: column; align-items: center;
+            cursor: pointer; transition: 0.2s; position: relative;
         }
+        .team-card:hover { border-color: var(--gold); background: #252e33; }
+        .team-card.selected { border: 2px solid var(--green); background: rgba(46, 204, 113, 0.1); transform: scale(1.05); z-index: 10; }
+        
+        .team-logo { width: 50px; height: 50px; object-fit: contain; margin-bottom: 5px; }
+        .team-name { font-weight: bold; text-align: center; font-size: 0.9rem; }
+        .team-ovr { font-size: 0.75rem; background: #000; padding: 2px 6px; border-radius: 4px; color: #aaa; margin-top: 5px; }
 
-        /* Lado Direito: Botões */
-        .actions-area {
-            width: 400px;
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: var(--border);
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-            animation: slideInRight 1s ease-out;
-            position: relative;
+        /* ETAPA 4: PAINEL DE INFORMAÇÕES (SCOUT REPORT) */
+        .scout-report {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: rgba(15, 20, 25, 0.98); border-top: 3px solid var(--green);
+            padding: 20px; display: flex; flex-direction: column; align-items: center;
+            transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 100; box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
         }
+        .scout-report.visible { transform: translateY(0); }
 
-        /* Botão Continuar (Save Card) */
-        .continue-card {
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02));
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            cursor: pointer;
-            transition: 0.3s;
-            display: none; /* Escondido se não tiver save */
-            position: relative;
-            overflow: hidden;
-        }
-        .continue-card:hover {
-            border-color: var(--accent);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0, 255, 136, 0.1);
-        }
-        .continue-card::before {
-            content:'CONTINUAR';
-            position: absolute; top: 10px; right: 10px;
-            font-size: 0.6rem; font-weight: 800; color: var(--accent); letter-spacing: 1px;
-        }
-
-        .save-info { display: flex; align-items: center; gap: 15px; }
-        .save-logo { width: 50px; height: 50px; object-fit: contain; filter: drop-shadow(0 0 5px rgba(0,0,0,0.5)); }
-        .save-details h3 { margin: 0; font-family: 'Rajdhani'; font-size: 1.4rem; text-transform: uppercase; }
-        .save-details p { margin: 2px 0 0 0; font-size: 0.8rem; color: #888; }
-
-        /* Botões do Menu */
-        .btn-menu {
-            display: block;
-            width: 100%;
-            padding: 18px;
-            margin-bottom: 15px;
-            background: transparent;
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #fff;
-            font-family: 'Rajdhani';
-            font-weight: 700;
-            font-size: 1.1rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            cursor: pointer;
-            transition: 0.3s;
-            position: relative;
-            overflow: hidden;
+        .report-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+            width: 100%; max-width: 1000px; margin-bottom: 20px;
         }
         
-        .btn-menu::before {
-            content: ''; position: absolute; top:0; left:0; width: 4px; height: 100%;
-            background: var(--accent); transition: 0.3s; opacity: 0;
-        }
-
-        .btn-menu:hover {
-            background: rgba(255,255,255,0.05);
-            border-color: #fff;
-            padding-left: 30px;
-        }
-        .btn-menu:hover::before { opacity: 1; }
-
-        .btn-primary {
-            background: var(--accent);
-            color: #000;
-            border: none;
-            box-shadow: 0 0 20px var(--accent-glow);
-        }
-        .btn-primary:hover {
-            background: #fff;
-            color: #000;
-            padding-left: 18px; /* Remove efeito de deslize */
-            transform: scale(1.05);
-            box-shadow: 0 0 40px var(--accent-glow);
-        }
-        .btn-primary::before { display: none; }
-
-        /* Área de Novo Jogo (Seleção) */
-        .new-game-panel {
-            display: none;
-            flex-direction: column;
-            gap: 15px;
-            animation: fadeIn 0.3s;
-        }
+        .report-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #333; }
+        .rp-label { font-size: 0.75rem; text-transform: uppercase; color: #888; margin-bottom: 5px; letter-spacing: 1px; }
+        .rp-value { font-size: 1.1rem; font-weight: 800; color: #fff; }
         
-        select {
-            width: 100%;
-            padding: 15px;
-            background: #000;
-            border: 1px solid #444;
-            color: #fff;
-            font-family: 'Inter';
-            font-size: 1rem;
-            outline: none;
-            margin-bottom: 10px;
+        .rp-obj-title { color: var(--gold); }
+        .rp-obj-sub { color: var(--blue); }
+        .rp-obj-mid { color: #fff; }
+        .rp-obj-low { color: var(--red); }
+
+        .btn-start {
+            background: linear-gradient(90deg, var(--green), #27ae60);
+            color: #fff; border: none; padding: 15px 60px;
+            font-size: 1.2rem; font-weight: 900; border-radius: 40px;
+            cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 0 25px rgba(46, 204, 113, 0.3); transition: 0.2s;
         }
-        select:focus { border-color: var(--accent); }
+        .btn-start:hover { transform: scale(1.05); box-shadow: 0 0 35px rgba(46, 204, 113, 0.5); }
 
-        .version { position: fixed; bottom: 20px; left: 20px; color: #444; font-size: 0.8rem; }
+        @media (max-width: 700px) {
+            .report-grid { grid-template-columns: 1fr 1fr; }
+        }
 
-        @keyframes slideInLeft { from { opacity:0; transform:translateX(-50px); } to { opacity:1; transform:translateX(0); } }
-        @keyframes slideInRight { from { opacity:0; transform:translateX(50px); } to { opacity:1; transform:translateX(0); } }
-        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div class="main-menu">
-        <div class="title-area">
-            <div class="game-title">Rei da<br><span>Várzea</span></div>
-            <span class="game-subtitle">Manager Simulator 2026</span>
-        </div>
+    <h1>BR<span>Futebol</span> 26</h1>
 
-        <div class="actions-area">
-            
-            <div id="continue-card" class="continue-card" onclick="continuarJogo()">
-                <div class="save-info">
-                    <img id="save-logo" class="save-logo" src="">
-                    <div class="save-details">
-                        <h3 id="save-team">TIME</h3>
-                        <p>Rodada <span id="save-week">1</span> • Temporada 1</p>
-                    </div>
-                </div>
+    <div class="main-container">
+        
+        <div class="input-section">
+            <div class="form-group">
+                <label>Nome do Treinador</label>
+                <input type="text" id="coach-name" placeholder="Ex: Abel Ferreira" oninput="checkStep1()">
             </div>
-
-            <div id="default-buttons">
-                <button class="btn-menu btn-primary" onclick="abrirSelecao()">Novo Jogo</button>
-                <button class="btn-menu" onclick="alert('Carregar Jogo não implementado nesta versão.')">Carregar</button>
-                <button class="btn-menu" onclick="alert('Configurações em breve.')">Opções</button>
-            </div>
-
-            <div id="selection-panel" class="new-game-panel">
-                <h3 style="margin:0; font-family:'Rajdhani'; color:#ccc;">ESCOLHA SEU CLUBE</h3>
-                <select id="team-select">
-                    <option value="">Carregando...</option>
+            <div class="form-group">
+                <label>País da Liga</label>
+                <select id="country-select" onchange="checkStep1()">
+                    <option value="">-- Selecione --</option>
+                    <option value="brasil">BRASIL</option>
+                    <option value="espanha" disabled style="color:#555">ESPANHA (Em breve)</option>
+                    <option value="inglaterra" disabled style="color:#555">INGLATERRA (Em breve)</option>
                 </select>
-                <button class="btn-menu btn-primary" onclick="confirmarNovoJogo()">ASSINAR CONTRATO</button>
-                <button class="btn-menu" style="text-align:center; font-size:0.8rem; padding:10px;" onclick="cancelarSelecao()">VOLTAR</button>
             </div>
-
         </div>
+
+        <div id="division-section" class="division-grid">
+            <div class="div-card" onclick="selectDivision('serieA', this)"><div class="div-title">SÉRIE A</div><div class="div-desc">Elite Nacional</div></div>
+            <div class="div-card" onclick="selectDivision('serieB', this)"><div class="div-title">SÉRIE B</div><div class="div-desc">Acesso</div></div>
+            <div class="div-card" onclick="selectDivision('serieC', this)"><div class="div-title">SÉRIE C</div><div class="div-desc">Raiz</div></div>
+            <div class="div-card" onclick="selectDivision('serieD', this)"><div class="div-title">SÉRIE D</div><div class="div-desc">Base</div></div>
+        </div>
+
+        <div id="teams-section" class="teams-area">
+            <h3 style="border-bottom: 1px solid #333; padding-bottom: 10px; color: var(--gold);">Selecione o Clube</h3>
+            <div id="teams-grid" class="teams-grid"></div>
+        </div>
+        
     </div>
 
-    <div class="version">v2.1 Alpha Build</div>
+    <div id="scout-panel" class="scout-report">
+        <div class="report-grid">
+            <div class="report-item">
+                <div class="rp-label">Objetivo da Diretoria</div>
+                <div class="rp-value" id="info-obj">---</div>
+            </div>
+            <div class="report-item">
+                <div class="rp-label">Orçamento Inicial</div>
+                <div class="rp-value" style="color:var(--green)" id="info-orcamento">---</div>
+            </div>
+            <div class="report-item">
+                <div class="rp-label">Estádio</div>
+                <div class="rp-value" style="color:#aaa" id="info-estadio">---</div>
+            </div>
+            <div class="report-item">
+                <div class="rp-label">Craque do Time</div>
+                <div class="rp-value" style="color:var(--gold)" id="info-craque">---</div>
+            </div>
+        </div>
+        <button class="btn-start" onclick="iniciarJogo()">ASSUMIR COMANDO</button>
+    </div>
 
     <script>
-        window.onload = function() {
-            verificarSave();
-            carregarListaTimes();
+        let selectedDivision = null;
+        let selectedTeamObj = null;
+
+        const estadiosDB = {
+            "Flamengo": "Maracanã", "Fluminense": "Maracanã", "Vasco": "São Januário", "Botafogo": "Nilton Santos",
+            "Palmeiras": "Allianz Parque", "Corinthians": "Neo Química Arena", "São Paulo": "Morumbi", "Santos": "Vila Belmiro",
+            "Grêmio": "Arena do Grêmio", "Internacional": "Beira-Rio", "Atlético-MG": "Arena MRV", "Cruzeiro": "Mineirão",
+            "Bahia": "Fonte Nova", "Vitória": "Barradão", "Fortaleza": "Castelão", "Ceará": "Castelão",
+            "Athletico-PR": "Ligga Arena", "Coritiba": "Couto Pereira"
         };
 
-        function verificarSave() {
-            const saveJson = localStorage.getItem('brfutebol_save');
-            if (saveJson) {
-                try {
-                    const save = JSON.parse(saveJson);
-                    const db = Database[save.pais][save.liga];
-                    const time = db.find(t => t.nome === save.meuTime);
-                    
-                    if (time) {
-                        document.getElementById('continue-card').style.display = 'block';
-                        document.getElementById('save-team').innerText = time.nome;
-                        document.getElementById('save-week').innerText = save.semanaAtual;
-                        document.getElementById('save-logo').src = time.escudo;
-                    }
-                } catch(e) {
-                    console.log("Save inválido ou antigo.");
-                }
+        function checkStep1() {
+            const nome = document.getElementById('coach-name').value;
+            const pais = document.getElementById('country-select').value;
+            const divSec = document.getElementById('division-section');
+
+            if (nome.length > 2 && pais === 'brasil') {
+                divSec.classList.add('active');
+            } else {
+                divSec.classList.remove('active');
+                document.getElementById('teams-section').classList.remove('visible');
+                document.getElementById('scout-panel').classList.remove('visible');
             }
         }
 
-        function carregarListaTimes() {
-            if (typeof Database === 'undefined') return alert("Erro: Database não carregou.");
-            
-            const select = document.getElementById('team-select');
-            select.innerHTML = '';
-            
-            const times = Database['brasil']['serieA'];
-            times.sort((a,b) => a.nome.localeCompare(b.nome));
+        function selectDivision(divId, cardElement) {
+            document.querySelectorAll('.div-card').forEach(c => c.classList.remove('selected'));
+            cardElement.classList.add('selected');
+            selectedDivision = divId;
+            carregarTimes(divId);
+        }
 
-            times.forEach(t => {
-                const opt = document.createElement('option');
-                opt.value = t.nome;
-                opt.innerText = t.nome; // + " (" + t.forca + ")";
-                select.appendChild(opt);
+        function carregarTimes(divisao) {
+            const grid = document.getElementById('teams-grid');
+            grid.innerHTML = '';
+            
+            const section = document.getElementById('teams-section');
+            section.classList.add('visible');
+            document.getElementById('scout-panel').classList.remove('visible');
+
+            // Proteção contra erro de database inexistente
+            if (typeof database === 'undefined' || !database.brasil) {
+                console.error("Database não carregado corretamente.");
+                grid.innerHTML = '<p style="color:red">Erro: Database não carregada.</p>';
+                return;
+            }
+
+            let listaTimes = [];
+            const dbBR = database.brasil;
+
+            if (Array.isArray(dbBR)) {
+                if (divisao === 'serieA') listaTimes = dbBR;
+                else listaTimes = gerarTimesGenericos(divisao);
+            } else {
+                listaTimes = dbBR[divisao] || gerarTimesGenericos(divisao);
+            }
+
+            listaTimes.sort((a,b) => a.nome.localeCompare(b.nome));
+
+            if(listaTimes.length === 0) grid.innerHTML = '<p>Vazio</p>';
+
+            listaTimes.forEach(t => {
+                const card = document.createElement('div');
+                card.className = 'team-card';
+                card.onclick = () => selecionarTime(t, card);
+                
+                const escudo = t.escudo || 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
+                
+                card.innerHTML = `
+                    <img src="${escudo}" class="team-logo">
+                    <div class="team-name">${t.nome}</div>
+                    <div class="team-ovr">OVR: ${t.forca || 60}</div>
+                `;
+                grid.appendChild(card);
             });
         }
 
-        // --- NAVEGAÇÃO ---
-        function abrirSelecao() {
-            document.getElementById('default-buttons').style.display = 'none';
-            document.getElementById('continue-card').style.display = 'none'; // Esconde o save pra focar no novo
-            document.getElementById('selection-panel').style.display = 'flex';
+        function selecionarTime(timeObj, cardElement) {
+            document.querySelectorAll('.team-card').forEach(c => c.classList.remove('selected'));
+            cardElement.classList.add('selected');
+            selectedTeamObj = timeObj;
+            atualizarRelatorio(timeObj);
+            document.getElementById('scout-panel').classList.add('visible');
         }
 
-        function cancelarSelecao() {
-            document.getElementById('selection-panel').style.display = 'none';
-            document.getElementById('default-buttons').style.display = 'block';
-            verificarSave(); // Mostra o card de novo se existir
-        }
+        function atualizarRelatorio(t) {
+            const elObj = document.getElementById('info-obj');
+            const forca = t.forca || 60;
+            if (forca >= 82) { elObj.innerText = "🏆 TÍTULO"; elObj.className = "rp-value rp-obj-title"; }
+            else if (forca >= 78) { elObj.innerText = "🌎 LIBERTADORES"; elObj.className = "rp-value rp-obj-sub"; }
+            else if (forca >= 74) { elObj.innerText = "✈️ SUL-AMERICANA"; elObj.className = "rp-value rp-obj-mid"; }
+            else { elObj.innerText = "🛡️ NÃO CAIR"; elObj.className = "rp-value rp-obj-low"; }
 
-        function continuarJogo() {
-            window.location.href = 'dashboard.html';
-        }
+            document.getElementById('info-orcamento').innerText = t.orcamento || "R$ 10 Mi";
+            document.getElementById('info-estadio').innerText = estadiosDB[t.nome] || `Arena ${t.nome}`;
 
-        function confirmarNovoJogo() {
-            const time = document.getElementById('team-select').value;
-            if(!time) return;
-
-            if(confirm("Começar nova carreira com " + time + "?\nO save anterior será perdido.")) {
-                try {
-                    // LIMPEZA IMPORTANTE: Remove dados visuais antigos
-                    localStorage.removeItem('brfutebol_formacao');
-                    localStorage.removeItem('brfutebol_taticas');
-                    localStorage.removeItem('brfutebol_funcoes');
-
-                    // CRIA NOVO SAVE (Isso gera os atributos novos na Engine)
-                    Engine.novoJogo("brasil", "serieA", time);
-                    
-                    window.location.href = 'dashboard.html';
-                } catch(e) {
-                    alert("Erro ao criar jogo: " + e.message);
-                }
+            const elCraque = document.getElementById('info-craque');
+            if (typeof PlayersDB !== 'undefined' && PlayersDB[t.nome]) {
+                const craque = PlayersDB[t.nome].reduce((prev, current) => (prev.forca > current.forca) ? prev : current);
+                elCraque.innerText = craque.nome;
+            } else {
+                elCraque.innerText = t.destaque || "Capitão";
             }
         }
-    </script>
 
+        function gerarTimesGenericos(div) {
+            const prefix = div === 'serieB' ? 'B' : (div === 'serieC' ? 'C' : 'D');
+            const times = [];
+            for(let i=1; i<=16; i++) {
+                times.push({
+                    nome: `Clube ${prefix}-${i}`, forca: div === 'serieB' ? 70 : (div === 'serieC' ? 60 : 50),
+                    escudo: 'https://cdn-icons-png.flaticon.com/512/53/53283.png', orcamento: "R$ 5 Mi"
+                });
+            }
+            return times;
+        }
+
+        function iniciarJogo() {
+            const nomeTecnico = document.getElementById('coach-name').value;
+            if (!nomeTecnico || !selectedTeamObj) return;
+
+            const btn = document.querySelector('.btn-start');
+            btn.innerText = "CONTRATANDO...";
+            btn.disabled = true;
+
+            // === CORREÇÃO IMPORTANTE ===
+            // Limpa as táticas antigas para não conflitar com o novo time
+            localStorage.removeItem('brfutebol_formacao'); 
+            localStorage.removeItem('brfutebol_esquema');
+            localStorage.removeItem('brfutebol_funcoes');
+            localStorage.removeItem('brfutebol_taticas');
+
+            // Salva dados básicos
+            localStorage.setItem('brfutebol_tecnico', nomeTecnico);
+            localStorage.setItem('brfutebol_escudo', selectedTeamObj.escudo);
+
+            setTimeout(() => {
+                try {
+                    // Tenta iniciar a Engine
+                    Engine.novoJogo('brasil', selectedDivision, selectedTeamObj.nome);
+                    window.location.href = 'dashboard.html';
+                } catch (e) {
+                    console.error(e);
+                    alert("Erro ao iniciar jogo: " + e.message);
+                    btn.innerText = "ERRO (Tente Novamente)";
+                    btn.disabled = false;
+                }
+            }, 800);
+        }
+
+        window.onload = checkStep1;
+    </script>
 </body>
 </html>
