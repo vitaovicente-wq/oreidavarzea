@@ -22,6 +22,12 @@
 
         * { box-sizing: border-box; }
 
+        /* SCROLLBAR PERSONALIZADA */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-dark);
@@ -71,9 +77,10 @@
             color: var(--accent);
         }
 
-        /* MAIN */
+        /* CONTEÚDO PRINCIPAL */
         .main-content { padding: 30px; overflow-y: auto; }
 
+        /* HEADER */
         .dash-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 30px;
@@ -106,7 +113,7 @@
             display: flex; justify-content: space-between;
         }
 
-        /* NEXT MATCH */
+        /* PRÓXIMO JOGO */
         .next-match {
             display: flex; align-items: center; justify-content: space-between;
             background: linear-gradient(90deg, #1e2329 0%, #161b22 100%);
@@ -133,9 +140,9 @@
         }
         .play-btn:hover { transform: scale(1.02); background: #fff; }
 
-        /* TABLE */
+        /* TABELAS */
         .mini-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        .mini-table th { text-align: left; color: #666; padding: 8px; font-size: 0.75rem; }
+        .mini-table th { text-align: left; color: #666; padding: 8px; font-size: 0.75rem; text-transform: uppercase; }
         .mini-table td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .pos-num { font-weight: 700; width: 30px; display: inline-block; }
         .my-team-row { background: rgba(0, 255, 136, 0.1); color: var(--accent); font-weight: bold; }
@@ -168,6 +175,7 @@
     </div>
 
     <div class="main-content">
+        
         <div class="dash-header">
             <div class="team-profile">
                 <img id="dash-escudo" src="" class="team-shield">
@@ -183,7 +191,9 @@
         </div>
 
         <div class="grid-container">
+            
             <div style="display: flex; flex-direction: column; gap: 20px;">
+                
                 <div class="card">
                     <div class="card-title">PRÓXIMA RODADA (BRASILEIRÃO)</div>
                     <div class="next-match">
@@ -199,22 +209,36 @@
                     </div>
                     <button class="play-btn" onclick="irParaPartida()">JOGAR PARTIDA</button>
                 </div>
+
                 <div class="card">
                     <div class="card-title">NOTÍCIAS DO CLUBE</div>
                     <div id="news-feed"></div>
                 </div>
+
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 20px;">
+                
+                <div class="card" style="max-height: 350px; overflow-y: auto;">
+                    <div class="card-title">PLANTEL</div>
+                    <table class="mini-table">
+                        <thead><tr><th>POS</th><th>NOME</th><th>OVR</th></tr></thead>
+                        <tbody id="squad-body">
+                            </tbody>
+                    </table>
+                </div>
+
                 <div class="card">
                     <div class="card-title">CLASSIFICAÇÃO</div>
                     <table class="mini-table">
                         <thead><tr><th>POS</th><th>TIME</th><th>P</th></tr></thead>
-                        <tbody id="table-body"></tbody>
+                        <tbody id="table-body">
+                            </tbody>
                     </table>
                 </div>
+
                 <div class="card">
-                    <div class="card-title">RELATÓRIO DO ELENCO</div>
+                    <div class="card-title">STATUS GERAL</div>
                     <div style="text-align: center; padding: 10px;">
                         <div style="font-size: 2.5rem; font-weight: 800; color: var(--accent);" id="team-ovr">0</div>
                         <div style="color: #666; font-size: 0.8rem; text-transform: uppercase;">Força Geral</div>
@@ -228,33 +252,33 @@
                         </div>
                     </div>
                 </div>
+
             </div>
+
         </div>
     </div>
 
     <script>
-        // --- ADAPTADOR DE CORREÇÃO (O MESMO DO INDEX) ---
-        // Isso garante que o dashboard leia os dados sem erros
+        // --- 1. PATCH DE COMPATIBILIDADE ---
         if (typeof database !== 'undefined') window.Database = database;
         if (typeof Database !== 'undefined') window.database = Database;
 
+        // --- 2. INICIALIZAÇÃO E CORREÇÃO DE DADOS ---
         window.onload = function() {
-            // 1. Organiza Divisões
+            // Garante estrutura de divisões
             if (window.Database && window.Database.brasil && Array.isArray(window.Database.brasil)) {
-                console.log("⚠️ Adaptando lista para dashboard...");
+                console.log("⚠️ Adaptando banco para Dashboard...");
                 const todos = window.Database.brasil;
                 window.Database.brasil = { 'serieA': todos, 'serieB': [], 'serieC': [], 'serieD': [] };
             }
             
-            // 2. Garante Elencos (para não quebrar loops)
+            // Garante que todo time tenha array de elenco vazio no mínimo (evita crash)
             if(window.Database && window.Database.brasil) {
                  const divs = ['serieA', 'serieB', 'serieC', 'serieD'];
                  divs.forEach(div => {
                     if (window.Database.brasil[div]) {
                         window.Database.brasil[div].forEach(time => {
-                            if (!time.elenco || !Array.isArray(time.elenco)) {
-                                time.elenco = []; // Cria vazio pra evitar erro de loop
-                            }
+                            if (!time.elenco || !Array.isArray(time.elenco)) time.elenco = [];
                         });
                     }
                  });
@@ -262,25 +286,24 @@
 
             carregarDados();
         };
-        // ----------------------------------------------------
 
         let gameState = null;
         let meuTime = null;
 
         function carregarDados() {
             try {
-                // 1. Save da Engine
+                // Carregar Save
                 gameState = Engine.carregarJogo();
                 if (!gameState) {
-                    alert("Nenhum jogo salvo! Redirecionando...");
+                    alert("Nenhum save encontrado. Inicie um Novo Jogo.");
                     window.location.href = 'index.html';
                     return;
                 }
 
-                // 2. Achar time
+                // Encontrar Time
                 meuTime = Engine.encontrarTime(gameState, gameState.meuTime);
                 
-                // Fallback se não achou via engine mas temos o ID
+                // Fallback (plano B) se a engine falhar em achar o objeto
                 if (!meuTime && gameState.meuTime) {
                     const divs = ['serieA', 'serieB', 'serieC', 'serieD'];
                     for(let d of divs) {
@@ -291,28 +314,60 @@
                     }
                 }
 
-                if (!meuTime) throw new Error("Time não encontrado.");
+                if (!meuTime) throw new Error("Erro crítico: Time não localizado.");
 
-                // 3. Infos do LocalStorage
-                const tecnico = localStorage.getItem('brfutebol_tecnico') || "Treinador";
-                const escudo = localStorage.getItem('brfutebol_escudo') || "https://cdn-icons-png.flaticon.com/512/53/53283.png";
+                // Carregar Infos Visuais
+                const tecnico = localStorage.getItem('brfutebol_tecnico') || "Técnico";
+                const escudo = localStorage.getItem('brfutebol_escudo') || "";
 
-                // 4. Preencher tela
+                // Preencher HTML
                 document.getElementById('dash-team-name').innerText = meuTime.nome;
                 document.getElementById('dash-coach').innerText = tecnico;
-                document.getElementById('dash-escudo').src = escudo;
-                document.getElementById('dash-money').innerText = meuTime.orcamento || "R$ 5 Mi";
+                document.getElementById('dash-escudo').src = escudo || "https://cdn-icons-png.flaticon.com/512/53/53283.png";
+                document.getElementById('dash-money').innerText = meuTime.orcamento || "R$ 0";
                 document.getElementById('dash-week').innerText = gameState.rodada;
-                document.getElementById('team-ovr').innerText = meuTime.forca || 60;
+                document.getElementById('team-ovr').innerText = meuTime.forca || 0;
 
+                // Funções de atualização
                 atualizarTabela();
                 atualizarProximoJogo();
                 gerarNoticias(meuTime.nome, tecnico);
+                atualizarListaElenco(); // <--- AQUI ESTÁ A MÁGICA
 
             } catch (e) {
                 console.error(e);
                 alert("Erro no Dashboard: " + e.message);
-                // Opcional: localStorage.clear(); window.location.href='index.html';
+            }
+        }
+
+        // --- FUNÇÃO PARA LISTAR JOGADORES (CARD NOVO) ---
+        function atualizarListaElenco() {
+            const tbody = document.getElementById('squad-body');
+            tbody.innerHTML = '';
+
+            if (meuTime.elenco && meuTime.elenco.length > 0) {
+                // Ordena por força
+                const elencoOrdenado = [...meuTime.elenco].sort((a,b) => b.forca - a.forca);
+
+                elencoOrdenado.forEach(jog => {
+                    const tr = document.createElement('tr');
+                    
+                    // Cores por posição
+                    let cor = '#888';
+                    if(jog.pos === 'GOL') cor = '#e67e22'; 
+                    else if(['ZAG','LE','LD'].includes(jog.pos)) cor = '#3498db'; 
+                    else if(['VOL','MEI'].includes(jog.pos)) cor = '#2ecc71'; 
+                    else if(['ATA'].includes(jog.pos)) cor = '#e74c3c'; 
+
+                    tr.innerHTML = `
+                        <td><span style="color:${cor}; font-weight:800; font-size:0.75rem;">${jog.pos}</span></td>
+                        <td style="font-weight:600;">${jog.nome}</td>
+                        <td><span style="background:#222; padding:2px 6px; border-radius:4px; font-weight:700; color:${jog.forca >= 80 ? '#f1c40f' : '#ccc'}">${jog.forca}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#666; padding:10px;">Sem jogadores no elenco.</td></tr>';
             }
         }
 
@@ -321,7 +376,7 @@
             tbody.innerHTML = '';
             let timesTabela = [];
 
-            // Pega os times da mesma divisão que o meu
+            // Pega times da divisão atual
             if (window.Database && window.Database.brasil) {
                 const divs = ['serieA', 'serieB', 'serieC', 'serieD'];
                 for(let d of divs) {
@@ -330,11 +385,9 @@
                         break;
                     }
                 }
-                // Fallback
                 if(timesTabela.length === 0 && window.Database.brasil.serieA) timesTabela = window.Database.brasil.serieA;
             }
 
-            // Ordena
             timesTabela.sort((a,b) => (b.pontos || 0) - (a.pontos || 0));
 
             timesTabela.slice(0, 5).forEach((t, index) => {
@@ -347,7 +400,7 @@
 
         function atualizarProximoJogo() {
             let oponente = { nome: "Visitante", escudo: "" };
-            // Lógica simples: Pega um time aleatório que não seja o meu
+            // Simula oponente
             if (window.Database && window.Database.brasil) {
                  const divs = ['serieA', 'serieB', 'serieC', 'serieD'];
                  let minhaDiv = [];
@@ -374,9 +427,9 @@
         function gerarNoticias(time, tecnico) {
             const feed = document.getElementById('news-feed');
             const noticias = [
-                { data: 'Hoje', texto: `${tecnico} assume o ${time}.` },
-                { data: 'Ontem', texto: 'Reforços chegando em breve.' },
-                { data: '2 dias atrás', texto: 'Ingressos esgotados.' }
+                { data: 'Hoje', texto: `${tecnico} assume o comando do ${time}.` },
+                { data: 'Ontem', texto: 'Elenco se apresenta para a temporada.' },
+                { data: 'Semana passada', texto: 'Diretoria estipula metas ambiciosas.' }
             ];
             noticias.forEach(n => {
                 const div = document.createElement('div');
@@ -387,13 +440,14 @@
         }
 
         function irParaPartida() {
-            if(confirm("Iniciar partida?")) {
-                alert("Simulando... (Próximo passo: partida.html)");
+            if(confirm("Confirmar escalação e ir para o jogo?")) {
+                alert("Simulando partida... (Aqui entraria a tela partida.html)");
+                // window.location.href = 'partida.html';
             }
         }
 
         function resetGame() {
-            if(confirm("Sair e apagar progresso?")) {
+            if(confirm("Tem certeza? Todo progresso será apagado.")) {
                 localStorage.clear();
                 window.location.href = 'index.html';
             }
