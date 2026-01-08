@@ -8,8 +8,6 @@
     <script src="database_jogadores.js"></script>
     <script src="engine.js"></script>
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
@@ -20,7 +18,6 @@
             --text-main: #ffffff;
             --text-dim: #8b9bb4;
             --border: 1px solid rgba(255, 255, 255, 0.1);
-            --pitch-grass: #27ae60;
             --gold: #f1c40f;
             --red: #e74c3c;
         }
@@ -69,7 +66,7 @@
         }
         .save-btn:hover { transform: scale(1.05); background: #fff; }
 
-        /* LAYOUT PRINCIPAL */
+        /* WORKSPACE */
         .workspace {
             display: grid;
             grid-template-columns: 300px 1fr 300px; 
@@ -78,7 +75,6 @@
             overflow: hidden;
         }
 
-        /* PAINÉIS LATERAIS */
         .panel {
             background: var(--bg-panel);
             border-right: var(--border);
@@ -102,7 +98,7 @@
         .scroll-content::-webkit-scrollbar { width: 5px; }
         .scroll-content::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
 
-        /* LISTA DE JOGADORES (CARD) */
+        /* CARD JOGADOR (LISTA) */
         .roster-item {
             display: flex; align-items: center;
             background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, transparent 100%);
@@ -121,7 +117,7 @@
         .player-detail { font-size: 0.75rem; color: #666; margin-top: 2px; }
         .ovr-badge { font-family: 'Rajdhani'; font-weight: 800; font-size: 1.2rem; color: var(--gold); margin-left: 10px; }
 
-        /* ÁREA DO CAMPO */
+        /* CAMPO */
         .field-area {
             background: #0a0a0a;
             position: relative;
@@ -136,13 +132,12 @@
             position: relative;
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
-        /* Linhas do campo */
         .pitch::before { content:''; position:absolute; top:50%; left:0; width:100%; height:2px; background:rgba(255,255,255,0.4); transform:translateY(-50%); }
         .pitch::after { content:''; position:absolute; top:50%; left:50%; width:100px; height:100px; border:2px solid rgba(255,255,255,0.4); border-radius:50%; transform:translate(-50%, -50%); }
         .box { position:absolute; width:40%; height:15%; border:2px solid rgba(255,255,255,0.4); left:30%; }
         .box-top { top:0; border-top:none; } .box-bottom { bottom:0; border-bottom:none; }
 
-        /* SLOTS NO CAMPO */
+        /* SLOTS */
         .field-slot {
             position: absolute; width: 90px; height: 90px;
             transform: translate(-50%, -50%);
@@ -150,7 +145,6 @@
             cursor: pointer; z-index: 5; transition: top 0.4s, left 0.4s;
         }
         
-        /* CARD/KIT DO JOGADOR NO CAMPO */
         .player-kit {
             width: 45px; height: 45px;
             background: #222;
@@ -184,11 +178,9 @@
         .slot-name { display: block; font-size: 0.75rem; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px; }
         .slot-pos-mini { font-size: 0.65rem; color: #aaa; text-transform: uppercase; }
 
-        /* ABA ESTRATÉGIA */
+        /* TÁTICA */
         .role-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 15px; margin-bottom: 10px; border-radius: 6px; }
         .role-label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 8px; }
-        
-        /* SLIDERS */
         input[type=range] { width: 100%; -webkit-appearance: none; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; margin-top: -6px; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: #333; border-radius: 2px; }
@@ -203,16 +195,11 @@
         .modal-card {
             background: #161b22; border: 1px solid #444; border-radius: 12px;
             width: 400px; padding: 30px; box-shadow: 0 0 50px rgba(0,255,136,0.1);
-            position: relative;
         }
         .modal-header { display: flex; align-items: center; gap: 20px; border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 20px; }
         .modal-kit { width: 70px; height: 70px; background: #222; border: 2px solid var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.5rem; color: #fff; }
         .modal-ovr { font-family: 'Rajdhani'; font-size: 2.5rem; color: var(--gold); margin-left: auto; font-weight: 900; }
-        
         .stat-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .stat-label { color: #888; font-weight: 600; }
-        .stat-val { color: #fff; font-weight: 700; }
-
         .btn-close { width: 100%; background: #333; color: #fff; border: none; padding: 12px; margin-top: 20px; border-radius: 6px; cursor: pointer; font-weight: 700; }
         .btn-close:hover { background: #444; }
 
@@ -236,20 +223,17 @@
     </header>
 
     <div class="workspace">
-        
         <div class="panel">
             <div class="panel-header">
                 <span>ELENCO DISPONÍVEL</span>
                 <button class="btn-auto" onclick="autoEscalar()">⚡ AUTO</button>
             </div>
-            <div class="scroll-content" id="roster-list">
-                </div>
+            <div class="scroll-content" id="roster-list"></div>
         </div>
 
         <div class="field-area">
             <div class="pitch">
                 <div class="box box-top"></div> <div class="box box-bottom"></div>
-                
                 <div class="field-slot" id="slot-1"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span><div class="slot-pos-mini">GOL</div></div></div>
                 <div class="field-slot" id="slot-2"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span><div class="slot-pos-mini">DEF</div></div></div>
                 <div class="field-slot" id="slot-3"><div class="player-kit"></div><div class="slot-info-box"><span class="slot-name">Vazio</span><div class="slot-pos-mini">DEF</div></div></div>
@@ -276,13 +260,11 @@
                     <label class="role-label">INTENSIDADE <span id="val-intensidade" class="tactic-value">Normal</span></label>
                     <input type="range" id="slider-intensidade" min="1" max="3" value="2" oninput="atualizarLabelsTatica()">
                 </div>
-                
-                <div style="padding:10px; text-align:center; color:#666; font-size:0.8rem; font-style:italic;">
-                    Arraste jogadores da lista para o campo para escalar. Clique duas vezes para ver detalhes.
+                <div style="padding:15px; text-align:center; color:#666; font-size:0.8rem; font-style:italic;">
+                    Arraste jogadores para escalar.<br>Duplo clique para ver detalhes.
                 </div>
             </div>
         </div>
-
     </div>
 
     <div id="player-modal" class="modal-overlay" onclick="fecharModal(event)">
@@ -295,67 +277,27 @@
                 </div>
                 <div class="modal-ovr" id="m-ovr">00</div>
             </div>
-            
-            <div class="stat-row">
-                <span class="stat-label">Idade</span>
-                <span class="stat-val" id="m-idade">00 anos</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Característica</span>
-                <span class="stat-val" id="m-carac" style="color:var(--blue)">---</span>
-            </div>
-            <div class="stat-row">
-                <span class="stat-label">Condição Física</span>
-                <span class="stat-val" style="color:var(--green)">100%</span>
-            </div>
-
+            <div class="stat-row"><span class="stat-label">Idade</span><span class="stat-val" id="m-idade">00 anos</span></div>
+            <div class="stat-row"><span class="stat-label">Característica</span><span class="stat-val" id="m-carac" style="color:var(--blue)">---</span></div>
+            <div class="stat-row"><span class="stat-label">Condição Física</span><span class="stat-val" style="color:var(--green)">100%</span></div>
             <button class="btn-close" onclick="fecharModal()">FECHAR</button>
         </div>
     </div>
 
     <script>
-        // --- PATCH DE COMPATIBILIDADE ---
         if (typeof database !== 'undefined') window.Database = database;
         if (typeof Database !== 'undefined') window.database = Database;
 
-        // --- VARIÁVEIS GLOBAIS ---
         let meuTime = null;
         let formacaoAtual = "4-3-3";
-        let escalacao = {}; // { "slot-1": "id_do_jogador", ... }
-        
-        // POSIÇÕES DOS SLOTS NO CAMPO (TOP, LEFT)
+        let escalacao = {}; // { "slot-1": "uid", ... }
+
         const layouts = {
-            "4-3-3": [
-                {t:"90%",l:"50%"}, // GOL
-                {t:"70%",l:"15%"}, {t:"70%",l:"38%"}, {t:"70%",l:"62%"}, {t:"70%",l:"85%"}, // DEF
-                {t:"45%",l:"30%"}, {t:"45%",l:"50%"}, {t:"45%",l:"70%"}, // MEI
-                {t:"15%",l:"20%"}, {t:"15%",l:"50%"}, {t:"15%",l:"80%"}  // ATA
-            ],
-            "4-4-2": [
-                {t:"90%",l:"50%"},
-                {t:"70%",l:"15%"}, {t:"70%",l:"38%"}, {t:"70%",l:"62%"}, {t:"70%",l:"85%"},
-                {t:"45%",l:"15%"}, {t:"45%",l:"38%"}, {t:"45%",l:"62%"}, {t:"45%",l:"85%"},
-                {t:"15%",l:"35%"}, {t:"15%",l:"65%"}
-            ],
-            "3-5-2": [
-                {t:"90%",l:"50%"},
-                {t:"75%",l:"25%"}, {t:"75%",l:"50%"}, {t:"75%",l:"75%"},
-                {t:"50%",l:"10%"}, {t:"50%",l:"30%"}, {t:"50%",l:"50%"}, {t:"50%",l:"70%"}, {t:"50%",l:"90%"},
-                {t:"15%",l:"35%"}, {t:"15%",l:"65%"}
-            ],
-            "4-2-3-1": [
-                {t:"90%",l:"50%"},
-                {t:"75%",l:"15%"}, {t:"75%",l:"38%"}, {t:"75%",l:"62%"}, {t:"75%",l:"85%"},
-                {t:"55%",l:"35%"}, {t:"55%",l:"65%"},
-                {t:"35%",l:"20%"}, {t:"35%",l:"50%"}, {t:"35%",l:"80%"},
-                {t:"10%",l:"50%"}
-            ],
-            "3-4-3": [
-                {t:"90%",l:"50%"},
-                {t:"75%",l:"20%"}, {t:"75%",l:"50%"}, {t:"75%",l:"80%"},
-                {t:"50%",l:"10%"}, {t:"50%",l:"35%"}, {t:"50%",l:"65%"}, {t:"50%",l:"90%"},
-                {t:"15%",l:"20%"}, {t:"15%",l:"50%"}, {t:"15%",l:"80%"}
-            ]
+            "4-3-3": [{t:"90%",l:"50%"},{t:"70%",l:"15%"},{t:"70%",l:"38%"},{t:"70%",l:"62%"},{t:"70%",l:"85%"},{t:"45%",l:"30%"},{t:"45%",l:"50%"},{t:"45%",l:"70%"},{t:"15%",l:"20%"},{t:"15%",l:"50%"},{t:"15%",l:"80%"}],
+            "4-4-2": [{t:"90%",l:"50%"},{t:"70%",l:"15%"},{t:"70%",l:"38%"},{t:"70%",l:"62%"},{t:"70%",l:"85%"},{t:"45%",l:"15%"},{t:"45%",l:"38%"},{t:"45%",l:"62%"},{t:"45%",l:"85%"},{t:"15%",l:"35%"},{t:"15%",l:"65%"}],
+            "3-5-2": [{t:"90%",l:"50%"},{t:"75%",l:"25%"},{t:"75%",l:"50%"},{t:"75%",l:"75%"},{t:"50%",l:"10%"},{t:"50%",l:"30%"},{t:"50%",l:"50%"},{t:"50%",l:"70%"},{t:"50%",l:"90%"},{t:"15%",l:"35%"},{t:"15%",l:"65%"}],
+            "4-2-3-1":[{t:"90%",l:"50%"},{t:"75%",l:"15%"},{t:"75%",l:"38%"},{t:"75%",l:"62%"},{t:"75%",l:"85%"},{t:"55%",l:"35%"},{t:"55%",l:"65%"},{t:"35%",l:"20%"},{t:"35%",l:"50%"},{t:"35%",l:"80%"},{t:"10%",l:"50%"}],
+            "3-4-3": [{t:"90%",l:"50%"},{t:"75%",l:"20%"},{t:"75%",l:"50%"},{t:"75%",l:"80%"},{t:"50%",l:"10%"},{t:"50%",l:"35%"},{t:"50%",l:"65%"},{t:"50%",l:"90%"},{t:"15%",l:"20%"},{t:"15%",l:"50%"},{t:"15%",l:"80%"}]
         };
 
         window.onload = function() {
@@ -363,47 +305,50 @@
         };
 
         function carregarDados() {
-            // 1. Carrega Save
             const gameState = Engine.carregarJogo();
-            if (!gameState) { alert("Erro: Sem jogo salvo."); window.location.href='index.html'; return; }
+            if (!gameState) { alert("Sem save."); window.location.href='index.html'; return; }
 
-            // 2. Busca Time no DB (usando a mesma lógica do Dashboard)
-            meuTime = encontrarTimeNoDatabase(gameState.meuTime);
-            if (!meuTime) meuTime = Engine.encontrarTime(gameState, gameState.meuTime);
+            // 1. TENTA PEGAR DO BANCO DE DADOS OFICIAL (JOGADORES REAIS)
+            let timeReal = encontrarTimeNoDatabase(gameState.meuTime);
+            
+            // 2. TENTA PEGAR DO SAVE (CASO SEJA SAVE ANTIGO)
+            let timeSave = Engine.encontrarTime(gameState, gameState.meuTime);
 
-            if (!meuTime || !meuTime.elenco) {
-                alert("Erro ao carregar elenco."); return;
+            // MISTURA OS DOIS: Prioriza o time do save, mas se ele não tiver elenco, pega do timeReal
+            meuTime = timeSave || timeReal;
+
+            if (meuTime) {
+                // SE O ELENCO ESTIVER VAZIO, PUXA DO DATABASE OFICIAL
+                if (!meuTime.elenco || meuTime.elenco.length === 0) {
+                    if (timeReal && timeReal.elenco && timeReal.elenco.length > 0) {
+                        meuTime.elenco = timeReal.elenco;
+                        console.log("Elenco recuperado do banco de dados oficial.");
+                    } else {
+                        // ÚLTIMO CASO: FABRICA JOGADORES
+                        meuTime.elenco = gerarElencoGenerico(meuTime.nome);
+                    }
+                }
+            } else {
+                alert("Erro crítico: Time não encontrado."); return;
             }
 
-            // 3. CRIA IDs TEMPORÁRIOS PARA OS JOGADORES (Se não tiverem)
-            // Isso é vital para o Drag & Drop funcionar
-            meuTime.elenco.forEach((jog, index) => {
-                if (!jog.uid) jog.uid = `p_${index}_${jog.nome.replace(/\s/g,'')}`;
-            });
+            // GERA UIDs TEMPORÁRIOS PARA O DRAG & DROP
+            meuTime.elenco.forEach((j, i) => { if(!j.uid) j.uid = `p_${i}`; });
 
-            // 4. Recupera escalação salva ou inicia vazia
+            // RECUPERA FORMAÇÃO SALVA
             const savedForm = localStorage.getItem('brfutebol_formacao');
             const savedScheme = localStorage.getItem('brfutebol_esquema');
+            if(savedScheme) { formacaoAtual = savedScheme; document.getElementById('formation-select').value = formacaoAtual; }
+            if(savedForm) { try { escalacao = JSON.parse(savedForm); } catch(e) { escalacao = {}; } }
             
-            if (savedScheme) {
-                formacaoAtual = savedScheme;
-                document.getElementById('formation-select').value = formacaoAtual;
-            }
-            
-            if (savedForm) {
-                try {
-                    escalacao = JSON.parse(savedForm);
-                } catch(e) { escalacao = {}; }
-            } else {
-                autoEscalar(true); // Se não tiver save, auto-escala
-            }
+            // SE NÃO TIVER ESCALAÇÃO SALVA, AUTO-ESCALA
+            if (Object.keys(escalacao).length === 0) autoEscalar(true);
 
             aplicarLayout(formacaoAtual);
             renderizarTudo();
             atualizarLabelsTatica();
         }
 
-        // Função auxiliar de busca (igual dashboard)
         function encontrarTimeNoDatabase(nomeOuId) {
             const db = window.database || window.Database;
             if (!db || !db.brasil) return null;
@@ -415,6 +360,12 @@
             return null;
         }
 
+        function gerarElencoGenerico(nome) {
+            let lista = [];
+            ['GOL','ZAG','ZAG','LE','LD','VOL','VOL','MEI','MEI','ATA','ATA'].forEach((p,i)=>lista.push({nome:`Jogador ${i+1}`, pos:p, forca:70, uid:`gen_${i}`}));
+            return lista;
+        }
+
         function renderizarTudo() {
             renderizarCampo();
             renderizarListaReservas();
@@ -422,36 +373,31 @@
         }
 
         function renderizarCampo() {
-            // Limpa slots
             document.querySelectorAll('.field-slot').forEach(slot => {
                 slot.classList.remove('filled');
                 slot.querySelector('.player-kit').innerHTML = '';
                 slot.querySelector('.slot-name').innerText = "Vazio";
                 slot.querySelector('.kit-score').style.display = 'none';
                 
-                // Eventos de Drag & Drop
-                slot.ondragover = (e) => e.preventDefault();
-                slot.ondrop = (e) => dropJogador(e, slot.id);
+                slot.ondragover = e => e.preventDefault();
+                slot.ondrop = e => dropJogador(e, slot.id);
                 slot.onclick = () => removerJogador(slot.id);
-                slot.ondblclick = (e) => { e.stopPropagation(); abrirDetalhesSlot(slot.id); };
+                slot.ondblclick = e => { e.stopPropagation(); abrirDetalhesSlot(slot.id); };
             });
 
-            // Preenche slots
-            for (const [slotId, playerUid] of Object.entries(escalacao)) {
+            for (const [slotId, uid] of Object.entries(escalacao)) {
                 const slot = document.getElementById(slotId);
-                const jogador = meuTime.elenco.find(j => j.uid === playerUid);
-                
-                if (slot && jogador) {
+                const jog = meuTime.elenco.find(j => j.uid === uid);
+                if (slot && jog) {
                     slot.classList.add('filled');
-                    slot.querySelector('.player-kit').innerText = jogador.pos;
-                    slot.querySelector('.slot-name').innerText = jogador.nome.split(' ')[0];
-                    slot.querySelector('.kit-score').innerText = jogador.forca;
+                    slot.querySelector('.player-kit').innerText = jog.pos;
+                    slot.querySelector('.slot-name').innerText = jog.nome.split(' ')[0];
+                    slot.querySelector('.kit-score').innerText = jog.forca;
                     slot.querySelector('.kit-score').style.display = 'flex';
                     
-                    // Cor da posição
-                    let cor = '#fff';
-                    if(jogador.pos==='GOL') slot.querySelector('.player-kit').style.borderColor = '#e67e22';
-                    else if(jogador.pos==='ATA') slot.querySelector('.player-kit').style.borderColor = '#e74c3c';
+                    let c = '#fff';
+                    if(jog.pos==='GOL') c='#e67e22'; else if(jog.pos==='ATA') c='#e74c3c';
+                    slot.querySelector('.player-kit').style.borderColor = c;
                 }
             }
         }
@@ -459,32 +405,24 @@
         function renderizarListaReservas() {
             const container = document.getElementById('roster-list');
             container.innerHTML = '';
-
-            // Pega IDs escalados
             const escalados = Object.values(escalacao);
-
-            // Filtra quem NÃO está escalado
-            const reservas = meuTime.elenco.filter(j => !escalados.includes(j.uid));
-
-            // Ordena por Força
-            reservas.sort((a,b) => b.forca - a.forca);
+            const reservas = meuTime.elenco.filter(j => !escalados.includes(j.uid)).sort((a,b) => b.forca - a.forca);
 
             reservas.forEach(jog => {
                 const div = document.createElement('div');
                 div.className = 'roster-item';
                 div.draggable = true;
-                div.ondragstart = (e) => e.dataTransfer.setData("text", jog.uid);
+                div.ondragstart = e => e.dataTransfer.setData("text", jog.uid);
                 div.ondblclick = () => abrirDetalhesJogador(jog);
                 
-                let corPos = '#555';
-                if(jog.pos==='GOL') corPos='#e67e22';
-                if(jog.pos==='ATA') corPos='#e74c3c';
+                let cp = '#555';
+                if(jog.pos==='GOL') cp='#e67e22'; else if(jog.pos==='ATA') cp='#e74c3c';
 
                 div.innerHTML = `
-                    <div class="pos-badge" style="color:${corPos}">${jog.pos}</div>
+                    <div class="pos-badge" style="color:${cp}">${jog.pos}</div>
                     <div class="player-info">
                         <div class="player-name">${jog.nome}</div>
-                        <div class="player-detail">${jog.carac || '-'} • ${jog.idade} anos</div>
+                        <div class="player-detail">${jog.carac||'-'} • ${jog.idade||'25'} anos</div>
                     </div>
                     <div class="ovr-badge">${jog.forca}</div>
                 `;
@@ -492,67 +430,36 @@
             });
         }
 
-        // DRAG AND DROP
         function dropJogador(e, slotId) {
             e.preventDefault();
-            const playerUid = e.dataTransfer.getData("text");
-            
-            // Se jogador já está em outro slot, remove de lá
-            for(let s in escalacao) {
-                if(escalacao[s] === playerUid) delete escalacao[s];
-            }
-            
-            // Coloca no novo slot
-            escalacao[slotId] = playerUid;
+            const uid = e.dataTransfer.getData("text");
+            for(let s in escalacao) if(escalacao[s]===uid) delete escalacao[s];
+            escalacao[slotId] = uid;
             renderizarTudo();
         }
 
-        function removerJogador(slotId) {
-            if(escalacao[slotId]) {
-                delete escalacao[slotId];
-                renderizarTudo();
-            }
+        function removerJogador(sid) {
+            if(escalacao[sid]) { delete escalacao[sid]; renderizarTudo(); }
         }
 
-        // AUTO-ESCALAR (Inteligente)
-        function autoEscalar(silencioso = false) {
-            if(!silencioso && !confirm("Auto-escalar o melhor time?")) return;
-            
+        function autoEscalar(silencioso=false) {
+            if(!silencioso && !confirm("Auto-escalar?")) return;
             escalacao = {};
             let usados = [];
-            
-            // Mapeamento simples de posições ideais para o esquema
-            const esquemaMap = {
-                "GOL": ["GOL"],
-                "DEF": ["ZAG", "LE", "LD"],
-                "MEI": ["VOL", "MEI"],
-                "ATA": ["ATA"]
-            };
+            const map = { "GOL":["GOL"], "DEF":["ZAG","LE","LD"], "MEI":["VOL","MEI"], "ATA":["ATA"] };
 
-            // Preenche cada slot do 1 ao 11
             for(let i=1; i<=11; i++) {
                 const slot = document.getElementById(`slot-${i}`);
-                const posSlot = slot.querySelector('.slot-pos-mini').innerText; // GOL, DEF, MEI...
+                const tipo = slot.querySelector('.slot-pos-mini').innerText;
                 
-                // Busca o melhor jogador disponível para aquela posição
-                const candidatos = meuTime.elenco.filter(j => 
-                    !usados.includes(j.uid) && 
-                    (esquemaMap[posSlot].includes(j.pos) || j.pos === posSlot)
-                );
+                const cands = meuTime.elenco.filter(j => !usados.includes(j.uid) && (map[tipo].includes(j.pos) || j.pos===tipo));
+                cands.sort((a,b)=>b.forca-a.forca);
                 
-                candidatos.sort((a,b) => b.forca - a.forca);
-                
-                if(candidatos.length > 0) {
-                    escalacao[`slot-${i}`] = candidatos[0].uid;
-                    usados.push(candidatos[0].uid);
-                } else {
-                    // Tenta improvisar (qualquer um disponivel forte)
-                    const sobra = meuTime.elenco.filter(j => !usados.includes(j.uid) && j.pos !== 'GOL');
-                    sobra.sort((a,b) => b.forca - a.forca);
-                    if(sobra.length > 0) {
-                        escalacao[`slot-${i}`] = sobra[0].uid;
-                        usados.push(sobra[0].uid);
-                    }
+                if(cands.length>0) { escalacao[`slot-${i}`] = cands[0].uid; usados.push(cands[0].uid); }
+                else {
+                    const resto = meuTime.elenco.filter(j=>!usados.includes(j.uid) && j.pos!=='GOL');
+                    resto.sort((a,b)=>b.forca-a.forca);
+                    if(resto.length>0) { escalacao[`slot-${i}`] = resto[0].uid; usados.push(resto[0].uid); }
                 }
             }
             renderizarTudo();
@@ -561,81 +468,60 @@
         function mudarFormacao() {
             formacaoAtual = document.getElementById('formation-select').value;
             aplicarLayout(formacaoAtual);
-            // Opcional: autoEscalar(true);
         }
 
         function aplicarLayout(nome) {
-            const pos = layouts[nome];
-            if(!pos) return;
-            
-            pos.forEach((p, i) => {
-                const slot = document.getElementById(`slot-${i+1}`);
-                if(slot) {
-                    slot.style.top = p.t;
-                    slot.style.left = p.l;
-                }
+            layouts[nome].forEach((p,i) => {
+                const s = document.getElementById(`slot-${i+1}`);
+                if(s) { s.style.top=p.t; s.style.left=p.l; }
             });
         }
 
         function atualizarForcaGeral() {
-            let total = 0;
-            let count = 0;
+            let s=0, c=0;
             Object.values(escalacao).forEach(uid => {
-                const j = meuTime.elenco.find(x => x.uid === uid);
-                if(j) { total += j.forca; count++; }
+                const j = meuTime.elenco.find(x=>x.uid===uid);
+                if(j) { s+=j.forca; c++; }
             });
-            const media = count > 0 ? Math.round(total / count) : 0;
-            document.getElementById('team-str').innerText = media;
+            document.getElementById('team-str').innerText = c>0 ? Math.round(s/c) : 0;
         }
 
         function salvarTudo() {
             localStorage.setItem('brfutebol_formacao', JSON.stringify(escalacao));
             localStorage.setItem('brfutebol_esquema', formacaoAtual);
-            
             const btn = document.querySelector('.save-btn');
             btn.innerText = "SALVO!";
-            btn.style.background = "#fff";
-            setTimeout(() => {
-                btn.innerText = "SALVAR";
-                btn.style.background = "var(--accent)";
-                window.location.href = 'dashboard.html';
-            }, 500);
+            setTimeout(() => { btn.innerText="SALVAR"; window.location.href='dashboard.html'; }, 500);
         }
 
         function atualizarLabelsTatica() {
-            const m = ["Ultra Defensivo", "Defensivo", "Equilibrada", "Ofensivo", "Tudo ou Nada"];
+            const m = ["Ultra Def", "Defensivo", "Equilibrada", "Ofensivo", "Tudo ou Nada"];
             const i = ["Baixa", "Normal", "Alta Pressão"];
-            
             document.getElementById('val-mentalidade').innerText = m[document.getElementById('slider-mentalidade').value-1];
             document.getElementById('val-intensidade').innerText = i[document.getElementById('slider-intensidade').value-1];
         }
 
-        // --- MODAL DETALHES ---
-        function abrirDetalhesSlot(slotId) {
-            const uid = escalacao[slotId];
-            if(uid) {
-                const jog = meuTime.elenco.find(j => j.uid === uid);
-                if(jog) abrirDetalhesJogador(jog);
-            }
+        function abrirDetalhesSlot(sid) {
+            const uid = escalacao[sid];
+            if(uid) abrirDetalhesJogador(meuTime.elenco.find(j=>j.uid===uid));
         }
 
-        function abrirDetalhesJogador(jog) {
-            document.getElementById('m-nome').innerText = jog.nome;
-            document.getElementById('m-pos').innerText = jog.pos;
-            document.getElementById('m-kit').innerText = jog.pos;
-            document.getElementById('m-ovr').innerText = jog.forca;
-            document.getElementById('m-idade').innerText = (jog.idade || 25) + " anos";
-            document.getElementById('m-carac').innerText = jog.carac || "Equilibrado";
-            
+        function abrirDetalhesJogador(j) {
+            if(!j) return;
+            document.getElementById('m-nome').innerText = j.nome;
+            document.getElementById('m-pos').innerText = j.pos;
+            document.getElementById('m-kit').innerText = j.pos;
+            document.getElementById('m-ovr').innerText = j.forca;
+            document.getElementById('m-idade').innerText = (j.idade||25)+" anos";
+            document.getElementById('m-carac').innerText = j.carac||"---";
             document.getElementById('player-modal').style.display = 'flex';
         }
 
         function fecharModal(e) {
-            if(!e || e.target.id === 'player-modal' || e.target.classList.contains('btn-close')) {
-                document.getElementById('player-modal').style.display = 'none';
+            if(!e || e.target.id==='player-modal' || e.target.classList.contains('btn-close')) {
+                document.getElementById('player-modal').style.display='none';
             }
         }
-
     </script>
 </body>
 </html>
