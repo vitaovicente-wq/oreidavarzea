@@ -181,6 +181,14 @@
     </div>
 
     <script>
+        // --- FIX DE COMPATIBILIDADE (ADICIONADO NO TOPO) ---
+        // A Engine procura 'Database', mas o arquivo carregou 'database'.
+        // Essa linha conecta os dois nomes.
+        if (typeof database !== 'undefined') {
+            window.Database = database;
+        }
+        // -----------------------------------------------------
+
         let selectedDivision = null;
         let selectedTeamObj = null;
 
@@ -306,7 +314,6 @@
             btn.innerText = "CONTRATANDO...";
             btn.disabled = true;
 
-            // === CORREÇÃO IMPORTANTE ===
             // Limpa as táticas antigas para não conflitar com o novo time
             localStorage.removeItem('brfutebol_formacao'); 
             localStorage.removeItem('brfutebol_esquema');
