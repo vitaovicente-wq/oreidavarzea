@@ -33,7 +33,7 @@
 
         .main-container { width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 30px; }
 
-        /* ETAPA 1: INPUTS */
+        /* INPUTS */
         .input-section {
             background: var(--card); padding: 20px; border-radius: 12px;
             border: 1px solid #333; display: flex; gap: 20px; flex-wrap: wrap;
@@ -47,7 +47,7 @@
         }
         input:focus, select:focus { border-color: var(--green); outline: none; }
 
-        /* ETAPA 2: DIVISÕES */
+        /* DIVISÕES */
         .division-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px; opacity: 0.5; pointer-events: none; transition: 0.3s;
@@ -64,7 +64,7 @@
         .div-title { font-size: 1.5rem; font-weight: 900; }
         .div-desc { font-size: 0.8rem; opacity: 0.7; }
 
-        /* ETAPA 3: TIMES */
+        /* TIMES */
         .teams-area { display: none; flex-direction: column; gap: 15px; animation: slideUp 0.5s ease; }
         .teams-area.visible { display: flex; }
 
@@ -82,7 +82,7 @@
         .team-name { font-weight: bold; text-align: center; font-size: 0.9rem; }
         .team-ovr { font-size: 0.75rem; background: #000; padding: 2px 6px; border-radius: 4px; color: #aaa; margin-top: 5px; }
 
-        /* ETAPA 4: PAINEL DE INFORMAÇÕES (SCOUT REPORT) */
+        /* PAINEL SCOUT */
         .scout-report {
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: rgba(15, 20, 25, 0.98); border-top: 3px solid var(--green);
@@ -181,13 +181,17 @@
     </div>
 
     <script>
-        // --- FIX DE COMPATIBILIDADE (ADICIONADO NO TOPO) ---
-        // A Engine procura 'Database', mas o arquivo carregou 'database'.
-        // Essa linha conecta os dois nomes.
+        // --- PATCH DE CORREÇÃO (CRUCIAL PARA FUNCIONAR) ---
+        // Se a engine procurar 'Database' (maiúsculo) mas só tiver 'database' (minúsculo),
+        // essa linha faz a conexão entre os dois.
         if (typeof database !== 'undefined') {
             window.Database = database;
+        } else if (typeof Database !== 'undefined') {
+            window.database = Database;
+        } else {
+            console.error("ERRO CRÍTICO: Nenhum banco de dados foi carregado. Verifique o arquivo database_jogadores.js");
         }
-        // -----------------------------------------------------
+        // -------------------------------------------------
 
         let selectedDivision = null;
         let selectedTeamObj = null;
@@ -229,7 +233,7 @@
             section.classList.add('visible');
             document.getElementById('scout-panel').classList.remove('visible');
 
-            // Proteção contra erro de database inexistente
+            // Usa 'database' minúsculo que agora é seguro
             if (typeof database === 'undefined' || !database.brasil) {
                 console.error("Database não carregado corretamente.");
                 grid.innerHTML = '<p style="color:red">Erro: Database não carregada.</p>';
@@ -243,6 +247,7 @@
                 if (divisao === 'serieA') listaTimes = dbBR;
                 else listaTimes = gerarTimesGenericos(divisao);
             } else {
+                // Se for objeto {serieA: [...], serieB: [...]}
                 listaTimes = dbBR[divisao] || gerarTimesGenericos(divisao);
             }
 
@@ -286,6 +291,7 @@
             document.getElementById('info-estadio').innerText = estadiosDB[t.nome] || `Arena ${t.nome}`;
 
             const elCraque = document.getElementById('info-craque');
+            // Verifica PlayersDB (jogadores reais) ou usa destaque genérico
             if (typeof PlayersDB !== 'undefined' && PlayersDB[t.nome]) {
                 const craque = PlayersDB[t.nome].reduce((prev, current) => (prev.forca > current.forca) ? prev : current);
                 elCraque.innerText = craque.nome;
@@ -314,31 +320,37 @@
             btn.innerText = "CONTRATANDO...";
             btn.disabled = true;
 
-            // Limpa as táticas antigas para não conflitar com o novo time
+            // Limpeza de cache para evitar conflito com jogo anterior
             localStorage.removeItem('brfutebol_formacao'); 
             localStorage.removeItem('brfutebol_esquema');
             localStorage.removeItem('brfutebol_funcoes');
             localStorage.removeItem('brfutebol_taticas');
 
-            // Salva dados básicos
             localStorage.setItem('brfutebol_tecnico', nomeTecnico);
             localStorage.setItem('brfutebol_escudo', selectedTeamObj.escudo);
 
             setTimeout(() => {
                 try {
                     // Tenta iniciar a Engine
+                    // IMPORTANTE: Verifica se selectedDivision não é nulo
+                    if(!selectedDivision) selectedDivision = 'serieA';
+
                     Engine.novoJogo('brasil', selectedDivision, selectedTeamObj.nome);
                     window.location.href = 'dashboard.html';
                 } catch (e) {
                     console.error(e);
-                    alert("Erro ao iniciar jogo: " + e.message);
+                    alert("Erro ao iniciar jogo: " + e.message + ". Veja o console (F12) para detalhes.");
                     btn.innerText = "ERRO (Tente Novamente)";
                     btn.disabled = false;
                 }
             }, 800);
         }
 
-        window.onload = checkStep1;
+        window.onload = function() {
+            checkStep1();
+            // Log para debug
+            console.log("Database carregado:", typeof database !== 'undefined' ? "OK" : "FALHA");
+        };
     </script>
 </body>
 </html>
