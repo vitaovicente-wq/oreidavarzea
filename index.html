@@ -33,7 +33,6 @@
 
         .main-container { width: 100%; max-width: 1000px; display: flex; flex-direction: column; gap: 30px; }
 
-        /* INPUTS */
         .input-section {
             background: var(--card); padding: 20px; border-radius: 12px;
             border: 1px solid #333; display: flex; gap: 20px; flex-wrap: wrap;
@@ -47,7 +46,6 @@
         }
         input:focus, select:focus { border-color: var(--green); outline: none; }
 
-        /* DIVISÕES */
         .division-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px; opacity: 0.5; pointer-events: none; transition: 0.3s;
@@ -64,10 +62,8 @@
         .div-title { font-size: 1.5rem; font-weight: 900; }
         .div-desc { font-size: 0.8rem; opacity: 0.7; }
 
-        /* TIMES */
         .teams-area { display: none; flex-direction: column; gap: 15px; animation: slideUp 0.5s ease; }
         .teams-area.visible { display: flex; }
-
         .teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
         
         .team-card {
@@ -82,7 +78,6 @@
         .team-name { font-weight: bold; text-align: center; font-size: 0.9rem; }
         .team-ovr { font-size: 0.75rem; background: #000; padding: 2px 6px; border-radius: 4px; color: #aaa; margin-top: 5px; }
 
-        /* PAINEL SCOUT */
         .scout-report {
             position: fixed; bottom: 0; left: 0; width: 100%;
             background: rgba(15, 20, 25, 0.98); border-top: 3px solid var(--green);
@@ -91,20 +86,10 @@
             z-index: 100; box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
         }
         .scout-report.visible { transform: translateY(0); }
-
-        .report-grid {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
-            width: 100%; max-width: 1000px; margin-bottom: 20px;
-        }
-        
+        .report-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; width: 100%; max-width: 1000px; margin-bottom: 20px; }
         .report-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #333; }
         .rp-label { font-size: 0.75rem; text-transform: uppercase; color: #888; margin-bottom: 5px; letter-spacing: 1px; }
         .rp-value { font-size: 1.1rem; font-weight: 800; color: #fff; }
-        
-        .rp-obj-title { color: var(--gold); }
-        .rp-obj-sub { color: var(--blue); }
-        .rp-obj-mid { color: #fff; }
-        .rp-obj-low { color: var(--red); }
 
         .btn-start {
             background: linear-gradient(90deg, var(--green), #27ae60);
@@ -115,11 +100,8 @@
         }
         .btn-start:hover { transform: scale(1.05); box-shadow: 0 0 35px rgba(46, 204, 113, 0.5); }
 
-        @media (max-width: 700px) {
-            .report-grid { grid-template-columns: 1fr 1fr; }
-        }
-
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 700px) { .report-grid { grid-template-columns: 1fr 1fr; } }
     </style>
 </head>
 <body>
@@ -127,7 +109,6 @@
     <h1>BR<span>Futebol</span> 26</h1>
 
     <div class="main-container">
-        
         <div class="input-section">
             <div class="form-group">
                 <label>Nome do Treinador</label>
@@ -138,8 +119,6 @@
                 <select id="country-select" onchange="checkStep1()">
                     <option value="">-- Selecione --</option>
                     <option value="brasil">BRASIL</option>
-                    <option value="espanha" disabled style="color:#555">ESPANHA (Em breve)</option>
-                    <option value="inglaterra" disabled style="color:#555">INGLATERRA (Em breve)</option>
                 </select>
             </div>
         </div>
@@ -155,43 +134,42 @@
             <h3 style="border-bottom: 1px solid #333; padding-bottom: 10px; color: var(--gold);">Selecione o Clube</h3>
             <div id="teams-grid" class="teams-grid"></div>
         </div>
-        
     </div>
 
     <div id="scout-panel" class="scout-report">
         <div class="report-grid">
-            <div class="report-item">
-                <div class="rp-label">Objetivo da Diretoria</div>
-                <div class="rp-value" id="info-obj">---</div>
-            </div>
-            <div class="report-item">
-                <div class="rp-label">Orçamento Inicial</div>
-                <div class="rp-value" style="color:var(--green)" id="info-orcamento">---</div>
-            </div>
-            <div class="report-item">
-                <div class="rp-label">Estádio</div>
-                <div class="rp-value" style="color:#aaa" id="info-estadio">---</div>
-            </div>
-            <div class="report-item">
-                <div class="rp-label">Craque do Time</div>
-                <div class="rp-value" style="color:var(--gold)" id="info-craque">---</div>
-            </div>
+            <div class="report-item"><div class="rp-label">Objetivo da Diretoria</div><div class="rp-value" id="info-obj">---</div></div>
+            <div class="report-item"><div class="rp-label">Orçamento Inicial</div><div class="rp-value" style="color:var(--green)" id="info-orcamento">---</div></div>
+            <div class="report-item"><div class="rp-label">Estádio</div><div class="rp-value" style="color:#aaa" id="info-estadio">---</div></div>
+            <div class="report-item"><div class="rp-label">Craque do Time</div><div class="rp-value" style="color:var(--gold)" id="info-craque">---</div></div>
         </div>
         <button class="btn-start" onclick="iniciarJogo()">ASSUMIR COMANDO</button>
     </div>
 
     <script>
-        // --- PATCH DE CORREÇÃO (CRUCIAL PARA FUNCIONAR) ---
-        // Se a engine procurar 'Database' (maiúsculo) mas só tiver 'database' (minúsculo),
-        // essa linha faz a conexão entre os dois.
+        // --- 1. CONSERTO DE NOMES (Database vs database) ---
         if (typeof database !== 'undefined') {
             window.Database = database;
         } else if (typeof Database !== 'undefined') {
             window.database = Database;
-        } else {
-            console.error("ERRO CRÍTICO: Nenhum banco de dados foi carregado. Verifique o arquivo database_jogadores.js");
         }
-        // -------------------------------------------------
+
+        // --- 2. ADAPTADOR DE ESTRUTURA (CORREÇÃO DO ERRO forEach) ---
+        window.onload = function() {
+            if (window.Database && window.Database.brasil) {
+                if (Array.isArray(window.Database.brasil)) {
+                    console.log("⚠️ Adaptando banco de dados: Lista única detectada.");
+                    const listaTimes = window.Database.brasil;
+                    window.Database.brasil = {
+                        'serieA': listaTimes,
+                        'serieB': [],
+                        'serieC': [],
+                        'serieD': []
+                    };
+                }
+            }
+            checkStep1();
+        };
 
         let selectedDivision = null;
         let selectedTeamObj = null;
@@ -233,22 +211,19 @@
             section.classList.add('visible');
             document.getElementById('scout-panel').classList.remove('visible');
 
-            // Usa 'database' minúsculo que agora é seguro
-            if (typeof database === 'undefined' || !database.brasil) {
-                console.error("Database não carregado corretamente.");
+            if (typeof window.Database === 'undefined' || !window.Database.brasil) {
                 grid.innerHTML = '<p style="color:red">Erro: Database não carregada.</p>';
                 return;
             }
 
             let listaTimes = [];
-            const dbBR = database.brasil;
-
-            if (Array.isArray(dbBR)) {
-                if (divisao === 'serieA') listaTimes = dbBR;
-                else listaTimes = gerarTimesGenericos(divisao);
+            
+            if (window.Database.brasil[divisao] && window.Database.brasil[divisao].length > 0) {
+                listaTimes = window.Database.brasil[divisao];
+            } else if (divisao === 'serieA' && window.Database.brasil.serieA) {
+                listaTimes = window.Database.brasil.serieA;
             } else {
-                // Se for objeto {serieA: [...], serieB: [...]}
-                listaTimes = dbBR[divisao] || gerarTimesGenericos(divisao);
+                listaTimes = gerarTimesGenericos(divisao);
             }
 
             listaTimes.sort((a,b) => a.nome.localeCompare(b.nome));
@@ -259,9 +234,7 @@
                 const card = document.createElement('div');
                 card.className = 'team-card';
                 card.onclick = () => selecionarTime(t, card);
-                
                 const escudo = t.escudo || 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
-                
                 card.innerHTML = `
                     <img src="${escudo}" class="team-logo">
                     <div class="team-name">${t.nome}</div>
@@ -291,7 +264,6 @@
             document.getElementById('info-estadio').innerText = estadiosDB[t.nome] || `Arena ${t.nome}`;
 
             const elCraque = document.getElementById('info-craque');
-            // Verifica PlayersDB (jogadores reais) ou usa destaque genérico
             if (typeof PlayersDB !== 'undefined' && PlayersDB[t.nome]) {
                 const craque = PlayersDB[t.nome].reduce((prev, current) => (prev.forca > current.forca) ? prev : current);
                 elCraque.innerText = craque.nome;
@@ -320,7 +292,6 @@
             btn.innerText = "CONTRATANDO...";
             btn.disabled = true;
 
-            // Limpeza de cache para evitar conflito com jogo anterior
             localStorage.removeItem('brfutebol_formacao'); 
             localStorage.removeItem('brfutebol_esquema');
             localStorage.removeItem('brfutebol_funcoes');
@@ -331,26 +302,17 @@
 
             setTimeout(() => {
                 try {
-                    // Tenta iniciar a Engine
-                    // IMPORTANTE: Verifica se selectedDivision não é nulo
-                    if(!selectedDivision) selectedDivision = 'serieA';
-
-                    Engine.novoJogo('brasil', selectedDivision, selectedTeamObj.nome);
+                    const divisaoReal = 'serieA'; 
+                    Engine.novoJogo('brasil', divisaoReal, selectedTeamObj.nome);
                     window.location.href = 'dashboard.html';
                 } catch (e) {
                     console.error(e);
-                    alert("Erro ao iniciar jogo: " + e.message + ". Veja o console (F12) para detalhes.");
-                    btn.innerText = "ERRO (Tente Novamente)";
+                    alert("Erro ao iniciar jogo: " + e.message);
+                    btn.innerText = "TENTAR NOVAMENTE";
                     btn.disabled = false;
                 }
             }, 800);
         }
-
-        window.onload = function() {
-            checkStep1();
-            // Log para debug
-            console.log("Database carregado:", typeof database !== 'undefined' ? "OK" : "FALHA");
-        };
     </script>
 </body>
 </html>
