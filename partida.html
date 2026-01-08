@@ -7,435 +7,502 @@
     
     <script src="database_jogadores.js"></script>
     <script src="engine.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg: #0d1115;
-            --panel: #1e272e;
-            --field-color: #27ae60;
-            --text: #ecf0f1;
-            --green: #2ecc71;
-            --red: #ff4757;
-            --gold: #f1c40f;
+            --bg-dark: #0f1216;
+            --accent: #00ff88;
+            --text-main: #ffffff;
+            --text-dim: #8b9bb4;
+            --card-bg: rgba(30, 35, 45, 0.6);
+            --border: 1px solid rgba(255,255,255,0.1);
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0; padding: 0;
-            display: grid; 
-            grid-template-rows: 30px 90px 1fr 70px; 
-            height: 100vh; 
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 50% 0%, #1a2530 0%, #0f1216 80%);
+            color: var(--text-main);
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
-            user-select: none;
         }
 
-        /* --- 0. TICKER (GC) --- */
-        .ticker-wrap { background: #000; border-bottom: 1px solid #333; overflow: hidden; white-space: nowrap; display: flex; align-items: center; z-index: 20; }
-        .ticker-label { background: var(--red); color: white; font-weight: bold; font-size: 0.7rem; padding: 0 15px; height: 100%; display: flex; align-items: center; z-index: 21; }
-        .ticker-content { display: inline-block; padding-left: 100%; animation: ticker 40s linear infinite; font-family: monospace; font-size: 0.85rem; color: #ccc; }
-        .ticker-item { margin-right: 40px; display: inline-block; }
-        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
-
-        /* --- 1. PLACAR --- */
-        header { background: linear-gradient(180deg, #151a1d 0%, #0d1115 100%); border-bottom: 2px solid #333; display: flex; align-items: center; justify-content: center; z-index: 10; }
-        .scoreboard { display: flex; align-items: center; gap: 30px; width: 100%; max-width: 800px; justify-content: center; }
-        .team-display { display: flex; align-items: center; gap: 15px; width: 250px; }
-        .team-display.away { justify-content: flex-end; flex-direction: row-reverse; }
-        .team-logo { width: 55px; height: 55px; object-fit: contain; }
-        .team-name { font-weight: 800; font-size: 1.1rem; text-transform: uppercase; }
-        .score-box { background: #000; padding: 5px 25px; border-radius: 8px; border: 1px solid #333; text-align: center; min-width: 120px; }
-        .score-val { font-size: 2.2rem; font-weight: 800; line-height: 1; color: #fff; }
-        .timer { color: var(--green); font-weight: bold; font-size: 1rem; font-family: monospace; }
-        .goal-pulse { animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); filter: brightness(1.5); } 100% { transform: scale(1); } }
-
-        /* --- 2. MAIN --- */
-        main { display: grid; grid-template-columns: 220px 1fr 280px; gap: 15px; padding: 15px; overflow: hidden; }
-        .panel { background: var(--panel); border: 1px solid #333; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
-        .panel-header { background: rgba(0,0,0,0.3); padding: 10px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; color: #aaa; border-bottom: 1px solid #333; text-align: center; }
-        .panel-content { flex-grow: 1; overflow-y: auto; padding: 10px; }
-
-        /* Escalações Texto */
-        .lineup-item { padding: 4px 0; border-bottom: 1px solid #2a2a2a; display: flex; gap: 5px; font-size: 0.8rem; }
-        .pos { color: #888; font-weight: bold; width: 25px; }
-
-        /* Feed */
-        .center-col { display: flex; flex-direction: column; gap: 15px; overflow: hidden; }
-        .feed-box { flex-grow: 1; background: rgba(255,255,255,0.02); border: 1px solid #333; border-radius: 8px; overflow-y: auto; padding: 10px; display: flex; flex-direction: column-reverse; }
-        .feed-msg { padding: 8px; margin-bottom: 8px; border-radius: 4px; font-size: 0.9rem; border-left: 3px solid #444; background: rgba(0,0,0,0.2); animation: fadeIn 0.3s; }
-        .feed-msg.goal { border-color: var(--green); background: rgba(46, 204, 113, 0.1); font-weight: bold; }
-        .feed-msg.card { border-color: var(--gold); }
-        .feed-time { color: var(--green); font-weight: bold; margin-right: 5px; font-family: monospace; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- 3. FOOTER --- */
-        footer { background: #151a1d; border-top: 1px solid #333; display: flex; align-items: center; justify-content: center; gap: 20px; z-index: 10; }
-        .btn { padding: 10px 25px; border-radius: 6px; border: none; font-weight: bold; text-transform: uppercase; cursor: pointer; transition: 0.2s; color: white; }
-        .btn:hover { transform: scale(1.05); }
-        .btn-play { background: var(--green); color: #1e272e; }
-        .btn-sub { background: var(--gold); color: #1e272e; }
-        .btn-speed { background: #444; }
-        .btn-exit { background: var(--red); display: none; }
-
-        /* --- MODAL TÁTICO VISUAL (CAMPO) --- */
-        #tactical-modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 200; align-items: center; justify-content: center;
+        /* PLACAR (HEADER) */
+        .scoreboard-container {
+            height: 140px;
+            background: rgba(0,0,0,0.3);
+            border-bottom: var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            backdrop-filter: blur(10px);
         }
-        .tac-container {
-            width: 90%; height: 90%; max-width: 1000px;
-            display: grid; grid-template-columns: 1fr 280px; gap: 20px;
+
+        .team-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 150px;
+        }
+        .team-logo { width: 70px; height: 70px; object-fit: contain; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5)); margin-bottom: 10px; transition: 0.3s; }
+        .team-name { font-family: 'Rajdhani'; font-weight: 700; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        .score-box {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin: 0 40px;
+        }
+        .score {
+            font-family: 'Rajdhani';
+            font-size: 4rem;
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(255,255,255,0.2);
+        }
+        .vs { color: var(--text-dim); font-weight: 600; font-size: 1rem; margin-top: 10px; }
+        
+        .match-info {
+            position: absolute;
+            top: 15px;
+            font-size: 0.8rem;
+            color: var(--accent);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: rgba(0, 255, 136, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .timer-box {
+            position: absolute;
+            bottom: -15px;
+            background: #000;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 5px 15px;
+            border-radius: 4px;
+            font-family: 'Rajdhani';
+            font-weight: 700;
+            font-size: 1.1rem;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+        }
+
+        /* ÁREA DE NARRAÇÃO */
+        .match-feed {
+            flex: 1;
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            scroll-behavior: smooth;
         }
         
-        /* Campo do Modal */
-        .tac-field {
-            background: var(--field-color); border: 5px solid #1a5c36; border-radius: 8px;
-            position: relative; box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+        /* Custom Scrollbar */
+        .match-feed::-webkit-scrollbar { width: 6px; }
+        .match-feed::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+        .event-row {
+            display: flex;
+            gap: 15px;
+            animation: slideIn 0.4s ease-out;
+            opacity: 0.8;
         }
-        .field-line { position: absolute; background: rgba(255,255,255,0.4); }
-        .player-token {
-            position: absolute; width: 80px; height: 80px; transform: translate(-50%, -50%);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: grab; transition: 0.2s; z-index: 10;
-        }
-        .player-token:active { cursor: grabbing; }
-        .player-token.drag-over { transform: translate(-50%, -50%) scale(1.2); filter: drop-shadow(0 0 10px white); }
+        .event-row.important { opacity: 1; transform: scale(1.02); }
         
-        .token-shirt {
-            width: 35px; height: 35px; background: #fff; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: bold; font-size: 0.8rem; color: #333; border: 3px solid #333;
-        }
-        .token-info { background: rgba(0,0,0,0.8); color: #fff; padding: 2px 5px; border-radius: 4px; font-size: 0.7rem; margin-top: 3px; }
+        @keyframes slideIn { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:translateY(0);} }
 
-        /* Banco do Modal */
-        .tac-sidebar { background: var(--panel); border-radius: 8px; display: flex; flex-direction: column; padding: 15px; }
-        .tac-title { color: #aaa; text-transform: uppercase; font-weight: bold; margin-bottom: 10px; border-bottom: 1px solid #444; padding-bottom: 5px; }
-        .bench-list { overflow-y: auto; flex-grow: 1; }
-        .bench-item {
-            background: rgba(255,255,255,0.05); padding: 10px; margin-bottom: 5px; border-radius: 5px;
-            display: flex; justify-content: space-between; align-items: center; cursor: grab;
+        .event-time {
+            color: var(--text-dim);
+            font-family: 'Rajdhani';
+            font-weight: 700;
+            min-width: 40px;
+            text-align: right;
+            padding-top: 2px;
         }
-        .bench-item:hover { background: rgba(255,255,255,0.1); }
-        .bench-item.dragging { opacity: 0.5; }
+        
+        .event-card {
+            background: var(--card-bg);
+            border: var(--border);
+            padding: 12px 18px;
+            border-radius: 0 12px 12px 12px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            flex: 1;
+            border-left: 3px solid transparent;
+        }
 
-        .btn-close-sub { background: #444; color: white; border: none; padding: 10px; width: 100%; margin-top: 10px; cursor: pointer; border-radius: 5px; font-weight: bold; }
-        .btn-close-sub:hover { background: #666; }
+        /* Tipos de Eventos */
+        .evt-normal { border-left-color: #555; }
+        .evt-perigo { border-left-color: #f1c40f; background: rgba(241, 196, 15, 0.05); }
+        .evt-gol { border-left-color: var(--accent); background: rgba(0, 255, 136, 0.1); border: 1px solid var(--accent); }
+        .evt-gol h3 { margin: 0 0 5px 0; color: var(--accent); text-transform: uppercase; font-family: 'Rajdhani'; }
+        .evt-cartao { border-left-color: #e74c3c; }
+
+        /* RODAPÉ E CONTROLES */
+        footer {
+            height: 80px;
+            background: rgba(15, 18, 22, 0.95);
+            border-top: var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 20px;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 40px;
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-right: auto;
+        }
+        .stat-item span { display: block; color: #fff; font-size: 1.1rem; font-weight: 800; font-family: 'Rajdhani'; }
+
+        .action-btn {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-family: 'Rajdhani';
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            transition: 0.3s;
+            display: none; /* Escondido até o fim do jogo */
+        }
+        .action-btn:hover { transform: scale(1.05); background: #fff; }
+
+        .tactics-display {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.75rem;
+            color: #aaa;
+            text-align: right;
+        }
+        .tactics-display strong { color: var(--accent); display: block; margin-bottom: 2px; }
 
     </style>
 </head>
 <body>
 
-    <div class="ticker-wrap"><div class="ticker-label">MUNDO</div><div class="ticker-content" id="ticker-feed">...</div></div>
-
-    <header>
-        <div class="scoreboard">
-            <div class="team-display"><img id="logo-h" class="team-logo"><span id="name-h" class="team-name">CASA</span></div>
-            <div class="score-box"><div class="score-val"><span id="gols-h">0</span> - <span id="gols-a">0</span></div><div class="timer" id="timer">00:00</div></div>
-            <div class="team-display away"><img id="logo-a" class="team-logo"><span id="name-a" class="team-name">FORA</span></div>
-        </div>
-    </header>
-
-    <main>
-        <div class="panel">
-            <div class="panel-header">Em Campo</div>
-            <div class="panel-content">
-                <div style="color:var(--green); font-size:0.7rem; font-weight:bold;">MANDANTE</div><div id="list-home"></div>
-                <div style="color:var(--gold); font-size:0.7rem; font-weight:bold; margin-top:15px;">VISITANTE</div><div id="list-away"></div>
-            </div>
+    <div class="scoreboard-container">
+        <div class="match-info" id="match-competition">CAMPEONATO BRASILEIRO</div>
+        
+        <div class="team-box">
+            <img id="home-logo" class="team-logo" src="">
+            <div class="team-name" id="home-name">CASA</div>
         </div>
 
-        <div class="center-col">
-            <div class="panel" style="height: 100px; flex-shrink: 0;">
-                <div class="panel-header">Resumo</div>
-                <div class="panel-content" id="match-events" style="font-size:0.85rem;"></div>
-            </div>
-            <div class="panel feed-box" id="match-feed">
-                <div class="feed-msg"><span class="feed-time">00'</span> Bola rolando!</div>
-            </div>
+        <div class="score-box">
+            <div class="score" id="score-home">0</div>
+            <div class="vs">X</div>
+            <div class="score" id="score-away">0</div>
         </div>
 
-        <div class="panel">
-            <div class="panel-header">Estatísticas</div>
-            <div class="panel-content">
-                <div style="display:flex; justify-content:space-between; font-size:0.85rem; margin-bottom:5px;"><span>Posse</span> <span id="posse-txt">50% | 50%</span></div>
-                <div style="height:6px; background:#333; display:flex; border-radius:3px; overflow:hidden; margin-bottom:15px;"><div id="bar-h" style="width:50%; background:#fff;"></div><div id="bar-a" style="width:50%; background:#555;"></div></div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>Chutes</span> <b id="stats-chutes">0 - 0</b></div>
-                <div style="display:flex; justify-content:space-between;"><span>Cartões</span> <b id="stats-cartoes" style="color:var(--gold)">0 - 0</b></div>
-            </div>
+        <div class="team-box">
+            <img id="away-logo" class="team-logo" src="">
+            <div class="team-name" id="away-name">FORA</div>
         </div>
-    </main>
 
-    <footer>
-        <button class="btn btn-sub" id="btn-sub" onclick="abrirPainelTatico()">🔄 Substituir</button>
-        <button class="btn btn-speed" onclick="mudarVelocidade()">⏩ <span id="lbl-speed">1x</span></button>
-        <button class="btn btn-play" id="btn-pause" onclick="pausarJogo()">⏸️ Pausar</button>
-        <button class="btn btn-exit" id="btn-exit" onclick="sairDoJogo()">💾 Sair</button>
-    </footer>
+        <div class="timer-box" id="match-timer">00'</div>
+        
+        <div class="tactics-display" id="tactics-hud">
+            </div>
+    </div>
 
-    <div id="tactical-modal">
-        <div class="tac-container">
-            <div class="tac-field" id="tac-field">
-                <div class="field-line" style="top:50%; width:100%; height:2px;"></div>
-                <div class="field-line" style="top:50%; left:50%; width:100px; height:100px; border:2px solid rgba(255,255,255,0.4); border-radius:50%; transform:translate(-50%,-50%); background:transparent;"></div>
-                
-                </div>
-
-            <div class="tac-sidebar">
-                <div class="tac-title">Banco de Reservas</div>
-                <div style="font-size:0.75rem; color:#888; margin-bottom:10px;">Arraste o reserva para o campo</div>
-                <div class="bench-list" id="tac-bench"></div>
-                <button class="btn-close-sub" onclick="fecharPainelTatico()">Voltar ao Jogo</button>
+    <div class="match-feed" id="feed">
+        <div class="event-row">
+            <div class="event-time"></div>
+            <div class="event-card evt-normal" style="text-align:center; color:#888;">
+                A partida vai começar! Bola no centro do gramado.
             </div>
         </div>
     </div>
 
+    <footer>
+        <div class="stats-bar">
+            <div class="stat-item">Chutes <span id="stat-shots">0 - 0</span></div>
+            <div class="stat-item">Posse <span id="stat-possession">50% - 50%</span></div>
+            <div class="stat-item">Mentalidade <span id="stat-mentality" style="color:var(--accent)">-</span></div>
+        </div>
+        <button class="action-btn" id="btn-finish" onclick="finalizarPartida()">CONTINUAR ➔</button>
+    </footer>
+
     <script>
-        let gameState, homeTeam, awayTeam, isHome, matchObj;
-        let timer = null;
-        let match = { min: 0, score: [0, 0], stats: { shots: [0,0], cards: [0,0] }, speed: 1000, paused: false, finished: false };
-        let draggedIndex = null; // Para Drag & Drop
+        let gameState, meuTime, adversario;
+        let jogoAtual;
+        let taticas = { mentalidade: 3, intensidade: 2 }; // Padrão
+        let tempo = 0;
+        let placar = { casa: 0, fora: 0 };
+        let intervaloSimulacao;
+        let souCasa = true;
 
-        // Coordenadas Padrão (4-4-2) caso não tenha salvo
-        const defaultCoords = [
-            {t:90,l:50},{t:75,l:20},{t:75,l:40},{t:75,l:60},{t:75,l:80},{t:50,l:20},{t:50,l:40},{t:50,l:60},{t:50,l:80},{t:20,l:35},{t:20,l:65}
-        ];
-
-        window.onload = function() {
-            if (typeof Engine === 'undefined') { alert("Engine Off"); return; }
-            gameState = Engine.carregarJogo();
-            if (!gameState) { window.location.href = 'index.html'; return; }
-            setupMatch();
-            iniciarJogo();
+        // Frases para o narrador
+        const frases = {
+            inicio: ["Apita o árbitro! Começa a emoção.", "Bola rolando! Vamos para 90 minutos de futebol.", "Autoriza o juiz!"],
+            ataque_leve: ["O time troca passes no meio campo.", "Tentativa de lançamento, cortada pela zaga.", "Gira a bola em busca de espaço.", "Marcação forte no meio de campo."],
+            perigo_meu: ["Lá vem o time da casa! Chutouuu...", "Grande jogada individual, invadiu a área!", "Cruzamento perigoso..."],
+            perigo_adv: ["Contra-ataque perigoso do adversário!", "O goleiro precisa trabalhar!", "Bola rondando a área com perigo..."],
+            gol: ["GOOOOOOOOOOOL!", "É CAIXA!", "ESTUFA A REDE!", "GOLAÇO!"]
         };
 
-        function setupMatch() {
-            const semIdx = gameState.semanaAtual - 1;
-            const evento = gameState.calendarioUsuario[semIdx];
-            matchObj = evento.jogos.find(j => j.casa === gameState.meuTime || j.fora === gameState.meuTime);
+        window.onload = function() {
+            gameState = Engine.carregarJogo();
+            if (!gameState) return window.location.href = 'index.html';
+
+            carregarDadosDaPartida();
+            iniciarSimulacaoVisual();
+        };
+
+        function carregarDadosDaPartida() {
+            // 1. Identificar o jogo
+            const semana = gameState.semanaAtual - 1;
+            const rodada = gameState.calendarioUsuario[semana];
             
-            homeTeam = Engine.encontrarTime(gameState, matchObj.casa);
-            awayTeam = Engine.encontrarTime(gameState, matchObj.fora);
-            isHome = (matchObj.casa === gameState.meuTime);
+            if(!rodada) {
+                alert("Temporada finalizada! Voltando ao menu.");
+                return window.location.href = 'dashboard.html';
+            }
 
-            // UI Header
-            document.getElementById('name-h').innerText = homeTeam.nome.substring(0,3);
-            document.getElementById('logo-h').src = homeTeam.escudo;
-            document.getElementById('name-a').innerText = awayTeam.nome.substring(0,3);
-            document.getElementById('logo-a').src = awayTeam.escudo;
+            document.getElementById('match-competition').innerText = rodada.nome;
 
-            atualizarListasTexto();
-        }
+            // Acha o jogo do usuário na rodada
+            meuTime = Engine.encontrarTime(gameState, gameState.meuTime);
+            jogoAtual = rodada.jogos.find(j => j.casa === meuTime.nome || j.fora === meuTime.nome);
 
-        function atualizarListasTexto() {
-            renderList('list-home', homeTeam);
-            renderList('list-away', awayTeam);
-        }
+            if (!jogoAtual) {
+                // Usuário de folga?
+                alert("Seu time está de folga nesta rodada.");
+                Engine.processarSemana(gameState); // Simula o resto
+                return window.location.href = 'dashboard.html';
+            }
 
-        function renderList(id, t) {
-            const el = document.getElementById(id); el.innerHTML = '';
-            t.elenco.slice(0,11).forEach(p => {
-                el.innerHTML += `<div class="lineup-item"><span class="pos">${p.pos}</span> <span>${p.nome.split(' ')[0]}</span></div>`;
-            });
-        }
+            souCasa = (jogoAtual.casa === meuTime.nome);
+            const nomeAdv = souCasa ? jogoAtual.fora : jogoAtual.casa;
+            adversario = Engine.encontrarTime(gameState, nomeAdv);
 
-        // --- SISTEMA DE SUBSTITUIÇÃO VISUAL ---
-
-        function abrirPainelTatico() {
-            match.paused = true; // Pausa
-            document.getElementById('tactical-modal').style.display = 'flex';
-            renderizarCampoTatico();
-            renderizarBancoTatico();
-        }
-
-        function fecharPainelTatico() {
-            document.getElementById('tactical-modal').style.display = 'none';
-            match.paused = false; // Despausa
-        }
-
-        function renderizarCampoTatico() {
-            const field = document.getElementById('tac-field');
-            // Remove players antigos
-            field.querySelectorAll('.player-token').forEach(e => e.remove());
-
-            const meuTime = isHome ? homeTeam : awayTeam;
+            // 2. Renderizar Times
+            document.getElementById('home-name').innerText = jogoAtual.casa.substring(0, 3).toUpperCase();
+            document.getElementById('away-name').innerText = jogoAtual.fora.substring(0, 3).toUpperCase();
             
-            // Renderiza os 11 titulares
-            for(let i=0; i<11; i++) {
-                const jog = meuTime.elenco[i];
-                // Usa coordenadas salvas (x,y) ou padrão
-                const top = jog.y ? jog.y : defaultCoords[i].t;
-                const left = jog.x ? jog.x : defaultCoords[i].l;
+            const escudoCasa = souCasa ? meuTime.escudo : adversario.escudo;
+            const escudoFora = souCasa ? adversario.escudo : meuTime.escudo;
+            
+            document.getElementById('home-logo').src = escudoCasa;
+            document.getElementById('away-logo').src = escudoFora;
 
-                const token = document.createElement('div');
-                token.className = 'player-token';
-                token.style.top = top + '%';
-                token.style.left = left + '%';
+            // 3. Carregar Táticas
+            const taticasSalvas = localStorage.getItem('brfutebol_taticas');
+            if (taticasSalvas) taticas = JSON.parse(taticasSalvas);
+
+            // Atualiza HUD tático
+            const labelsMent = ["Retranca", "Defensivo", "Equilibrado", "Ofensivo", "Tudo ou Nada"];
+            const labelsInt = ["Baixa (Poupa)", "Normal", "Alta (Cansaço)"];
+            
+            document.getElementById('stat-mentality').innerText = labelsMent[taticas.mentalidade - 1];
+            
+            document.getElementById('tactics-hud').innerHTML = `
+                <strong>ESTRATÉGIA</strong>
+                Ment: ${labelsMent[taticas.mentalidade - 1]}<br>
+                Intens: ${labelsInt[taticas.intensidade - 1]}
+            `;
+        }
+
+        function iniciarSimulacaoVisual() {
+            // Define o resultado "real" antes da narração começar (para garantir consistência)
+            // A Engine já tem uma função simularPlacarRapido, vamos usá-la como base de probabilidade
+            // mas vamos "viciar" um pouco com base na tática escolhida.
+            
+            // Fator Tático:
+            // Mentalidade 5 (Ataque total) = +Força, -Defesa
+            // Intensidade 3 (Pressão) = +Chance Gol, +Cansaço (Aplicado depois)
+            
+            let bonusMeu = (taticas.mentalidade - 3) * 2; // -4 a +4
+            if (taticas.intensidade === 3) bonusMeu += 3;
+
+            // Ajusta força temporária para simulação
+            const forcaOriginal = meuTime.forca;
+            meuTime.forca += bonusMeu;
+            
+            const resultado = Engine.simularPlacarRapido(
+                souCasa ? meuTime : adversario, 
+                souCasa ? adversario : meuTime
+            );
+            
+            meuTime.forca = forcaOriginal; // Restaura
+
+            // Armazena o placar final que a narração deve atingir
+            const placarFinal = {
+                casa: resultado.gc,
+                fora: resultado.gf
+            };
+
+            // Inicia o loop de narração
+            intervaloSimulacao = setInterval(() => {
+                tempo += 2; // Avança 2 min por tick
+                document.getElementById('match-timer').innerText = tempo + "'";
+
+                // Lógica de Eventos
+                const chanceEvento = Math.random();
                 
-                // Eventos de Drop (Receber reserva)
-                token.ondragover = (e) => { e.preventDefault(); token.classList.add('drag-over'); };
-                token.ondragleave = (e) => { token.classList.remove('drag-over'); };
-                token.ondrop = (e) => { e.preventDefault(); realizarSubstituicao(i); token.classList.remove('drag-over'); };
+                // 1. É hora de sair gol? (Distribui os gols ao longo do tempo)
+                if (placar.casa < placarFinal.casa && Math.random() < 0.15) {
+                    marcarGol('casa');
+                } else if (placar.fora < placarFinal.fora && Math.random() < 0.15) {
+                    marcarGol('fora');
+                } 
+                // 2. Eventos de perigo (sem gol)
+                else if (chanceEvento < 0.2) {
+                    narrarLance('perigo');
+                } 
+                // 3. Narração normal
+                else if (chanceEvento < 0.4) {
+                    narrarLance('normal');
+                }
 
-                let borderColor = jog.forca >= 80 ? "#f1c40f" : "#333";
+                // Fim de jogo
+                if (tempo >= 90) {
+                    clearInterval(intervaloSimulacao);
+                    
+                    // Garante que o placar final bata (caso o random tenha falhado em algum gol)
+                    if (placar.casa < placarFinal.casa) marcarGol('casa');
+                    if (placar.fora < placarFinal.fora) marcarGol('fora');
+                    
+                    encerrarJogo(placarFinal);
+                }
 
-                token.innerHTML = `
-                    <div class="token-shirt" style="border-color:${borderColor}">${jog.forca}</div>
-                    <div class="token-info">${jog.nome.split(' ')[0]}</div>
-                `;
-                field.appendChild(token);
-            }
+                // Auto-scroll
+                const feed = document.getElementById('feed');
+                feed.scrollTop = feed.scrollHeight;
+
+            }, 150); // Velocidade da simulação (quanto menor, mais rápido)
         }
 
-        function renderizarBancoTatico() {
-            const bench = document.getElementById('tac-bench');
-            bench.innerHTML = '';
-            const meuTime = isHome ? homeTeam : awayTeam;
+        function marcarGol(lado) {
+            placar[lado]++;
+            document.getElementById(`score-${lado}`).innerText = placar[lado];
+            document.getElementById(`score-${lado}`).style.color = 'var(--accent)';
+            setTimeout(() => document.getElementById(`score-${lado}`).style.color = '#fff', 500);
 
-            // Reservas (Índice 11 em diante)
-            for(let i=11; i<meuTime.elenco.length; i++) {
-                const jog = meuTime.elenco[i];
-                const item = document.createElement('div');
-                item.className = 'bench-item';
-                item.draggable = true;
-                item.innerHTML = `<span>${jog.pos}</span> <span>${jog.nome}</span> <b>${jog.forca}</b>`;
-                
-                // Evento de Drag (Iniciar arrasto)
-                item.ondragstart = (e) => { draggedIndex = i; item.classList.add('dragging'); };
-                item.ondragend = (e) => { item.classList.remove('dragging'); };
-
-                bench.appendChild(item);
-            }
-        }
-
-        function realizarSubstituicao(indexTitular) {
-            if (draggedIndex === null) return;
-
-            const meuTime = isHome ? homeTeam : awayTeam;
-            const indexReserva = draggedIndex; // Índice real no array
-
-            // Troca
-            const saindo = meuTime.elenco[indexTitular];
-            const entrando = meuTime.elenco[indexReserva];
-
-            // Inverte posições no array
-            meuTime.elenco[indexTitular] = entrando;
-            meuTime.elenco[indexReserva] = saindo;
-
-            // Mantém coordenadas visuais do titular para quem entrou
-            if(saindo.x) { entrando.x = saindo.x; entrando.y = saindo.y; }
-
-            // Feedback
-            narra(`🔄 Substituição no ${meuTime.nome}: Sai ${saindo.nome}, entra ${entrando.nome}.`, '');
+            const timeGol = (lado === 'casa' && souCasa) || (lado === 'fora' && !souCasa) ? meuTime : adversario;
             
-            draggedIndex = null;
-            renderizarCampoTatico(); // Re-renderiza para mostrar o novo jogador em campo
-            renderizarBancoTatico();
-            atualizarListasTexto(); // Atualiza a lista da tela principal
-        }
-
-        // --- GAME LOOP ---
-
-        function iniciarJogo() {
-            match.paused = false;
-            timer = setInterval(loop, match.speed);
-        }
-
-        function loop() {
-            if(match.paused || match.finished) return;
-            match.min++;
-            document.getElementById('timer').innerText = (match.min<10?'0':'')+match.min + ":00";
-
-            simularMinuto();
-
-            if(match.min >= 94) {
-                match.finished = true; clearInterval(timer);
-                narra("Fim de jogo!", 'goal');
-                document.getElementById('btn-exit').style.display='inline-block';
-                document.getElementById('btn-pause').style.display='none';
-                document.getElementById('btn-sub').style.display='none';
-            }
-        }
-
-        function simularMinuto() {
-            // Força + Fator Casa
-            const fH = Engine.calcularForcaElenco(homeTeam.elenco) + (isHome?5:0);
-            const fA = Engine.calcularForcaElenco(awayTeam.elenco);
-            const diff = fH - fA;
+            // Escolhe quem fez o gol (aleatório ponderado por posição seria ideal, mas vai random do elenco por enquanto)
+            const autor = timeGol.elenco[Math.floor(Math.random() * 11)]; // Pega um dos 11 primeiros
             
-            // Probabilidade dinâmica
-            const pG_H = 0.02 + (diff * 0.0005);
-            const pG_A = 0.02 - (diff * 0.0005);
-
-            if(Math.random() < pG_H) gol(0);
-            else if(Math.random() < pG_A) gol(1);
-            else if(Math.random() < 0.1) eventoGeral(fH>fA ? 0 : 1);
+            narrarLance('gol', timeGol.nome, autor ? autor.nome : "Atacante");
         }
 
-        function gol(side) {
-            match.score[side]++; match.stats.shots[side]++;
-            const t = side===0?homeTeam:awayTeam;
-            const p = t.elenco[Math.floor(Math.random()*11)]; // Autor (titular)
-            document.getElementById(side===0?'gols-h':'gols-a').innerText = match.score[side];
-            narra(`⚽ GOOOL! ${p.nome} marca para o ${t.nome}!`, 'goal');
-            addEvent('⚽', `${match.min}' ${p.nome}`);
-            updateStatsUI();
-        }
-
-        function eventoGeral(side) {
-            const t = side===0?homeTeam:awayTeam;
-            const evs = [
-                {t:"Chute pra fora!", s:'shots'}, 
-                {t:"Defesaça!", s:'shots'}, 
-                {t:"Falta dura.", s:'cards', prob:0.2}
-            ];
-            const e = evs[Math.floor(Math.random()*evs.length)];
+        function narrarLance(tipo, timeNome, jogadorNome) {
+            const feed = document.getElementById('feed');
+            const div = document.createElement('div');
+            div.className = 'event-row';
             
-            if(e.s==='shots') match.stats.shots[side]++;
-            if(e.s==='cards' && Math.random()<e.prob) {
-                match.stats.cards[side]++;
-                const p = t.elenco[Math.floor(Math.random()*11)];
-                narra(`🟨 Amarelo para ${p.nome}.`, 'card');
-                addEvent('🟨', `${match.min}' ${p.nome}`);
+            let texto = "";
+            let classeCss = "evt-normal";
+
+            if (tipo === 'gol') {
+                texto = `<h3>GOOOOOOL! É DO ${timeNome}!</h3> ${frases.gol[Math.floor(Math.random()*frases.gol.length)]} <br> ⚽ <b>${jogadorNome}</b> marcou!`;
+                classeCss = "evt-gol important";
+            } else if (tipo === 'perigo') {
+                // Decide quem ataca
+                const euAtaco = Math.random() > 0.5;
+                texto = euAtaco ? frases.perigo_meu[Math.floor(Math.random()*frases.perigo_meu.length)] 
+                                : frases.perigo_adv[Math.floor(Math.random()*frases.perigo_adv.length)];
+                classeCss = "evt-perigo";
             } else {
-                narra(`${t.nome}: ${e.t}`);
+                texto = frases.ataque_leve[Math.floor(Math.random()*frases.ataque_leve.length)];
             }
-            updateStatsUI();
+
+            div.innerHTML = `
+                <div class="event-time">${tempo}'</div>
+                <div class="event-card ${classeCss}">${texto}</div>
+            `;
+            feed.appendChild(div);
         }
 
-        function updateStatsUI() {
-            document.getElementById('stats-chutes').innerText = `${match.stats.shots[0]} - ${match.stats.shots[1]}`;
-            document.getElementById('stats-cartoes').innerText = `${match.stats.cards[0]} - ${match.stats.cards[1]}`;
-            // Fake Posse
-            const tot = match.stats.shots[0] + match.stats.shots[1] + 10;
-            const ph = Math.floor(((match.stats.shots[0]+5)/tot)*100);
-            document.getElementById('posse-txt').innerText = `${ph}% | ${100-ph}%`;
-            document.getElementById('bar-h').style.width = ph+'%';
-            document.getElementById('bar-a').style.width = (100-ph)+'%';
+        function encerrarJogo(placarFinal) {
+            const feed = document.getElementById('feed');
+            feed.innerHTML += `
+                <div class="event-row important">
+                    <div class="event-time">90'</div>
+                    <div class="event-card evt-normal" style="border-left-color:#fff; text-align:center;">
+                        <h3>FIM DE JOGO!</h3>
+                        O árbitro encerra a partida.
+                    </div>
+                </div>
+            `;
+            
+            // Salva o resultado no objeto do jogo para a Engine processar
+            // Importante: A Engine normalmente calcula sozinha. 
+            // Vamos "forçar" o resultado que simulamos visualmente aqui.
+            jogoAtual.golsCasa = placarFinal.casa;
+            jogoAtual.golsFora = placarFinal.fora;
+            jogoAtual.jogado = true; // Flag para a engine saber que não precisa simular de novo
+
+            // Exibir botão de continuar
+            const btn = document.getElementById('btn-finish');
+            btn.style.display = 'block';
+            
+            // Efeito visual no botão
+            btn.animate([
+                { transform: 'scale(0.8)', opacity: 0 },
+                { transform: 'scale(1)', opacity: 1 }
+            ], { duration: 500 });
         }
 
-        function narra(txt, type='') {
-            const b = document.getElementById('match-feed');
-            b.insertAdjacentHTML('afterbegin', `<div class="feed-msg ${type}"><span class="feed-time">${match.min}'</span> ${txt}</div>`);
-        }
-        function addEvent(i,t) { document.getElementById('match-events').innerHTML+=`<div><span style="width:20px;display:inline-block">${i}</span> ${t}</div>`; }
+        function finalizarPartida() {
+            // APLICA O CANSAÇO EXTRA PELA INTENSIDADE
+            if (taticas.intensidade === 3) {
+                // Pressão alta: tira mais 5 de saúde de todos que jogaram
+                const escalacaoSalva = localStorage.getItem('brfutebol_formacao');
+                if (escalacaoSalva) {
+                    const ids = Object.values(JSON.parse(escalacaoSalva));
+                    meuTime.elenco.forEach(j => {
+                        if (ids.includes(j.id)) j.saude = Math.max(0, j.saude - 5);
+                    });
+                }
+            }
 
-        function sairDoJogo() {
-            matchObj.golsCasa = match.score[0];
-            matchObj.golsFora = match.score[1];
+            // Salva estado modificado (saúde extra gasta)
             Engine.salvarJogo(gameState);
-            // Simula o resto do mundo
-            Engine.processarSemana(gameState);
-            window.location.href = 'dashboard.html';
-        }
 
-        function pausarJogo() { match.paused = !match.paused; document.getElementById('btn-pause').innerText = match.paused ? "▶️" : "⏸️"; }
-        function mudarVelocidade() { 
-            match.speed = (match.speed===1000) ? 200 : 1000;
-            document.getElementById('lbl-speed').innerText = (match.speed===200) ? "5x" : "1x";
-            clearInterval(timer); if(!match.finished && !match.paused) timer = setInterval(loop, match.speed);
+            // Chama a Engine para processar o resto da rodada e virar a semana
+            // NOTA: Precisamos garantir que a Engine NÃO sobrescreva nosso jogo.
+            // No engine.js, na função processarSemana, adicionei a checagem: if (jogo.golsCasa !== undefined) return;
+            // Como definimos jogoAtual.golsCasa aqui, a Engine vai pular esse jogo e só simular os outros!
+            
+            const btn = document.getElementById('btn-finish');
+            btn.innerText = "PROCESSANDO RODADA...";
+            btn.disabled = true;
+
+            setTimeout(() => {
+                Engine.processarSemana(gameState);
+                window.location.href = 'dashboard.html';
+            }, 1000);
         }
 
     </script>
