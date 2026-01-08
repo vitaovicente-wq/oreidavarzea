@@ -28,7 +28,7 @@
             color: var(--text-main);
             margin: 0;
             display: grid;
-            grid-template-columns: 250px 1fr; /* Menu Lateral | Conteúdo */
+            grid-template-columns: 250px 1fr;
             min-height: 100vh;
         }
 
@@ -71,13 +71,9 @@
             color: var(--accent);
         }
 
-        /* CONTEÚDO PRINCIPAL */
-        .main-content {
-            padding: 30px;
-            overflow-y: auto;
-        }
+        /* MAIN */
+        .main-content { padding: 30px; overflow-y: auto; }
 
-        /* HEADER DO DASHBOARD */
         .dash-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 30px;
@@ -97,18 +93,12 @@
         }
         .stat-item span { color: var(--accent); }
 
-        /* GRID DO DASHBOARD */
-        .grid-container {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 20px;
-        }
+        /* GRID */
+        .grid-container { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
 
         .card {
-            background: var(--bg-panel);
-            border: var(--border);
-            border-radius: 12px;
-            padding: 20px;
+            background: var(--bg-panel); border: var(--border);
+            border-radius: 12px; padding: 20px;
         }
         .card-title {
             font-family: 'Rajdhani'; font-weight: 700; text-transform: uppercase;
@@ -116,7 +106,7 @@
             display: flex; justify-content: space-between;
         }
 
-        /* PRÓXIMO JOGO */
+        /* NEXT MATCH */
         .next-match {
             display: flex; align-items: center; justify-content: space-between;
             background: linear-gradient(90deg, #1e2329 0%, #161b22 100%);
@@ -143,7 +133,7 @@
         }
         .play-btn:hover { transform: scale(1.02); background: #fff; }
 
-        /* TABELA MINI */
+        /* TABLE */
         .mini-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         .mini-table th { text-align: left; color: #666; padding: 8px; font-size: 0.75rem; }
         .mini-table td { padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
@@ -157,10 +147,9 @@
         }
         .news-date { font-size: 0.75rem; color: #666; margin-bottom: 3px; display: block; }
 
-        /* RESPONSIVO */
         @media (max-width: 800px) {
             body { grid-template-columns: 1fr; }
-            .sidebar { display: none; } /* Simplificado para mobile */
+            .sidebar { display: none; }
             .grid-container { grid-template-columns: 1fr; }
         }
     </style>
@@ -179,7 +168,6 @@
     </div>
 
     <div class="main-content">
-        
         <div class="dash-header">
             <div class="team-profile">
                 <img id="dash-escudo" src="" class="team-shield">
@@ -195,9 +183,7 @@
         </div>
 
         <div class="grid-container">
-            
             <div style="display: flex; flex-direction: column; gap: 20px;">
-                
                 <div class="card">
                     <div class="card-title">PRÓXIMA RODADA (BRASILEIRÃO)</div>
                     <div class="next-match">
@@ -213,26 +199,20 @@
                     </div>
                     <button class="play-btn" onclick="irParaPartida()">JOGAR PARTIDA</button>
                 </div>
-
                 <div class="card">
                     <div class="card-title">NOTÍCIAS DO CLUBE</div>
-                    <div id="news-feed">
-                        </div>
+                    <div id="news-feed"></div>
                 </div>
-
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 20px;">
-                
                 <div class="card">
                     <div class="card-title">CLASSIFICAÇÃO</div>
                     <table class="mini-table">
                         <thead><tr><th>POS</th><th>TIME</th><th>P</th></tr></thead>
-                        <tbody id="table-body">
-                            </tbody>
+                        <tbody id="table-body"></tbody>
                     </table>
                 </div>
-
                 <div class="card">
                     <div class="card-title">RELATÓRIO DO ELENCO</div>
                     <div style="text-align: center; padding: 10px;">
@@ -241,57 +221,83 @@
                     </div>
                     <div style="margin-top: 15px; border-top: 1px solid #333; padding-top: 10px;">
                         <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 5px;">
-                            <span style="color:#aaa">Confiança</span>
-                            <span style="color:#fff">100%</span>
+                            <span style="color:#aaa">Confiança</span><span style="color:#fff">100%</span>
                         </div>
                         <div style="width: 100%; height: 4px; background: #333; border-radius: 2px;">
                             <div style="width: 100%; height: 100%; background: var(--accent); border-radius: 2px;"></div>
                         </div>
                     </div>
                 </div>
-
             </div>
-
         </div>
-
     </div>
 
     <script>
-        // --- 1. FIX DE COMPATIBILIDADE (IGUAL AO INDEX) ---
-        if (typeof database !== 'undefined') {
-            window.Database = database;
-        } else if (typeof Database !== 'undefined') {
-            window.database = Database;
-        }
-        // --------------------------------------------------
+        // --- ADAPTADOR DE CORREÇÃO (O MESMO DO INDEX) ---
+        // Isso garante que o dashboard leia os dados sem erros
+        if (typeof database !== 'undefined') window.Database = database;
+        if (typeof Database !== 'undefined') window.database = Database;
+
+        window.onload = function() {
+            // 1. Organiza Divisões
+            if (window.Database && window.Database.brasil && Array.isArray(window.Database.brasil)) {
+                console.log("⚠️ Adaptando lista para dashboard...");
+                const todos = window.Database.brasil;
+                window.Database.brasil = { 'serieA': todos, 'serieB': [], 'serieC': [], 'serieD': [] };
+            }
+            
+            // 2. Garante Elencos (para não quebrar loops)
+            if(window.Database && window.Database.brasil) {
+                 const divs = ['serieA', 'serieB', 'serieC', 'serieD'];
+                 divs.forEach(div => {
+                    if (window.Database.brasil[div]) {
+                        window.Database.brasil[div].forEach(time => {
+                            if (!time.elenco || !Array.isArray(time.elenco)) {
+                                time.elenco = []; // Cria vazio pra evitar erro de loop
+                            }
+                        });
+                    }
+                 });
+            }
+
+            carregarDados();
+        };
+        // ----------------------------------------------------
 
         let gameState = null;
         let meuTime = null;
 
-        window.onload = function() {
-            carregarDados();
-        };
-
         function carregarDados() {
             try {
-                // 1. Carrega o Save
+                // 1. Save da Engine
                 gameState = Engine.carregarJogo();
                 if (!gameState) {
-                    alert("Nenhum jogo salvo encontrado. Redirecionando...");
+                    alert("Nenhum jogo salvo! Redirecionando...");
                     window.location.href = 'index.html';
                     return;
                 }
 
-                // 2. Encontra o time do jogador
+                // 2. Achar time
                 meuTime = Engine.encontrarTime(gameState, gameState.meuTime);
+                
+                // Fallback se não achou via engine mas temos o ID
+                if (!meuTime && gameState.meuTime) {
+                    const divs = ['serieA', 'serieB', 'serieC', 'serieD'];
+                    for(let d of divs) {
+                        if(window.Database.brasil[d]) {
+                            const t = window.Database.brasil[d].find(x => x.id === gameState.meuTime || x.nome === gameState.meuTime);
+                            if(t) { meuTime = t; break; }
+                        }
+                    }
+                }
 
-                if (!meuTime) throw new Error("Time não encontrado no save.");
+                if (!meuTime) throw new Error("Time não encontrado.");
 
-                // 3. Puxa dados do LocalStorage
+                // 3. Infos do LocalStorage
                 const tecnico = localStorage.getItem('brfutebol_tecnico') || "Treinador";
                 const escudo = localStorage.getItem('brfutebol_escudo') || "https://cdn-icons-png.flaticon.com/512/53/53283.png";
 
-                // --- ATUALIZA A TELA ---
+                // 4. Preencher tela
                 document.getElementById('dash-team-name').innerText = meuTime.nome;
                 document.getElementById('dash-coach').innerText = tecnico;
                 document.getElementById('dash-escudo').src = escudo;
@@ -305,52 +311,44 @@
 
             } catch (e) {
                 console.error(e);
-                alert("Erro ao carregar dashboard: " + e.message);
+                alert("Erro no Dashboard: " + e.message);
+                // Opcional: localStorage.clear(); window.location.href='index.html';
             }
         }
 
         function atualizarTabela() {
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
-
             let timesTabela = [];
-            
-            // Tenta pegar a tabela real da Engine ou uma lista simples
-            // Como usamos o "fix" no index, a divisão deve estar em 'serieA' ou na divisão escolhida
+
+            // Pega os times da mesma divisão que o meu
             if (window.Database && window.Database.brasil) {
-                // Procura em qual divisão o meu time está
                 const divs = ['serieA', 'serieB', 'serieC', 'serieD'];
                 for(let d of divs) {
-                    if(window.Database.brasil[d] && window.Database.brasil[d].find(t => t.id === meuTime.id || t.nome === meuTime.nome)) {
+                    if(window.Database.brasil[d] && window.Database.brasil[d].find(t => t.nome === meuTime.nome)) {
                         timesTabela = window.Database.brasil[d];
                         break;
                     }
                 }
-                // Se não achou (ex: save antigo), pega da serieA padrão
+                // Fallback
                 if(timesTabela.length === 0 && window.Database.brasil.serieA) timesTabela = window.Database.brasil.serieA;
             }
 
-            // Ordena e mostra
+            // Ordena
             timesTabela.sort((a,b) => (b.pontos || 0) - (a.pontos || 0));
 
             timesTabela.slice(0, 5).forEach((t, index) => {
                 const tr = document.createElement('tr');
-                if((t.id && t.id === meuTime.id) || t.nome === meuTime.nome) tr.className = 'my-team-row';
-                tr.innerHTML = `
-                    <td><span class="pos-num">${index + 1}</span></td>
-                    <td>${t.nome}</td>
-                    <td>${t.pontos || 0}</td>
-                `;
+                if(t.nome === meuTime.nome) tr.className = 'my-team-row';
+                tr.innerHTML = `<td><span class="pos-num">${index + 1}</span></td><td>${t.nome}</td><td>${t.pontos || 0}</td>`;
                 tbody.appendChild(tr);
             });
         }
 
         function atualizarProximoJogo() {
-            // Pega oponente aleatório (simulação)
             let oponente = { nome: "Visitante", escudo: "" };
-            
+            // Lógica simples: Pega um time aleatório que não seja o meu
             if (window.Database && window.Database.brasil) {
-                 // Tenta achar lista de times da minha divisão
                  const divs = ['serieA', 'serieB', 'serieC', 'serieD'];
                  let minhaDiv = [];
                  for(let d of divs) {
@@ -361,27 +359,25 @@
                  }
                  if(minhaDiv.length > 0) {
                      const rivais = minhaDiv.filter(t => t.nome !== meuTime.nome);
-                     oponente = rivais[Math.floor(Math.random() * rivais.length)];
+                     if(rivais.length > 0) oponente = rivais[Math.floor(Math.random() * rivais.length)];
                  }
             }
 
             document.getElementById('home-name').innerText = meuTime.nome;
             document.getElementById('home-logo').src = document.getElementById('dash-escudo').src;
-            
             document.getElementById('away-name').innerText = oponente.nome;
             document.getElementById('away-logo').src = oponente.escudo || "https://cdn-icons-png.flaticon.com/512/53/53283.png";
-
+            
             localStorage.setItem('brfutebol_oponente_nome', oponente.nome);
         }
 
         function gerarNoticias(time, tecnico) {
             const feed = document.getElementById('news-feed');
             const noticias = [
-                { data: 'Hoje', texto: `${tecnico} assume o comando do ${time} prometendo títulos.` },
-                { data: 'Ontem', texto: 'Diretoria anuncia pacote de reforços para a temporada.' },
-                { data: '2 dias atrás', texto: 'Torcida esgota ingressos para a estreia no campeonato.' }
+                { data: 'Hoje', texto: `${tecnico} assume o ${time}.` },
+                { data: 'Ontem', texto: 'Reforços chegando em breve.' },
+                { data: '2 dias atrás', texto: 'Ingressos esgotados.' }
             ];
-
             noticias.forEach(n => {
                 const div = document.createElement('div');
                 div.className = 'news-item';
@@ -391,14 +387,13 @@
         }
 
         function irParaPartida() {
-            if(confirm("Confirmar escalação e ir para o jogo?")) {
-                alert("Simulando partida... (Próximo passo: Criar partida.html)");
-                // window.location.href = 'partida.html'; 
+            if(confirm("Iniciar partida?")) {
+                alert("Simulando... (Próximo passo: partida.html)");
             }
         }
 
         function resetGame() {
-            if(confirm("Tem certeza? Todo o progresso será perdido.")) {
+            if(confirm("Sair e apagar progresso?")) {
                 localStorage.clear();
                 window.location.href = 'index.html';
             }
