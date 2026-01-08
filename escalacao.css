@@ -1,201 +1,3 @@
-/* --- VARIÁVEIS GERAIS --- */
-:root {
-    --bg-dark: #0f1216;
-    --bg-panel: rgba(30, 35, 45, 0.95);
-    --accent: #00ff88; /* Verde Neon */
-    --accent-glow: rgba(0, 255, 136, 0.4);
-    --text-main: #ffffff;
-    --text-dim: #8b9bb4;
-    --border: 1px solid rgba(255, 255, 255, 0.1);
-    --pitch-grass: #1a4d2e;
-    --gold: #f1c40f;
-    --red: #e74c3c;
-    --blue: #3498db;
-    --pos-ok: #2ecc71;
-    --pos-med: #f1c40f;
-    --pos-bad: #e74c3c;
-}
-
-* { box-sizing: border-box; user-select: none; }
-
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: var(--bg-dark);
-    background-image: 
-        radial-gradient(circle at 10% 20%, rgba(0, 255, 136, 0.05) 0%, transparent 40%),
-        radial-gradient(circle at 90% 80%, rgba(52, 152, 219, 0.05) 0%, transparent 40%);
-    color: var(--text-main);
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden; /* Impede scroll na página inteira */
-}
-
-/* --- HEADER --- */
-header {
-    height: 60px;
-    flex-shrink: 0; /* Impede que o header encolha */
-    background: rgba(15, 18, 22, 0.95);
-    backdrop-filter: blur(10px);
-    border-bottom: var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 25px;
-    z-index: 100;
-}
-
-.back-btn {
-    background: rgba(255,255,255,0.05);
-    border: var(--border);
-    color: var(--text-dim);
-    padding: 8px 15px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.8rem;
-    display: flex; align-items: center; gap: 5px;
-    transition: 0.2s;
-}
-.back-btn:hover { background: rgba(255,255,255,0.1); color: #fff; border-color: #fff; }
-
-.center-controls { display: flex; gap: 20px; align-items: center; }
-
-.formation-select {
-    background: #000;
-    color: var(--accent);
-    border: 1px solid var(--accent);
-    padding: 8px 15px;
-    border-radius: 4px;
-    font-family: 'Rajdhani', sans-serif;
-    font-weight: 700;
-    font-size: 1rem;
-    cursor: pointer;
-    outline: none;
-    text-transform: uppercase;
-}
-
-.team-rating {
-    background: #222;
-    padding: 5px 15px;
-    border-radius: 4px;
-    border: var(--border);
-    font-size: 0.9rem;
-    color: var(--text-dim);
-}
-.rating-val { color: #fff; font-weight: 800; font-size: 1.1rem; margin-left: 5px; font-family: 'Rajdhani'; }
-
-.save-btn {
-    background: var(--accent);
-    color: #000;
-    border: none;
-    padding: 10px 30px;
-    border-radius: 4px;
-    font-weight: 800;
-    font-family: 'Rajdhani', sans-serif;
-    text-transform: uppercase;
-    cursor: pointer;
-    letter-spacing: 1px;
-    box-shadow: 0 0 15px var(--accent-glow);
-    transition: 0.2s;
-}
-.save-btn:hover { transform: scale(1.05); background: #fff; }
-
-/* --- LAYOUT PRINCIPAL (GRID) --- */
-.workspace {
-    display: grid;
-    /* Coluna Esq (300px) - Centro (Flexível) - Coluna Dir (280px) */
-    grid-template-columns: 300px 1fr 280px; 
-    height: calc(100vh - 60px); /* Ocupa exatamente o resto da tela */
-    width: 100%;
-    overflow: hidden;
-}
-
-/* PAINÉIS LATERAIS */
-.panel {
-    background: var(--bg-panel);
-    backdrop-filter: blur(10px);
-    border-right: var(--border);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden; /* Importante para o scroll interno funcionar */
-}
-.panel-right { border-right: none; border-left: var(--border); }
-
-.panel-header {
-    padding: 15px;
-    border-bottom: var(--border);
-    background: rgba(0,0,0,0.2);
-    font-family: 'Rajdhani', sans-serif;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    display: flex; justify-content: space-between; align-items: center;
-    flex-shrink: 0;
-}
-
-.btn-auto {
-    background: rgba(255,255,255,0.1);
-    border: none;
-    color: #fff;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 0.7rem;
-    cursor: pointer;
-    transition: 0.2s;
-}
-.btn-auto:hover { background: var(--accent); color: #000; }
-
-/* ÁREA DE ROLAGEM INTERNA */
-.scroll-content {
-    flex: 1;
-    overflow-y: auto; /* Scroll apenas aqui */
-    padding: 10px;
-}
-.scroll-content::-webkit-scrollbar { width: 5px; }
-.scroll-content::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
-.scroll-content::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
-
-/* --- LISTA DE JOGADORES (CARD) --- */
-.roster-item {
-    display: flex;
-    align-items: center;
-    background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, transparent 100%);
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    padding: 10px;
-    cursor: grab;
-    transition: 0.2s;
-    margin-bottom: 2px;
-    border-radius: 4px;
-}
-.roster-item:hover { background: rgba(255,255,255,0.08); padding-left: 15px; border-left: 2px solid var(--accent); }
-.roster-item.dragging { opacity: 0.5; background: #000; }
-
-.pos-badge {
-    width: 30px; height: 30px;
-    background: #222;
-    border: 1px solid #444;
-    color: #aaa;
-    border-radius: 6px;
-    font-size: 0.7rem;
-    font-weight: 800;
-    display: flex; align-items: center; justify-content: center;
-    margin-right: 12px;
-    flex-shrink: 0;
-}
-
-.player-info { flex: 1; min-width: 0; }
-.player-name { font-weight: 700; font-size: 0.9rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.player-meta { display: flex; align-items: center; gap: 8px; margin-top: 3px; font-size: 0.75rem; }
-.trait { color: var(--blue); font-style: italic; }
-
-.health-bar-container { flex: 1; height: 4px; background: #111; border-radius: 2px; max-width: 60px; overflow: hidden; }
-.health-bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
-.health-text { font-size: 0.7rem; color: #777; }
-
-.ovr-badge { font-family: 'Rajdhani'; font-weight: 800; font-size: 1.2rem; color: var(--gold); margin-left: 10px; }
-
 /* --- ÁREA DO CAMPO (CENTRO) --- */
 .field-area {
     background: #0a0a0a;
@@ -204,17 +6,17 @@ header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 20px;
+    justify-content: flex-start; /* Começa do topo */
+    padding: 10px;
+    gap: 5px; /* Espaço entre Campo e Banco */
 }
 
 .pitch {
     width: 100%;
-    height: 75%; /* Deixa espaço pro banco embaixo */
+    height: 72%; /* Ajustei para sobrar espaço pro banco */
     max-width: 950px;
-    aspect-ratio: 1.5; /* Mantém formato do campo */
+    aspect-ratio: 1.5;
     background-color: var(--pitch-grass);
-    /* Textura de Gramado */
     background-image: 
         linear-gradient(90deg, rgba(0,0,0,0.05) 50%, transparent 50%),
         linear-gradient(rgba(0,0,0,0.05) 50%, transparent 50%);
@@ -222,53 +24,42 @@ header {
     border: 3px solid rgba(255,255,255,0.6);
     border-radius: 8px;
     position: relative;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.8);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
     transition: all 0.5s ease;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
 }
 
-/* Linhas do Campo */
-.pitch::before { content:''; position:absolute; left:50%; top:0; width:2px; height:100%; background:rgba(255,255,255,0.3); transform:translateX(-50%); }
-.pitch::after { content:''; position:absolute; top:50%; left:50%; width:18%; padding-top:18%; border:2px solid rgba(255,255,255,0.3); border-radius:50%; transform:translate(-50%, -50%); }
-.box { position:absolute; width:15%; height:45%; border:2px solid rgba(255,255,255,0.3); top:50%; transform:translateY(-50%); }
-.box-left { left:0; border-left:none; } .box-right { right:0; border-right:none; }
+/* --- TÍTULO DO BANCO (CORRIGIDO) --- */
+.bench-label {
+    width: 95%;
+    max-width: 900px;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+    text-align: left; /* Alinhado com o início do banco */
+    padding-left: 5px;
+}
 
 /* --- BANCO DE RESERVAS --- */
 .bench-area {
-    width: 100%;
-    max-width: 950px;
-    height: 15%; /* Altura fixa relativa */
-    background: rgba(255,255,255,0.05);
+    width: 95%;
+    max-width: 900px;
+    height: 18%; /* Altura fixa proporcional */
+    background: rgba(30, 35, 45, 0.5);
     border: 1px dashed rgba(255,255,255,0.1);
     border-radius: 8px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 15px; /* Espaço entre reservas */
-}
-.bench-label {
-    position: absolute; bottom: 18%; left: 20px; font-size: 0.7rem; color: #555; font-weight: 800; letter-spacing: 2px;
+    justify-content: space-around;
+    padding: 0 10px;
 }
 
-/* --- SLOTS (JOGADORES NO CAMPO E BANCO) --- */
-.field-slot {
-    position: absolute;
-    width: 80px; height: 80px;
-    transform: translate(-50%, -50%);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 5; cursor: pointer;
-    transition: top 0.4s ease, left 0.4s ease;
-}
-
-.bench-slot {
-    position: relative;
-    width: 60px; height: 70px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer;
-}
-
+/* --- VISUAL DO JOGADOR (KIT + SCORE) --- */
 .player-kit {
-    width: 40px; height: 40px;
+    width: 42px; height: 42px;
     background: #222;
     border: 2px dashed rgba(255,255,255,0.2);
     border-radius: 50%;
@@ -288,68 +79,35 @@ header {
     box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
 }
 
-/* Feedback Visual de Posição */
-.filled.pos-wrong .player-kit { border-color: var(--pos-bad); box-shadow: 0 0 15px rgba(231, 76, 60, 0.3); }
-.filled.pos-medium .player-kit { border-color: var(--pos-med); box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); }
-
-.kit-number { font-family: 'Rajdhani'; font-size: 1rem; }
-
-.slot-info-box {
-    margin-top: 5px;
-    background: rgba(0,0,0,0.85);
-    backdrop-filter: blur(4px);
-    padding: 2px 6px;
-    border-radius: 4px;
-    border: 1px solid rgba(255,255,255,0.1);
-    text-align: center;
-    min-width: 70px;
+/* Bolinha do Score (OVR) */
+.kit-score {
+    position: absolute;
+    top: -5px; right: -5px;
+    background: var(--gold);
+    color: #000;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    font-size: 0.65rem;
+    font-weight: 900;
+    display: none; /* Escondido se vazio */
+    align-items: center; justify-content: center;
+    border: 2px solid #1e2329;
+    z-index: 10;
 }
-.bench-slot .slot-info-box { min-width: 50px; font-size: 0.65rem; }
+.filled .kit-score { display: flex; }
 
-.slot-name { display: block; font-size: 0.7rem; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70px; }
-.slot-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 2px; }
-.slot-ovr { color: var(--gold); font-size: 0.65rem; font-weight: 800; }
-
-.mini-health { width: 100%; height: 3px; background: #333; margin-top: 2px; border-radius: 2px; }
-.mini-health-fill { height: 100%; border-radius: 2px; }
-
-/* Badge de Capitão */
+/* Badge de Capitão (Movido para a esquerda para não bater no score) */
 .captain-c {
-    position: absolute; top: -5px; right: -5px;
-    background: var(--gold); color: #000;
-    width: 14px; height: 14px; font-size: 0.6rem; font-weight: 900;
-    border-radius: 50%; display: none; align-items: center; justify-content: center;
-    border: 1px solid #fff; z-index: 10;
+    position: absolute;
+    top: -5px; left: -5px; /* Esquerda agora */
+    background: #fff;
+    color: #000;
+    width: 16px; height: 16px;
+    font-size: 0.6rem; font-weight: 900;
+    border-radius: 50%;
+    display: none;
+    align-items: center; justify-content: center;
+    border: 1px solid #000;
+    z-index: 10;
 }
 .is-captain .captain-c { display: flex; }
-
-/* --- ABAS E FUNÇÕES --- */
-.tabs { display: flex; border-bottom: var(--border); }
-.tab-btn {
-    flex: 1; background: transparent; border: none; color: var(--text-dim);
-    padding: 12px; font-family: 'Rajdhani'; font-weight: 700; cursor: pointer;
-    text-transform: uppercase; border-bottom: 2px solid transparent; transition: 0.2s;
-}
-.tab-btn:hover { color: #fff; background: rgba(255,255,255,0.03); }
-.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(0, 255, 136, 0.05); }
-
-.tab-content { display: none; padding: 15px; height: 100%; overflow-y: auto; }
-.tab-content.active { display: block; }
-
-.role-card {
-    background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
-    padding: 10px; margin-bottom: 10px; border-radius: 6px;
-}
-.role-title { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; margin-bottom: 5px; display: block; }
-.role-select {
-    width: 100%; background: #111; border: 1px solid #333; color: #fff;
-    padding: 6px; border-radius: 4px; font-size: 0.85rem; outline: none;
-}
-.role-select:focus { border-color: var(--accent); }
-
-/* Sliders */
-input[type=range] { width: 100%; -webkit-appearance: none; background: transparent; }
-input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; margin-top: -5px; box-shadow: 0 0 10px var(--accent); }
-input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: #333; border-radius: 2px; }
-.range-labels { display: flex; justify-content: space-between; color: #666; font-size: 0.65rem; margin-top: 5px; font-weight: 600; }
-.tactic-value { float: right; color: #fff; font-weight: bold; }
