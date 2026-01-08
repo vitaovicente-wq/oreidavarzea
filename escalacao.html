@@ -8,7 +8,9 @@
     <script src="database_jogadores.js"></script>
     <script src="engine.js"></script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
         /* --- CSS INTEGRADO --- */
@@ -77,7 +79,7 @@
         /* LAYOUT PRINCIPAL */
         .workspace {
             display: grid;
-            grid-template-columns: 280px 1fr 280px; /* Colunas fixas nas laterais */
+            grid-template-columns: 280px 1fr 280px; 
             height: calc(100vh - 50px);
             width: 100%;
             overflow: hidden;
@@ -152,7 +154,6 @@
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             transition: all 0.5s ease;
         }
-        /* Linhas */
         .pitch::before { content:''; position:absolute; left:50%; top:0; width:2px; height:100%; background:rgba(255,255,255,0.3); transform:translateX(-50%); }
         .pitch::after { content:''; position:absolute; top:50%; left:50%; width:18%; padding-top:18%; border:2px solid rgba(255,255,255,0.3); border-radius:50%; transform:translate(-50%, -50%); }
         .box { position:absolute; width:15%; height:45%; border:2px solid rgba(255,255,255,0.3); top:50%; transform:translateY(-50%); }
@@ -161,7 +162,7 @@
         /* BANCO DE RESERVAS */
         .bench-container {
             width: 98%; max-width: 900px;
-            height: 20%; /* Ocupa 20% da altura */
+            height: 20%; 
             display: flex; flex-direction: column;
         }
         .bench-title { font-size: 0.7rem; color: #666; font-weight: 800; letter-spacing: 1px; margin-bottom: 5px; margin-left: 5px; }
@@ -262,6 +263,31 @@
         .range-labels { display: flex; justify-content: space-between; font-size: 0.65rem; color: #666; margin-top: 5px; }
         .tactic-value { float: right; color: #fff; font-weight: bold; }
 
+        /* MODAL DE ATRIBUTOS */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .modal-card {
+            background: #161b22; border: 1px solid #444; border-radius: 12px;
+            width: 350px; padding: 25px; box-shadow: 0 0 50px rgba(0,255,136,0.1);
+        }
+        .modal-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        .modal-kit {
+            width: 60px; height: 60px; background: #222; border: 2px solid var(--accent);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 1.5rem; color: #fff;
+        }
+        .modal-header h2 { margin: 0; font-size: 1.2rem; color: #fff; text-transform: uppercase; font-family: 'Rajdhani'; }
+        .modal-ovr { font-family: 'Rajdhani'; font-size: 2.2rem; color: var(--gold); margin-left: auto; font-weight: 900; }
+        .chart-container { position: relative; height: 280px; width: 100%; }
+        .btn-close {
+            width: 100%; background: #333; color: #fff; border: none; padding: 10px;
+            margin-top: 15px; border-radius: 6px; cursor: pointer; font-weight: 700;
+        }
+        .btn-close:hover { background: #444; }
+
     </style>
 </head>
 <body>
@@ -353,12 +379,32 @@
 
     </div>
 
+    <div id="player-modal" class="modal-overlay" onclick="fecharModal(event)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-kit" id="m-kit">10</div>
+                <div>
+                    <h2 id="m-nome">NOME</h2>
+                    <span id="m-pos">POS</span> • <span id="m-carac" style="color:var(--blue)">Carac</span>
+                </div>
+                <div class="modal-ovr" id="m-ovr">00</div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="radarChart"></canvas>
+            </div>
+
+            <button class="btn-close" onclick="fecharModal()">FECHAR</button>
+        </div>
+    </div>
+
     <script>
         let gameState, meuTime;
         let escalacaoAtual = {}; 
         let funcoesAtuais = { capitao: null, penalti: null, falta: null, escanteioD: null, escanteioE: null };
         let taticasAtuais = { mentalidade: 3, intensidade: 2 };
         let formacaoAtual = "4-3-3";
+        let radarChart = null; // Gráfico
 
         const layouts = {
             "4-3-3": [{id:"slot-1",t:"50%",l:"5%",r:"GOL"},{id:"slot-2",t:"15%",l:"25%",r:"LE"},{id:"slot-3",t:"35%",l:"20%",r:"ZAG"},{id:"slot-4",t:"65%",l:"20%",r:"ZAG"},{id:"slot-5",t:"85%",l:"25%",r:"LD"},{id:"slot-6",t:"50%",l:"40%",r:"VOL"},{id:"slot-7",t:"30%",l:"55%",r:"MEI"},{id:"slot-8",t:"70%",l:"55%",r:"MEI"},{id:"slot-9",t:"20%",l:"80%",r:"ATA"},{id:"slot-10",t:"50%",l:"85%",r:"ATA"},{id:"slot-11",t:"80%",l:"80%",r:"ATA"}],
@@ -459,6 +505,7 @@
                     <div class="ovr-badge">${jog.forca}</div>
                 `;
                 div.addEventListener('dragstart', handleDragStart);
+                div.addEventListener('dblclick', () => abrirModalAtributos(jog.id));
                 div.onclick = () => selecionarParaTroca(jog.id);
                 container.appendChild(div);
             });
@@ -551,6 +598,62 @@
             });
         }
 
+        // --- ATRIBUTOS & MODAL (RADAR) ---
+        function abrirModalAtributos(jogId) {
+            const jog = meuTime.elenco.find(j => j.id === jogId);
+            if(!jog) return;
+
+            // Se a Engine não gerou atributos (ex: save antigo), gera agora
+            if(!jog.atributos && Engine.gerarAtributos) Engine.gerarAtributos(jog);
+            
+            // Fallback se Engine.gerarAtributos não existir
+            let attr = jog.atributos || { VEL:70, FIN:70, PAS:70, DRI:70, DEF:70, FIS:70 };
+
+            document.getElementById('m-nome').innerText = jog.nome;
+            document.getElementById('m-pos').innerText = jog.pos;
+            document.getElementById('m-carac').innerText = jog.carac || '-';
+            document.getElementById('m-ovr').innerText = jog.forca;
+            document.getElementById('m-kit').innerText = jog.pos;
+
+            if(radarChart) radarChart.destroy();
+
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: Object.keys(attr),
+                    datasets: [{
+                        label: 'Atributos',
+                        data: Object.values(attr),
+                        backgroundColor: 'rgba(0, 255, 136, 0.2)',
+                        borderColor: '#00ff88',
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: { color: '#333' },
+                            grid: { color: '#333' },
+                            pointLabels: { color: '#fff', font: { size: 14, family: 'Rajdhani', weight: 'bold' } },
+                            ticks: { display: false, max: 100, min: 0 }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            document.getElementById('player-modal').style.display = 'flex';
+        }
+
+        function fecharModal(e) {
+            if (!e || e.target.id === 'player-modal' || e.target.classList.contains('btn-close')) {
+                document.getElementById('player-modal').style.display = 'none';
+            }
+        }
+
         // DRAG & DROP
         function handleDragStart(e) { e.dataTransfer.setData('text/plain', this.id.replace('card-','')); }
         const allSlots = [...document.querySelectorAll('.field-slot'), ...document.querySelectorAll('.bench-slot')];
@@ -558,6 +661,7 @@
             s.addEventListener('dragover', e => { e.preventDefault(); s.style.transform='translate(-50%,-50%) scale(1.1)'; });
             s.addEventListener('dragleave', e => { s.style.transform='translate(-50%,-50%) scale(1)'; });
             s.addEventListener('drop', handleDrop);
+            s.addEventListener('dblclick', () => { if(escalacaoAtual[s.id]) abrirModalAtributos(escalacaoAtual[s.id]); });
             s.onclick = () => removerJogador(s.id);
         });
 
