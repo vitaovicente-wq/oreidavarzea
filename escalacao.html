@@ -14,7 +14,7 @@
     <style>
         :root {
             --bg-dark: #0f1216;
-            --bg-panel: rgba(30, 35, 45, 0.95);
+            --bg-panel: rgba(30, 35, 45, 0.98);
             --accent: #00ff88;
             --text-main: #ffffff;
             --text-dim: #8b9bb4;
@@ -104,7 +104,7 @@
         .scroll-content::-webkit-scrollbar { width: 5px; }
         .scroll-content::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
 
-        /* LISTA DE JOGADORES */
+        /* LISTA JOGADORES */
         .roster-item {
             display: flex; align-items: center;
             background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, transparent 100%);
@@ -124,103 +124,121 @@
         .health-bar-fill { height: 100%; border-radius: 2px; }
         .ovr-badge { font-family: 'Rajdhani'; font-weight: 800; font-size: 1.1rem; color: var(--gold); margin-left: 10px; }
 
-        /* ÁREA DO CAMPO */
+        /* ÁREA CENTRAL */
         .field-area {
             background: #0a0a0a;
             position: relative;
-            display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
-            padding: 10px; gap: 10px; overflow: hidden;
+            display: flex; flex-direction: column; 
+            align-items: center; 
+            justify-content: space-between; /* Distribui espaço entre campo e banco */
+            padding: 20px 10px; 
+            gap: 10px; 
+            overflow: hidden;
         }
 
-        /* CAMPO HORIZONTAL */
+        /* --- CAMPO HORIZONTAL (CORRIGIDO) --- */
         .pitch {
-            width: 95%; height: 75%; max-width: 600px; aspect-ratio: 2/3;
+            width: 95%;
+            flex-grow: 1; /* Ocupa o espaço disponível */
+            max-height: 75%; /* Garante que não esmague o banco */
+            aspect-ratio: 1.6; /* PROPORÇÃO CORRETA (Widescreen) */
+            
             background-color: #2e7d32;
             background-image: repeating-linear-gradient(to right, #2e7d32, #2e7d32 10%, #368e3c 10%, #368e3c 20%);
-            border: 2px solid rgba(255,255,255,0.7); position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-radius: 4px; overflow: hidden;
-            transition: all 0.5s ease;
+            
+            border: 3px solid rgba(255,255,255,0.8);
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 10px;
         }
         
+        /* Linhas do Campo */
         .pitch * { pointer-events: none; }
         .pitch-line { position: absolute; border: 2px solid rgba(255,255,255,0.6); }
+        
         .half-line { top: 0; left: 50%; height: 100%; width: 2px; background: rgba(255,255,255,0.6); border: none; transform: translateX(-50%); }
-        .center-circle { top: 50%; left: 50%; width: 100px; height: 100px; border-radius: 50%; transform: translate(-50%, -50%); }
-        .center-spot { top: 50%; left: 50%; width: 6px; height: 6px; background: rgba(255,255,255,0.8); border-radius: 50%; transform: translate(-50%, -50%); }
+        .center-circle { top: 50%; left: 50%; width: 120px; height: 120px; border-radius: 50%; transform: translate(-50%, -50%); }
+        .center-spot { top: 50%; left: 50%; width: 8px; height: 8px; background: rgba(255,255,255,0.9); border-radius: 50%; transform: translate(-50%, -50%); }
         
         .penalty-area { width: 16%; height: 50%; top: 25%; }
         .penalty-area.left { left: -2px; border-left: none; }
         .penalty-area.right { right: -2px; border-right: none; }
+        
         .goal-area { width: 6%; height: 22%; top: 39%; }
         .goal-area.left { left: -2px; border-left: none; }
         .goal-area.right { right: -2px; border-right: none; }
         
-        .penalty-spot { width: 4px; height: 4px; background: rgba(255,255,255,0.8); border-radius: 50%; top: 50%; transform: translateY(-50%); }
+        .penalty-spot { width: 6px; height: 6px; background: rgba(255,255,255,0.9); border-radius: 50%; top: 50%; transform: translateY(-50%); }
         .penalty-spot.left { left: 11%; }
         .penalty-spot.right { right: 11%; }
 
-        .corner { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.6); border-radius: 50%; position: absolute; }
-        .corner-tl { top: -10px; left: -10px; }
-        .corner-tr { top: -10px; right: -10px; }
-        .corner-bl { bottom: -10px; left: -10px; }
-        .corner-br { bottom: -10px; right: -10px; }
+        .corner { width: 25px; height: 25px; border: 2px solid rgba(255,255,255,0.6); border-radius: 50%; position: absolute; }
+        .corner-tl { top: -12px; left: -12px; }
+        .corner-tr { top: -12px; right: -12px; }
+        .corner-bl { bottom: -12px; left: -12px; }
+        .corner-br { bottom: -12px; right: -12px; }
 
-        /* BANCO */
+        /* BANCO DE RESERVAS (CORRIGIDO) */
         .bench-container {
-            width: 95%; max-width: 600px; height: 18%; 
+            width: 95%; 
+            height: 120px; /* Altura fixa para não achatar */
+            flex-shrink: 0;
             display: flex; flex-direction: column;
         }
-        .bench-title { font-size: 0.7rem; color: #666; font-weight: 800; letter-spacing: 1px; margin-bottom: 5px; margin-left: 5px; }
+        .bench-title { font-size: 0.75rem; color: #888; font-weight: 800; letter-spacing: 1px; margin-bottom: 5px; margin-left: 5px; }
         .bench-box {
-            flex: 1; background: rgba(255,255,255,0.05);
+            flex: 1; background: rgba(255,255,255,0.03);
             border: 1px dashed rgba(255,255,255,0.1); border-radius: 8px;
-            display: flex; align-items: center; justify-content: space-around; padding: 0 5px;
+            display: flex; align-items: center; justify-content: space-around; padding: 5px;
         }
 
-        /* SLOTS E JOGADORES */
+        /* SLOTS E KITS */
         .field-slot {
-            position: absolute; width: 65px; height: 65px;
+            position: absolute; width: 70px; height: 70px;
             transform: translate(-50%, -50%);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            cursor: pointer; z-index: 10; pointer-events: auto !important; 
+            cursor: pointer; z-index: 10; pointer-events: auto !important;
             transition: top 0.4s, left 0.4s;
         }
         .bench-slot {
-            position: relative; width: 50px; height: 100%;
+            position: relative; width: 60px; height: 100%;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             cursor: pointer;
         }
 
         .player-kit {
-            width: 34px; height: 34px; background: #222;
+            width: 40px; height: 40px; background: #222;
             border: 2px dashed rgba(255,255,255,0.2); border-radius: 50%;
             color: #555; display: flex; align-items: center; justify-content: center;
-            font-weight: 800; font-size: 0.7rem; position: relative;
+            font-weight: 800; font-size: 0.75rem; position: relative;
             transition: 0.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
-        .filled .player-kit { background: #1e2329; border: 2px solid var(--accent); color: #fff; transform: scale(1.1); box-shadow: 0 0 15px rgba(0,255,136,0.3); }
+        .filled .player-kit { background: #1e2329; border: 2px solid var(--accent); color: #fff; transform: scale(1.15); box-shadow: 0 0 15px rgba(0,255,136,0.3); }
         .filled.pos-medium .player-kit { border-color: var(--pos-med); }
         .filled.pos-wrong .player-kit { border-color: var(--pos-bad); }
 
-        .kit-number { font-family: 'Rajdhani'; font-size: 0.9rem; }
+        .kit-number { font-family: 'Rajdhani'; font-size: 1rem; }
         .kit-score {
-            position: absolute; top: -5px; right: -5px; width: 16px; height: 16px;
+            position: absolute; top: -5px; right: -5px; width: 18px; height: 18px;
             background: var(--gold); color: #000; border-radius: 50%; border: 2px solid #1e2329;
-            font-size: 0.6rem; font-weight: 900; display: none; align-items: center; justify-content: center; z-index: 2;
+            font-size: 0.7rem; font-weight: 900; display: none; align-items: center; justify-content: center; z-index: 2;
         }
         .filled .kit-score { display: flex; }
 
         .slot-info-box {
-            margin-top: 4px; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);
-            padding: 1px 5px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.1);
-            text-align: center; min-width: 60px;
+            margin-top: 5px; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px);
+            padding: 2px 6px; border-radius: 3px; border: 1px solid rgba(255,255,255,0.1);
+            text-align: center; min-width: 65px;
         }
-        .bench-slot .slot-info-box { font-size: 0.6rem; min-width: 45px; padding: 1px 2px; }
-        .slot-name { display: block; font-size: 0.65rem; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60px; }
-        .slot-pos-mini { font-size: 0.55rem; color: #aaa; text-transform: uppercase; }
+        .bench-slot .slot-info-box { font-size: 0.65rem; min-width: 50px; padding: 1px 4px; }
+        .slot-name { display: block; font-size: 0.7rem; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65px; }
+        .slot-pos-mini { font-size: 0.6rem; color: #aaa; text-transform: uppercase; }
+        
         .captain-c {
             position: absolute; top: -5px; left: -5px; background: #fff; color: #000;
-            width: 14px; height: 14px; font-size: 0.6rem; font-weight: 900;
+            width: 16px; height: 16px; font-size: 0.65rem; font-weight: 900;
             border-radius: 50%; border: 1px solid #000; display: none; align-items: center; justify-content: center; z-index: 2;
         }
         .is-captain .captain-c { display: flex; }
@@ -233,36 +251,35 @@
         .tab-content.active { display: block; }
 
         .role-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 10px; margin-bottom: 10px; border-radius: 6px; }
-        .role-label { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 5px; }
-        .role-select { width: 100%; background: #111; border: 1px solid #333; color: #fff; padding: 6px; border-radius: 4px; font-size: 0.8rem; outline: none; }
+        .role-label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 5px; }
+        .role-select { width: 100%; background: #111; border: 1px solid #333; color: #fff; padding: 8px; border-radius: 4px; font-size: 0.85rem; outline: none; }
         input[type=range] { width: 100%; -webkit-appearance: none; background: transparent; }
         input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 14px; width: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; margin-top: -5px; }
         input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; background: #333; border-radius: 2px; }
-        .range-labels { display: flex; justify-content: space-between; font-size: 0.65rem; color: #666; margin-top: 5px; }
+        .range-labels { display: flex; justify-content: space-between; font-size: 0.7rem; color: #666; margin-top: 5px; }
         .tactic-value { float: right; color: #fff; font-weight: bold; }
 
-        /* --- FIFA TOOLTIP CARD (HOVER) --- */
+        /* TOOLTIP FIFA */
         #fifa-tooltip {
-            position: fixed; display: none;
-            width: 180px; background: #111; border: 1px solid #444; border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8); z-index: 2000; pointer-events: none;
-            padding: 10px; backdrop-filter: blur(10px);
+            position: fixed; display: none; width: 200px;
+            background: rgba(18, 20, 24, 0.95); border: 1px solid #444; border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8); z-index: 2000; pointer-events: none;
+            padding: 12px; backdrop-filter: blur(10px);
         }
-        .fifa-header { display: flex; align-items: center; border-bottom: 1px solid #333; padding-bottom: 5px; margin-bottom: 5px; }
-        .fifa-ovr { font-family: 'Rajdhani'; font-size: 1.8rem; font-weight: 900; color: var(--gold); margin-right: 10px; }
+        .fifa-header { display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; margin-bottom: 8px; }
+        .fifa-ovr { font-family: 'Rajdhani'; font-size: 2rem; font-weight: 900; color: var(--gold); margin-right: 12px; line-height: 1; }
         .fifa-info { display: flex; flex-direction: column; }
-        .fifa-name { font-weight: 800; font-size: 0.85rem; color: #fff; }
-        .fifa-pos { font-size: 0.7rem; color: var(--accent); font-weight: 700; }
-        
-        .fifa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; row-gap: 2px; }
-        .fifa-stat { font-family: 'Rajdhani'; font-size: 0.8rem; display: flex; justify-content: space-between; }
+        .fifa-name { font-weight: 800; font-size: 0.9rem; color: #fff; }
+        .fifa-pos { font-size: 0.75rem; color: var(--accent); font-weight: 700; }
+        .fifa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; row-gap: 4px; }
+        .fifa-stat { font-family: 'Rajdhani'; font-size: 0.85rem; display: flex; justify-content: space-between; }
         .fifa-stat span { color: #888; font-weight: 600; margin-right: 5px; }
         .fifa-stat b { color: #fff; }
         .fifa-stat b.high { color: var(--pos-ok); }
         .fifa-stat b.mid { color: var(--pos-med); }
         .fifa-stat b.low { color: var(--pos-bad); }
 
-        /* MODAL (DETALHADO) */
+        /* MODAL */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 1000; }
         .modal-card { background: #161b22; border: 1px solid #444; border-radius: 12px; width: 350px; padding: 25px; box-shadow: 0 0 50px rgba(0,255,136,0.1); }
         .modal-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 15px; }
@@ -383,8 +400,7 @@
                 <div class="fifa-pos" id="tip-pos">POS</div>
             </div>
         </div>
-        <div class="fifa-grid" id="tip-grid">
-            </div>
+        <div class="fifa-grid" id="tip-grid"></div>
     </div>
 
     <div id="player-modal" class="modal-overlay" onclick="fecharModal(event)">
@@ -405,7 +421,6 @@
     </div>
 
     <script>
-        // --- 1. COMPATIBILIDADE ---
         if (typeof database !== 'undefined') window.Database = database;
         if (typeof Database !== 'undefined') window.database = Database;
 
@@ -416,7 +431,6 @@
         let formacaoAtual = "4-3-3";
         let radarChart = null;
 
-        // MAPA HORIZONTAL
         const layouts = {
             "4-3-3": [{id:"slot-1",l:"6%",t:"50%",r:"GOL"},{id:"slot-2",l:"25%",t:"15%",r:"LE"},{id:"slot-3",l:"20%",t:"38%",r:"ZAG"},{id:"slot-4",l:"20%",t:"62%",r:"ZAG"},{id:"slot-5",l:"25%",t:"85%",r:"LD"},{id:"slot-6",l:"40%",t:"50%",r:"VOL"},{id:"slot-7",l:"55%",t:"30%",r:"MEI"},{id:"slot-8",l:"55%",t:"70%",r:"MEI"},{id:"slot-9",l:"85%",t:"20%",r:"ATA"},{id:"slot-10",l:"85%",t:"50%",r:"ATA"},{id:"slot-11",l:"85%",t:"80%",r:"ATA"}],
             "4-4-2": [{id:"slot-1",l:"6%",t:"50%",r:"GOL"},{id:"slot-2",l:"25%",t:"15%",r:"LE"},{id:"slot-3",l:"20%",t:"38%",r:"ZAG"},{id:"slot-4",l:"20%",t:"62%",r:"ZAG"},{id:"slot-5",l:"25%",t:"85%",r:"LD"},{id:"slot-6",l:"45%",t:"30%",r:"VOL"},{id:"slot-7",l:"45%",t:"70%",r:"VOL"},{id:"slot-8",l:"60%",t:"15%",r:"MEI"},{id:"slot-9",l:"60%",t:"85%",r:"MEI"},{id:"slot-10",l:"85%",t:"35%",r:"ATA"},{id:"slot-11",l:"85%",t:"65%",r:"ATA"}],
@@ -514,7 +528,6 @@
         function renderizarLista() {
             const container = document.getElementById('roster-list');
             container.innerHTML = '';
-            
             const emCampo = Object.values(escalacaoAtual);
             let lista = meuTime.elenco.filter(j => !emCampo.includes(j.uid));
 
@@ -545,12 +558,9 @@
                 `;
                 div.addEventListener('dragstart', handleDragStart);
                 div.addEventListener('dblclick', () => abrirModalAtributos(jog.uid));
-                
-                // HOVER LISTENERS
                 div.addEventListener('mouseenter', showTooltip);
                 div.addEventListener('mousemove', moveTooltip);
                 div.addEventListener('mouseleave', hideTooltip);
-
                 container.appendChild(div);
             });
         }
@@ -566,16 +576,13 @@
                 const info = slot.querySelector('.slot-info-box');
 
                 slot.classList.remove('filled', 'pos-wrong', 'pos-medium', 'is-captain');
-                // Remove listeners antigos pra não duplicar
                 slot.removeEventListener('mouseenter', showTooltip);
                 slot.removeEventListener('mousemove', moveTooltip);
                 slot.removeEventListener('mouseleave', hideTooltip);
 
                 if(jog) {
                     slot.classList.add('filled');
-                    slot.dataset.uid = jog.uid; // IMPORTANTE PRO HOVER
-                    
-                    // Adiciona Hover
+                    slot.dataset.uid = jog.uid; 
                     slot.addEventListener('mouseenter', showTooltip);
                     slot.addEventListener('mousemove', moveTooltip);
                     slot.addEventListener('mouseleave', hideTooltip);
@@ -643,14 +650,12 @@
             });
         }
 
-        // --- HOVER TOOLTIP ---
+        // TOOLTIP
         function showTooltip(e) {
             const uid = this.dataset.uid;
             if(!uid) return;
             const jog = meuTime.elenco.find(j => j.uid === uid);
             if(!jog) return;
-
-            // Gera stats se não tiver
             gerarAtributosSeNecessario(jog);
 
             document.getElementById('tip-name').innerText = jog.nome;
@@ -659,31 +664,24 @@
 
             const grid = document.getElementById('tip-grid');
             grid.innerHTML = '';
-            
             const labels = { VEL:'PAC', FIN:'SHO', PAS:'PAS', DRI:'DRI', DEF:'DEF', FIS:'PHY' };
             for(let key in labels) {
                 const val = jog.atributos[key];
-                let cls = 'mid';
-                if(val >= 80) cls = 'high';
-                if(val < 60) cls = 'low';
+                let cls = 'mid'; if(val>=80) cls='high'; if(val<60) cls='low';
                 grid.innerHTML += `<div class="fifa-stat"><span>${labels[key]}</span><b class="${cls}">${val}</b></div>`;
             }
-
             const tip = document.getElementById('fifa-tooltip');
             tip.style.display = 'block';
-            tip.style.top = (e.pageY + 15) + 'px';
-            tip.style.left = (e.pageX + 15) + 'px';
+            moveTooltip(e);
         }
 
         function moveTooltip(e) {
             const tip = document.getElementById('fifa-tooltip');
-            tip.style.top = (e.pageY + 15) + 'px';
-            tip.style.left = (e.pageX + 15) + 'px';
+            tip.style.top = (e.clientY + 15) + 'px';
+            tip.style.left = (e.clientX + 15) + 'px';
         }
 
-        function hideTooltip() {
-            document.getElementById('fifa-tooltip').style.display = 'none';
-        }
+        function hideTooltip() { document.getElementById('fifa-tooltip').style.display = 'none'; }
 
         function gerarAtributosSeNecessario(jog) {
             if(!jog.atributos) {
@@ -725,14 +723,7 @@
                     }]
                 },
                 options: {
-                    scales: {
-                        r: {
-                            angleLines: { color: '#333' },
-                            grid: { color: '#333' },
-                            pointLabels: { color: '#fff', font: { size: 14, family: 'Rajdhani', weight: 'bold' } },
-                            ticks: { display: false, max: 100, min: 0 }
-                        }
-                    },
+                    scales: { r: { angleLines: { color: '#333' }, grid: { color: '#333' }, pointLabels: { color: '#fff', font: { size: 14, family: 'Rajdhani', weight: 'bold' } }, ticks: { display: false, max: 100, min: 0 } } },
                     plugins: { legend: { display: false } }
                 }
             });
