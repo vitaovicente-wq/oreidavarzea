@@ -130,34 +130,24 @@
             position: relative;
             display: flex; flex-direction: column; 
             align-items: center; 
-            justify-content: space-between; /* Distribui espaço entre campo e banco */
+            justify-content: space-between;
             padding: 20px 10px; 
             gap: 10px; 
             overflow: hidden;
         }
 
-        /* --- CAMPO HORIZONTAL (CORRIGIDO) --- */
+        /* CAMPO HORIZONTAL */
         .pitch {
-            width: 95%;
-            flex-grow: 1; /* Ocupa o espaço disponível */
-            max-height: 75%; /* Garante que não esmague o banco */
-            aspect-ratio: 1.6; /* PROPORÇÃO CORRETA (Widescreen) */
-            
+            width: 95%; flex-grow: 1; max-height: 75%; aspect-ratio: 1.6;
             background-color: #2e7d32;
             background-image: repeating-linear-gradient(to right, #2e7d32, #2e7d32 10%, #368e3c 10%, #368e3c 20%);
-            
             border: 3px solid rgba(255,255,255,0.8);
-            position: relative;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-            border-radius: 4px;
-            overflow: hidden;
-            margin-bottom: 10px;
+            position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.6); border-radius: 4px; overflow: hidden;
+            transition: all 0.5s ease;
         }
         
-        /* Linhas do Campo */
         .pitch * { pointer-events: none; }
         .pitch-line { position: absolute; border: 2px solid rgba(255,255,255,0.6); }
-        
         .half-line { top: 0; left: 50%; height: 100%; width: 2px; background: rgba(255,255,255,0.6); border: none; transform: translateX(-50%); }
         .center-circle { top: 50%; left: 50%; width: 120px; height: 120px; border-radius: 50%; transform: translate(-50%, -50%); }
         .center-spot { top: 50%; left: 50%; width: 8px; height: 8px; background: rgba(255,255,255,0.9); border-radius: 50%; transform: translate(-50%, -50%); }
@@ -180,11 +170,9 @@
         .corner-bl { bottom: -12px; left: -12px; }
         .corner-br { bottom: -12px; right: -12px; }
 
-        /* BANCO DE RESERVAS (CORRIGIDO) */
+        /* BANCO DE RESERVAS */
         .bench-container {
-            width: 95%; 
-            height: 120px; /* Altura fixa para não achatar */
-            flex-shrink: 0;
+            width: 95%; height: 120px; flex-shrink: 0;
             display: flex; flex-direction: column;
         }
         .bench-title { font-size: 0.75rem; color: #888; font-weight: 800; letter-spacing: 1px; margin-bottom: 5px; margin-left: 5px; }
@@ -664,6 +652,8 @@
 
             const grid = document.getElementById('tip-grid');
             grid.innerHTML = '';
+            
+            // MAPA DE LABELS: Se for goleiro, usaremos nomes diferentes mas as chaves internas são as mesmas adaptadas
             const labels = { VEL:'PAC', FIN:'SHO', PAS:'PAS', DRI:'DRI', DEF:'DEF', FIS:'PHY' };
             for(let key in labels) {
                 const val = jog.atributos[key];
@@ -683,11 +673,22 @@
 
         function hideTooltip() { document.getElementById('fifa-tooltip').style.display = 'none'; }
 
+        // CORREÇÃO DOS ATRIBUTOS (Garante que Goleiro tenha os stats para o card não quebrar)
         function gerarAtributosSeNecessario(jog) {
-            if(!jog.atributos) {
+            // Se faltar atributo OU se for goleiro e faltar o 'VEL' (bug do undefined), recria
+            if(!jog.atributos || !jog.atributos.VEL) {
                 const base = jog.forca;
                 if(jog.pos === 'GOL') {
-                    jog.atributos = { VEL:base-30, FIN:base-40, PAS:base-10, DRI:base-20, DEF:base, FIS:base };
+                    // Mapeia atributos de Goleiro para os slots do Card FIFA
+                    // VEL=Reflexo, FIN=Mergulho, PAS=Chute, DRI=Posic, DEF=Mãos, FIS=Físico
+                    jog.atributos = { 
+                        VEL: base+2, // Reflexo
+                        FIN: base-5, // Mergulho
+                        PAS: base,   // Reposição
+                        DRI: base-10,// Posicionamento
+                        DEF: base+5, // Segurança
+                        FIS: base    // Físico
+                    };
                 } else if (jog.pos === 'ATA') {
                     jog.atributos = { VEL:base+5, FIN:base+5, PAS:base-5, DRI:base+5, DEF:base-30, FIS:base };
                 } else {
@@ -762,7 +763,6 @@
             if(!silencioso && !confirm("Auto-escalar?")) return;
             escalacaoAtual = {};
             const usados = [];
-            // SÓ TITULARES
             layouts[formacaoAtual].forEach(p => {
                 let m = meuTime.elenco.find(j => j.pos===p.r && !usados.includes(j.uid) && (j.saude||100)>50);
                 if(!m) m = meuTime.elenco.find(j => j.pos!=='GOL' && !usados.includes(j.uid) && (j.saude||100)>40);
