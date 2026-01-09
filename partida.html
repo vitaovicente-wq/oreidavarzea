@@ -4,57 +4,169 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BRFutebol - Matchday</title>
+    
     <script src="database_jogadores.js"></script>
     <script src="engine.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
-        /* (MANTIVE O MESMO CSS DE ANTES PARA NÃO PERDER O ESTILO) */
-        :root { --bg-dark: #0f1216; --bg-panel: rgba(20, 25, 30, 0.98); --accent: #00ff88; --text-main: #ffffff; --text-dim: #8b9bb4; --gold: #f1c40f; --red: #ff4757; --blue: #3498db; --pos-ok: #2ecc71; --pos-med: #f1c40f; --pos-bad: #e74c3c; }
+        :root {
+            --bg-dark: #0f1216;
+            --bg-panel: rgba(20, 25, 30, 0.98);
+            --accent: #00ff88;
+            --text-main: #ffffff;
+            --text-dim: #8b9bb4;
+            --gold: #f1c40f;
+            --red: #ff4757;
+            --blue: #3498db;
+        }
+
         * { box-sizing: border-box; user-select: none; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); background-image: radial-gradient(circle at 50% 50%, #1a202c 0%, #0f1216 100%); color: var(--text-main); margin: 0; height: 100vh; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
-        .scoreboard { width: 100%; max-width: 900px; background: linear-gradient(180deg, #1e2329 0%, #161b22 100%); border-bottom: 2px solid var(--accent); padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10; flex-shrink: 0; }
-        .team-display { display: flex; flex-direction: column; align-items: center; width: 30%; }
-        .team-logo { width: 60px; height: 60px; object-fit: contain; filter: drop-shadow(0 0 5px rgba(0,0,0,0.5)); }
-        .team-name { font-family: 'Rajdhani'; font-weight: 800; font-size: 1.1rem; margin-top: 5px; text-transform: uppercase; }
-        .score-area { display: flex; align-items: center; justify-content: center; gap: 15px; font-family: 'Rajdhani'; font-weight: 900; font-size: 3rem; }
-        .score-box { background: #000; padding: 0 20px; border-radius: 8px; border: 1px solid #333; min-width: 70px; text-align: center; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 50% 50%, #1a202c 0%, #0f1216 100%);
+            color: var(--text-main);
+            margin: 0; height: 100vh;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* PLACAR (TOPO) */
+        .scoreboard {
+            flex-shrink: 0;
+            background: linear-gradient(180deg, #1e2329 0%, #161b22 100%);
+            border-bottom: 2px solid var(--accent); padding: 10px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10;
+        }
+        .team-display { display: flex; align-items: center; gap: 15px; width: 35%; }
+        .team-display.right { justify-content: flex-end; text-align: right; }
+        .team-logo { width: 50px; height: 50px; object-fit: contain; filter: drop-shadow(0 0 5px rgba(0,0,0,0.5)); }
+        .team-name { font-family: 'Rajdhani'; font-weight: 800; font-size: 1.2rem; text-transform: uppercase; }
+        
+        .score-center { display: flex; flex-direction: column; align-items: center; }
+        .score-area { display: flex; align-items: center; gap: 15px; font-family: 'Rajdhani'; font-weight: 900; font-size: 2.5rem; line-height: 1; }
+        .score-box { background: #000; padding: 2px 15px; border-radius: 6px; border: 1px solid #333; min-width: 60px; text-align: center; }
         .timer-badge { background: var(--accent); color: #000; padding: 2px 12px; border-radius: 15px; font-size: 0.9rem; font-weight: 800; margin-bottom: 5px; }
-        .match-container { flex: 1; width: 100%; max-width: 900px; display: grid; grid-template-columns: 2fr 1fr; gap: 15px; padding: 15px; overflow: hidden; }
-        .feed-panel { background: var(--bg-panel); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
-        .feed-header { padding: 12px; background: rgba(0,0,0,0.3); border-bottom: 1px solid #333; font-family: 'Rajdhani'; font-weight: 700; display: flex; justify-content: space-between; color: var(--text-dim); }
-        .feed-content { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 8px; scroll-behavior: smooth; }
+
+        /* LAYOUT PRINCIPAL (3 COLUNAS) */
+        .match-layout {
+            flex: 1; display: grid; 
+            grid-template-columns: 260px 1fr 260px; /* LATERAIS FIXAS */
+            overflow: hidden;
+        }
+
+        /* LATERAIS (LISTAS DE JOGADORES) */
+        .side-panel {
+            background: rgba(0,0,0,0.2); border-right: 1px solid rgba(255,255,255,0.05);
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .side-panel.right { border-right: none; border-left: 1px solid rgba(255,255,255,0.05); }
+        
+        .side-header {
+            padding: 10px; background: rgba(255,255,255,0.05); 
+            font-family: 'Rajdhani'; font-weight: 700; font-size: 0.9rem; 
+            color: var(--text-dim); text-transform: uppercase; text-align: center;
+        }
+        
+        .squad-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .squad-list::-webkit-scrollbar { width: 4px; }
+        .squad-list::-webkit-scrollbar-thumb { background: #333; }
+
+        .squad-section { margin-bottom: 15px; }
+        .sec-title { font-size: 0.7rem; color: var(--accent); font-weight: 800; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .mini-player {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 5px 8px; border-bottom: 1px solid rgba(255,255,255,0.03);
+            font-size: 0.85rem; cursor: default;
+        }
+        .mini-player:hover { background: rgba(255,255,255,0.05); }
+        
+        /* ESTILOS DE SUBSTITUIÇÃO NA LISTA */
+        .mini-player.subbed-out { opacity: 0.5; text-decoration: line-through; color: var(--red); }
+        .mini-player.subbed-in { color: var(--blue); font-weight: 700; border-left: 2px solid var(--blue); padding-left: 6px; }
+        
+        .mp-pos { width: 30px; font-weight: 700; color: #666; font-size: 0.75rem; }
+        .mp-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .mp-ovr { font-weight: 700; color: #aaa; font-size: 0.75rem; }
+
+        /* CENTRO (FEED E STATS) */
+        .center-panel {
+            padding: 15px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto;
+        }
+
+        .feed-panel {
+            background: var(--bg-panel); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; display: flex; flex-direction: column; flex: 2; overflow: hidden;
+        }
+        .feed-header { padding: 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid #333; font-family: 'Rajdhani'; font-weight: 700; display: flex; justify-content: space-between; color: var(--text-dim); font-size: 0.9rem; }
+        .feed-content { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
         .feed-content::-webkit-scrollbar { width: 5px; } .feed-content::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-        .feed-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px; border-radius: 6px; background: rgba(255,255,255,0.02); border-left: 3px solid transparent; animation: slideIn 0.3s ease; font-size: 0.9rem; }
+        
+        .feed-item { display: flex; gap: 8px; align-items: flex-start; padding: 6px; border-radius: 4px; background: rgba(255,255,255,0.02); border-left: 2px solid transparent; font-size: 0.85rem; animation: slideIn 0.3s; }
         .feed-time { font-family: 'Rajdhani'; font-weight: 800; color: var(--accent); min-width: 25px; }
-        .feed-item.goal { background: rgba(0, 255, 136, 0.1); border-left-color: var(--accent); } .feed-item.sub { background: rgba(52, 152, 219, 0.1); border-left-color: var(--blue); color: var(--blue); } .feed-item.danger { border-left-color: var(--gold); }
-        .stats-panel { background: var(--bg-panel); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
-        .stat-row { display: flex; flex-direction: column; gap: 4px; } .stat-bars { display: flex; align-items: center; gap: 8px; } .bar-bg { flex: 1; height: 5px; background: #222; border-radius: 3px; overflow: hidden; display: flex; } .bar-L { height: 100%; background: var(--text-main); }
-        .footer-controls { width: 100%; padding: 15px; background: #161b22; display: flex; justify-content: center; gap: 15px; border-top: 1px solid #333; }
-        .btn-speed { padding: 10px 20px; border-radius: 6px; border: 1px solid #444; background: #222; color: #888; font-family: 'Rajdhani'; font-weight: 700; cursor: pointer; transition: 0.2s; } .btn-speed.active { background: var(--accent); color: #000; border-color: var(--accent); }
-        .btn-sub { background: var(--blue); color: #fff; border: none; padding: 10px 30px; border-radius: 6px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; } .btn-sub:hover { background: #2980b9; }
+        .feed-item.goal { background: rgba(0, 255, 136, 0.1); border-left-color: var(--accent); }
+        .feed-item.sub { background: rgba(52, 152, 219, 0.1); border-left-color: var(--blue); color: var(--blue); }
+        .feed-item.danger { border-left-color: var(--gold); }
+
+        .stats-panel {
+            background: var(--bg-panel); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 150px;
+        }
+        .stat-row { display: flex; flex-direction: column; gap: 4px; }
+        .stat-bars { display: flex; align-items: center; gap: 8px; }
+        .bar-bg { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; display: flex; }
+        .bar-L { height: 100%; background: var(--text-main); }
+
+        /* FOOTER CONTROLS */
+        .footer-controls {
+            width: 100%; padding: 10px 20px; background: #161b22;
+            display: flex; justify-content: center; gap: 15px; border-top: 1px solid #333; flex-shrink: 0;
+        }
+        .btn-speed { padding: 8px 15px; border-radius: 4px; border: 1px solid #444; background: #222; color: #888; font-family: 'Rajdhani'; font-weight: 700; cursor: pointer; }
+        .btn-speed.active { background: var(--accent); color: #000; border-color: var(--accent); }
+        
+        .btn-sub { background: var(--blue); color: #fff; border: none; padding: 8px 25px; border-radius: 4px; font-weight: 700; cursor: pointer; }
+        .btn-sub:hover { background: #2980b9; }
+
+        .btn-finish { background: var(--gold); color: #000; border: none; padding: 8px 30px; border-radius: 4px; font-weight: 800; cursor: pointer; display: none; }
+        .btn-finish:hover { background: #fff; transform: scale(1.05); }
+
+        /* MODAL */
         .sub-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .sub-card { width: 95%; max-width: 950px; height: 90vh; max-height: 700px; background: #161b22; border: 1px solid #444; border-radius: 12px; display: flex; flex-direction: column; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
-        .sub-header { padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; } .sub-header h2 { margin: 0; font-family: 'Rajdhani'; color: var(--text-main); font-size: 1.5rem; }
-        .modal-tac-select { background: #000; color: var(--accent); border: 1px solid var(--accent); padding: 5px 15px; border-radius: 4px; font-family: 'Rajdhani'; font-weight: 700; cursor: pointer; outline: none; }
+        .sub-card { width: 90%; max-width: 900px; height: 85vh; background: #161b22; border: 1px solid #444; border-radius: 12px; display: flex; flex-direction: column; }
+        .sub-header { padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
         .sub-body { flex: 1; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; padding: 20px; overflow: hidden; }
-        .mini-pitch { position: relative; width: 100%; height: 100%; background: repeating-linear-gradient(to right, #2e7d32, #2e7d32 10%, #368e3c 10%, #368e3c 20%); border: 2px solid rgba(255,255,255,0.5); border-radius: 6px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); } .mini-pitch * { pointer-events: none; } .mp-line { position: absolute; border: 1px solid rgba(255,255,255,0.4); } .mp-center { top:50%; left:50%; width:80px; height:80px; border-radius:50%; transform:translate(-50%,-50%); } .mp-half { left:50%; top:0; height:100%; width:1px; transform:translateX(-50%); border:none; background:rgba(255,255,255,0.4); } .mp-box-left { width:15%; height:50%; top:25%; left:0; border-left:none; } .mp-box-right { width:15%; height:50%; top:25%; right:0; border-right:none; }
-        .sub-p-node { position: absolute; width: 60px; height: 60px; transform: translate(-50%, -50%); pointer-events: auto !important; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: all 0.3s ease; } .sub-p-node:hover { transform: translate(-50%, -50%) scale(1.1); z-index: 100; }
-        .sub-kit { width: 32px; height: 32px; background: #222; border: 2px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem; color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.5); } .sub-p-node.selected-out .sub-kit { border-color: var(--red); background: rgba(231, 76, 60, 0.2); box-shadow: 0 0 15px var(--red); }
-        .sub-name { font-size: 0.75rem; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px; margin-top: 3px; white-space: nowrap; font-weight: 600; }
-        .sub-health-bar { width: 100%; height: 3px; background: #444; margin-top: 2px; border-radius: 2px; } .sub-health-fill { height: 100%; border-radius: 2px; }
-        .sub-list { overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; border: 1px solid #333; } .sub-list::-webkit-scrollbar { width: 5px; } .sub-list::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
-        .player-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; border-radius: 4px; transition: 0.2s; } .player-row:hover { background: rgba(255,255,255,0.05); } .player-row.selected-in { background: rgba(0, 255, 136, 0.2); border-left: 3px solid var(--accent); }
-        .row-info { display: flex; flex-direction: column; } .row-name { font-weight: 700; font-size: 0.9rem; } .row-pos { font-size: 0.75rem; color: #888; font-weight: 700; }
+        
+        .mini-pitch { position: relative; width: 100%; height: 100%; background: repeating-linear-gradient(to right, #2e7d32, #2e7d32 10%, #368e3c 10%, #368e3c 20%); border: 2px solid rgba(255,255,255,0.5); border-radius: 6px; }
+        .sub-p-node { position: absolute; width: 50px; height: 50px; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.3s; }
+        .sub-p-node:hover { transform: translate(-50%, -50%) scale(1.1); z-index: 10; }
+        .sub-kit { width: 30px; height: 30px; background: #222; border: 2px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.7rem; color: #fff; }
+        .sub-p-node.selected-out .sub-kit { border-color: var(--red); background: rgba(231, 76, 60, 0.5); box-shadow: 0 0 15px var(--red); }
+        .sub-name { font-size: 0.7rem; background: rgba(0,0,0,0.8); padding: 1px 4px; border-radius: 3px; margin-top: 2px; }
+
+        .sub-list-modal { overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; border: 1px solid #333; }
+        .player-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
+        .player-row:hover { background: rgba(255,255,255,0.05); }
+        .player-row.selected-in { background: rgba(0, 255, 136, 0.2); border-left: 3px solid var(--accent); }
+
         .sub-footer { padding: 15px; border-top: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
-        .btn-confirm { background: var(--accent); color: #000; border: none; padding: 12px 30px; border-radius: 6px; font-weight: 800; cursor: pointer; text-transform: uppercase; } .btn-confirm:disabled { background: #333; color: #666; cursor: not-allowed; }
-        .btn-back { background: transparent; border: 1px solid #666; color: #ccc; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; } .btn-back:hover { border-color: #fff; color: #fff; }
-        #fifa-tooltip { position: fixed; display: none; width: 180px; background: rgba(18, 20, 24, 0.98); border: 1px solid #666; border-radius: 8px; box-shadow: 0 10px 40px rgba(0,0,0,0.9); z-index: 3000; pointer-events: none; padding: 10px; backdrop-filter: blur(10px); }
-        .fifa-header { display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; margin-bottom: 5px; } .fifa-ovr { font-family: 'Rajdhani'; font-size: 1.8rem; font-weight: 900; color: var(--gold); margin-right: 10px; line-height: 1; }
-        .fifa-info { display: flex; flex-direction: column; } .fifa-name { font-weight: 800; font-size: 0.85rem; color: #fff; } .fifa-pos { font-size: 0.7rem; color: var(--accent); font-weight: 700; }
-        .fifa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; row-gap: 2px; } .fifa-stat { font-family: 'Rajdhani'; font-size: 0.8rem; display: flex; justify-content: space-between; } .fifa-stat span { color: #888; font-weight: 600; margin-right: 5px; } .fifa-stat b { color: #fff; } .fifa-stat b.high { color: var(--pos-ok); } .fifa-stat b.mid { color: var(--pos-med); } .fifa-stat b.low { color: var(--pos-bad); }
+        .btn-confirm { background: var(--accent); color: #000; border: none; padding: 10px 25px; border-radius: 4px; font-weight: 800; cursor: pointer; }
+        .btn-confirm:disabled { background: #333; color: #666; cursor: not-allowed; }
+        .btn-back-game { background: transparent; border: 1px solid #666; color: #ccc; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        .btn-back-game:hover { border-color: #fff; color: #fff; }
+
+        /* GOAL */
         #goal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 300; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        .goal-text { font-family: 'Rajdhani'; font-size: 6rem; font-weight: 900; color: var(--accent); animation: zoomIn 0.5s; } .goal-scorer { font-size: 2rem; color: #fff; margin-top: -10px; }
-        @keyframes slideIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } } @keyframes zoomIn { from { transform:scale(0); } to { transform:scale(1); } }
+        .goal-text { font-family: 'Rajdhani'; font-size: 6rem; font-weight: 900; color: var(--accent); animation: slideIn 0.3s; }
+        .goal-scorer { font-size: 2rem; color: #fff; }
+
+        @keyframes slideIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
     </style>
 </head>
 <body>
@@ -64,7 +176,7 @@
             <img id="home-logo" src="" class="team-logo">
             <div class="team-name" id="home-name">CASA</div>
         </div>
-        <div style="display:flex; flex-direction:column; align-items:center;">
+        <div class="score-center">
             <div class="timer-badge" id="timer-display">1º 00'</div>
             <div class="score-area">
                 <div class="score-box" id="score-home">0</div>
@@ -72,35 +184,51 @@
                 <div class="score-box" id="score-away">0</div>
             </div>
         </div>
-        <div class="team-display">
-            <img id="away-logo" src="" class="team-logo">
+        <div class="team-display right">
             <div class="team-name" id="away-name">FORA</div>
+            <img id="away-logo" src="" class="team-logo">
         </div>
     </div>
 
-    <div class="match-container">
-        <div class="feed-panel">
-            <div class="feed-header"><span>Narração</span> <span style="color:var(--red)">● AO VIVO</span></div>
-            <div class="feed-content" id="feed"></div>
+    <div class="match-layout">
+        
+        <div class="side-panel">
+            <div class="side-header">MEU ELENCO</div>
+            <div class="squad-list" id="home-squad-list">
+                </div>
         </div>
-        <div class="stats-panel">
-            <div class="stat-row">
-                <span style="font-size:0.8rem; color:#888;">POSSE DE BOLA</span>
-                <div class="stat-bars">
-                    <span id="stat-pos-h">50%</span>
-                    <div class="bar-bg"><div class="bar-L" id="bar-pos-h" style="width:50%"></div></div>
-                    <span id="stat-pos-a">50%</span>
+
+        <div class="center-panel">
+            <div class="feed-panel">
+                <div class="feed-header"><span>Narração</span> <span style="color:var(--red)">● AO VIVO</span></div>
+                <div class="feed-content" id="feed"></div>
+            </div>
+            <div class="stats-panel">
+                <div class="stat-row">
+                    <span style="font-size:0.8rem; color:#888;">POSSE</span>
+                    <div class="stat-bars">
+                        <span id="stat-pos-h">50%</span>
+                        <div class="bar-bg"><div class="bar-L" id="bar-pos-h" style="width:50%"></div></div>
+                        <span id="stat-pos-a">50%</span>
+                    </div>
+                </div>
+                <div class="stat-row">
+                    <span style="font-size:0.8rem; color:#888;">CHUTES</span>
+                    <div class="stat-bars">
+                        <span id="stat-sho-h">0</span>
+                        <div class="bar-bg"><div class="bar-L" id="bar-sho-h" style="width:0%"></div></div>
+                        <span id="stat-sho-a">0</span>
+                    </div>
                 </div>
             </div>
-            <div class="stat-row">
-                <span style="font-size:0.8rem; color:#888;">FINALIZAÇÕES</span>
-                <div class="stat-bars">
-                    <span id="stat-sho-h">0</span>
-                    <div class="bar-bg"><div class="bar-L" id="bar-sho-h" style="width:0%"></div></div>
-                    <span id="stat-sho-a">0</span>
-                </div>
-            </div>
         </div>
+
+        <div class="side-panel right">
+            <div class="side-header">ADVERSÁRIO</div>
+            <div class="squad-list" id="away-squad-list">
+                </div>
+        </div>
+
     </div>
 
     <div class="footer-controls">
@@ -108,47 +236,34 @@
         <button class="btn-speed" onclick="setSpeed(2, this)">2x</button>
         <button class="btn-speed" onclick="setSpeed(3, this)">⚡</button>
         <div style="flex:1"></div>
-        <button class="btn-sub" onclick="abrirModalSub()">🔄 SUBSTITUIR / TÁTICA</button>
+        
+        <button class="btn-sub" id="btn-sub-menu" onclick="abrirModalSub()">🔄 SUBSTITUIR / TÁTICA</button>
+        
+        <button class="btn-finish" id="btn-finish-game" onclick="finalizarPartida()">ENCERRAR PARTIDA ❯</button>
     </div>
 
     <div id="sub-modal" class="sub-overlay">
         <div class="sub-card">
             <div class="sub-header">
                 <h2>Gerenciar Equipe</h2>
-                <div style="display:flex; gap:10px; align-items:center;">
-                    <span style="color:#888; font-size:0.9rem; font-weight:700;">FORMAÇÃO:</span>
-                    <select id="sub-formation" class="modal-tac-select" onchange="mudarFormacaoJogo()">
+                <div style="display:flex; gap:10px;">
+                    <select id="sub-formation" style="background:#000; color:#fff; border:1px solid #444; padding:5px;" onchange="mudarFormacaoJogo()">
                         <option value="4-3-3">4-3-3</option>
                         <option value="4-4-2">4-4-2</option>
                         <option value="3-5-2">3-5-2</option>
-                        <option value="4-2-3-1">4-2-3-1</option>
-                        <option value="3-4-3">3-4-3</option>
                     </select>
                 </div>
             </div>
             <div class="sub-body">
-                <div class="mini-pitch" id="pitch-container">
-                    <div class="mp-line mp-half"></div>
-                    <div class="mp-line mp-center"></div>
-                    <div class="mp-line mp-box-left"></div>
-                    <div class="mp-line mp-box-right"></div>
-                </div>
-                <div class="sub-list" id="list-reservas"></div>
+                <div class="mini-pitch" id="pitch-container"></div>
+                <div class="sub-list-modal" id="list-reservas-modal"></div>
             </div>
             <div class="sub-footer">
-                <button class="btn-back" onclick="fecharModalSub()">VOLTAR AO JOGO</button>
-                <div id="sub-msg" style="color:#888; font-size:0.9rem;">Selecione um no Campo e um no Banco</div>
-                <button class="btn-confirm" id="btn-confirm-sub" disabled onclick="confirmarSub()">CONFIRMAR TROCA</button>
+                <button class="btn-back-game" onclick="fecharModalSub()">VOLTAR AO JOGO</button>
+                <div id="sub-msg" style="color:#888;">Selecione quem sai e quem entra</div>
+                <button class="btn-confirm" id="btn-confirm-sub" disabled onclick="confirmarSub()">CONFIRMAR</button>
             </div>
         </div>
-    </div>
-
-    <div id="fifa-tooltip">
-        <div class="fifa-header">
-            <div class="fifa-ovr" id="tip-ovr">00</div>
-            <div class="fifa-info"><div class="fifa-name" id="tip-name">NOME</div><div class="fifa-pos" id="tip-pos">POS</div></div>
-        </div>
-        <div class="fifa-grid" id="tip-grid"></div>
     </div>
 
     <div id="goal-overlay"><div class="goal-text">GOL!</div><div class="goal-scorer" id="goal-scorer-name">Jogador</div></div>
@@ -166,7 +281,7 @@
         let speed = 200; 
         let subPending = { sai: null, entra: null };
 
-        const layouts = { "4-3-3": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"50%",l:"40%"},{t:"30%",l:"55%"},{t:"70%",l:"55%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}], "4-4-2": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"30%",l:"45%"},{t:"70%",l:"45%"},{t:"15%",l:"60%"},{t:"85%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}], "3-5-2": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"85%",l:"45%"},{t:"50%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}], "4-2-3-1":[{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"20%",l:"65%"},{t:"50%",l:"60%"},{t:"80%",l:"65%"},{t:"50%",l:"88%"}], "3-4-3": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"40%",l:"45%"},{t:"60%",l:"45%"},{t:"85%",l:"45%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}] };
+        const layouts = { "4-3-3": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"50%",l:"40%"},{t:"30%",l:"55%"},{t:"70%",l:"55%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}], "4-4-2": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"30%",l:"45%"},{t:"70%",l:"45%"},{t:"15%",l:"60%"},{t:"85%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}], "3-5-2": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"85%",l:"45%"},{t:"50%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}] };
 
         window.onload = function() { carregarDados(); };
 
@@ -186,6 +301,7 @@
             homeTeam.elenco.forEach((j, i) => { if(!j.uid) j.uid = `p_${i}`; });
 
             organizarElenco(homeTeam);
+            renderizarSidebars();
 
             document.getElementById('home-name').innerText = homeTeam.nome;
             document.getElementById('home-logo').src = homeTeam.escudo;
@@ -220,6 +336,38 @@
             reservas = time.elenco.filter(j => !escaladosIds.includes(j.uid));
         }
 
+        function renderizarSidebars() {
+            const hl = document.getElementById('home-squad-list');
+            hl.innerHTML = '<div class="squad-section"><div class="sec-title">EM CAMPO</div></div>';
+            titulares.forEach(j => hl.innerHTML += criarMiniPlayer(j));
+            
+            hl.innerHTML += '<div class="squad-section" style="margin-top:10px;"><div class="sec-title">BANCO</div></div>';
+            reservas.forEach(j => hl.innerHTML += criarMiniPlayer(j));
+
+            if(indisponiveis.length > 0) {
+                hl.innerHTML += '<div class="squad-section" style="margin-top:10px;"><div class="sec-title">SAÍRAM</div></div>';
+                indisponiveis.forEach(j => hl.innerHTML += criarMiniPlayer(j, 'out'));
+            }
+
+            const al = document.getElementById('away-squad-list');
+            al.innerHTML = '<div class="squad-section"><div class="sec-title">TITULARES</div></div>';
+            const awTit = awayTeam.elenco.slice(0, 11);
+            awTit.forEach(j => al.innerHTML += criarMiniPlayer(j));
+        }
+
+        function criarMiniPlayer(j, status='') {
+            let cls = '';
+            if(status === 'out') cls = 'subbed-out';
+            if(status === 'in') cls = 'subbed-in';
+            return `
+                <div class="mini-player ${cls}">
+                    <div class="mp-pos">${j.pos}</div>
+                    <div class="mp-name">${j.nome}</div>
+                    <div class="mp-ovr">${j.forca}</div>
+                </div>
+            `;
+        }
+
         function encontrarTime(nome) {
             const db = window.database || window.Database;
             for(let s in db.brasil) {
@@ -228,7 +376,7 @@
             }
             return { nome: nome, escudo: "", elenco: [] };
         }
-        function gerarGenericos(nome) { let l=[]; for(let i=0;i<15;i++) l.push({nome:`Jog ${i}`, pos:'ATA'}); return l; }
+        function gerarGenericos(nome) { let l=[]; for(let i=0;i<18;i++) l.push({nome:`Jogador ${i}`, pos:'ATA', forca:60}); return l; }
 
         function iniciarRelogio() { clearInterval(matchInterval); matchInterval = setInterval(loopJogo, speed); }
 
@@ -241,15 +389,17 @@
             if(tempo === 45 && etapa === 1) {
                 pausarJogo();
                 adicionarLog("Juiz", "Fim do 1º tempo.", "card");
-                setTimeout(() => { if(confirm("Intervalo!")) abrirModalSub(); else { etapa=2; tempo=0; iniciarRelogio(); } }, 500);
+                setTimeout(() => { 
+                    if(confirm("Intervalo! Ir para o vestiário?")) abrirModalSub();
+                    else { etapa=2; tempo=0; iniciarRelogio(); }
+                }, 500);
             }
             if(tempo === 45 && etapa === 2) {
                 pausarJogo();
                 document.getElementById('timer-display').innerText = "FIM";
                 adicionarLog("Juiz", "Fim de jogo!", "card");
-                setTimeout(() => { 
-                    if(confirm("Fim de jogo! Voltar?")) finalizarPartida(); 
-                }, 1000);
+                document.getElementById('btn-sub-menu').style.display = 'none';
+                document.getElementById('btn-finish-game').style.display = 'block';
             }
         }
 
@@ -276,29 +426,22 @@
             setTimeout(() => { document.getElementById('goal-overlay').style.display='none'; iniciarRelogio(); }, 2000);
         }
 
-        // --- PÓS JOGO (ATUALIZA SAÚDE E PONTOS) ---
         function finalizarPartida() {
-            // 1. Atualizar Saúde
-            // Titulares perdem 5-8%, Subs perdem 3%, Banco ganha 5%
-            titulares.forEach(j => { j.saude = Math.max(0, (j.saude||100) - (Math.floor(Math.random()*4)+5)); });
+            titulares.forEach(j => { j.saude = Math.max(0, (j.saude||100) - 6); });
             indisponiveis.forEach(j => { j.saude = Math.max(0, (j.saude||100) - 4); });
             reservas.forEach(j => { j.saude = Math.min(100, (j.saude||100) + 5); });
 
-            // Salva status dos jogadores no save
             const statusJogadores = {};
             [...titulares, ...reservas, ...indisponiveis].forEach(j => {
-                statusJogadores[j.uid] = { saude: j.saude, gols: 0 }; // Poderia salvar gols aqui
+                statusJogadores[j.uid] = { saude: j.saude };
             });
             
-            // 2. Atualizar Tabela (Simulação Simples)
             if(!gameState.tabela) gameState.tabela = gerarTabelaInicial();
-            
             atualizarTabelaTime(gameState.tabela, homeTeam.nome, placar.home, placar.away);
             atualizarTabelaTime(gameState.tabela, awayTeam.nome, placar.away, placar.home);
             simularOutrosJogos(gameState.tabela);
 
-            // 3. Salvar e Sair
-            gameState.jogadoresStatus = statusJogadores; // Novo campo no save
+            gameState.jogadoresStatus = statusJogadores;
             gameState.rodada++;
             
             Engine.salvarJogo(gameState);
@@ -308,7 +451,6 @@
 
         function gerarTabelaInicial() {
             const db = window.database || window.Database;
-            // Pega a liga do meu time
             for(let s in db.brasil) {
                 if(db.brasil[s].find(t => t.nome === homeTeam.nome)) {
                     return db.brasil[s].map(t => ({ nome: t.nome, p:0, j:0, v:0, e:0, d:0, gm:0, gs:0, sg:0 }));
@@ -321,15 +463,12 @@
             let t = tabela.find(x => x.nome === nome);
             if(!t) return;
             t.j++; t.gm += gp; t.gs += gc; t.sg = t.gm - t.gs;
-            if(gp > gc) { t.v++; t.p += 3; }
-            else if(gp === gc) { t.e++; t.p += 1; }
-            else { t.d++; }
+            if(gp > gc) { t.v++; t.p += 3; } else if(gp === gc) { t.e++; t.p += 1; } else { t.d++; }
         }
 
         function simularOutrosJogos(tabela) {
             tabela.forEach(t => {
                 if(t.nome !== homeTeam.nome && t.nome !== awayTeam.nome) {
-                    // Simula aleatório 50% de chance de jogar na rodada
                     if(Math.random() > 0.5) {
                         const gp = Math.floor(Math.random()*3);
                         const gc = Math.floor(Math.random()*3);
@@ -348,7 +487,7 @@
         }
         function fecharModalSub() {
             document.getElementById('sub-modal').style.display = 'none';
-            if(etapa===1 && tempo===45) { etapa=2; tempo=0; } // Se era intervalo, vira o tempo
+            if(etapa===1 && tempo===45) { etapa=2; tempo=0; }
             iniciarRelogio();
         }
         function mudarFormacaoJogo() { formacaoAtual=document.getElementById('sub-formation').value; renderizarCampoSub(); adicionarLog("Téc", `Mudou para ${formacaoAtual}`, "sub"); }
@@ -357,28 +496,23 @@
             const c = document.getElementById('pitch-container');
             c.querySelectorAll('.sub-p-node').forEach(n=>n.remove());
             const layout = layouts[formacaoAtual] || layouts['4-3-3'];
-            
             titulares.forEach((j, i) => {
                 const pos = layout[i] || {t:"50%",l:"50%"};
                 const el = document.createElement('div');
                 el.className = 'sub-p-node'; el.style.top=pos.t; el.style.left=pos.l;
-                el.innerHTML = `<div class="sub-kit">${j.pos}</div><div class="sub-name">${j.nome.split(' ')[0]}</div><div class="sub-health-bar"><div class="sub-health-fill" style="width:${j.saude||100}%; background:${(j.saude||100)<60?'#e74c3c':'#2ecc71'}"></div></div>`;
+                el.innerHTML = `<div class="sub-kit">${j.pos}</div><div class="sub-name">${j.nome.split(' ')[0]}</div>`;
                 el.onclick = () => selecionarSai(j.uid, el);
-                el.dataset.uid=j.uid;
-                el.addEventListener('mouseenter', showTooltip); el.addEventListener('mousemove', moveTooltip); el.addEventListener('mouseleave', hideTooltip);
                 c.appendChild(el);
             });
         }
 
         function renderizarListaReservas() {
-            const l = document.getElementById('list-reservas'); l.innerHTML='';
+            const l = document.getElementById('list-reservas-modal'); l.innerHTML='';
             const disp = reservas.filter(r => !indisponiveis.includes(r));
             disp.forEach(j => {
                 const el = document.createElement('div'); el.className='player-row';
                 el.innerHTML=`<div class="row-info"><span class="row-pos">${j.pos}</span><span class="row-name">${j.nome}</span></div><span style="color:#fff;font-weight:800">${j.forca}</span>`;
                 el.onclick = () => selecionarEntra(j.uid, el);
-                el.dataset.uid=j.uid;
-                el.addEventListener('mouseenter', showTooltip); el.addEventListener('mousemove', moveTooltip); el.addEventListener('mouseleave', hideTooltip);
                 l.appendChild(el);
             });
         }
@@ -404,28 +538,8 @@
                 titulares[idxS] = entra; reservas.splice(idxE, 1); indisponiveis.push(sai);
                 adicionarLog("Sub", `Sai ${sai.nome} | Entra ${entra.nome}`, "sub");
                 subPending={sai:null, entra:null};
-                renderizarCampoSub(); renderizarListaReservas(); atualizarUIBotao();
+                renderizarCampoSub(); renderizarListaReservas(); renderizarSidebars(); atualizarUIBotao();
             }
-        }
-
-        // TOOLTIP
-        function showTooltip(e) {
-            const uid = this.dataset.uid; if(!uid)return;
-            const jog = titulares.find(j=>j.uid===uid) || reservas.find(j=>j.uid===uid) || indisponiveis.find(j=>j.uid===uid);
-            if(!jog)return;
-            if(!jog.atributos) gerarAtributos(jog);
-            document.getElementById('tip-name').innerText=jog.nome; document.getElementById('tip-pos').innerText=jog.pos; document.getElementById('tip-ovr').innerText=jog.forca;
-            const g=document.getElementById('tip-grid'); g.innerHTML='';
-            const l={VEL:'PAC',FIN:'SHO',PAS:'PAS',DRI:'DRI',DEF:'DEF',FIS:'PHY'};
-            for(let k in l) { let v=jog.atributos[k]; let c='mid'; if(v>=80)c='high'; if(v<60)c='low'; g.innerHTML+=`<div class="fifa-stat"><span>${l[k]}</span><b class="${c}">${v}</b></div>`; }
-            document.getElementById('fifa-tooltip').style.display='block'; moveTooltip(e);
-        }
-        function moveTooltip(e) { const t=document.getElementById('fifa-tooltip'); t.style.top=(e.clientY+15)+'px'; t.style.left=(e.clientX+15)+'px'; }
-        function hideTooltip() { document.getElementById('fifa-tooltip').style.display='none'; }
-        function gerarAtributos(j) {
-            const b = j.forca;
-            if(j.pos==='GOL') j.atributos={VEL:b+2, FIN:b-5, PAS:b, DRI:b-10, DEF:b+5, FIS:b};
-            else j.atributos={VEL:b, FIN:b-2, PAS:b, DRI:b, DEF:b-5, FIS:b};
         }
 
         // UTIL
