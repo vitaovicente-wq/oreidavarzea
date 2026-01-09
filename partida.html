@@ -29,8 +29,7 @@
             background-color: var(--bg-dark);
             background-image: radial-gradient(circle at 50% 50%, #1a202c 0%, #0f1216 100%);
             color: var(--text-main);
-            margin: 0;
-            height: 100vh;
+            margin: 0; height: 100vh;
             display: flex; flex-direction: column; align-items: center;
             overflow: hidden;
         }
@@ -46,7 +45,6 @@
         .team-display { display: flex; flex-direction: column; align-items: center; width: 30%; }
         .team-logo { width: 60px; height: 60px; object-fit: contain; filter: drop-shadow(0 0 5px rgba(0,0,0,0.5)); }
         .team-name { font-family: 'Rajdhani'; font-weight: 800; font-size: 1.1rem; margin-top: 5px; text-transform: uppercase; }
-        
         .score-area { display: flex; align-items: center; justify-content: center; gap: 15px; font-family: 'Rajdhani'; font-weight: 900; font-size: 3rem; }
         .score-box { background: #000; padding: 0 20px; border-radius: 8px; border: 1px solid #333; min-width: 70px; text-align: center; }
         .timer-badge { background: var(--accent); color: #000; padding: 2px 12px; border-radius: 15px; font-size: 0.9rem; font-weight: 800; margin-bottom: 5px; }
@@ -79,7 +77,6 @@
         .stat-bars { display: flex; align-items: center; gap: 8px; }
         .bar-bg { flex: 1; height: 5px; background: #222; border-radius: 3px; overflow: hidden; display: flex; }
         .bar-L { height: 100%; background: var(--text-main); }
-        .bar-R { height: 100%; background: var(--text-dim); }
 
         /* FOOTER */
         .footer-controls {
@@ -94,40 +91,68 @@
         .btn-sub { background: var(--blue); color: #fff; border: none; padding: 10px 30px; border-radius: 6px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .btn-sub:hover { background: #2980b9; }
 
-        /* MODAL SUBSTITUIÇÃO */
+        /* MODAL SUBSTITUIÇÃO COM CAMPO */
         .sub-overlay {
             position: fixed; top:0; left:0; width:100%; height:100%;
             background: rgba(0,0,0,0.9); z-index: 200;
-            display: none; align-items: center; justify-content: center;
-            backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);
         }
         .sub-card {
-            width: 700px; height: 500px; background: #161b22;
+            width: 900px; height: 600px; background: #161b22;
             border: 1px solid #444; border-radius: 12px; display: flex; flex-direction: column;
             box-shadow: 0 0 50px rgba(0,0,0,0.8);
         }
         .sub-header { padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
         .sub-header h2 { margin: 0; font-family: 'Rajdhani'; color: var(--text-main); }
-        .sub-body { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px; overflow: hidden; }
         
+        .sub-body { flex: 1; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; padding: 20px; overflow: hidden; }
+        
+        /* CAMPO NO MODAL */
+        .mini-pitch {
+            position: relative; width: 100%; height: 100%;
+            background: repeating-linear-gradient(to right, #2e7d32, #2e7d32 10%, #368e3c 10%, #368e3c 20%);
+            border: 2px solid rgba(255,255,255,0.5); border-radius: 6px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+        .mini-pitch * { pointer-events: none; }
+        .mp-line { position: absolute; border: 1px solid rgba(255,255,255,0.4); }
+        .mp-center { top:50%; left:50%; width:80px; height:80px; border-radius:50%; transform:translate(-50%,-50%); }
+        .mp-half { left:50%; top:0; height:100%; width:1px; transform:translateX(-50%); border:none; background:rgba(255,255,255,0.4); }
+        .mp-box-left { width:15%; height:50%; top:25%; left:0; border-left:none; }
+        .mp-box-right { width:15%; height:50%; top:25%; right:0; border-right:none; }
+
+        /* JOGADOR NO CAMPO (SUB) */
+        .sub-p-node {
+            position: absolute; width: 50px; height: 50px;
+            transform: translate(-50%, -50%); pointer-events: auto !important;
+            display: flex; flex-direction: column; align-items: center; cursor: pointer;
+            transition: 0.2s;
+        }
+        .sub-p-node:hover { transform: translate(-50%, -50%) scale(1.1); }
+        
+        .sub-kit {
+            width: 30px; height: 30px; background: #222; border: 2px solid #fff; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.7rem; color: #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+        .sub-p-node.selected-out .sub-kit { border-color: var(--red); background: rgba(231, 76, 60, 0.2); box-shadow: 0 0 10px var(--red); }
+        
+        .sub-name { font-size: 0.7rem; background: rgba(0,0,0,0.8); padding: 1px 4px; border-radius: 3px; margin-top: 2px; white-space: nowrap; }
+
+        /* LISTA RESERVAS */
         .sub-list { overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; border: 1px solid #333; }
-        .sub-list h4 { margin: 0 0 10px 0; color: var(--text-dim); text-transform: uppercase; font-size: 0.8rem; }
-        
         .player-row {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05);
             cursor: pointer; border-radius: 4px; transition: 0.2s;
         }
         .player-row:hover { background: rgba(255,255,255,0.05); }
-        .player-row.selected { background: var(--accent); color: #000; font-weight: 700; }
+        .player-row.selected-in { background: rgba(0, 255, 136, 0.2); border-left: 3px solid var(--accent); }
         
-        .pos-tag { font-size: 0.7rem; font-weight: 800; width: 30px; }
-        .p-name { flex: 1; }
-        .p-ovr { font-weight: 700; }
+        .sub-footer { padding: 15px; border-top: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
+        .btn-confirm { background: var(--accent); color: #000; border: none; padding: 10px 25px; border-radius: 6px; font-weight: 800; cursor: pointer; }
+        .btn-confirm:disabled { background: #333; color: #666; cursor: not-allowed; }
 
-        .sub-footer { padding: 15px; border-top: 1px solid #333; display: flex; justify-content: flex-end; gap: 10px; }
-        .btn-confirm { background: var(--accent); color: #000; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 800; cursor: pointer; }
-        
         /* GOAL OVERLAY */
         #goal-overlay {
             position: fixed; top:0; left:0; width:100%; height:100%;
@@ -166,8 +191,7 @@
     <div class="match-container">
         <div class="feed-panel">
             <div class="feed-header"><span>Narração</span> <span style="color:var(--red)">● AO VIVO</span></div>
-            <div class="feed-content" id="feed">
-                </div>
+            <div class="feed-content" id="feed"></div>
         </div>
         <div class="stats-panel">
             <div class="stat-row">
@@ -193,9 +217,7 @@
         <button class="btn-speed active" onclick="setSpeed(1, this)">1x</button>
         <button class="btn-speed" onclick="setSpeed(2, this)">2x</button>
         <button class="btn-speed" onclick="setSpeed(3, this)">⚡</button>
-        
         <div style="flex:1"></div>
-        
         <button class="btn-sub" onclick="abrirModalSub()">🔄 SUBSTITUIR</button>
     </div>
 
@@ -206,16 +228,19 @@
                 <button onclick="fecharModalSub()" style="background:none; border:none; color:#fff; cursor:pointer;">✖</button>
             </div>
             <div class="sub-body">
-                <div class="sub-list" id="list-titulares">
-                    <h4>Em Campo</h4>
+                <div class="mini-pitch" id="pitch-container">
+                    <div class="mp-line mp-half"></div>
+                    <div class="mp-line mp-center"></div>
+                    <div class="mp-line mp-box-left"></div>
+                    <div class="mp-line mp-box-right"></div>
                     </div>
+
                 <div class="sub-list" id="list-reservas">
-                    <h4>Banco de Reservas</h4>
                     </div>
             </div>
             <div class="sub-footer">
-                <div id="sub-msg" style="margin-right:auto; color:#888; font-size:0.9rem; align-self:center;">Selecione um de cada lado</div>
-                <button class="btn-confirm" onclick="confirmarSub()">CONFIRMAR TROCA</button>
+                <div id="sub-msg" style="color:#888; font-size:0.9rem;">Clique no campo (SAI) e na lista (ENTRA)</div>
+                <button class="btn-confirm" id="btn-confirm-sub" disabled onclick="confirmarSub()">CONFIRMAR TROCA</button>
             </div>
         </div>
     </div>
@@ -226,22 +251,31 @@
     </div>
 
     <script>
-        // --- DADOS ---
         if (typeof database !== 'undefined') window.Database = database;
         if (typeof Database !== 'undefined') window.database = Database;
 
         let gameState, homeTeam, awayTeam;
-        let titulares = [], reservas = []; // Meus jogadores
-        
+        let titulares = [], reservas = [];
+        let formacaoAtual = "4-3-3";
+        let mapPosicoes = {}; // { uid: {top, left} }
+
         let matchInterval = null;
         let tempo = 0;
-        let etapa = 1; // 1 ou 2
+        let etapa = 1;
         let placar = { home: 0, away: 0 };
         let stats = { homeSho:0, awaySho:0, homePos:50 };
-        let speed = 200; // ms
-        let subPending = { sai: null, entra: null }; // IDs para troca
+        let speed = 200; 
+        let subPending = { sai: null, entra: null };
 
-        // --- INICIALIZAÇÃO ---
+        // COORDENADAS PARA O CAMPO DO MODAL (Mesma lógica do escalacao.html)
+        const layouts = {
+            "4-3-3": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"50%",l:"40%"},{t:"30%",l:"55%"},{t:"70%",l:"55%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}],
+            "4-4-2": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"30%",l:"45%"},{t:"70%",l:"45%"},{t:"15%",l:"60%"},{t:"85%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}],
+            "3-5-2": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"85%",l:"45%"},{t:"50%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}],
+            "4-2-3-1":[{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"20%",l:"65%"},{t:"50%",l:"60%"},{t:"80%",l:"65%"},{t:"50%",l:"88%"}],
+            "3-4-3": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"40%",l:"45%"},{t:"60%",l:"45%"},{t:"85%",l:"45%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}]
+        };
+
         window.onload = function() {
             carregarDados();
         };
@@ -250,19 +284,21 @@
             gameState = Engine.carregarJogo();
             if(!gameState) { window.location.href='index.html'; return; }
 
-            // Carrega Meu Time (Casa)
-            const savedSquad = localStorage.getItem('brfutebol_formacao');
-            homeTeam = encontrarTime(gameState.meuTime);
-            
-            // Separa Titulares e Reservas com base no save da escalação
-            organizarElenco(homeTeam, savedSquad);
+            // Tenta pegar formação do localStorage
+            const savedForm = localStorage.getItem('brfutebol_formacao');
+            const savedScheme = localStorage.getItem('brfutebol_esquema');
+            if(savedScheme) formacaoAtual = savedScheme;
 
-            // Carrega Oponente (Visitante)
+            // Carrega Times
+            homeTeam = encontrarTime(gameState.meuTime);
             const opNome = localStorage.getItem('brfutebol_oponente_atual') || "Visitante";
             awayTeam = encontrarTime(opNome);
             if(!awayTeam.elenco || awayTeam.elenco.length===0) awayTeam.elenco = gerarGenericos(awayTeam.nome);
 
-            // Renderiza Header
+            // Organiza Elenco (Titulares/Reservas)
+            organizarElenco(homeTeam, savedForm);
+
+            // Renderiza Infos
             document.getElementById('home-name').innerText = homeTeam.nome;
             document.getElementById('home-logo').src = homeTeam.escudo;
             document.getElementById('away-name').innerText = awayTeam.nome;
@@ -276,23 +312,39 @@
             titulares = [];
             reservas = [];
             
+            // Tenta usar o JSON salvo
             if(jsonEscalacao) {
-                const map = JSON.parse(jsonEscalacao);
-                const idsEmCampo = Object.values(map); // UIDs dos titulares
-                
-                time.elenco.forEach(jog => {
-                    // Se o UID estiver no mapa E a chave começar com 'slot-' (ignora banco salvo no json se houver)
-                    const key = Object.keys(map).find(k => map[k] === jog.uid);
-                    if(key && key.startsWith('slot-')) {
-                        titulares.push(jog);
-                    } else {
-                        reservas.push(jog);
+                try {
+                    const map = JSON.parse(jsonEscalacao);
+                    
+                    // Mapeia posições visuais
+                    for(let i=1; i<=11; i++) {
+                        const uid = map[`slot-${i}`];
+                        const jog = time.elenco.find(j => j.uid === uid);
+                        if(jog) {
+                            titulares.push(jog);
+                            // Salva a coordenada para usar no modal
+                            const coords = layouts[formacaoAtual] ? layouts[formacaoAtual][i-1] : {t:"50%",l:"50%"};
+                            mapPosicoes[jog.uid] = coords;
+                        }
                     }
-                });
-            } else {
-                // Fallback: 11 primeiros
+                    // O resto vai pro banco
+                    time.elenco.forEach(j => {
+                        if(!titulares.includes(j)) reservas.push(j);
+                    });
+                } catch(e) { console.log("Erro parse escalação", e); }
+            }
+
+            // Fallback: Se não achou ninguém (bug ou sem save), pega os 11 primeiros
+            if(titulares.length === 0) {
+                console.warn("Usando escalação automática de emergência");
                 titulares = time.elenco.slice(0, 11);
                 reservas = time.elenco.slice(11);
+                // Gera coordenadas padrao
+                titulares.forEach((jog, i) => {
+                    const coords = layouts[formacaoAtual] ? layouts[formacaoAtual][i] : {t:"50%",l:"50%"};
+                    mapPosicoes[jog.uid] = coords;
+                });
             }
         }
 
@@ -300,7 +352,7 @@
             const db = window.database || window.Database;
             for(let s in db.brasil) {
                 const t = db.brasil[s].find(x => x.nome === nome);
-                if(t) return JSON.parse(JSON.stringify(t)); // Clone para não alterar original
+                if(t) return JSON.parse(JSON.stringify(t)); 
             }
             return { nome: nome, escudo: "", elenco: [] };
         }
@@ -309,7 +361,7 @@
             let l=[]; for(let i=0;i<15;i++) l.push({nome:`Jog ${i}`, pos:'ATA'}); return l;
         }
 
-        // --- ENGINE DO JOGO ---
+        // --- ENGINE JOGO ---
         function iniciarRelogio() {
             clearInterval(matchInterval);
             matchInterval = setInterval(loopJogo, speed);
@@ -319,29 +371,21 @@
             tempo++;
             document.getElementById('timer-display').innerText = `${etapa}º ${tempo}'`;
 
-            // EVENTOS DE JOGO
             if(Math.random() < 0.04) processarLance();
 
-            // INTERVALO (45') - OBRIGATÓRIO
             if(tempo === 45 && etapa === 1) {
                 pausarJogo();
                 adicionarLog("Juiz", "Fim do primeiro tempo! Intervalo.", "card");
-                etapa = 2;
-                tempo = 0;
-                setTimeout(() => {
-                    alert("Intervalo! Aproveite para mexer no time.");
-                    abrirModalSub(); // Abre a tela de substituição
-                }, 500);
+                etapa = 2; tempo = 0;
+                setTimeout(() => { alert("Intervalo!"); abrirModalSub(); }, 500);
             }
 
-            // FIM DE JOGO (90')
-            if(tempo === 45 && etapa === 2) { // 45 do 2o tempo = 90
+            if(tempo === 45 && etapa === 2) {
                 pausarJogo();
                 document.getElementById('timer-display').innerText = "FIM";
-                adicionarLog("Juiz", "Apita o árbitro! Fim de jogo!", "card");
-                
+                adicionarLog("Juiz", "Fim de jogo!", "card");
                 setTimeout(() => {
-                    if(confirm("Fim de jogo! Voltar ao menu?")) {
+                    if(confirm("Fim de jogo! Voltar?")) {
                         localStorage.removeItem('brfutebol_oponente_atual');
                         window.location.href = 'dashboard.html';
                     }
@@ -350,183 +394,170 @@
         }
 
         function processarLance() {
-            // Lógica simplificada de chance
-            const forcaH = calcularForcaEmCampo(titulares);
-            const forcaA = (awayTeam.forca || 60);
-            const diff = forcaH - forcaA;
-            
-            // Chance baseada na força
+            // Lógica simples
+            const diff = (calcularMedia(titulares) - (awayTeam.forca||60));
+            const chanceH = 50 + (diff/2);
             const rng = Math.random() * 100;
-            const chanceH = 50 + (diff/2); // Se H for mais forte, chance > 50
 
-            if(rng < chanceH) {
-                // Ataque Casa
+            if(rng < chanceH) { // Ataque Casa
                 if(Math.random() < 0.15) gol(true);
-                else {
-                    stats.homeSho++;
-                    adicionarLog(homeTeam.nome, "Chega com perigo e chuta pra fora!", "danger");
-                }
-            } else {
-                // Ataque Fora
+                else { stats.homeSho++; adicionarLog(homeTeam.nome, "Chute perigoso!", "danger"); }
+            } else { // Ataque Fora
                 if(Math.random() < 0.15) gol(false);
-                else {
-                    stats.awaySho++;
-                    adicionarLog(awayTeam.nome, "Contra-ataque rápido... para fora!", "danger");
-                }
+                else { stats.awaySho++; adicionarLog(awayTeam.nome, "Contra-ataque... pra fora!", "danger"); }
             }
-            atualizarUIStats();
+            atualizarStats();
         }
 
         function gol(isHome) {
             pausarJogo();
-            const time = isHome ? homeTeam : awayTeam;
-            let autor = "Desconhecido";
-
-            if(isHome) {
-                placar.home++;
-                stats.homeSho++;
-                // Escolhe um titular aleatório
-                if(titulares.length > 0) autor = titulares[Math.floor(Math.random()*titulares.length)].nome;
-            } else {
-                placar.away++;
-                stats.awaySho++;
-                autor = awayTeam.elenco[0]?.nome || "Atacante";
-            }
-
+            if(isHome) { placar.home++; stats.homeSho++; } else { placar.away++; stats.awaySho++; }
+            
             document.getElementById('score-home').innerText = placar.home;
             document.getElementById('score-away').innerText = placar.away;
             
+            const autor = isHome ? titulares[Math.floor(Math.random()*titulares.length)].nome : "Adversário";
             document.getElementById('goal-scorer-name').innerText = autor;
             document.getElementById('goal-overlay').style.display = 'flex';
-            adicionarLog("GOOOL", `${autor} marca para o ${time.nome}!`, "goal");
+            adicionarLog("GOL", `${autor} marca!`, "goal");
 
-            setTimeout(() => {
-                document.getElementById('goal-overlay').style.display = 'none';
-                iniciarRelogio();
-            }, 2000);
+            setTimeout(() => { document.getElementById('goal-overlay').style.display='none'; iniciarRelogio(); }, 2000);
         }
 
-        function calcularForcaEmCampo(lista) {
-            if(!lista.length) return 0;
-            let soma = 0; lista.forEach(j => soma+=j.forca);
-            return soma / lista.length;
-        }
-
-        // --- SUBSTITUIÇÕES (UI & LÓGICA) ---
+        // --- SISTEMA DE SUBSTITUIÇÃO VISUAL ---
         function abrirModalSub() {
-            pausarJogo(); // Pausa o tempo
+            pausarJogo();
             document.getElementById('sub-modal').style.display = 'flex';
-            renderizarListasSub();
+            renderizarCampoSub();
+            renderizarListaReservas();
             subPending = { sai: null, entra: null };
-            atualizarMsgSub();
+            atualizarUIBotao();
         }
 
         function fecharModalSub() {
             document.getElementById('sub-modal').style.display = 'none';
-            // Se não for intervalo, retoma o jogo
-            if(!(etapa === 2 && tempo === 0)) iniciarRelogio();
+            if(!(etapa===2 && tempo===0)) iniciarRelogio();
         }
 
-        function renderizarListasSub() {
-            const divT = document.getElementById('list-titulares');
-            const divR = document.getElementById('list-reservas');
-            divT.innerHTML = '<h4>Em Campo</h4>';
-            divR.innerHTML = '<h4>Banco</h4>';
+        function renderizarCampoSub() {
+            const container = document.getElementById('pitch-container');
+            // Limpa jogadores antigos (mantém as linhas)
+            const nodes = container.querySelectorAll('.sub-p-node');
+            nodes.forEach(n => n.remove());
 
-            titulares.forEach(j => divT.appendChild(criarItemJog(j, 'sai')));
-            reservas.forEach(j => divR.appendChild(criarItemJog(j, 'entra')));
+            titulares.forEach(jog => {
+                const pos = mapPosicoes[jog.uid] || {t:"50%", l:"50%"};
+                
+                const el = document.createElement('div');
+                el.className = 'sub-p-node';
+                el.style.top = pos.t;
+                el.style.left = pos.l;
+                el.onclick = () => selecionarSai(jog.uid, el);
+                
+                el.innerHTML = `
+                    <div class="sub-kit">${jog.pos}</div>
+                    <div class="sub-name">${jog.nome.split(' ')[0]}</div>
+                `;
+                el.dataset.uid = jog.uid;
+                container.appendChild(el);
+            });
         }
 
-        function criarItemJog(j, tipo) {
-            const div = document.createElement('div');
-            div.className = 'player-row';
-            div.onclick = () => selecionarJogSub(j.uid, tipo, div);
-            div.innerHTML = `
-                <div class="pos-tag">${j.pos}</div>
-                <div class="p-name">${j.nome}</div>
-                <div class="p-ovr">${j.forca}</div>
-            `;
-            return div;
+        function renderizarListaReservas() {
+            const lista = document.getElementById('list-reservas');
+            lista.innerHTML = '<h4>Banco de Reservas</h4>';
+            
+            reservas.forEach(jog => {
+                const el = document.createElement('div');
+                el.className = 'player-row';
+                el.innerHTML = `<span style="font-weight:bold; width:30px">${jog.pos}</span> <span>${jog.nome}</span> <span style="margin-left:auto">${jog.forca}</span>`;
+                el.onclick = () => selecionarEntra(jog.uid, el);
+                el.dataset.uid = jog.uid;
+                lista.appendChild(el);
+            });
         }
 
-        function selecionarJogSub(uid, tipo, el) {
-            // UI
-            const container = tipo === 'sai' ? 'list-titulares' : 'list-reservas';
-            document.getElementById(container).querySelectorAll('.player-row').forEach(r => r.classList.remove('selected'));
-            el.classList.add('selected');
-
-            // Logic
-            subPending[tipo] = uid;
-            atualizarMsgSub();
+        function selecionarSai(uid, el) {
+            document.querySelectorAll('.sub-p-node').forEach(n => n.classList.remove('selected-out'));
+            el.classList.add('selected-out');
+            subPending.sai = uid;
+            atualizarUIBotao();
         }
 
-        function atualizarMsgSub() {
+        function selecionarEntra(uid, el) {
+            document.querySelectorAll('.player-row').forEach(n => n.classList.remove('selected-in'));
+            el.classList.add('selected-in');
+            subPending.entra = uid;
+            atualizarUIBotao();
+        }
+
+        function atualizarUIBotao() {
+            const btn = document.getElementById('btn-confirm-sub');
             const msg = document.getElementById('sub-msg');
+            
             if(subPending.sai && subPending.entra) {
-                msg.innerHTML = "<span style='color:var(--accent)'>Pronto para confirmar!</span>";
+                btn.disabled = false;
+                msg.innerText = "Troca pronta para confirmar.";
+                msg.style.color = "var(--accent)";
             } else {
-                msg.innerHTML = "Selecione quem sai e quem entra...";
+                btn.disabled = true;
+                msg.innerText = "Selecione um jogador no campo e um no banco.";
+                msg.style.color = "#888";
             }
         }
 
         function confirmarSub() {
             if(!subPending.sai || !subPending.entra) return;
 
-            // Encontra índices
             const idxSai = titulares.findIndex(j => j.uid === subPending.sai);
             const idxEntra = reservas.findIndex(j => j.uid === subPending.entra);
 
             if(idxSai > -1 && idxEntra > -1) {
-                const jogadorSai = titulares[idxSai];
-                const jogadorEntra = reservas[idxEntra];
+                const jogSai = titulares[idxSai];
+                const jogEntra = reservas[idxEntra];
 
                 // Troca Arrays
-                titulares.splice(idxSai, 1); // Remove titular
-                reservas.splice(idxEntra, 1); // Remove reserva
-                
-                titulares.push(jogadorEntra); // Entra no campo
-                // reservas.push(jogadorSai); // Opcional: quem sai volta pro banco? No futebol real sim, mas não joga mais. Aqui vamos simplificar e deixar ele sumir ou ir pro fim.
-                reservas.push(jogadorSai);
+                titulares[idxSai] = jogEntra;
+                reservas.splice(idxEntra, 1);
+                reservas.push(jogSai);
 
-                adicionarLog("Substituição", `Sai: ${jogadorSai.nome} 🔻 | Entra: ${jogadorEntra.nome} 🔺`, "sub");
+                // Troca Visual (Coordenadas)
+                mapPosicoes[jogEntra.uid] = mapPosicoes[jogSai.uid];
+                delete mapPosicoes[jogSai.uid];
+
+                adicionarLog("Substituição", `Saiu ${jogSai.nome} 🔻 Entrou ${jogEntra.nome} 🔺`, "sub");
                 
-                // Reset e Re-render
-                subPending = { sai:null, entra:null };
-                renderizarListasSub();
-                alert("Substituição realizada!");
+                // Re-render
+                renderizarCampoSub();
+                renderizarListaReservas();
+                
+                subPending = { sai: null, entra: null };
+                atualizarUIBotao();
             }
         }
 
-        // --- UTILITÁRIOS ---
-        function adicionarLog(head, text, type) {
-            const feed = document.getElementById('feed');
-            const div = document.createElement('div');
-            div.className = `feed-item ${type}`;
-            div.innerHTML = `<div class="feed-time">${tempo}'</div><div><b>${head}</b> ${text}</div>`;
-            feed.prepend(div);
+        // --- UTIL ---
+        function adicionarLog(h, t, cl) {
+            const f = document.getElementById('feed');
+            const d = document.createElement('div');
+            d.className = `feed-item ${cl}`;
+            d.innerHTML = `<div class="feed-time">${tempo}'</div><div><b>${h}</b> ${t}</div>`;
+            f.prepend(d);
         }
 
-        function atualizarUIStats() {
-            document.getElementById('stat-sho-h').innerText = stats.homeSho;
-            document.getElementById('stat-sho-a').innerText = stats.awaySho;
-            const total = stats.homeSho + stats.awaySho || 1;
-            document.getElementById('bar-sho-h').style.width = ((stats.homeSho/total)*100) + "%";
+        function calcularMedia(arr) { return arr.reduce((a,b)=>a+b.forca,0)/arr.length; }
+        function atualizarStats() {
+            document.getElementById('stat-sho-h').innerText=stats.homeSho;
+            document.getElementById('stat-sho-a').innerText=stats.awaySho;
+            const t = stats.homeSho+stats.awaySho||1;
+            document.getElementById('bar-sho-h').style.width=((stats.homeSho/t)*100)+"%";
         }
-
         function pausarJogo() { clearInterval(matchInterval); }
-
-        function setSpeed(mult, btn) {
-            document.querySelectorAll('.btn-speed').forEach(b => b.classList.remove('active'));
+        function setSpeed(m, btn) {
+            document.querySelectorAll('.btn-speed').forEach(b=>b.classList.remove('active'));
             btn.classList.add('active');
-            
-            if(mult === 1) speed = 200;
-            if(mult === 2) speed = 80;
-            if(mult === 3) speed = 10; // Instantâneo
-
-            // Se o jogo não estiver parado (intervalo/fim), reinicia com nova velocidade
-            if(!document.getElementById('sub-modal').style.display.includes('flex')) {
-                iniciarRelogio();
-            }
+            speed = m===1?200 : m===2?80 : 10;
+            if(!document.getElementById('sub-modal').style.display.includes('flex')) iniciarRelogio();
         }
 
     </script>
