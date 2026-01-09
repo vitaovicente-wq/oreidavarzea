@@ -6,7 +6,7 @@
     <title>BRFutebol - Novo Jogo</title>
     
     <script src="database_jogadores.js"></script>
-    <script src="engine.js"></script>
+    <script src="calendario.js"></script> <script src="engine.js"></script>
 
     <style>
         /* --- ESTILOS VISUAIS --- */
@@ -115,6 +115,7 @@
             box-shadow: 0 0 25px rgba(46, 204, 113, 0.3); transition: 0.2s;
         }
         .btn-start:hover { transform: scale(1.05); box-shadow: 0 0 35px rgba(46, 204, 113, 0.5); }
+        .btn-start:disabled { background: #555; cursor: not-allowed; box-shadow: none; }
 
         @media (max-width: 700px) {
             .report-grid { grid-template-columns: 1fr 1fr; }
@@ -182,50 +183,57 @@
     </div>
 
     <script>
-        // --- ZONA DE CORREÇÃO AUTOMÁTICA (EXECUTA IMEDIATAMENTE) ---
+        // --- ZONA DE CORREÇÃO E INICIALIZAÇÃO ---
         
-        // 1. FIX DE NOME (Database vs database)
+        // 1. Compatibilidade de nomes (Database vs database)
         if (typeof database !== 'undefined') window.Database = database;
         if (typeof Database !== 'undefined') window.database = Database;
 
-        // 2. ADAPTADOR DE ESTRUTURA E ELENCO
+        // 2. Inicialização do Banco de Dados e Correções
         window.onload = function() {
-            console.log("🛠️ Iniciando verificação do Banco de Dados...");
+            console.log("🛠️ Iniciando verificação do sistema...");
             
+            // Verifica se a Engine carregou
+            if (typeof Engine === 'undefined') {
+                console.error("❌ ERRO CRÍTICO: Engine não encontrada! Verifique o arquivo engine.js");
+            } else {
+                console.log("✅ Engine carregada com sucesso.");
+            }
+
+            // Verifica se o Calendario carregou
+            if (typeof CalendarioSystem === 'undefined') {
+                console.warn("⚠️ AVISO: Sistema de Calendário não encontrado. O jogo pode falhar ao iniciar.");
+            }
+
             if (window.Database && window.Database.brasil) {
-                
                 // A) Se for lista única, transforma em divisões
                 if (Array.isArray(window.Database.brasil)) {
                     console.log("⚠️ Lista única detectada. Organizando em divisões...");
                     const todosTimes = window.Database.brasil;
                     window.Database.brasil = {
-                        'serieA': todosTimes, // Coloca todos na Série A por segurança
-                        'serieB': [],
-                        'serieC': [],
-                        'serieD': []
+                        'serieA': todosTimes,
+                        'serieB': [], 'serieC': [], 'serieD': []
                     };
                 }
 
-                // B) GARANTIA DE ELENCO (O FIX PARA O ERRO DO FOREACH)
+                // B) Garantia de Elenco (Cria jogadores se não existirem)
                 const divisoes = ['serieA', 'serieB', 'serieC', 'serieD'];
                 divisoes.forEach(div => {
                     if (window.Database.brasil[div]) {
                         window.Database.brasil[div].forEach(time => {
-                            // Se o time não tem elenco, cria um elenco genérico
                             if (!time.elenco || !Array.isArray(time.elenco)) {
                                 time.elenco = gerarElencoGenerico(time.nome);
                             }
                         });
                     }
                 });
-                console.log("✅ Banco de dados corrigido e pronto!");
+                console.log("✅ Banco de dados pronto!");
             }
             
-            // Inicia a interface
             checkStep1();
         };
 
-        // Função auxiliar para criar jogadores falsos se o banco não tiver
+        // Função auxiliar para criar jogadores genéricos
         function gerarElencoGenerico(nomeTime) {
             let jogadores = [];
             const posicoes = ['GOL', 'GOL', 'ZAG', 'ZAG', 'ZAG', 'ZAG', 'LE', 'LD', 'VOL', 'VOL', 'MEI', 'MEI', 'MEI', 'ATA', 'ATA', 'ATA', 'ATA'];
@@ -234,14 +242,15 @@
                     id: `${nomeTime.substring(0,3).replace(/\s/g, '')}_${i}`,
                     nome: `Jogador ${pos} ${i+1}`,
                     pos: pos,
-                    forca: Math.floor(Math.random() * 20) + 60, // Força entre 60 e 80
+                    forca: Math.floor(Math.random() * 20) + 60,
                     saude: 100,
                     salario: 50000
                 });
             });
             return jogadores;
         }
-        // -----------------------------------------------------------
+
+        // --- LÓGICA DA INTERFACE ---
 
         let selectedDivision = null;
         let selectedTeamObj = null;
@@ -289,7 +298,6 @@
             }
 
             let listaTimes = [];
-            // Lógica inteligente: Se a divisão estiver vazia, tenta pegar da Série A ou gera genérico
             if (window.Database.brasil[divisao] && window.Database.brasil[divisao].length > 0) {
                 listaTimes = window.Database.brasil[divisao];
             } else if (divisao === 'serieA' && window.Database.brasil.serieA) {
@@ -338,7 +346,6 @@
             document.getElementById('info-estadio').innerText = estadiosDB[t.nome] || `Arena ${t.nome}`;
 
             const elCraque = document.getElementById('info-craque');
-            // Tenta pegar o melhor jogador do elenco
             if (t.elenco && t.elenco.length > 0) {
                  const craque = t.elenco.reduce((prev, current) => (prev.forca > current.forca) ? prev : current);
                  elCraque.innerText = craque.nome;
@@ -367,11 +374,17 @@
             const nomeTecnico = document.getElementById('coach-name').value;
             if (!nomeTecnico || !selectedTeamObj) return;
 
+            // Proteção contra falta de Engine
+            if (typeof Engine === 'undefined') {
+                alert("ERRO: O arquivo engine.js não foi carregado corretamente. Verifique se ele está na pasta.");
+                return;
+            }
+
             const btn = document.querySelector('.btn-start');
             btn.innerText = "CONTRATANDO...";
             btn.disabled = true;
 
-            // Limpa configurações antigas para não bugar
+            // Limpa configurações antigas
             localStorage.removeItem('brfutebol_formacao'); 
             localStorage.removeItem('brfutebol_esquema');
             localStorage.removeItem('brfutebol_funcoes');
@@ -382,13 +395,14 @@
 
             setTimeout(() => {
                 try {
-                    // Se o time estiver na Série A criada pelo adaptador, usa 'serieA', senão usa a divisão clicada
                     let divisaoReal = selectedDivision;
                     if (window.Database.brasil['serieA'] && window.Database.brasil['serieA'].includes(selectedTeamObj)) {
                         divisaoReal = 'serieA';
                     }
 
+                    // A chamada principal para iniciar o jogo
                     Engine.novoJogo('brasil', divisaoReal, selectedTeamObj.nome);
+                    
                     window.location.href = 'dashboard.html';
                 } catch (e) {
                     console.error(e);
