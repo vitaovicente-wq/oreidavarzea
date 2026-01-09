@@ -4,448 +4,230 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BRFutebol - Painel</title>
-    
-    <script src="database_jogadores.js"></script>
     <script src="engine.js"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-    
     <style>
-        :root {
-            --bg-dark: #0f1216;
-            --bg-panel: #1e2329;
-            --accent: #00ff88;
-            --text-main: #ffffff;
-            --text-dim: #8b9bb4;
-            --border: 1px solid rgba(255, 255, 255, 0.1);
-            --gold: #f1c40f;
-        }
+        /* --- ESTILOS (Dark Theme) --- */
+        :root { --bg: #0d1115; --card: #161b22; --green: #2ecc71; --text: #ecf0f1; --border: #333; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
 
-        * { box-sizing: border-box; }
+        /* MENU LATERAL */
+        .sidebar { width: 250px; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; }
+        .logo { font-size: 1.5rem; font-weight: 900; margin-bottom: 30px; letter-spacing: 1px; }
+        .logo span { color: var(--green); }
+        .menu-item { padding: 12px; margin-bottom: 5px; cursor: pointer; border-radius: 8px; color: #888; transition: 0.2s; text-decoration: none; display: block; }
+        .menu-item:hover, .menu-item.active { background: rgba(46, 204, 113, 0.1); color: var(--green); }
+        .btn-sair { margin-top: auto; color: #ff4757; }
 
-        /* SCROLLBAR CUSTOMIZADA */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #111; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            margin: 0;
-            display: grid;
-            grid-template-columns: 250px 1fr;
-            min-height: 100vh;
-        }
-
-        /* SIDEBAR */
-        .sidebar {
-            background: #161b22;
-            border-right: var(--border);
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .logo-area {
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-bottom: 30px;
-            color: #fff;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-        .logo-area span { color: var(--accent); }
-
-        .nav-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-dim);
-            text-align: left;
-            padding: 12px 15px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: 0.2s;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .nav-btn:hover, .nav-btn.active {
-            background: rgba(0, 255, 136, 0.1);
-            color: var(--accent);
-        }
-
-        /* CONTEÚDO PRINCIPAL */
-        .main-content { padding: 30px; overflow-y: auto; }
-
-        /* CABEÇALHO DO TIME */
-        .dash-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 30px;
-            background: var(--bg-panel); padding: 20px; border-radius: 12px;
-            border: var(--border);
-        }
+        /* ÁREA PRINCIPAL */
+        .content { flex: 1; padding: 30px; overflow-y: auto; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; grid-template-rows: auto 1fr; }
         
-        .team-profile { display: flex; align-items: center; gap: 20px; }
-        .team-shield { width: 60px; height: 60px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5)); }
-        .team-info h2 { margin: 0; font-family: 'Rajdhani'; text-transform: uppercase; font-size: 1.5rem; }
-        .coach-name { color: var(--text-dim); font-size: 0.9rem; margin-top: 5px; }
+        /* CARDS */
+        .header-card { grid-column: 1 / -1; background: var(--card); padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
+        .team-info h2 { margin: 0; font-size: 1.8rem; }
+        .team-info p { margin: 5px 0 0; color: #666; font-size: 0.9rem; }
+        .status-pill { background: #000; padding: 5px 15px; border-radius: 20px; font-size: 0.9rem; border: 1px solid #333; display: flex; gap: 15px; }
 
-        .status-pill {
-            background: #111; padding: 8px 20px; border-radius: 30px;
-            border: 1px solid #333; font-family: 'Rajdhani'; font-weight: 700;
-            display: flex; gap: 20px; align-items: center;
-        }
-        .stat-item span { color: var(--accent); }
-        .window-open { color: var(--gold) !important; animation: pulse 2s infinite; }
-
-        /* GRID DE CARDS */
-        .grid-container { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-
-        .card {
-            background: var(--bg-panel); border: var(--border);
-            border-radius: 12px; padding: 20px;
-        }
-        .card-title {
-            font-family: 'Rajdhani'; font-weight: 700; text-transform: uppercase;
-            color: var(--text-dim); font-size: 0.9rem; margin-bottom: 15px;
-            display: flex; justify-content: space-between;
-        }
+        .game-card { background: var(--card); border-radius: 12px; border: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; }
+        .card-title { font-size: 0.9rem; color: #666; text-transform: uppercase; font-weight: bold; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
 
         /* PRÓXIMO JOGO */
-        .next-match {
-            display: flex; align-items: center; justify-content: space-between;
-            background: linear-gradient(90deg, #1e2329 0%, #161b22 100%);
-            padding: 30px; border-radius: 8px; border: 1px solid #333;
-            position: relative; overflow: hidden;
-        }
-        .match-team { text-align: center; width: 30%; z-index: 2; }
-        .match-team img { width: 60px; height: 60px; margin-bottom: 10px; }
-        .match-team h3 { margin: 0; font-size: 1.1rem; }
+        .match-display { display: flex; justify-content: space-around; align-items: center; padding: 20px 0; }
+        .team-vs { text-align: center; width: 100px; }
+        .team-vs img { width: 50px; height: 50px; object-fit: contain; margin-bottom: 5px; }
+        .vs-sign { font-size: 1.5rem; font-weight: 900; color: #333; }
+        .btn-play { background: var(--green); color: #fff; border: none; width: 100%; padding: 15px; border-radius: 8px; font-weight: 900; font-size: 1rem; cursor: pointer; text-transform: uppercase; margin-top: auto; }
+        .btn-play:hover { opacity: 0.9; }
+
+        /* TABELA */
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th { text-align: left; color: #666; padding: 5px; font-size: 0.8rem; }
+        td { padding: 8px 5px; border-bottom: 1px solid #222; }
+        .pos-num { width: 20px; color: #888; }
+        .my-team-row { color: var(--green); font-weight: bold; }
+
+        /* ELENCO */
+        .squad-list { display: flex; flex-direction: column; gap: 5px; max-height: 300px; overflow-y: auto; }
+        .player-row { display: flex; justify-content: space-between; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 4px; }
+        .pl-pos { font-weight: bold; width: 40px; color: #666; font-size: 0.8rem; }
         
-        .vs-badge {
-            font-family: 'Rajdhani'; font-size: 2rem; font-weight: 900; color: #333;
-            background: #000; width: 50px; height: 50px; display: flex;
-            align-items: center; justify-content: center; border-radius: 50%;
-            border: 2px solid #333; z-index: 2;
-        }
-
-        .play-btn {
-            width: 100%; margin-top: 20px; padding: 15px;
-            background: var(--accent); color: #000; border: none;
-            font-family: 'Rajdhani'; font-weight: 800; font-size: 1.2rem;
-            text-transform: uppercase; border-radius: 6px; cursor: pointer;
-            transition: 0.2s;
-        }
-        .play-btn:hover { transform: scale(1.02); background: #fff; }
-
-        /* TABELA E LISTAS */
-        .mini-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        .mini-table th { text-align: left; color: #666; padding: 8px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
-        .mini-table td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
-        .pos-num { font-weight: 700; width: 30px; display: inline-block; }
-        .my-team-row { background: rgba(0, 255, 136, 0.1); color: var(--accent); font-weight: bold; }
-        
-        .health-track { width: 100%; height: 4px; background: #333; border-radius: 2px; margin-top: 5px; position: relative; }
-        .health-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
-
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-
-        @media (max-width: 800px) {
-            body { grid-template-columns: 1fr; }
-            .sidebar { display: none; }
-            .grid-container { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 900px) { .content { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div class="logo-area">BR<span>FUTEBOL</span></div>
-        <button class="nav-btn active">📊 Visão Geral</button>
-        <button class="nav-btn" onclick="window.location.href='escalacao.html'">👕 Escalação</button>
-        <button class="nav-btn" onclick="window.location.href='calendario.html'">📅 Calendário</button>
-        <button class="nav-btn" onclick="alert('Janela de transferências fechada no momento.')" id="btn-transfer">💰 Transferências</button>
-        <button class="nav-btn" onclick="alert('Sala de Imprensa: Nenhuma coletiva agendada.')">📰 Sala de Imprensa</button>
-        
-        <div style="margin-top: auto;">
-            <button class="nav-btn" onclick="resetGame()" style="color: #ff4757;">✖ Sair do Jogo</button>
-        </div>
-    </div>
+    <nav class="sidebar">
+        <div class="logo">BR<span>FUTEBOL</span></div>
+        <a class="menu-item active">🏠 Visão Geral</a>
+        <a class="menu-item" href="calendario.html">📅 Calendário</a>
+        <a class="menu-item">👕 Elenco</a>
+        <a class="menu-item btn-sair" onclick="sair()">✖ Sair do Jogo</a>
+    </nav>
 
-    <div class="main-content">
-        
-        <div class="dash-header">
-            <div class="team-profile">
-                <img id="dash-escudo" src="" class="team-shield">
-                <div class="team-info">
-                    <h2 id="dash-team-name">Carregando...</h2>
-                    <div class="coach-name">Técnico: <span id="dash-coach">---</span></div>
-                </div>
+    <main class="content">
+        <div class="header-card">
+            <div class="team-info">
+                <h2 id="team-name">Carregando...</h2>
+                <p id="coach-name">Técnico: ---</p>
             </div>
             <div class="status-pill">
-                <div class="stat-item">💰 <span id="dash-money">---</span></div>
-                <div class="stat-item">📅 Rodada <span id="dash-week">1</span></div>
-                <div id="window-indicator" style="display:none;" class="stat-item window-open">🔓 JANELA ABERTA</div>
+                <span id="money-display">R$ ---</span>
+                <span id="round-display">Rodada 1</span>
             </div>
         </div>
 
-        <div class="grid-container">
-            
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-                
-                <div class="card">
-                    <div class="card-title">
-                        <span>PRÓXIMO JOGO</span>
-                        <span id="match-type" style="color:#888; font-size:0.8rem">BRASILEIRÃO</span>
-                    </div>
-                    <div class="next-match">
-                        <div class="match-team">
-                            <img id="home-logo" src="">
-                            <h3 id="home-name">Casa</h3>
-                        </div>
-                        <div class="vs-badge">VS</div>
-                        <div class="match-team">
-                            <img id="away-logo" src="">
-                            <h3 id="away-name">Fora</h3>
-                        </div>
-                    </div>
-                    <button class="play-btn" onclick="irParaPartida()">IR PARA O ESTÁDIO 🏟️</button>
-                </div>
-
-                <div class="card" style="max-height: 600px; overflow-y: auto;">
-                    <div class="card-title">ELENCO DO CLUBE</div>
-                    <table class="mini-table">
-                        <thead>
-                            <tr>
-                                <th width="10%">POS</th>
-                                <th width="40%">NOME</th>
-                                <th width="10%">OVR</th>
-                                <th width="20%">SAÚDE</th>
-                                <th width="20%">CARAC.</th>
-                            </tr>
-                        </thead>
-                        <tbody id="squad-body">
-                            </tbody>
-                    </table>
-                </div>
-
+        <div class="game-card">
+            <div class="card-title">Próximo Desafio</div>
+            <div class="match-display" id="next-match-area">
+                <p>Carregando confronto...</p>
             </div>
+            <button class="btn-play" onclick="irParaJogo()">Ir para o Estádio 🏟️</button>
+        </div>
 
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-                
-                <div class="card">
-                    <div class="card-title">RELATÓRIO TÉCNICO</div>
-                    <div style="text-align: center; padding: 15px;">
-                        <div style="font-size: 3rem; font-weight: 800; color: var(--accent);" id="team-ovr">0</div>
-                        <div style="color: #666; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Força Geral</div>
-                    </div>
-                    <div style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 8px;">
-                            <span style="color:#aaa">Confiança da Diretoria</span><span style="color:#fff">100%</span>
-                        </div>
-                        <div style="width: 100%; height: 6px; background: #333; border-radius: 3px;">
-                            <div style="width: 100%; height: 100%; background: var(--accent); border-radius: 3px;"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-title">CLASSIFICAÇÃO</div>
-                    <table class="mini-table">
-                        <thead><tr><th>#</th><th>TIME</th><th>P</th></tr></thead>
-                        <tbody id="table-body">
-                            </tbody>
+        <div class="game-card" style="grid-row: span 2">
+            <div class="card-title">Classificação</div>
+            <div style="overflow-y: auto; max-height: 400px;">
+                <table id="table-body">
                     </table>
-                </div>
-
             </div>
         </div>
-    </div>
+
+        <div class="game-card">
+            <div class="card-title">Elenco Principal</div>
+            <div class="squad-list" id="squad-body">
+                </div>
+        </div>
+    </main>
 
     <script>
-        if (typeof database !== 'undefined') window.Database = database;
-        if (typeof Database !== 'undefined') window.database = Database;
+        // --- LÓGICA DO DASHBOARD ---
 
+        // 1. Carregar dados ao iniciar
         window.onload = function() {
-            // Garante estrutura
-            if (window.Database && window.Database.brasil && Array.isArray(window.Database.brasil)) {
-                const todos = window.Database.brasil;
-                window.Database.brasil = { 'serieA': todos, 'serieB': [], 'serieC': [], 'serieD': [] };
-            }
-            carregarDados();
-        };
-
-        let gameState = null;
-        let meuTime = null;
-
-        function carregarDados() {
-            try {
-                // Tenta carregar o save
-                gameState = Engine.carregarJogo();
-                
-                // Se não tem save ou é um save antigo sem calendário, força reset
-                if (!gameState || !gameState.calendario) {
-                    alert("Atenção: A estrutura do jogo mudou (Novo Calendário). Por favor, inicie um Novo Jogo.");
-                    window.location.href = 'index.html';
-                    return;
-                }
-
-                // 1. Carrega Time Original do DB
-                meuTime = encontrarTimeNoDatabase(gameState.meuTime);
-                if (!meuTime) meuTime = Engine.encontrarTime(gameState, gameState.meuTime);
-                if (!meuTime) throw new Error("Erro de time.");
-
-                // 2. Gera IDs (para garantir sincronia)
-                if(meuTime.elenco) {
-                    meuTime.elenco.forEach((j, i) => { j.uid = `p_${i}`; }); 
-                }
-
-                // 3. APLICA SAÚDE DO SAVE (O PASSO IMPORTANTE!)
-                if (gameState.jogadoresStatus) {
-                    meuTime.elenco.forEach(j => {
-                        const salvo = gameState.jogadoresStatus[j.uid];
-                        if (salvo && salvo.saude !== undefined) {
-                            j.saude = salvo.saude;
-                        } else {
-                            j.saude = 100;
-                        }
-                    });
-                } else {
-                    meuTime.elenco.forEach(j => j.saude = 100);
-                }
-
-                // Renderiza Header
-                document.getElementById('dash-team-name').innerText = meuTime.nome;
-                document.getElementById('dash-coach').innerText = localStorage.getItem('brfutebol_tecnico') || "Técnico";
-                document.getElementById('dash-escudo').src = localStorage.getItem('brfutebol_escudo');
-                document.getElementById('dash-money').innerText = meuTime.orcamento ? "R$ " + (meuTime.orcamento/1000000).toFixed(1) + " Mi" : "R$ 5.0 Mi";
-                document.getElementById('dash-week').innerText = gameState.rodada;
-                document.getElementById('team-ovr').innerText = meuTime.forca || 60;
-
-                // Funções de lógica
-                atualizarTabela();
-                carregarProximoJogo();
-                atualizarListaElenco();
-                verificarJanela(gameState.rodada);
-
-            } catch (e) { console.error(e); alert("Erro: " + e.message); }
-        }
-
-        function encontrarTimeNoDatabase(nomeOuId) {
-            const db = window.database || window.Database;
-            if (!db || !db.brasil) return null;
-            for (let serie in db.brasil) {
-                const lista = db.brasil[serie];
-                const achou = lista.find(t => t.id === nomeOuId || t.nome === nomeOuId);
-                if (achou) return JSON.parse(JSON.stringify(achou)); 
-            }
-            return null;
-        }
-
-        // LISTA ELENCO COM ORDENAÇÃO POR POSIÇÃO
-        function atualizarListaElenco() {
-            const tbody = document.getElementById('squad-body');
-            tbody.innerHTML = '';
+            console.log("Iniciando Dashboard...");
             
-            // Prioridade: GOL > LD/LE > ZAG > VOL > MEI > ATA
-            const ordem = {'GOL':1, 'LD':2, 'LE':2, 'ZAG':3, 'VOL':4, 'MEI':5, 'ATA':6};
-            
-            const elenco = meuTime.elenco.sort((a,b) => {
-                const pA = ordem[a.pos] || 99;
-                const pB = ordem[b.pos] || 99;
-                if(pA !== pB) return pA - pB;
-                return b.forca - a.forca;
-            });
+            // Tenta carregar o save
+            const game = Engine.carregarJogo();
 
-            elenco.forEach(jog => {
-                const tr = document.createElement('tr');
-                
-                let corPos = '#888';
-                if(jog.pos==='GOL') corPos='#e67e22'; else if(jog.pos==='ATA') corPos='#e74c3c'; else if(jog.pos==='MEI') corPos='#2ecc71'; else corPos='#3498db';
-
-                const saude = jog.saude !== undefined ? jog.saude : 100;
-                let corSaude = '#2ecc71';
-                if(saude < 80) corSaude = '#f1c40f';
-                if(saude < 50) corSaude = '#e74c3c';
-
-                tr.innerHTML = `
-                    <td><b style="color:${corPos}">${jog.pos}</b></td>
-                    <td style="font-weight:600; color:#fff;">${jog.nome}</td>
-                    <td><span style="background:#222; padding:2px 6px; border-radius:4px; font-weight:700;">${jog.forca}</span></td>
-                    <td>
-                        <div style="font-size:0.75rem; color:${corSaude}; font-weight:bold;">${saude}%</div>
-                        <div class="health-track"><div class="health-fill" style="width:${saude}%; background:${corSaude}"></div></div>
-                    </td>
-                    <td style="font-size:0.8rem; color:#8b9bb4;">${jog.carac || '-'}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // LÓGICA DO PRÓXIMO JOGO (CALENDÁRIO REAL)
-        function carregarProximoJogo() {
-            const rodadaIndex = gameState.rodada - 1; // Array base 0
-            
-            // Fim de temporada
-            if (!gameState.calendario || rodadaIndex >= gameState.calendario.length) {
-                document.getElementById('home-name').innerText = "FIM";
-                document.getElementById('away-name').innerText = "TEMP.";
+            // SE NÃO TIVER SAVE, VOLTA PRO INÍCIO
+            if (!game || !game.info) {
+                alert("Nenhum jogo encontrado. Voltando para o menu.");
+                window.location.href = 'index.html';
                 return;
             }
 
-            // Acha o jogo no calendario salvo
-            const jogosRodada = gameState.calendario[rodadaIndex];
-            const meuJogo = jogosRodada.find(j => j.casa === meuTime.nome || j.fora === meuTime.nome);
+            // 2. Preencher Cabeçalho
+            document.getElementById('team-name').innerText = game.info.time;
+            document.getElementById('coach-name').innerText = "Técnico: " + game.info.tecnico;
+            document.getElementById('money-display').innerText = "R$ " + (game.recursos.dinheiro / 1000000).toFixed(1) + " Mi";
+            document.getElementById('round-display').innerText = "Rodada " + game.rodadaAtual;
+
+            // 3. Preencher Próximo Jogo
+            renderizarProximoJogo(game);
+
+            // 4. Preencher Tabela (COM PROTEÇÃO CONTRA ERRO)
+            renderizarTabela(game);
+
+            // 5. Preencher Elenco (COM PROTEÇÃO)
+            renderizarElenco(game);
+        };
+
+        function renderizarProximoJogo(game) {
+            const area = document.getElementById('next-match-area');
+            const rodadaIndex = game.rodadaAtual - 1;
+
+            // Verifica se o calendário existe e se a rodada é válida
+            if (!game.calendario || !game.calendario[rodadaIndex]) {
+                area.innerHTML = "<p>Fim da Temporada!</p>";
+                document.querySelector('.btn-play').disabled = true;
+                return;
+            }
+
+            // Procura o jogo do meu time na rodada atual
+            const jogosDaRodada = game.calendario[rodadaIndex].jogos || [];
+            const meuJogo = jogosDaRodada.find(j => j.mandante === game.info.time || j.visitante === game.info.time);
 
             if (meuJogo) {
-                const timeCasa = encontrarTimeNoDatabase(meuJogo.casa);
-                const timeFora = encontrarTimeNoDatabase(meuJogo.fora);
-
-                document.getElementById('home-name').innerText = timeCasa.nome;
-                document.getElementById('home-logo').src = timeCasa.escudo;
-                
-                document.getElementById('away-name').innerText = timeFora.nome;
-                document.getElementById('away-logo').src = timeFora.escudo;
-
-                const oponenteNome = (meuJogo.casa === meuTime.nome) ? meuJogo.fora : meuJogo.casa;
-                localStorage.setItem('brfutebol_oponente_atual', oponenteNome);
+                const imgPadrao = "https://cdn-icons-png.flaticon.com/512/53/53283.png";
+                area.innerHTML = `
+                    <div class="team-vs">
+                        <img src="${imgPadrao}">
+                        <div>${meuJogo.mandante.substring(0,10)}</div>
+                    </div>
+                    <div class="vs-sign">VS</div>
+                    <div class="team-vs">
+                        <img src="${imgPadrao}">
+                        <div>${meuJogo.visitante.substring(0,10)}</div>
+                    </div>
+                `;
+            } else {
+                area.innerHTML = "<p>Folga nesta rodada.</p>";
             }
         }
 
-        function atualizarTabela() {
+        function renderizarTabela(game) {
             const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '';
-            
-            // Pega tabela salva do gameState
-            let timesTabela = gameState.tabela || [];
-            if(timesTabela.length === 0) return; // Se não tiver, espera a engine gerar
+            tbody.innerHTML = `<tr><th>#</th><th>Time</th><th>P</th></tr>`;
 
-            // Ordena
-            timesTabela.sort((a,b) => b.p - a.p || (b.gm-b.gs) - (a.gm-a.gs));
+            // Proteção: Se a tabela não existir, cria uma lista vazia para não dar erro
+            const lista = game.classificacao || [];
 
-            timesTabela.slice(0, 10).forEach((t, i) => {
-                const tr = document.createElement('tr');
-                if(t.nome === meuTime.nome) tr.className = 'my-team-row';
-                tr.innerHTML = `<td><span class="pos-num">${i + 1}</span></td><td>${t.nome}</td><td>${t.p}</td>`;
-                tbody.appendChild(tr);
+            lista.slice(0, 10).forEach((time, index) => {
+                const isMe = time.nome === game.info.time ? 'class="my-team-row"' : '';
+                const row = `
+                    <tr ${isMe}>
+                        <td class="pos-num">${index + 1}</td>
+                        <td>${time.nome}</td>
+                        <td><strong>${time.pts}</strong></td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
             });
         }
 
-        function verificarJanela(rodada) {
-            // Abre nas rodadas 1-6 e 19-25
-            const aberta = (rodada <= 6) || (rodada >= 19 && rodada <= 25);
-            if(aberta) {
-                document.getElementById('window-indicator').style.display = 'block';
-                document.getElementById('btn-transfer').onclick = function() { alert("Mercado Aberto! (Em breve)"); };
+        function renderizarElenco(game) {
+            const container = document.getElementById('squad-body');
+            container.innerHTML = '';
+
+            // Usa a função segura da Engine ou busca na mão
+            let meuTimeObj = null;
+            if (Engine.getMeuTime) {
+                meuTimeObj = Engine.getMeuTime();
+            } else {
+                // Fallback caso a função não exista
+                meuTimeObj = game.times.find(t => t.nome === game.info.time);
             }
+
+            // Proteção: Se não achar o time ou elenco, usa array vazio
+            const elenco = (meuTimeObj && meuTimeObj.elenco) ? meuTimeObj.elenco : [];
+
+            if (elenco.length === 0) {
+                container.innerHTML = '<p style="color:#666; text-align:center">Elenco vazio ou não carregado.</p>';
+                return;
+            }
+
+            elenco.forEach(jog => {
+                const div = document.createElement('div');
+                div.className = 'player-row';
+                div.innerHTML = `
+                    <span class="pl-pos">${jog.pos}</span>
+                    <span>${jog.nome}</span>
+                    <span style="color:var(--green)">${jog.forca}</span>
+                `;
+                container.appendChild(div);
+            });
         }
 
-        function irParaPartida() { if(confirm("Ir para o estádio?")) window.location.href = 'partida.html'; }
-        function resetGame() { if(confirm("Apagar progresso?")) { localStorage.clear(); window.location.href = 'index.html'; } }
+        function irParaJogo() {
+            alert("Sistema de partida será o próximo passo!");
+            // window.location.href = 'partida.html';
+        }
+
+        function sair() {
+            if(confirm("Deseja sair? Seu progresso está salvo.")) {
+                window.location.href = 'index.html';
+            }
+        }
     </script>
 </body>
 </html>
