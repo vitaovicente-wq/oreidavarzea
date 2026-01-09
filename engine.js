@@ -1,78 +1,147 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendário da Temporada</title>
-    <script src="engine.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background: #0f1216; color: #fff; margin: 0; display: flex; flex-direction: column; height: 100vh; }
-        header { padding: 20px; background: #161b22; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; }
-        h1 { margin: 0; font-family: 'Rajdhani'; text-transform: uppercase; color: #00ff88; }
-        .back-btn { background: #333; color: #fff; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        
-        .calendar-container { flex: 1; overflow-y: auto; padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        
-        .round-card { background: #1e2329; border: 1px solid #333; border-radius: 8px; padding: 15px; }
-        .round-card.current { border-color: #00ff88; box-shadow: 0 0 15px rgba(0, 255, 136, 0.1); }
-        .round-header { font-family: 'Rajdhani'; font-weight: 700; color: #888; border-bottom: 1px solid #333; padding-bottom: 5px; margin-bottom: 10px; display: flex; justify-content: space-between; }
-        .match-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.9rem; }
-        .match-row.my-match { background: rgba(0, 255, 136, 0.1); border-radius: 4px; padding: 5px; font-weight: bold; color: #fff; }
-        .score { font-weight: bold; color: #f1c40f; }
-        .pending { color: #444; font-size: 0.8rem; }
-    </style>
-</head>
-<body>
-    <header>
-        <button class="back-btn" onclick="window.location.href='dashboard.html'">❮ VOLTAR</button>
-        <h1>Calendário</h1>
-        <div style="font-weight:bold;">Temporada 2026</div>
-    </header>
+// ARQUIVO: engine.js
 
-    <div class="calendar-container" id="calendar-list">
-        </div>
+const Engine = {
+    
+    // --- 1. INICIALIZAÇÃO DO JOGO ---
 
-    <script>
-        window.onload = function() {
-            const gameState = Engine.carregarJogo();
-            if(!gameState) window.location.href='index.html';
+    novoJogo: function(pais, divisao, nomeTimeSelecionado) {
+        console.log(`⚽ Iniciando nova campanha: ${nomeTimeSelecionado} (${divisao})`);
 
-            const container = document.getElementById('calendar-list');
-            const meuTime = gameState.meuTime;
+        // A) Verifica dependências
+        if (typeof CalendarioSystem === 'undefined') {
+            alert("ERRO CRÍTICO: O arquivo calendario.js não foi carregado.");
+            throw new Error("Missing CalendarioSystem");
+        }
 
-            gameState.calendario.forEach((rodada, index) => {
-                const numRodada = index + 1;
-                const div = document.createElement('div');
-                div.className = 'round-card' + (numRodada === gameState.rodada ? ' current' : '');
-                
-                let html = `<div class="round-header"><span>RODADA ${numRodada}</span> ${numRodada === gameState.rodada ? '<span style="color:#00ff88">ATUAL</span>' : ''}</div>`;
-                
-                rodada.forEach(jogo => {
-                    const isMe = (jogo.casa === meuTime || jogo.fora === meuTime);
-                    const placar = (jogo.placarCasa !== null) 
-                        ? `<span class="score">${jogo.placarCasa} x ${jogo.placarFora}</span>` 
-                        : `<span class="pending">v</span>`;
-                    
-                    html += `
-                        <div class="match-row ${isMe ? 'my-match' : ''}">
-                            <span style="text-align:right; flex:1">${jogo.casa.substring(0,12)}</span>
-                            <span style="width:50px; text-align:center">${placar}</span>
-                            <span style="text-align:left; flex:1">${jogo.fora.substring(0,12)}</span>
-                        </div>
-                    `;
-                });
-                
-                div.innerHTML = html;
-                container.appendChild(div);
-            });
+        // B) Carrega os times do Banco de Dados
+        let timesDaLiga = [];
+        if (window.Database && window.Database.brasil && window.Database.brasil[divisao]) {
+            // Clona para não estragar o original
+            timesDaLiga = JSON.parse(JSON.stringify(window.Database.brasil[divisao]));
+        } else {
+            console.warn("⚠️ Database não encontrado. Gerando times genéricos.");
+            timesDaLiga = this._gerarTimesGenericos(divisao);
+        }
 
-            // Scrollar para a rodada atual
-            setTimeout(() => {
-                const current = document.querySelector('.current');
-                if(current) current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
+        // C) Gera o Calendário de Jogos (Turno e Returno)
+        const calendarioGerado = CalendarioSystem.gerarCampeonato(timesDaLiga);
+
+        // D) Cria a estrutura inicial da Tabela de Classificação
+        const classificacaoInicial = timesDaLiga.map(t => ({
+            nome: t.nome,
+            escudo: t.escudo || null,
+            pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0
+        }));
+
+        // E) Monta o objeto do Save
+        const estadoDoJogo = {
+            info: {
+                tecnico: localStorage.getItem('brfutebol_tecnico') || "Treinador",
+                time: nomeTimeSelecionado,
+                escudo: localStorage.getItem('brfutebol_escudo'),
+                pais: pais,
+                divisao: divisao,
+                dataInicio: new Date().toLocaleDateString()
+            },
+            recursos: {
+                dinheiro: 5000000, // 5 Milhões iniciais
+                moral: 100
+            },
+            rodadaAtual: 1,
+            times: timesDaLiga,
+            calendario: calendarioGerado,
+            tabela: classificacaoInicial
         };
-    </script>
-</body>
-</html>
+
+        // F) Salva e finaliza
+        this.salvarJogo(estadoDoJogo);
+        console.log("✅ Jogo salvo com sucesso! Pronto para ir ao Dashboard.");
+    },
+
+    // --- 2. SISTEMA DE SAVE / LOAD ---
+
+    salvarJogo: function(estado) {
+        localStorage.setItem('brfutebol_save', JSON.stringify(estado));
+    },
+
+    carregarJogo: function() {
+        const saveJson = localStorage.getItem('brfutebol_save');
+        if (!saveJson) return null;
+        return JSON.parse(saveJson);
+    },
+
+    // --- 3. LÓGICA DE SIMULAÇÃO E TABELA ---
+
+    // Função para atualizar a tabela baseada nos jogos que já aconteceram
+    atualizarTabela: function(estadoJogo) {
+        // Zera a tabela para recalcular do zero (evita erros de soma)
+        estadoJogo.tabela.forEach(t => {
+            t.pts = 0; t.j = 0; t.v = 0; t.e = 0; t.d = 0; t.gp = 0; t.gc = 0; t.sg = 0;
+        });
+
+        // Percorre todas as rodadas e jogos
+        estadoJogo.calendario.forEach(rodada => {
+            rodada.jogos.forEach(jogo => {
+                if (jogo.jogado) {
+                    this._computarJogoNaTabela(estadoJogo.tabela, jogo);
+                }
+            });
+        });
+
+        // Ordena a tabela (Pontos > Vitórias > Saldo > Gols Pró)
+        estadoJogo.tabela.sort((a, b) => {
+            if (b.pts !== a.pts) return b.pts - a.pts;
+            if (b.v !== a.v) return b.v - a.v;
+            if (b.sg !== a.sg) return b.sg - a.sg;
+            return b.gp - a.gp;
+        });
+
+        this.salvarJogo(estadoJogo);
+        return estadoJogo.tabela;
+    },
+
+    // Função auxiliar que soma os pontos de um jogo específico
+    _computarJogoNaTabela: function(tabela, jogo) {
+        const timeCasa = tabela.find(t => t.nome === jogo.mandante);
+        const timeFora = tabela.find(t => t.nome === jogo.visitante);
+
+        if (!timeCasa || !timeFora) return; // Segurança
+
+        const golsCasa = parseInt(jogo.placarCasa);
+        const golsFora = parseInt(jogo.placarFora);
+
+        // Atualiza jogos e gols
+        timeCasa.j++; timeCasa.gp += golsCasa; timeCasa.gc += golsFora; timeCasa.sg = timeCasa.gp - timeCasa.gc;
+        timeFora.j++; timeFora.gp += golsFora; timeFora.gc += golsCasa; timeFora.sg = timeFora.gp - timeFora.gc;
+
+        // Distribui pontos
+        if (golsCasa > golsFora) {
+            timeCasa.v++; timeCasa.pts += 3;
+            timeFora.d++;
+        } else if (golsFora > golsCasa) {
+            timeFora.v++; timeFora.pts += 3;
+            timeCasa.d++;
+        } else {
+            timeCasa.e++; timeCasa.pts += 1;
+            timeFora.e++; timeFora.pts += 1;
+        }
+    },
+
+    // --- 4. FUNÇÕES AUXILIARES ---
+
+    _gerarTimesGenericos: function(div) {
+        let lista = [];
+        for (let i = 1; i <= 20; i++) {
+            lista.push({ 
+                nome: `Clube ${div.toUpperCase()} ${i}`,
+                forca: 60,
+                escudo: 'https://cdn-icons-png.flaticon.com/512/53/53283.png',
+                elenco: [] 
+            });
+        }
+        return lista;
+    }
+};
+
+// Exportar para garantir compatibilidade
+window.Engine = Engine;
