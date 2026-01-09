@@ -12,71 +12,64 @@ const Engine = {
             throw new Error("Missing CalendarioSystem");
         }
 
-        // Carrega os times do Banco de Dados
+        // Carrega os times (com proteção se o banco falhar)
         let timesDaLiga = [];
         if (window.Database && window.Database.brasil && window.Database.brasil[divisao]) {
             timesDaLiga = JSON.parse(JSON.stringify(window.Database.brasil[divisao]));
         } else {
-            console.warn("⚠️ Database não encontrado. Gerando times genéricos.");
             timesDaLiga = this._gerarTimesGenericos(divisao);
         }
 
-        // Gera o Calendário
-        const calendarioGerado = CalendarioSystem.gerarCampeonato(timesDaLiga);
+        // Garante que TODOS os times tenham elenco (para não dar erro de forEach)
+        timesDaLiga.forEach(t => {
+            if (!t.elenco || !Array.isArray(t.elenco)) t.elenco = [];
+        });
 
-        // Estrutura inicial da Tabela
+        // Gera Calendário e Tabela
+        const calendarioGerado = CalendarioSystem.gerarCampeonato(timesDaLiga);
         const classificacaoInicial = timesDaLiga.map(t => ({
             nome: t.nome,
             escudo: t.escudo || null,
             pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0
         }));
 
-        // Monta o Save
+        // Monta o Save (Usando 'classificacao' para compatibilidade)
         const estadoDoJogo = {
             info: {
                 tecnico: localStorage.getItem('brfutebol_tecnico') || "Treinador",
                 time: nomeTimeSelecionado,
                 escudo: localStorage.getItem('brfutebol_escudo'),
                 pais: pais,
-                divisao: divisao,
-                dataInicio: new Date().toLocaleDateString()
+                divisao: divisao
             },
-            recursos: {
-                dinheiro: 5000000, 
-                moral: 100
-            },
+            recursos: { dinheiro: 5000000, moral: 100 },
             rodadaAtual: 1,
             times: timesDaLiga,
             calendario: calendarioGerado,
-            tabela: classificacaoInicial
+            classificacao: classificacaoInicial // Nome corrigido aqui
         };
 
         this.salvarJogo(estadoDoJogo);
-        console.log("✅ Jogo salvo com sucesso!");
     },
 
-    // --- 2. SISTEMA DE BUSCA (AS FUNÇÕES QUE FALTAVAM) ---
+    // --- 2. SISTEMA DE BUSCA ---
 
-    // Busca um time inteiro pelo nome dentro do save atual
     encontrarTime: function(nomeTime) {
         const save = this.carregarJogo();
-        if (!save || !save.times) return null;
+        if (!save || !save.times) return { nome: nomeTime, forca: 0, elenco: [] };
         
-        // Procura o time na lista salva
-        const timeEncontrado = save.times.find(t => t.nome === nomeTime);
-        
-        // Retorna o time ou um objeto vazio para não travar
-        return timeEncontrado || { nome: nomeTime, forca: 0, escudo: "" };
+        const time = save.times.find(t => t.nome === nomeTime);
+        // Retorna o time ou um objeto vazio seguro com array de elenco vazio
+        return time || { nome: nomeTime, forca: 0, elenco: [] };
     },
 
-    // Retorna direto o time controlado pelo jogador
     getMeuTime: function() {
         const save = this.carregarJogo();
         if (!save) return null;
         return this.encontrarTime(save.info.time);
     },
 
-    // --- 3. SISTEMA DE SAVE / LOAD ---
+    // --- 3. SAVE / LOAD ---
 
     salvarJogo: function(estado) {
         localStorage.setItem('brfutebol_save', JSON.stringify(estado));
@@ -88,73 +81,52 @@ const Engine = {
         return JSON.parse(saveJson);
     },
 
-    // --- 4. LÓGICA DE SIMULAÇÃO E TABELA ---
+    // --- 4. ATUALIZAÇÃO DA TABELA ---
 
     atualizarTabela: function(estadoJogo) {
-        // Zera a tabela
-        estadoJogo.tabela.forEach(t => {
+        // Usa 'classificacao' para manter compatibilidade
+        const tabela = estadoJogo.classificacao || estadoJogo.tabela;
+
+        tabela.forEach(t => {
             t.pts = 0; t.j = 0; t.v = 0; t.e = 0; t.d = 0; t.gp = 0; t.gc = 0; t.sg = 0;
         });
 
-        // Recalcula baseado no calendário
         estadoJogo.calendario.forEach(rodada => {
             rodada.jogos.forEach(jogo => {
                 if (jogo.jogado) {
-                    this._computarJogoNaTabela(estadoJogo.tabela, jogo);
+                    this._computarJogoNaTabela(tabela, jogo);
                 }
             });
         });
 
-        // Ordena
-        estadoJogo.tabela.sort((a, b) => {
-            if (b.pts !== a.pts) return b.pts - a.pts;
-            if (b.v !== a.v) return b.v - a.v;
-            if (b.sg !== a.sg) return b.sg - a.sg;
-            return b.gp - a.gp;
-        });
-
+        tabela.sort((a, b) => b.pts - a.pts || b.v - a.v || b.sg - a.sg);
+        
         this.salvarJogo(estadoJogo);
-        return estadoJogo.tabela;
+        return tabela;
     },
 
     _computarJogoNaTabela: function(tabela, jogo) {
         const timeCasa = tabela.find(t => t.nome === jogo.mandante);
         const timeFora = tabela.find(t => t.nome === jogo.visitante);
+        if (!timeCasa || !timeFora) return;
 
-        if (!timeCasa || !timeFora) return; 
+        const gc = parseInt(jogo.placarCasa);
+        const gf = parseInt(jogo.placarFora);
 
-        const golsCasa = parseInt(jogo.placarCasa);
-        const golsFora = parseInt(jogo.placarFora);
+        timeCasa.j++; timeCasa.gp += gc; timeCasa.gc += gf; timeCasa.sg = timeCasa.gp - timeCasa.gc;
+        timeFora.j++; timeFora.gp += gf; timeFora.gc += gc; timeFora.sg = timeFora.gp - timeFora.gc;
 
-        timeCasa.j++; timeCasa.gp += golsCasa; timeCasa.gc += golsFora; timeCasa.sg = timeCasa.gp - timeCasa.gc;
-        timeFora.j++; timeFora.gp += golsFora; timeFora.gc += golsCasa; timeFora.sg = timeFora.gp - timeFora.gc;
-
-        if (golsCasa > golsFora) {
-            timeCasa.v++; timeCasa.pts += 3;
-            timeFora.d++;
-        } else if (golsFora > golsCasa) {
-            timeFora.v++; timeFora.pts += 3;
-            timeCasa.d++;
-        } else {
-            timeCasa.e++; timeCasa.pts += 1;
-            timeFora.e++; timeFora.pts += 1;
-        }
+        if (gc > gf) { timeCasa.v++; timeCasa.pts += 3; timeFora.d++; }
+        else if (gf > gc) { timeFora.v++; timeFora.pts += 3; timeCasa.d++; }
+        else { timeCasa.e++; timeCasa.pts++; timeFora.e++; timeFora.pts++; }
     },
-
-    // --- 5. FUNÇÕES AUXILIARES ---
 
     _gerarTimesGenericos: function(div) {
         let lista = [];
         for (let i = 1; i <= 20; i++) {
-            lista.push({ 
-                nome: `Clube ${div.toUpperCase()} ${i}`,
-                forca: 60,
-                escudo: 'https://cdn-icons-png.flaticon.com/512/53/53283.png',
-                elenco: [] 
-            });
+            lista.push({ nome: `Time ${i}`, forca: 50, elenco: [] });
         }
         return lista;
     }
 };
-
 window.Engine = Engine;
