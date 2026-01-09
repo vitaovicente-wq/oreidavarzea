@@ -7,22 +7,23 @@
     <script src="engine.js"></script>
 
     <style>
-        /* --- ESTILOS (Dark Theme) --- */
-        :root { --bg: #0d1115; --card: #161b22; --green: #2ecc71; --text: #ecf0f1; --border: #333; }
+        /* --- ESTILOS (Mantendo o Dark Theme) --- */
+        :root { --bg: #0d1115; --card: #161b22; --green: #2ecc71; --gold: #f1c40f; --text: #ecf0f1; --border: #333; --red: #ff4757; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
 
         /* MENU LATERAL */
         .sidebar { width: 250px; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px; }
         .logo { font-size: 1.5rem; font-weight: 900; margin-bottom: 30px; letter-spacing: 1px; }
         .logo span { color: var(--green); }
-        .menu-item { padding: 12px; margin-bottom: 5px; cursor: pointer; border-radius: 8px; color: #888; transition: 0.2s; text-decoration: none; display: block; }
+        .menu-item { padding: 12px; margin-bottom: 5px; cursor: pointer; border-radius: 8px; color: #888; transition: 0.2s; text-decoration: none; display: flex; align-items: center; gap: 10px; }
         .menu-item:hover, .menu-item.active { background: rgba(46, 204, 113, 0.1); color: var(--green); }
-        .btn-sair { margin-top: auto; color: #ff4757; }
+        .btn-sair { margin-top: auto; color: var(--red); }
+        .btn-sair:hover { background: rgba(255, 71, 87, 0.1); color: var(--red); }
 
         /* ÁREA PRINCIPAL */
         .content { flex: 1; padding: 30px; overflow-y: auto; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; grid-template-rows: auto 1fr; }
         
-        /* CARDS */
+        /* HEADER */
         .header-card { grid-column: 1 / -1; background: var(--card); padding: 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border); }
         .team-info h2 { margin: 0; font-size: 1.8rem; }
         .team-info p { margin: 5px 0 0; color: #666; font-size: 0.9rem; }
@@ -33,24 +34,29 @@
 
         /* PRÓXIMO JOGO */
         .match-display { display: flex; justify-content: space-around; align-items: center; padding: 20px 0; }
-        .team-vs { text-align: center; width: 100px; }
-        .team-vs img { width: 50px; height: 50px; object-fit: contain; margin-bottom: 5px; }
-        .vs-sign { font-size: 1.5rem; font-weight: 900; color: #333; }
-        .btn-play { background: var(--green); color: #fff; border: none; width: 100%; padding: 15px; border-radius: 8px; font-weight: 900; font-size: 1rem; cursor: pointer; text-transform: uppercase; margin-top: auto; }
-        .btn-play:hover { opacity: 0.9; }
+        .team-vs { text-align: center; width: 120px; }
+        .team-vs img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 5px; }
+        .vs-sign { font-size: 2rem; font-weight: 900; color: #333; }
+        .btn-play { background: var(--green); color: #fff; border: none; width: 100%; padding: 15px; border-radius: 8px; font-weight: 900; font-size: 1rem; cursor: pointer; text-transform: uppercase; margin-top: auto; transition: 0.2s; }
+        .btn-play:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(46, 204, 113, 0.2); }
 
         /* TABELA */
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        th { text-align: left; color: #666; padding: 5px; font-size: 0.8rem; }
-        td { padding: 8px 5px; border-bottom: 1px solid #222; }
-        .pos-num { width: 20px; color: #888; }
-        .my-team-row { color: var(--green); font-weight: bold; }
+        th { text-align: left; color: #666; padding: 5px; font-size: 0.75rem; text-transform: uppercase; }
+        td { padding: 10px 5px; border-bottom: 1px solid #222; }
+        .pos-num { width: 25px; color: #888; font-weight: bold; }
+        .my-team-row { color: var(--green); font-weight: bold; background: rgba(46, 204, 113, 0.05); }
 
-        /* ELENCO */
-        .squad-list { display: flex; flex-direction: column; gap: 5px; max-height: 300px; overflow-y: auto; }
-        .player-row { display: flex; justify-content: space-between; padding: 8px; background: rgba(255,255,255,0.03); border-radius: 4px; }
-        .pl-pos { font-weight: bold; width: 40px; color: #666; font-size: 0.8rem; }
+        /* ELENCO DETALHADO */
+        .squad-list { display: flex; flex-direction: column; max-height: 400px; overflow-y: auto; }
+        .player-row { display: grid; grid-template-columns: 40px 1fr 50px 60px 80px; padding: 10px; border-bottom: 1px solid #222; align-items: center; font-size: 0.9rem; transition: 0.2s; }
+        .player-row:hover { background: rgba(255,255,255,0.03); }
+        .pl-pos { font-weight: bold; color: #888; font-size: 0.8rem; }
+        .pl-ovr { font-weight: bold; color: var(--gold); }
+        .pl-health { color: var(--green); }
         
+        .squad-header { display: grid; grid-template-columns: 40px 1fr 50px 60px 80px; padding: 5px 10px; color: #666; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; border-bottom: 1px solid #333; margin-bottom: 5px; }
+
         @media (max-width: 900px) { .content { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -58,9 +64,11 @@
 
     <nav class="sidebar">
         <div class="logo">BR<span>FUTEBOL</span></div>
-        <a class="menu-item active">🏠 Visão Geral</a>
+        <a class="menu-item active">📊 Visão Geral</a>
+        <a class="menu-item" onclick="alert('Funcionalidade em desenvolvimento')">👕 Escalação</a>
         <a class="menu-item" href="calendario.html">📅 Calendário</a>
-        <a class="menu-item">👕 Elenco</a>
+        <a class="menu-item" onclick="alert('Funcionalidade em desenvolvimento')">💰 Transferências</a>
+        <a class="menu-item" onclick="alert('Funcionalidade em desenvolvimento')">🎤 Sala de Imprensa</a>
         <a class="menu-item btn-sair" onclick="sair()">✖ Sair do Jogo</a>
     </nav>
 
@@ -77,11 +85,11 @@
         </div>
 
         <div class="game-card">
-            <div class="card-title">Próximo Desafio</div>
+            <div class="card-title">Próximo Jogo</div>
             <div class="match-display" id="next-match-area">
                 <p>Carregando confronto...</p>
             </div>
-            <button class="btn-play" onclick="irParaJogo()">Ir para o Estádio 🏟️</button>
+            <button class="btn-play" onclick="irParaJogo()">IR PARA O ESTÁDIO 🏟️</button>
         </div>
 
         <div class="game-card" style="grid-row: span 2">
@@ -93,42 +101,42 @@
         </div>
 
         <div class="game-card">
-            <div class="card-title">Elenco Principal</div>
+            <div class="card-title">Elenco do Clube</div>
+            
+            <div class="squad-header">
+                <span>Pos</span>
+                <span>Nome</span>
+                <span>OVR</span>
+                <span>Saúde</span>
+                <span>Carac.</span>
+            </div>
+
             <div class="squad-list" id="squad-body">
                 </div>
         </div>
     </main>
 
     <script>
-        // --- LÓGICA DO DASHBOARD ---
-
-        // 1. Carregar dados ao iniciar
         window.onload = function() {
-            console.log("Iniciando Dashboard...");
+            console.log("Iniciando Dashboard Completo...");
             
-            // Tenta carregar o save
             const game = Engine.carregarJogo();
 
-            // SE NÃO TIVER SAVE, VOLTA PRO INÍCIO
+            // Proteção contra Save Vazio
             if (!game || !game.info) {
                 alert("Nenhum jogo encontrado. Voltando para o menu.");
                 window.location.href = 'index.html';
                 return;
             }
 
-            // 2. Preencher Cabeçalho
+            // Preencher Cabeçalho
             document.getElementById('team-name').innerText = game.info.time;
             document.getElementById('coach-name').innerText = "Técnico: " + game.info.tecnico;
             document.getElementById('money-display').innerText = "R$ " + (game.recursos.dinheiro / 1000000).toFixed(1) + " Mi";
             document.getElementById('round-display').innerText = "Rodada " + game.rodadaAtual;
 
-            // 3. Preencher Próximo Jogo
             renderizarProximoJogo(game);
-
-            // 4. Preencher Tabela (COM PROTEÇÃO CONTRA ERRO)
             renderizarTabela(game);
-
-            // 5. Preencher Elenco (COM PROTEÇÃO)
             renderizarElenco(game);
         };
 
@@ -136,19 +144,18 @@
             const area = document.getElementById('next-match-area');
             const rodadaIndex = game.rodadaAtual - 1;
 
-            // Verifica se o calendário existe e se a rodada é válida
             if (!game.calendario || !game.calendario[rodadaIndex]) {
                 area.innerHTML = "<p>Fim da Temporada!</p>";
                 document.querySelector('.btn-play').disabled = true;
                 return;
             }
 
-            // Procura o jogo do meu time na rodada atual
             const jogosDaRodada = game.calendario[rodadaIndex].jogos || [];
             const meuJogo = jogosDaRodada.find(j => j.mandante === game.info.time || j.visitante === game.info.time);
 
             if (meuJogo) {
                 const imgPadrao = "https://cdn-icons-png.flaticon.com/512/53/53283.png";
+                // Lógica para mostrar escudo (se tiver no objeto do time)
                 area.innerHTML = `
                     <div class="team-vs">
                         <img src="${imgPadrao}">
@@ -169,7 +176,6 @@
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = `<tr><th>#</th><th>Time</th><th>P</th></tr>`;
 
-            // Proteção: Se a tabela não existir, cria uma lista vazia para não dar erro
             const lista = game.classificacao || [];
 
             lista.slice(0, 10).forEach((time, index) => {
@@ -189,42 +195,46 @@
             const container = document.getElementById('squad-body');
             container.innerHTML = '';
 
-            // Usa a função segura da Engine ou busca na mão
             let meuTimeObj = null;
             if (Engine.getMeuTime) {
                 meuTimeObj = Engine.getMeuTime();
             } else {
-                // Fallback caso a função não exista
                 meuTimeObj = game.times.find(t => t.nome === game.info.time);
             }
 
-            // Proteção: Se não achar o time ou elenco, usa array vazio
             const elenco = (meuTimeObj && meuTimeObj.elenco) ? meuTimeObj.elenco : [];
 
             if (elenco.length === 0) {
-                container.innerHTML = '<p style="color:#666; text-align:center">Elenco vazio ou não carregado.</p>';
+                container.innerHTML = '<p style="padding:20px; text-align:center">Elenco não encontrado.</p>';
                 return;
             }
 
             elenco.forEach(jog => {
+                // Tratamento seguro dos dados
+                const forca = jog.forca || 60;
+                const saude = jog.saude || 100;
+                const carac = jog.caracteristica || "Normal"; // Se não tiver, mostra "Normal"
+                
                 const div = document.createElement('div');
                 div.className = 'player-row';
                 div.innerHTML = `
                     <span class="pl-pos">${jog.pos}</span>
                     <span>${jog.nome}</span>
-                    <span style="color:var(--green)">${jog.forca}</span>
+                    <span class="pl-ovr">${forca}</span>
+                    <span class="pl-health">${saude}%</span>
+                    <span style="font-size:0.8rem; color:#888">${carac}</span>
                 `;
                 container.appendChild(div);
             });
         }
 
         function irParaJogo() {
-            alert("Sistema de partida será o próximo passo!");
-            // window.location.href = 'partida.html';
+            // Em breve criaremos o partida.html
+            alert("Preparando para entrar em campo...");
         }
 
         function sair() {
-            if(confirm("Deseja sair? Seu progresso está salvo.")) {
+            if(confirm("Deseja sair?")) {
                 window.location.href = 'index.html';
             }
         }
