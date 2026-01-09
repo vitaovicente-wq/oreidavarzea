@@ -21,6 +21,9 @@
             --gold: #f1c40f;
             --red: #ff4757;
             --blue: #3498db;
+            --pos-ok: #2ecc71;
+            --pos-med: #f1c40f;
+            --pos-bad: #e74c3c;
         }
 
         * { box-sizing: border-box; user-select: none; }
@@ -31,8 +34,7 @@
             background-image: radial-gradient(circle at 50% 50%, #1a202c 0%, #0f1216 100%);
             color: var(--text-main);
             margin: 0; height: 100vh;
-            display: flex; flex-direction: column;
-            overflow: hidden;
+            display: flex; flex-direction: column; overflow: hidden;
         }
 
         /* PLACAR (TOPO) */
@@ -56,7 +58,7 @@
         /* LAYOUT PRINCIPAL (3 COLUNAS) */
         .match-layout {
             flex: 1; display: grid; 
-            grid-template-columns: 260px 1fr 260px; /* LATERAIS FIXAS */
+            grid-template-columns: 260px 1fr 260px; /* ESQUERDA - MEIO - DIREITA */
             overflow: hidden;
         }
 
@@ -143,6 +145,8 @@
         .sub-header { padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
         .sub-body { flex: 1; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; padding: 20px; overflow: hidden; }
         
+        .modal-tac-select { background: #000; color: var(--accent); border: 1px solid var(--accent); padding: 5px 15px; border-radius: 4px; font-family: 'Rajdhani'; font-weight: 700; cursor: pointer; outline: none; }
+
         .mini-pitch { position: relative; width: 100%; height: 100%; background: repeating-linear-gradient(to right, #2e7d32, #2e7d32 10%, #368e3c 10%, #368e3c 20%); border: 2px solid rgba(255,255,255,0.5); border-radius: 6px; }
         .sub-p-node { position: absolute; width: 50px; height: 50px; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.3s; }
         .sub-p-node:hover { transform: translate(-50%, -50%) scale(1.1); z-index: 10; }
@@ -160,6 +164,14 @@
         .btn-confirm:disabled { background: #333; color: #666; cursor: not-allowed; }
         .btn-back-game { background: transparent; border: 1px solid #666; color: #ccc; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: 600; }
         .btn-back-game:hover { border-color: #fff; color: #fff; }
+
+        /* TOOLTIP FIFA */
+        #fifa-tooltip { position: fixed; display: none; width: 150px; background: rgba(18, 20, 24, 0.95); border: 1px solid #666; border-radius: 6px; box-shadow: 0 5px 20px rgba(0,0,0,0.9); z-index: 3000; pointer-events: none; padding: 8px; backdrop-filter: blur(5px); }
+        .fifa-header { display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; margin-bottom: 5px; }
+        .fifa-ovr { font-family: 'Rajdhani'; font-size: 1.5rem; font-weight: 900; color: var(--gold); margin-right: 8px; }
+        .fifa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+        .fifa-stat { font-family: 'Rajdhani'; font-size: 0.75rem; display: flex; justify-content: space-between; }
+        .fifa-stat b.high { color: var(--pos-ok); } .fifa-stat b.mid { color: var(--pos-med); } .fifa-stat b.low { color: var(--pos-bad); }
 
         /* GOAL */
         #goal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 300; display: none; flex-direction: column; align-items: center; justify-content: center; }
@@ -247,10 +259,12 @@
             <div class="sub-header">
                 <h2>Gerenciar Equipe</h2>
                 <div style="display:flex; gap:10px;">
-                    <select id="sub-formation" style="background:#000; color:#fff; border:1px solid #444; padding:5px;" onchange="mudarFormacaoJogo()">
+                    <select id="sub-formation" class="modal-tac-select" onchange="mudarFormacaoJogo()">
                         <option value="4-3-3">4-3-3</option>
                         <option value="4-4-2">4-4-2</option>
                         <option value="3-5-2">3-5-2</option>
+                        <option value="4-2-3-1">4-2-3-1</option>
+                        <option value="3-4-3">3-4-3</option>
                     </select>
                 </div>
             </div>
@@ -264,6 +278,14 @@
                 <button class="btn-confirm" id="btn-confirm-sub" disabled onclick="confirmarSub()">CONFIRMAR</button>
             </div>
         </div>
+    </div>
+
+    <div id="fifa-tooltip">
+        <div class="fifa-header">
+            <div class="fifa-ovr" id="tip-ovr">00</div>
+            <div class="fifa-info"><div class="fifa-name" id="tip-name">NOME</div><div class="fifa-pos" id="tip-pos">POS</div></div>
+        </div>
+        <div class="fifa-grid" id="tip-grid"></div>
     </div>
 
     <div id="goal-overlay"><div class="goal-text">GOL!</div><div class="goal-scorer" id="goal-scorer-name">Jogador</div></div>
@@ -281,7 +303,7 @@
         let speed = 200; 
         let subPending = { sai: null, entra: null };
 
-        const layouts = { "4-3-3": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"50%",l:"40%"},{t:"30%",l:"55%"},{t:"70%",l:"55%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}], "4-4-2": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"30%",l:"45%"},{t:"70%",l:"45%"},{t:"15%",l:"60%"},{t:"85%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}], "3-5-2": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"85%",l:"45%"},{t:"50%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}] };
+        const layouts = { "4-3-3": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"50%",l:"40%"},{t:"30%",l:"55%"},{t:"70%",l:"55%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}], "4-4-2": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"30%",l:"45%"},{t:"70%",l:"45%"},{t:"15%",l:"60%"},{t:"85%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}], "3-5-2": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"85%",l:"45%"},{t:"50%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}], "4-2-3-1":[{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"20%",l:"65%"},{t:"50%",l:"60%"},{t:"80%",l:"65%"},{t:"50%",l:"88%"}], "3-4-3": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"40%",l:"45%"},{t:"60%",l:"45%"},{t:"85%",l:"45%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}] };
 
         window.onload = function() { carregarDados(); };
 
@@ -426,8 +448,10 @@
             setTimeout(() => { document.getElementById('goal-overlay').style.display='none'; iniciarRelogio(); }, 2000);
         }
 
+        // --- PÓS JOGO (ATUALIZA SAÚDE E PONTOS) ---
         function finalizarPartida() {
-            titulares.forEach(j => { j.saude = Math.max(0, (j.saude||100) - 6); });
+            // 1. Atualizar Saúde
+            titulares.forEach(j => { j.saude = Math.max(0, (j.saude||100) - 7); });
             indisponiveis.forEach(j => { j.saude = Math.max(0, (j.saude||100) - 4); });
             reservas.forEach(j => { j.saude = Math.min(100, (j.saude||100) + 5); });
 
@@ -487,7 +511,7 @@
         }
         function fecharModalSub() {
             document.getElementById('sub-modal').style.display = 'none';
-            if(etapa===1 && tempo===45) { etapa=2; tempo=0; }
+            if(etapa===1 && tempo===45) { etapa=2; tempo=0; } // Se era intervalo, vira o tempo
             iniciarRelogio();
         }
         function mudarFormacaoJogo() { formacaoAtual=document.getElementById('sub-formation').value; renderizarCampoSub(); adicionarLog("Téc", `Mudou para ${formacaoAtual}`, "sub"); }
@@ -496,12 +520,15 @@
             const c = document.getElementById('pitch-container');
             c.querySelectorAll('.sub-p-node').forEach(n=>n.remove());
             const layout = layouts[formacaoAtual] || layouts['4-3-3'];
+            
             titulares.forEach((j, i) => {
                 const pos = layout[i] || {t:"50%",l:"50%"};
                 const el = document.createElement('div');
                 el.className = 'sub-p-node'; el.style.top=pos.t; el.style.left=pos.l;
                 el.innerHTML = `<div class="sub-kit">${j.pos}</div><div class="sub-name">${j.nome.split(' ')[0]}</div>`;
                 el.onclick = () => selecionarSai(j.uid, el);
+                el.dataset.uid=j.uid;
+                el.addEventListener('mouseenter', showTooltip); el.addEventListener('mousemove', moveTooltip); el.addEventListener('mouseleave', hideTooltip);
                 c.appendChild(el);
             });
         }
@@ -511,8 +538,10 @@
             const disp = reservas.filter(r => !indisponiveis.includes(r));
             disp.forEach(j => {
                 const el = document.createElement('div'); el.className='player-row';
-                el.innerHTML=`<div class="row-info"><span class="row-pos">${j.pos}</span><span class="row-name">${j.nome}</span></div><span style="color:#fff;font-weight:800">${j.forca}</span>`;
+                el.innerHTML=`<span><b>${j.pos}</b> ${j.nome}</span> <b>${j.forca}</b>`;
                 el.onclick = () => selecionarEntra(j.uid, el);
+                el.dataset.uid=j.uid;
+                el.addEventListener('mouseenter', showTooltip); el.addEventListener('mousemove', moveTooltip); el.addEventListener('mouseleave', hideTooltip);
                 l.appendChild(el);
             });
         }
@@ -540,6 +569,26 @@
                 subPending={sai:null, entra:null};
                 renderizarCampoSub(); renderizarListaReservas(); renderizarSidebars(); atualizarUIBotao();
             }
+        }
+
+        // TOOLTIP
+        function showTooltip(e) {
+            const uid = this.dataset.uid; if(!uid)return;
+            const jog = titulares.find(j=>j.uid===uid) || reservas.find(j=>j.uid===uid) || indisponiveis.find(j=>j.uid===uid);
+            if(!jog)return;
+            if(!jog.atributos) gerarAtributos(jog);
+            document.getElementById('tip-name').innerText=jog.nome; document.getElementById('tip-pos').innerText=jog.pos; document.getElementById('tip-ovr').innerText=jog.forca;
+            const g=document.getElementById('tip-grid'); g.innerHTML='';
+            const l={VEL:'PAC',FIN:'SHO',PAS:'PAS',DRI:'DRI',DEF:'DEF',FIS:'PHY'};
+            for(let k in l) { let v=jog.atributos[k]; let c='mid'; if(v>=80)c='high'; if(v<60)c='low'; g.innerHTML+=`<div class="fifa-stat"><span>${l[k]}</span><b class="${c}">${v}</b></div>`; }
+            document.getElementById('fifa-tooltip').style.display='block'; moveTooltip(e);
+        }
+        function moveTooltip(e) { const t=document.getElementById('fifa-tooltip'); t.style.top=(e.clientY+15)+'px'; t.style.left=(e.clientX+15)+'px'; }
+        function hideTooltip() { document.getElementById('fifa-tooltip').style.display='none'; }
+        function gerarAtributos(j) {
+            const b = j.forca;
+            if(j.pos==='GOL') j.atributos={VEL:b+2, FIN:b-5, PAS:b, DRI:b-10, DEF:b+5, FIS:b};
+            else j.atributos={VEL:b, FIN:b-2, PAS:b, DRI:b, DEF:b-5, FIS:b};
         }
 
         // UTIL
