@@ -256,13 +256,12 @@
     </div>
 
     <script>
-        // --- 1. PATCH DE COMPATIBILIDADE ---
+        // --- 1. COMPATIBILIDADE ---
         if (typeof database !== 'undefined') window.Database = database;
         if (typeof Database !== 'undefined') window.database = Database;
 
         // --- 2. INICIALIZAÇÃO ---
         window.onload = function() {
-            // Garante estrutura de divisões para evitar erros
             if (window.Database && window.Database.brasil && Array.isArray(window.Database.brasil)) {
                 const todos = window.Database.brasil;
                 window.Database.brasil = { 'serieA': todos, 'serieB': [], 'serieC': [], 'serieD': [] };
@@ -289,10 +288,20 @@
 
                 if (!meuTime) throw new Error("Time não localizado no banco de dados.");
 
-                // Se o time estiver sem jogadores (bug antigo), gera backup
+                // Recupera ELENCO e SAÚDE (Status salvos no pós-jogo)
                 if (!meuTime.elenco || meuTime.elenco.length === 0) {
                     meuTime.elenco = gerarElencoBackup(meuTime.nome);
+                } else if (gameState.jogadoresStatus) {
+                    // Se tiver status salvo, aplica a saúde
+                    meuTime.elenco.forEach(j => {
+                        if(gameState.jogadoresStatus[j.uid]) {
+                            j.saude = gameState.jogadoresStatus[j.uid].saude;
+                        }
+                    });
                 }
+
+                // IDs Safety (caso não tenha)
+                meuTime.elenco.forEach((j, i) => { if(!j.uid) j.uid = `p_${i}`; });
 
                 // Carrega infos visuais
                 const tecnico = localStorage.getItem('brfutebol_tecnico') || "Técnico";
@@ -329,13 +338,25 @@
             return null;
         }
 
-        // Preenche a lista de elenco detalhada
+        // --- ATUALIZAR ELENCO COM ORDENAÇÃO POR POSIÇÃO ---
         function atualizarListaElenco() {
             const tbody = document.getElementById('squad-body');
             tbody.innerHTML = '';
             
-            // Ordena por força
-            const elenco = meuTime.elenco.sort((a,b) => b.forca - a.forca);
+            // MAPA DE PRIORIDADE (GOL > ZAGA > MEIO > ATAQUE)
+            const ordemPosicao = {
+                'GOL': 1,
+                'LD': 2, 'LE': 2, 'ZAG': 3,
+                'VOL': 4, 'MEI': 5,
+                'ATA': 6
+            };
+
+            const elenco = meuTime.elenco.sort((a, b) => {
+                const pA = ordemPosicao[a.pos] || 99;
+                const pB = ordemPosicao[b.pos] || 99;
+                if (pA !== pB) return pA - pB; // Ordena por posição
+                return b.forca - a.forca;      // Desempata por Força
+            });
 
             elenco.forEach(jog => {
                 const tr = document.createElement('tr');
@@ -364,29 +385,32 @@
             });
         }
 
+        // --- ATUALIZAR TABELA (LÊ DO SAVE) ---
         function atualizarTabela() {
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
-            let timesTabela = [];
+            
+            // 1. Tenta pegar a tabela salva (pós-jogo)
+            let timesTabela = gameState.tabela || [];
 
-            const db = window.database || window.Database;
-            if (db && db.brasil) {
-                // Acha a divisão do meu time
+            // 2. Se não tiver (jogo novo), gera do banco de dados
+            if (timesTabela.length === 0) {
+                const db = window.database || window.Database;
                 for(let serie in db.brasil) {
                     if(db.brasil[serie].find(t => t.nome === meuTime.nome)) {
-                        timesTabela = db.brasil[serie];
+                        timesTabela = db.brasil[serie].map(t => ({ nome: t.nome, p:0, j:0, v:0, e:0, d:0 }));
                         break;
                     }
                 }
             }
 
-            // Simula ordenação por pontos (fake points visual)
-            timesTabela.sort((a,b) => (b.pontos || b.forca) - (a.pontos || a.forca));
+            // 3. Ordena e Renderiza
+            timesTabela.sort((a,b) => b.p - a.p); // Ordena por Pontos
 
-            timesTabela.slice(0, 5).forEach((t, i) => {
+            timesTabela.slice(0, 10).forEach((t, i) => { // Mostra Top 10
                 const tr = document.createElement('tr');
                 if(t.nome === meuTime.nome) tr.className = 'my-team-row';
-                tr.innerHTML = `<td><span class="pos-num">${i + 1}</span></td><td>${t.nome}</td><td>${t.pontos || 0}</td>`;
+                tr.innerHTML = `<td><span class="pos-num">${i + 1}</span></td><td>${t.nome}</td><td>${t.p}</td>`;
                 tbody.appendChild(tr);
             });
         }
@@ -426,10 +450,8 @@
             return { nome: "Visitante", escudo: "" };
         }
 
-        // --- AQUI ESTÁ A CORREÇÃO DO REDIRECIONAMENTO ---
         function irParaPartida() {
             if(confirm("Tudo pronto? Vamos para o estádio!")) {
-                // Redireciona para o arquivo da partida
                 window.location.href = 'partida.html';
             }
         }
