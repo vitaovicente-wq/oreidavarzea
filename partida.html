@@ -49,44 +49,55 @@
         .team-display.right { justify-content: flex-end; text-align: right; }
         .team-logo { width: 50px; height: 50px; object-fit: contain; filter: drop-shadow(0 0 5px rgba(0,0,0,0.5)); }
         .team-name { font-family: 'Rajdhani'; font-weight: 800; font-size: 1.2rem; text-transform: uppercase; }
+        .score-center { display: flex; flex-direction: column; align-items: center; }
         .score-area { display: flex; align-items: center; gap: 15px; font-family: 'Rajdhani'; font-weight: 900; font-size: 2.5rem; line-height: 1; }
         .score-box { background: #000; padding: 2px 15px; border-radius: 6px; border: 1px solid #333; min-width: 60px; text-align: center; }
         .timer-badge { background: var(--accent); color: #000; padding: 2px 12px; border-radius: 15px; font-size: 0.9rem; font-weight: 800; margin-bottom: 5px; }
 
-        /* LAYOUT PRINCIPAL */
+        /* LAYOUT */
         .match-layout {
             flex: 1; display: grid; 
-            grid-template-columns: 280px 1fr 280px; 
+            grid-template-columns: 260px 1fr 260px; 
             overflow: hidden;
         }
 
-        /* LATERAIS (LISTAS) */
+        /* LATERAIS */
         .side-panel {
             background: rgba(0,0,0,0.2); border-right: 1px solid rgba(255,255,255,0.05);
             display: flex; flex-direction: column; overflow: hidden;
         }
         .side-panel.right { border-right: none; border-left: 1px solid rgba(255,255,255,0.05); }
-        .side-header { padding: 10px; background: rgba(255,255,255,0.05); font-family: 'Rajdhani'; font-weight: 700; font-size: 0.9rem; color: var(--text-dim); text-transform: uppercase; text-align: center; }
-        .squad-list { flex: 1; overflow-y: auto; padding: 10px; }
-        .squad-section { margin-bottom: 15px; }
-        .sec-title { font-size: 0.7rem; color: var(--accent); font-weight: 800; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .side-header {
+            padding: 10px; background: rgba(255,255,255,0.05); 
+            font-family: 'Rajdhani'; font-weight: 700; font-size: 0.85rem; 
+            color: var(--text-dim); text-transform: uppercase; text-align: center;
+            display: flex; flex-direction: column; gap: 2px;
+        }
+        .formation-tag { font-size: 0.7rem; color: var(--accent); letter-spacing: 1px; }
 
-        /* ITEM JOGADOR NA LATERAL */
+        .squad-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .squad-list::-webkit-scrollbar { width: 4px; }
+        .squad-list::-webkit-scrollbar-thumb { background: #333; }
+        .squad-section { margin-bottom: 15px; }
+        .sec-title { font-size: 0.7rem; color: #888; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* JOGADOR MINI (LISTA LATERAL) */
         .mini-player {
             display: flex; justify-content: space-between; align-items: center;
             padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.03);
-            font-size: 0.85rem; cursor: default; position: relative;
+            font-size: 0.85rem; cursor: default;
         }
         .mini-player.subbed-out { opacity: 0.5; }
         .mini-player.subbed-out .mp-name { text-decoration: line-through; }
         .mini-player.subbed-in { border-left: 2px solid var(--blue); padding-left: 6px; }
-
+        
         .mp-pos { width: 25px; font-weight: 700; color: #666; font-size: 0.75rem; }
         .mp-info { flex: 1; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
         .mp-top-row { display: flex; align-items: center; gap: 5px; }
         .mp-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
-        .mp-events { display: flex; gap: 2px; } /* Ícones de Gol/Cartão */
-        
+        .mp-events { display: flex; gap: 2px; }
+        .ev-icon { font-size: 0.8rem; margin-left: 2px; }
+
         .mp-stats { text-align: right; min-width: 35px; }
         .mp-ovr { font-weight: 800; font-size: 0.8rem; color: #fff; }
         .mp-hp-track { width: 100%; height: 3px; background: #333; margin-top: 2px; border-radius: 2px; }
@@ -116,33 +127,52 @@
         .btn-sub { background: var(--blue); color: #fff; border: none; padding: 8px 25px; border-radius: 4px; font-weight: 700; cursor: pointer; }
         .btn-finish { background: var(--gold); color: #000; border: none; padding: 8px 30px; border-radius: 4px; font-weight: 800; cursor: pointer; display: none; }
 
-        /* MODAL SUB */
+        /* MODAL */
         .sub-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .sub-card { width: 90%; max-width: 900px; height: 85vh; background: #161b22; border: 1px solid #444; border-radius: 12px; display: flex; flex-direction: column; }
         .sub-header { padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
         .sub-body { flex: 1; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; padding: 20px; overflow: hidden; }
+        .modal-tac-select { background: #000; color: var(--accent); border: 1px solid var(--accent); padding: 5px 15px; border-radius: 4px; font-family: 'Rajdhani'; font-weight: 700; cursor: pointer; outline: none; }
+        
         .mini-pitch { position: relative; width: 100%; height: 100%; background: repeating-linear-gradient(to right, #2e7d32, #2e7d32 10%, #368e3c 10%, #368e3c 20%); border: 2px solid rgba(255,255,255,0.5); border-radius: 6px; }
         .sub-p-node { position: absolute; width: 50px; height: 50px; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.3s; }
         .sub-p-node:hover { transform: translate(-50%, -50%) scale(1.1); z-index: 10; }
         .sub-kit { width: 30px; height: 30px; background: #222; border: 2px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.7rem; color: #fff; }
         .sub-p-node.selected-out .sub-kit { border-color: var(--red); background: rgba(231, 76, 60, 0.5); box-shadow: 0 0 15px var(--red); }
         .sub-name { font-size: 0.7rem; background: rgba(0,0,0,0.8); padding: 1px 4px; border-radius: 3px; margin-top: 2px; }
+
         .sub-list-modal { overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; border: 1px solid #333; }
-        .player-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
+        
+        /* LINHA DE JOGADOR NO MODAL */
+        .player-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
         .player-row:hover { background: rgba(255,255,255,0.05); }
         .player-row.selected-in { background: rgba(0, 255, 136, 0.2); border-left: 3px solid var(--accent); }
+        
+        .row-info { display: flex; flex-direction: column; }
+        .row-name { font-weight: 700; font-size: 0.9rem; color: #fff; }
+        .row-pos { font-size: 0.7rem; font-weight: 700; color: #888; }
+        
+        .row-stats { display: flex; flex-direction: column; align-items: flex-end; }
+        .row-ovr { font-family: 'Rajdhani'; font-weight: 800; color: var(--gold); font-size: 1rem; }
+        .row-hp-track { width: 40px; height: 4px; background: #333; margin-top: 3px; border-radius: 2px; }
+        .row-hp-fill { height: 100%; border-radius: 2px; }
+
         .sub-footer { padding: 15px; border-top: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
         .btn-confirm { background: var(--accent); color: #000; border: none; padding: 10px 25px; border-radius: 4px; font-weight: 800; cursor: pointer; }
         .btn-confirm:disabled { background: #333; color: #666; cursor: not-allowed; }
         .btn-back-game { background: transparent; border: 1px solid #666; color: #ccc; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: 600; }
 
-        /* GOAL & ICONS */
+        /* TOOLTIP FIFA */
+        #fifa-tooltip { position: fixed; display: none; width: 150px; background: rgba(18, 20, 24, 0.95); border: 1px solid #666; border-radius: 6px; box-shadow: 0 5px 20px rgba(0,0,0,0.9); z-index: 3000; pointer-events: none; padding: 8px; backdrop-filter: blur(5px); }
+        .fifa-header { display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; margin-bottom: 5px; }
+        .fifa-ovr { font-family: 'Rajdhani'; font-size: 1.5rem; font-weight: 900; color: var(--gold); margin-right: 8px; }
+        .fifa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+        .fifa-stat { font-family: 'Rajdhani'; font-size: 0.75rem; display: flex; justify-content: space-between; }
+        .fifa-stat b.high { color: var(--pos-ok); } .fifa-stat b.mid { color: var(--pos-med); } .fifa-stat b.low { color: var(--pos-bad); }
+
         #goal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 300; display: none; flex-direction: column; align-items: center; justify-content: center; }
         .goal-text { font-family: 'Rajdhani'; font-size: 6rem; font-weight: 900; color: var(--accent); animation: slideIn 0.3s; }
         .goal-scorer { font-size: 2rem; color: #fff; }
-        
-        .ev-icon { font-size: 0.8rem; margin-left: 2px; }
-
         @keyframes slideIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
     </style>
 </head>
@@ -170,9 +200,11 @@
     <div class="match-layout">
         
         <div class="side-panel">
-            <div class="side-header">MEU ELENCO</div>
-            <div class="squad-list" id="home-squad-list">
-                </div>
+            <div class="side-header">
+                <div>MEU ELENCO</div>
+                <div class="formation-tag" id="home-form-tag">4-3-3</div>
+            </div>
+            <div class="squad-list" id="home-squad-list"></div>
         </div>
 
         <div class="center-panel">
@@ -201,9 +233,11 @@
         </div>
 
         <div class="side-panel right">
-            <div class="side-header">ADVERSÁRIO</div>
-            <div class="squad-list" id="away-squad-list">
-                </div>
+            <div class="side-header">
+                <div>ADVERSÁRIO</div>
+                <div class="formation-tag" id="away-form-tag">4-4-2</div>
+            </div>
+            <div class="squad-list" id="away-squad-list"></div>
         </div>
 
     </div>
@@ -213,7 +247,7 @@
         <button class="btn-speed" onclick="setSpeed(2, this)">2x</button>
         <button class="btn-speed" onclick="setSpeed(3, this)">⚡</button>
         <div style="flex:1"></div>
-        <button class="btn-sub" id="btn-sub-menu" onclick="abrirModalSub()">🔄 SUBSTITUIR</button>
+        <button class="btn-sub" id="btn-sub-menu" onclick="abrirModalSub()">🔄 SUBSTITUIR / TÁTICA</button>
         <button class="btn-finish" id="btn-finish-game" onclick="finalizarPartida()">ENCERRAR PARTIDA ❯</button>
     </div>
 
@@ -221,11 +255,14 @@
         <div class="sub-card">
             <div class="sub-header">
                 <h2>Gerenciar Equipe</h2>
-                <div style="display:flex; gap:10px;">
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <span style="color:#888; font-size:0.8rem;">ESQUEMA:</span>
                     <select id="sub-formation" class="modal-tac-select" onchange="mudarFormacaoJogo()">
                         <option value="4-3-3">4-3-3</option>
                         <option value="4-4-2">4-4-2</option>
                         <option value="3-5-2">3-5-2</option>
+                        <option value="4-2-3-1">4-2-3-1</option>
+                        <option value="3-4-3">3-4-3</option>
                     </select>
                 </div>
             </div>
@@ -235,10 +272,18 @@
             </div>
             <div class="sub-footer">
                 <button class="btn-back-game" onclick="fecharModalSub()">VOLTAR AO JOGO</button>
-                <div id="sub-msg" style="color:#888;">Selecione quem sai e quem entra</div>
-                <button class="btn-confirm" id="btn-confirm-sub" disabled onclick="confirmarSub()">CONFIRMAR</button>
+                <div id="sub-msg" style="color:#888; font-size:0.9rem;">Selecione quem sai e quem entra</div>
+                <button class="btn-confirm" id="btn-confirm-sub" disabled onclick="confirmarSub()">CONFIRMAR TROCA</button>
             </div>
         </div>
+    </div>
+
+    <div id="fifa-tooltip">
+        <div class="fifa-header">
+            <div class="fifa-ovr" id="tip-ovr">00</div>
+            <div class="fifa-info"><div class="fifa-name" id="tip-name">NOME</div><div class="fifa-pos" id="tip-pos">POS</div></div>
+        </div>
+        <div class="fifa-grid" id="tip-grid"></div>
     </div>
 
     <div id="goal-overlay"><div class="goal-text">GOL!</div><div class="goal-scorer" id="goal-scorer-name">Jogador</div></div>
@@ -249,7 +294,7 @@
 
         let gameState, homeTeam, awayTeam;
         let titulares = [], reservas = [], indisponiveis = [];
-        let awayTitulares = []; // Titulares do Adversário
+        let awayTitulares = []; 
         let events = {}; // { 'uid': { goals: 0, cards: [] } }
         let formacaoAtual = "4-3-3";
         let matchInterval = null, tempo = 0, etapa = 1;
@@ -258,7 +303,7 @@
         let speed = 200; 
         let subPending = { sai: null, entra: null };
 
-        const layouts = { "4-3-3": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"50%",l:"40%"},{t:"30%",l:"55%"},{t:"70%",l:"55%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}], "4-4-2": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"30%",l:"45%"},{t:"70%",l:"45%"},{t:"15%",l:"60%"},{t:"85%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}], "3-5-2": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"85%",l:"45%"},{t:"50%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}] };
+        const layouts = { "4-3-3": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"50%",l:"40%"},{t:"30%",l:"55%"},{t:"70%",l:"55%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}], "4-4-2": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"30%",l:"45%"},{t:"70%",l:"45%"},{t:"15%",l:"60%"},{t:"85%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}], "3-5-2": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"85%",l:"45%"},{t:"50%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}], "4-2-3-1":[{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"20%",l:"65%"},{t:"50%",l:"60%"},{t:"80%",l:"65%"},{t:"50%",l:"88%"}], "3-4-3": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"40%",l:"45%"},{t:"60%",l:"45%"},{t:"85%",l:"45%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}] };
 
         window.onload = function() { carregarDados(); };
 
@@ -269,6 +314,7 @@
             const savedScheme = localStorage.getItem('brfutebol_esquema');
             if(savedScheme) formacaoAtual = savedScheme;
             document.getElementById('sub-formation').value = formacaoAtual;
+            document.getElementById('home-form-tag').innerText = formacaoAtual;
 
             homeTeam = encontrarTime(gameState.meuTime);
             const opNome = localStorage.getItem('brfutebol_oponente_atual') || "Visitante";
@@ -278,18 +324,26 @@
             // PREPARA MEU TIME
             homeTeam.elenco.forEach((j, i) => { 
                 if(!j.uid) j.uid = `p_${i}`; 
-                // Carrega saúde salva no banco, senão 100
+                // Saúde: Lê do save se existir
                 if(gameState.jogadoresStatus && gameState.jogadoresStatus[j.uid]) {
                     j.saude = gameState.jogadoresStatus[j.uid].saude;
-                } else if (j.saude === undefined) {
+                } else if(j.saude === undefined) {
                     j.saude = 100;
                 }
             });
             organizarElenco(homeTeam);
 
-            // PREPARA ADVERSÁRIO (11 Melhores)
+            // PREPARA RIVAL (Formação Aleatória)
+            const rivalForms = Object.keys(layouts);
+            const rForm = rivalForms[Math.floor(Math.random() * rivalForms.length)];
+            document.getElementById('away-form-tag').innerText = rForm;
+
             awayTeam.elenco.forEach((j,i) => { j.uid = `cpu_${i}`; j.saude = 100; });
-            awayTitulares = awayTeam.elenco.sort((a,b)=>b.forca-a.forca).slice(0, 11);
+            
+            // Ordenação Tática do Rival
+            const ordem = {'GOL':1, 'LD':2, 'LE':2, 'ZAG':3, 'VOL':4, 'MEI':5, 'ATA':6};
+            const elencoRival = awayTeam.elenco.sort((a,b) => (ordem[a.pos]||99) - (ordem[b.pos]||99) || b.forca - a.forca);
+            awayTitulares = elencoRival.slice(0, 11);
 
             renderizarSidebars();
 
@@ -351,16 +405,16 @@
             if(status === 'out') cls = 'subbed-out';
             if(status === 'in') cls = 'subbed-in';
             
-            // Ícones de eventos
+            // Eventos
             let icons = '';
             if(events[j.uid]) {
                 if(events[j.uid].goals > 0) icons += `<span class="ev-icon">⚽${events[j.uid].goals > 1 ? 'x'+events[j.uid].goals : ''}</span>`;
                 if(events[j.uid].cards) icons += `<span class="ev-icon">${events[j.uid].cards}</span>`;
             }
 
-            // Barra de vida
+            // Barra Saúde
             let saude = j.saude !== undefined ? j.saude : 100;
-            let cor = saude < 60 ? '#e74c3c' : '#2ecc71';
+            let cor = saude < 60 ? '#e74c3c' : (saude < 80 ? '#f1c40f' : '#2ecc71');
 
             return `
                 <div class="mini-player ${cls}">
@@ -387,9 +441,8 @@
             }
             return { nome: nome, escudo: "", elenco: [] };
         }
-        function gerarGenericos(nome) { let l=[]; for(let i=0;i<18;i++) l.push({nome:`Jog ${i}`, pos:'ATA', forca:60}); return l; }
+        function gerarGenericos(nome) { let l=[]; for(let i=0;i<18;i++) l.push({nome:`Jogador ${i}`, pos:'ATA', forca:60}); return l; }
 
-        // --- ENGINE ---
         function iniciarRelogio() { clearInterval(matchInterval); matchInterval = setInterval(loopJogo, speed); }
 
         function loopJogo() {
@@ -401,7 +454,7 @@
             if(tempo === 45 && etapa === 1) {
                 pausarJogo();
                 adicionarLog("Juiz", "Fim do 1º tempo.", "card");
-                setTimeout(() => { if(confirm("Intervalo! Ir para o vestiário?")) abrirModalSub(); else { etapa=2; tempo=0; iniciarRelogio(); } }, 500);
+                setTimeout(() => { if(confirm("Intervalo!")) abrirModalSub(); else { etapa=2; tempo=0; iniciarRelogio(); } }, 500);
             }
             if(tempo === 45 && etapa === 2) {
                 pausarJogo();
@@ -442,7 +495,7 @@
             
             adicionarLog("GOL", `${autorObj.nome} marca!`, "goal");
             registrarEvento(autorObj.uid, 'goals');
-            renderizarSidebars(); // Atualiza ícone
+            renderizarSidebars();
 
             setTimeout(() => { document.getElementById('goal-overlay').style.display='none'; iniciarRelogio(); }, 2000);
         }
@@ -453,12 +506,11 @@
             if(tipo === 'card') events[uid].cards = '🟨';
         }
 
-        // --- PÓS JOGO (ATUALIZA SAÚDE E PONTOS) ---
         function finalizarPartida() {
-            // CÁLCULO DE SAÚDE CUMULATIVA
-            titulares.forEach(j => { j.saude = Math.max(0, j.saude - 7); });
-            indisponiveis.forEach(j => { j.saude = Math.max(0, j.saude - 4); });
-            reservas.forEach(j => { j.saude = Math.min(100, j.saude + 5); });
+            // DESGASTE REALISTA
+            titulares.forEach(j => { j.saude = Math.max(0, j.saude - 8); }); // Titular cansa
+            indisponiveis.forEach(j => { j.saude = Math.max(0, j.saude - 4); }); // Substituído cansa menos
+            reservas.forEach(j => { j.saude = Math.min(100, j.saude + 6); }); // Banco recupera
 
             const statusJogadores = gameState.jogadoresStatus || {};
             [...titulares, ...reservas, ...indisponiveis].forEach(j => {
@@ -519,7 +571,7 @@
             if(etapa===1 && tempo===45) { etapa=2; tempo=0; }
             iniciarRelogio();
         }
-        function mudarFormacaoJogo() { formacaoAtual=document.getElementById('sub-formation').value; renderizarCampoSub(); adicionarLog("Téc", `Mudou para ${formacaoAtual}`, "sub"); }
+        function mudarFormacaoJogo() { formacaoAtual=document.getElementById('sub-formation').value; renderizarCampoSub(); adicionarLog("Téc", `Mudou para ${formacaoAtual}`, "sub"); document.getElementById('home-form-tag').innerText = formacaoAtual; }
         
         function renderizarCampoSub() {
             const c = document.getElementById('pitch-container');
@@ -531,6 +583,8 @@
                 el.className = 'sub-p-node'; el.style.top=pos.t; el.style.left=pos.l;
                 el.innerHTML = `<div class="sub-kit">${j.pos}</div><div class="sub-name">${j.nome.split(' ')[0]}</div>`;
                 el.onclick = () => selecionarSai(j.uid, el);
+                el.dataset.uid=j.uid;
+                el.addEventListener('mouseenter', showTooltip); el.addEventListener('mousemove', moveTooltip); el.addEventListener('mouseleave', hideTooltip);
                 c.appendChild(el);
             });
         }
@@ -539,9 +593,23 @@
             const l = document.getElementById('list-reservas-modal'); l.innerHTML='';
             const disp = reservas.filter(r => !indisponiveis.includes(r));
             disp.forEach(j => {
+                const saude = j.saude !== undefined ? j.saude : 100;
+                let cor = saude < 60 ? '#e74c3c' : '#2ecc71';
+                
                 const el = document.createElement('div'); el.className='player-row';
-                el.innerHTML=`<span><b>${j.pos}</b> ${j.nome}</span> <b>${j.forca}</b>`;
+                el.innerHTML=`
+                    <div class="row-info">
+                        <span class="row-pos">${j.pos}</span>
+                        <span class="row-name">${j.nome}</span>
+                    </div>
+                    <div class="row-stats">
+                        <span class="row-ovr">${j.forca}</span>
+                        <div class="row-hp-track"><div class="row-hp-fill" style="width:${saude}%; background:${cor}"></div></div>
+                    </div>
+                `;
                 el.onclick = () => selecionarEntra(j.uid, el);
+                el.dataset.uid=j.uid;
+                el.addEventListener('mouseenter', showTooltip); el.addEventListener('mousemove', moveTooltip); el.addEventListener('mouseleave', hideTooltip);
                 l.appendChild(el);
             });
         }
@@ -566,9 +634,30 @@
                 const sai = titulares[idxS]; const entra = reservas[idxE];
                 titulares[idxS] = entra; reservas.splice(idxE, 1); indisponiveis.push(sai);
                 adicionarLog("Sub", `Sai ${sai.nome} | Entra ${entra.nome}`, "sub");
+                registrarEvento(entra.uid, 'sub_in'); // Marca entrada
                 subPending={sai:null, entra:null};
                 renderizarCampoSub(); renderizarListaReservas(); renderizarSidebars(); atualizarUIBotao();
             }
+        }
+
+        // TOOLTIP
+        function showTooltip(e) {
+            const uid = this.dataset.uid; if(!uid)return;
+            const jog = titulares.find(j=>j.uid===uid) || reservas.find(j=>j.uid===uid) || indisponiveis.find(j=>j.uid===uid);
+            if(!jog)return;
+            if(!jog.atributos) gerarAtributos(jog);
+            document.getElementById('tip-name').innerText=jog.nome; document.getElementById('tip-pos').innerText=jog.pos; document.getElementById('tip-ovr').innerText=jog.forca;
+            const g=document.getElementById('tip-grid'); g.innerHTML='';
+            const l={VEL:'PAC',FIN:'SHO',PAS:'PAS',DRI:'DRI',DEF:'DEF',FIS:'PHY'};
+            for(let k in l) { let v=jog.atributos[k]; let c='mid'; if(v>=80)c='high'; if(v<60)c='low'; g.innerHTML+=`<div class="fifa-stat"><span>${l[k]}</span><b class="${c}">${v}</b></div>`; }
+            document.getElementById('fifa-tooltip').style.display='block'; moveTooltip(e);
+        }
+        function moveTooltip(e) { const t=document.getElementById('fifa-tooltip'); t.style.top=(e.clientY+15)+'px'; t.style.left=(e.clientX+15)+'px'; }
+        function hideTooltip() { document.getElementById('fifa-tooltip').style.display='none'; }
+        function gerarAtributos(j) {
+            const b = j.forca;
+            if(j.pos==='GOL') j.atributos={VEL:b+2, FIN:b-5, PAS:b, DRI:b-10, DEF:b+5, FIS:b};
+            else j.atributos={VEL:b, FIN:b-2, PAS:b, DRI:b, DEF:b-5, FIS:b};
         }
 
         // UTIL
