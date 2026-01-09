@@ -8,7 +8,7 @@
     <script src="database_jogadores.js"></script>
     <script src="engine.js"></script>
 
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;800&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -22,9 +22,11 @@
 
         * { box-sizing: border-box; }
 
+        /* SCROLLBAR CUSTOMIZADA */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #111; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -75,9 +77,10 @@
             color: var(--accent);
         }
 
-        /* MAIN */
+        /* CONTEÚDO PRINCIPAL */
         .main-content { padding: 30px; overflow-y: auto; }
 
+        /* CABEÇALHO DO TIME */
         .dash-header {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 30px;
@@ -97,7 +100,7 @@
         }
         .stat-item span { color: var(--accent); }
 
-        /* GRID */
+        /* GRID DE CARDS */
         .grid-container { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
 
         .card {
@@ -110,7 +113,7 @@
             display: flex; justify-content: space-between;
         }
 
-        /* NEXT MATCH */
+        /* PRÓXIMO JOGO */
         .next-match {
             display: flex; align-items: center; justify-content: space-between;
             background: linear-gradient(90deg, #1e2329 0%, #161b22 100%);
@@ -120,6 +123,7 @@
         .match-team { text-align: center; width: 30%; z-index: 2; }
         .match-team img { width: 60px; height: 60px; margin-bottom: 10px; }
         .match-team h3 { margin: 0; font-size: 1.1rem; }
+        
         .vs-badge {
             font-family: 'Rajdhani'; font-size: 2rem; font-weight: 900; color: #333;
             background: #000; width: 50px; height: 50px; display: flex;
@@ -136,11 +140,11 @@
         }
         .play-btn:hover { transform: scale(1.02); background: #fff; }
 
-        /* TABLES */
+        /* TABELA E LISTAS */
         .mini-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         .mini-table th { text-align: left; color: #666; padding: 8px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
         .mini-table td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
-        
+        .pos-num { font-weight: 700; width: 30px; display: inline-block; }
         .my-team-row { background: rgba(0, 255, 136, 0.1); color: var(--accent); font-weight: bold; }
 
         @media (max-width: 800px) {
@@ -156,9 +160,9 @@
         <div class="logo-area">BR<span>FUTEBOL</span></div>
         <button class="nav-btn active">📊 Visão Geral</button>
         <button class="nav-btn" onclick="window.location.href='escalacao.html'">👕 Escalação</button>
-        <button class="nav-btn" onclick="alert('Mercado fechado nesta versão!')">💰 Transferências</button>
-        <button class="nav-btn" onclick="alert('Em breve!')">🏆 Classificação</button>
-        <button class="nav-btn" onclick="alert('Sala de Imprensa: Nenhuma coletiva agendada para hoje.')">📰 Sala de Imprensa</button>
+        <button class="nav-btn" onclick="alert('Janela de transferências fechada no momento.')">💰 Transferências</button>
+        <button class="nav-btn" onclick="alert('Em breve: Tabela completa.')">🏆 Classificação</button>
+        <button class="nav-btn" onclick="alert('Sala de Imprensa: Nenhuma coletiva agendada.')">📰 Sala de Imprensa</button>
         
         <div style="margin-top: auto;">
             <button class="nav-btn" onclick="resetGame()" style="color: #ff4757;">✖ Sair do Jogo</button>
@@ -166,6 +170,7 @@
     </div>
 
     <div class="main-content">
+        
         <div class="dash-header">
             <div class="team-profile">
                 <img id="dash-escudo" src="" class="team-shield">
@@ -212,7 +217,8 @@
                                 <th width="25%">CARAC.</th>
                             </tr>
                         </thead>
-                        <tbody id="squad-body"></tbody>
+                        <tbody id="squad-body">
+                            </tbody>
                     </table>
                 </div>
 
@@ -221,17 +227,17 @@
             <div style="display: flex; flex-direction: column; gap: 20px;">
                 
                 <div class="card">
-                    <div class="card-title">RELATÓRIO DO ELENCO</div>
-                    <div style="text-align: center; padding: 10px;">
-                        <div style="font-size: 2.5rem; font-weight: 800; color: var(--accent);" id="team-ovr">0</div>
-                        <div style="color: #666; font-size: 0.8rem; text-transform: uppercase;">Força Geral</div>
+                    <div class="card-title">RELATÓRIO TÉCNICO</div>
+                    <div style="text-align: center; padding: 15px;">
+                        <div style="font-size: 3rem; font-weight: 800; color: var(--accent);" id="team-ovr">0</div>
+                        <div style="color: #666; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">Força Geral</div>
                     </div>
-                    <div style="margin-top: 15px; border-top: 1px solid #333; padding-top: 10px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 5px;">
-                            <span style="color:#aaa">Confiança</span><span style="color:#fff">100%</span>
+                    <div style="margin-top: 15px; border-top: 1px solid #333; padding-top: 15px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 8px;">
+                            <span style="color:#aaa">Confiança da Diretoria</span><span style="color:#fff">100%</span>
                         </div>
-                        <div style="width: 100%; height: 4px; background: #333; border-radius: 2px;">
-                            <div style="width: 100%; height: 100%; background: var(--accent); border-radius: 2px;"></div>
+                        <div style="width: 100%; height: 6px; background: #333; border-radius: 3px;">
+                            <div style="width: 100%; height: 100%; background: var(--accent); border-radius: 3px;"></div>
                         </div>
                     </div>
                 </div>
@@ -240,7 +246,8 @@
                     <div class="card-title">CLASSIFICAÇÃO</div>
                     <table class="mini-table">
                         <thead><tr><th>POS</th><th>TIME</th><th>P</th></tr></thead>
-                        <tbody id="table-body"></tbody>
+                        <tbody id="table-body">
+                            </tbody>
                     </table>
                 </div>
 
@@ -249,12 +256,13 @@
     </div>
 
     <script>
-        // --- 1. COMPATIBILIDADE ---
+        // --- 1. PATCH DE COMPATIBILIDADE ---
         if (typeof database !== 'undefined') window.Database = database;
         if (typeof Database !== 'undefined') window.database = Database;
 
         // --- 2. INICIALIZAÇÃO ---
         window.onload = function() {
+            // Garante estrutura de divisões para evitar erros
             if (window.Database && window.Database.brasil && Array.isArray(window.Database.brasil)) {
                 const todos = window.Database.brasil;
                 window.Database.brasil = { 'serieA': todos, 'serieB': [], 'serieC': [], 'serieD': [] };
@@ -267,26 +275,30 @@
 
         function carregarDados() {
             try {
+                // Tenta carregar o save
                 gameState = Engine.carregarJogo();
                 if (!gameState) {
-                    alert("Save não encontrado.");
+                    alert("Nenhum jogo salvo encontrado. Redirecionando para o início.");
                     window.location.href = 'index.html';
                     return;
                 }
 
+                // Busca o time no DB ou no Save
                 meuTime = encontrarTimeNoDatabase(gameState.meuTime);
                 if (!meuTime) meuTime = Engine.encontrarTime(gameState, gameState.meuTime);
 
-                if (!meuTime) throw new Error("Time não localizado.");
+                if (!meuTime) throw new Error("Time não localizado no banco de dados.");
 
-                // Gera backup de elenco se estiver vazio
+                // Se o time estiver sem jogadores (bug antigo), gera backup
                 if (!meuTime.elenco || meuTime.elenco.length === 0) {
                     meuTime.elenco = gerarElencoBackup(meuTime.nome);
                 }
 
+                // Carrega infos visuais
                 const tecnico = localStorage.getItem('brfutebol_tecnico') || "Técnico";
                 const escudo = localStorage.getItem('brfutebol_escudo') || "https://cdn-icons-png.flaticon.com/512/53/53283.png";
 
+                // Preenche HTML
                 document.getElementById('dash-team-name').innerText = meuTime.nome;
                 document.getElementById('dash-coach').innerText = tecnico;
                 document.getElementById('dash-escudo').src = escudo;
@@ -294,15 +306,18 @@
                 document.getElementById('dash-week').innerText = gameState.rodada;
                 document.getElementById('team-ovr').innerText = meuTime.forca || 60;
 
+                // Executa funções de preenchimento
                 atualizarTabela();
                 carregarOuGerarProximoJogo();
-                atualizarListaElenco(); // Atualizado
+                atualizarListaElenco();
 
             } catch (e) {
                 console.error(e);
+                alert("Erro ao carregar dashboard: " + e.message);
             }
         }
 
+        // Função auxiliar para buscar time
         function encontrarTimeNoDatabase(nomeOuId) {
             const db = window.database || window.Database;
             if (!db || !db.brasil) return null;
@@ -314,24 +329,25 @@
             return null;
         }
 
-        // --- NOVA FUNÇÃO DE ELENCO COM SAÚDE E CARACTERÍSTICA ---
+        // Preenche a lista de elenco detalhada
         function atualizarListaElenco() {
             const tbody = document.getElementById('squad-body');
             tbody.innerHTML = '';
             
+            // Ordena por força
             const elenco = meuTime.elenco.sort((a,b) => b.forca - a.forca);
 
             elenco.forEach(jog => {
                 const tr = document.createElement('tr');
                 
-                // Cores Posição
+                // Cores por Posição
                 let corPos = '#888';
                 if(jog.pos === 'GOL') corPos = '#e67e22';
                 else if(jog.pos === 'ATA') corPos = '#e74c3c';
                 else if(jog.pos === 'MEI') corPos = '#2ecc71';
                 else corPos = '#3498db';
 
-                // Cores Saúde (0 a 100)
+                // Cores por Saúde
                 let saude = jog.saude !== undefined ? jog.saude : 100;
                 let corSaude = '#2ecc71'; // Verde
                 if(saude < 80) corSaude = '#f1c40f'; // Amarelo
@@ -355,6 +371,7 @@
 
             const db = window.database || window.Database;
             if (db && db.brasil) {
+                // Acha a divisão do meu time
                 for(let serie in db.brasil) {
                     if(db.brasil[serie].find(t => t.nome === meuTime.nome)) {
                         timesTabela = db.brasil[serie];
@@ -363,16 +380,18 @@
                 }
             }
 
+            // Simula ordenação por pontos (fake points visual)
             timesTabela.sort((a,b) => (b.pontos || b.forca) - (a.pontos || a.forca));
 
             timesTabela.slice(0, 5).forEach((t, i) => {
                 const tr = document.createElement('tr');
-                if(t.nome === meuTime.nome) tr.style.color = 'var(--accent)';
-                tr.innerHTML = `<td>${i+1}</td><td>${t.nome}</td><td>0</td>`;
+                if(t.nome === meuTime.nome) tr.className = 'my-team-row';
+                tr.innerHTML = `<td><span class="pos-num">${i + 1}</span></td><td>${t.nome}</td><td>${t.pontos || 0}</td>`;
                 tbody.appendChild(tr);
             });
         }
 
+        // Lógica para manter o oponente fixo até o jogo acontecer
         function carregarOuGerarProximoJogo() {
             const oponenteSalvoNome = localStorage.getItem('brfutebol_oponente_atual');
             let oponente = null;
@@ -407,11 +426,11 @@
             return { nome: "Visitante", escudo: "" };
         }
 
+        // --- AQUI ESTÁ A CORREÇÃO DO REDIRECIONAMENTO ---
         function irParaPartida() {
-            if(confirm("Confirmar escalação e ir para o jogo?")) {
-                localStorage.removeItem('brfutebol_oponente_atual');
-                alert("Simulando partida... (Aqui entraria a tela partida.html)");
-                location.reload();
+            if(confirm("Tudo pronto? Vamos para o estádio!")) {
+                // Redireciona para o arquivo da partida
+                window.location.href = 'partida.html';
             }
         }
 
