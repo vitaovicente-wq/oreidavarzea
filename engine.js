@@ -7,33 +7,31 @@ const Engine = {
     novoJogo: function(pais, divisao, nomeTimeSelecionado) {
         console.log(`⚽ Iniciando nova campanha: ${nomeTimeSelecionado} (${divisao})`);
 
-        // A) Verifica dependências
         if (typeof CalendarioSystem === 'undefined') {
             alert("ERRO CRÍTICO: O arquivo calendario.js não foi carregado.");
             throw new Error("Missing CalendarioSystem");
         }
 
-        // B) Carrega os times do Banco de Dados
+        // Carrega os times do Banco de Dados
         let timesDaLiga = [];
         if (window.Database && window.Database.brasil && window.Database.brasil[divisao]) {
-            // Clona para não estragar o original
             timesDaLiga = JSON.parse(JSON.stringify(window.Database.brasil[divisao]));
         } else {
             console.warn("⚠️ Database não encontrado. Gerando times genéricos.");
             timesDaLiga = this._gerarTimesGenericos(divisao);
         }
 
-        // C) Gera o Calendário de Jogos (Turno e Returno)
+        // Gera o Calendário
         const calendarioGerado = CalendarioSystem.gerarCampeonato(timesDaLiga);
 
-        // D) Cria a estrutura inicial da Tabela de Classificação
+        // Estrutura inicial da Tabela
         const classificacaoInicial = timesDaLiga.map(t => ({
             nome: t.nome,
             escudo: t.escudo || null,
             pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0
         }));
 
-        // E) Monta o objeto do Save
+        // Monta o Save
         const estadoDoJogo = {
             info: {
                 tecnico: localStorage.getItem('brfutebol_tecnico') || "Treinador",
@@ -44,7 +42,7 @@ const Engine = {
                 dataInicio: new Date().toLocaleDateString()
             },
             recursos: {
-                dinheiro: 5000000, // 5 Milhões iniciais
+                dinheiro: 5000000, 
                 moral: 100
             },
             rodadaAtual: 1,
@@ -53,12 +51,32 @@ const Engine = {
             tabela: classificacaoInicial
         };
 
-        // F) Salva e finaliza
         this.salvarJogo(estadoDoJogo);
-        console.log("✅ Jogo salvo com sucesso! Pronto para ir ao Dashboard.");
+        console.log("✅ Jogo salvo com sucesso!");
     },
 
-    // --- 2. SISTEMA DE SAVE / LOAD ---
+    // --- 2. SISTEMA DE BUSCA (AS FUNÇÕES QUE FALTAVAM) ---
+
+    // Busca um time inteiro pelo nome dentro do save atual
+    encontrarTime: function(nomeTime) {
+        const save = this.carregarJogo();
+        if (!save || !save.times) return null;
+        
+        // Procura o time na lista salva
+        const timeEncontrado = save.times.find(t => t.nome === nomeTime);
+        
+        // Retorna o time ou um objeto vazio para não travar
+        return timeEncontrado || { nome: nomeTime, forca: 0, escudo: "" };
+    },
+
+    // Retorna direto o time controlado pelo jogador
+    getMeuTime: function() {
+        const save = this.carregarJogo();
+        if (!save) return null;
+        return this.encontrarTime(save.info.time);
+    },
+
+    // --- 3. SISTEMA DE SAVE / LOAD ---
 
     salvarJogo: function(estado) {
         localStorage.setItem('brfutebol_save', JSON.stringify(estado));
@@ -70,16 +88,15 @@ const Engine = {
         return JSON.parse(saveJson);
     },
 
-    // --- 3. LÓGICA DE SIMULAÇÃO E TABELA ---
+    // --- 4. LÓGICA DE SIMULAÇÃO E TABELA ---
 
-    // Função para atualizar a tabela baseada nos jogos que já aconteceram
     atualizarTabela: function(estadoJogo) {
-        // Zera a tabela para recalcular do zero (evita erros de soma)
+        // Zera a tabela
         estadoJogo.tabela.forEach(t => {
             t.pts = 0; t.j = 0; t.v = 0; t.e = 0; t.d = 0; t.gp = 0; t.gc = 0; t.sg = 0;
         });
 
-        // Percorre todas as rodadas e jogos
+        // Recalcula baseado no calendário
         estadoJogo.calendario.forEach(rodada => {
             rodada.jogos.forEach(jogo => {
                 if (jogo.jogado) {
@@ -88,7 +105,7 @@ const Engine = {
             });
         });
 
-        // Ordena a tabela (Pontos > Vitórias > Saldo > Gols Pró)
+        // Ordena
         estadoJogo.tabela.sort((a, b) => {
             if (b.pts !== a.pts) return b.pts - a.pts;
             if (b.v !== a.v) return b.v - a.v;
@@ -100,21 +117,18 @@ const Engine = {
         return estadoJogo.tabela;
     },
 
-    // Função auxiliar que soma os pontos de um jogo específico
     _computarJogoNaTabela: function(tabela, jogo) {
         const timeCasa = tabela.find(t => t.nome === jogo.mandante);
         const timeFora = tabela.find(t => t.nome === jogo.visitante);
 
-        if (!timeCasa || !timeFora) return; // Segurança
+        if (!timeCasa || !timeFora) return; 
 
         const golsCasa = parseInt(jogo.placarCasa);
         const golsFora = parseInt(jogo.placarFora);
 
-        // Atualiza jogos e gols
         timeCasa.j++; timeCasa.gp += golsCasa; timeCasa.gc += golsFora; timeCasa.sg = timeCasa.gp - timeCasa.gc;
         timeFora.j++; timeFora.gp += golsFora; timeFora.gc += golsCasa; timeFora.sg = timeFora.gp - timeFora.gc;
 
-        // Distribui pontos
         if (golsCasa > golsFora) {
             timeCasa.v++; timeCasa.pts += 3;
             timeFora.d++;
@@ -127,7 +141,7 @@ const Engine = {
         }
     },
 
-    // --- 4. FUNÇÕES AUXILIARES ---
+    // --- 5. FUNÇÕES AUXILIARES ---
 
     _gerarTimesGenericos: function(div) {
         let lista = [];
@@ -143,5 +157,4 @@ const Engine = {
     }
 };
 
-// Exportar para garantir compatibilidade
 window.Engine = Engine;
