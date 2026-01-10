@@ -71,10 +71,12 @@
         .stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; display: block; }
         .stat-val { font-family: 'Rajdhani'; font-weight: 700; font-size: 1.2rem; color: var(--neon-green); }
 
-        /* MATCHDAY BANNER */
+        /* MATCHDAY BANNER - NOVA IMAGEM DE FUNDO AQUI */
         .match-banner {
-            background: linear-gradient(to bottom, rgba(15, 18, 22, 0.8), rgba(15, 18, 22, 0.9)), url('https://images.unsplash.com/photo-1522770179533-24471fcdba45?q=80&w=1000&auto=format&fit=crop');
-            background-size: cover; background-position: center;
+            /* Fundo escuro gradiente + Nova imagem de torcida vibrante */
+            background: linear-gradient(to bottom, rgba(15, 18, 22, 0.85), rgba(15, 18, 22, 0.95)), url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1000&auto=format&fit=crop');
+            background-size: cover; background-position: center center;
+            
             border-radius: 16px; border: 1px solid var(--border);
             padding: 40px; min-height: 280px; 
             display: flex; align-items: center; justify-content: center;
@@ -167,7 +169,7 @@
         .condition-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
 
         @media (max-width: 900px) {
-            .col-stat { display: none; } /* Esconde atributos detalhados no mobile */
+            .col-stat { display: none; }
             .match-content-grid { grid-template-columns: 1fr; gap: 30px; }
             .vs-text { margin: 10px 0; transform: rotate(90deg); font-size: 2rem; }
             .play-btn { width: 100%; }
@@ -319,7 +321,7 @@
             else meuTime = game.times.find(t => t.nome === game.info.time);
 
             if (!meuTime || !meuTime.elenco || meuTime.elenco.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='10' style='text-align:center; padding:20px'>Elenco não encontrado.</td></tr>";
+                tbody.innerHTML = "<tr><td colspan='11' style='text-align:center; padding:20px'>Elenco não encontrado.</td></tr>";
                 return;
             }
 
@@ -329,11 +331,7 @@
             meuTime.elenco.forEach(jog => {
                 const forca = jog.forca || 60;
                 const saude = jog.saude !== undefined ? jog.saude : 100;
-                
-                // Garante que o jogador tem atributos (Gera na hora se não tiver)
                 const atr = garantirAtributos(jog);
-
-                // Tratamento seguro da característica
                 const caracteristica = jog.caracteristica || jog.carac || "-";
 
                 let posClass = "";
@@ -346,7 +344,6 @@
                 if(saude < 80) barColor = "#f1c40f"; 
                 if(saude < 50) barColor = "#ff4757"; 
 
-                // Função auxiliar para colorir atributos altos
                 const fmtStat = (val) => {
                     if(val >= 80) return `<span class="stat-high">${val}</span>`;
                     if(val < 60) return `<span class="stat-low">${val}</span>`;
@@ -377,19 +374,17 @@
             });
         }
 
-        // Função mágica que gera atributos baseados no OVR se não existirem
         function garantirAtributos(jog) {
             if(jog.atributos && jog.atributos.VEL) return jog.atributos;
 
             const base = jog.forca || 60;
-            // Lógica simples para gerar stats coerentes com a posição
             if(jog.pos === 'GOL') {
                 return { VEL: base+2, FIN: base-5, PAS: base, DRI: base-10, DEF: base+5, FIS: base };
             } else if (jog.pos === 'ATA') {
                 return { VEL:base+5, FIN:base+5, PAS:base-5, DRI:base+5, DEF:base-30, FIS:base };
             } else if (['ZAG','LD','LE'].includes(jog.pos)) {
                 return { VEL:base, FIN:base-20, PAS:base-5, DRI:base-10, DEF:base+5, FIS:base+5 };
-            } else { // MEIO
+            } else { 
                 return { VEL:base, FIN:base-5, PAS:base+5, DRI:base, DEF:base, FIS:base };
             }
         }
