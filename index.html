@@ -8,105 +8,128 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
     <script src="database_jogadores.js"></script>
-    
-    <script src="calendario.js"></script>
-    
-    <script src="engine.js"></script>
+    <script src="calendario.js"></script> <script src="engine.js"></script>
 
     <style>
         :root {
             --bg-dark: #0f1216;
-            --card-bg: #1e2329;
+            --card-bg: rgba(30, 35, 41, 0.95);
             --neon-green: #00ff88;
             --text-main: #ffffff;
-            --border: #30363d;
+            --text-muted: #8b949e;
+            --border: 1px solid rgba(255,255,255,0.1);
         }
+
+        * { box-sizing: border-box; }
 
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-dark);
+            /* Imagem de fundo de estádio com filtro escuro */
+            background: linear-gradient(to bottom, rgba(15, 18, 22, 0.9), rgba(15, 18, 22, 0.95)), url('https://images.unsplash.com/photo-1522770179533-24471fcdba45?q=80&w=1000&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             color: var(--text-main);
             margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
             min-height: 100vh;
         }
 
-        /* HEADER */
-        .header {
-            text-align: center; margin: 40px 0;
-        }
+        /* LOGO */
+        .header { text-align: center; margin-bottom: 30px; animation: fadeIn 1s ease-in; }
         .logo {
-            font-family: 'Rajdhani', sans-serif; font-size: 4rem; font-weight: 900;
-            letter-spacing: 4px; margin: 0;
+            font-family: 'Rajdhani', sans-serif; font-size: 5rem; font-weight: 900;
+            letter-spacing: 5px; margin: 0; line-height: 1;
             background: linear-gradient(45deg, #fff, #aaa);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         .logo span {
             background: linear-gradient(45deg, var(--neon-green), #00b8ff);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-        .subtitle { color: #888; font-size: 1rem; margin-top: 5px; }
+        .subtitle { color: var(--neon-green); font-family: 'Rajdhani'; font-size: 1.2rem; letter-spacing: 3px; text-transform: uppercase; margin-top: 5px; }
 
-        /* FORMULÁRIO */
+        /* CONTAINER PRINCIPAL */
         .container {
-            width: 90%; max-width: 1000px;
-            background: var(--card-bg); border: 1px solid var(--border);
-            border-radius: 16px; padding: 40px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            width: 95%; max-width: 1100px;
+            background: var(--card-bg); 
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px; padding: 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            animation: slideUp 0.5s ease-out;
         }
 
-        .input-group { margin-bottom: 25px; }
-        label { display: block; margin-bottom: 8px; font-weight: 700; color: #ccc; font-size: 0.9rem; text-transform: uppercase; }
+        /* INPUTS */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+        .input-group { display: flex; flex-direction: column; gap: 10px; }
+        label { font-weight: 700; color: var(--neon-green); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; font-family: 'Rajdhani'; }
         
         input[type="text"], select {
-            width: 100%; padding: 15px; background: #0d1117;
-            border: 1px solid var(--border); border-radius: 8px;
+            width: 100%; padding: 18px; background: rgba(0,0,0,0.4);
+            border: 1px solid #333; border-radius: 8px;
             color: #fff; font-size: 1rem; font-family: 'Inter', sans-serif;
             outline: none; transition: 0.3s;
         }
-        input[type="text"]:focus { border-color: var(--neon-green); box-shadow: 0 0 10px rgba(0, 255, 136, 0.1); }
+        input[type="text"]:focus, select:focus { border-color: var(--neon-green); box-shadow: 0 0 15px rgba(0, 255, 136, 0.1); }
 
-        /* GRID DE TIMES */
-        .team-selection-title { margin: 30px 0 15px 0; border-bottom: 1px solid var(--border); padding-bottom: 10px; font-family: 'Rajdhani'; font-size: 1.5rem; }
+        /* SELEÇÃO DE TIMES */
+        .section-title { 
+            font-family: 'Rajdhani'; font-size: 1.5rem; color: #fff; 
+            border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 20px; 
+        }
         
         .teams-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 15px; max-height: 400px; overflow-y: auto;
-            padding: 10px; background: #0d1117; border-radius: 8px; border: 1px solid var(--border);
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 15px; max-height: 350px; overflow-y: auto;
+            padding-right: 10px;
         }
+        /* Custom Scrollbar */
+        .teams-grid::-webkit-scrollbar { width: 6px; }
+        .teams-grid::-webkit-scrollbar-track { background: #111; }
+        .teams-grid::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 
         .team-card {
-            background: var(--card-bg); border: 1px solid var(--border);
-            border-radius: 8px; padding: 15px; cursor: pointer;
+            background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px; padding: 15px; cursor: pointer;
             display: flex; flex-direction: column; align-items: center; gap: 10px;
-            transition: 0.2s; position: relative;
+            transition: all 0.2s; position: relative;
         }
-        .team-card:hover { transform: translateY(-3px); background: #2c333a; }
-        .team-card.selected { border: 2px solid var(--neon-green); background: rgba(0, 255, 136, 0.05); box-shadow: 0 0 15px rgba(0, 255, 136, 0.2); }
+        .team-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.08); border-color: #666; }
+        .team-card.selected { 
+            border: 2px solid var(--neon-green); 
+            background: rgba(0, 255, 136, 0.1); 
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.2); 
+        }
         
-        .team-img { width: 50px; height: 50px; object-fit: contain; }
-        .team-name { font-size: 0.85rem; font-weight: 700; text-align: center; line-height: 1.2; }
-        .team-ovr { font-family: 'Rajdhani'; font-weight: 800; color: #f1c40f; font-size: 0.8rem; }
+        .team-img { width: 60px; height: 60px; object-fit: contain; filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5)); transition: 0.3s; }
+        .team-card:hover .team-img { transform: scale(1.1); }
+        .team-name { font-size: 0.85rem; font-weight: 700; text-align: center; line-height: 1.2; color: #eee; }
+        .team-ovr { 
+            font-family: 'Rajdhani'; font-weight: 800; color: #f1c40f; font-size: 0.9rem; 
+            background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 4px;
+        }
 
         /* BOTÃO */
         .btn-start {
-            width: 100%; padding: 20px; margin-top: 30px;
-            background: linear-gradient(45deg, var(--neon-green), #27ae60);
-            color: #000; border: none; border-radius: 8px;
-            font-family: 'Rajdhani'; font-weight: 900; font-size: 1.5rem; text-transform: uppercase;
-            cursor: pointer; transition: 0.3s; box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+            width: 100%; padding: 22px; margin-top: 40px;
+            background: linear-gradient(90deg, var(--neon-green), #27ae60);
+            color: #000; border: none; border-radius: 10px;
+            font-family: 'Rajdhani'; font-weight: 900; font-size: 1.8rem; text-transform: uppercase; letter-spacing: 2px;
+            cursor: pointer; transition: 0.3s; box-shadow: 0 0 30px rgba(0, 255, 136, 0.2);
         }
-        .btn-start:hover { transform: scale(1.02); box-shadow: 0 0 30px rgba(0, 255, 136, 0.4); }
-        .btn-start:disabled { background: #444; color: #888; cursor: not-allowed; box-shadow: none; }
+        .btn-start:hover { transform: scale(1.02); box-shadow: 0 0 50px rgba(0, 255, 136, 0.5); color: #fff; }
+        .btn-start:disabled { background: #333; color: #555; cursor: not-allowed; box-shadow: none; transform: none; }
 
-        /* SCROLLBAR */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-        ::-webkit-scrollbar-track { background: #0d1117; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
 
-        @media (max-width: 600px) {
-            .logo { font-size: 2.5rem; }
-            .container { padding: 20px; }
+        @media (max-width: 768px) {
+            .logo { font-size: 3rem; }
+            .form-grid { grid-template-columns: 1fr; gap: 15px; }
+            .container { padding: 20px; width: 100%; border-radius: 0; height: 100vh; overflow-y: auto; }
             .teams-grid { grid-template-columns: repeat(3, 1fr); }
         }
     </style>
@@ -120,21 +143,23 @@
 
     <div class="container">
         
-        <div class="input-group">
-            <label>Nome do Treinador</label>
-            <input type="text" id="manager-name" placeholder="Digite seu nome..." maxlength="20">
+        <div class="form-grid">
+            <div class="input-group">
+                <label>Nome do Manager</label>
+                <input type="text" id="manager-name" placeholder="Como quer ser chamado?" maxlength="20" autocomplete="off">
+            </div>
+
+            <div class="input-group">
+                <label>Selecione a Liga</label>
+                <select id="league-select" onchange="carregarTimes()">
+                    <option value="brasil">🇧🇷 Brasileirão Série A</option>
+                    </select>
+            </div>
         </div>
 
-        <div class="input-group">
-            <label>Liga</label>
-            <select id="league-select" onchange="carregarTimes()">
-                <option value="brasil">🇧🇷 Brasil - Série A</option>
-                </select>
-        </div>
-
-        <div class="team-selection-title">Escolha seu Clube</div>
+        <div class="section-title">Escolha seu Clube para comandar</div>
         <div class="teams-grid" id="teams-container">
-            <p style="padding:20px; color:#666">Carregando banco de dados...</p>
+            <p style="padding:20px; color:#666; width:100%; text-align:center;">Carregando banco de dados...</p>
         </div>
 
         <button class="btn-start" id="btn-start" onclick="iniciarCampanha()" disabled>ASSUMIR COMANDO</button>
@@ -146,14 +171,13 @@
         const DEFAULT_SHIELD = "https://cdn-icons-png.flaticon.com/512/53/53283.png";
 
         window.onload = function() {
-            // Verifica se os scripts carregaram
+            // Verifica dependências
             if (typeof Engine === 'undefined') {
-                alert("ERRO CRÍTICO: engine.js não carregado!");
+                alert("ERRO CRÍTICO: engine.js não carregado! Verifique a pasta.");
                 return;
             }
             if (typeof CalendarioSystem === 'undefined') {
-                alert("ERRO CRÍTICO: calendario.js não carregado! O jogo vai travar.");
-                return;
+                console.warn("Aviso: calendario.js não detectado. O jogo pode falhar ao iniciar.");
             }
 
             carregarTimes();
@@ -163,27 +187,28 @@
             const container = document.getElementById('teams-container');
             container.innerHTML = "";
 
-            // Tenta pegar do Database ou gera genérico
+            // Lógica para pegar times do DB ou gerar genéricos
             let listaTimes = [];
             if (typeof Database !== 'undefined' && Database.brasil && Database.brasil.serieA) {
                 listaTimes = Database.brasil.serieA;
             } else if (typeof window.database !== 'undefined' && window.database.brasil) {
-                // Compatibilidade com algumas versões do DB
                 listaTimes = window.database.brasil.serieA || window.database.brasil;
             } else {
-                // Fallback: Gera times genéricos se não tiver DB
+                // Fallback
                 for(let i=1; i<=20; i++) {
-                    listaTimes.push({ nome: `Time Genérico ${i}`, escudo: DEFAULT_SHIELD, forca: 60 });
+                    listaTimes.push({ nome: `Clube ${i}`, escudo: DEFAULT_SHIELD, forca: 60 });
                 }
             }
 
-            // Renderiza os cards
+            // Ordena por nome
+            listaTimes.sort((a,b) => a.nome.localeCompare(b.nome));
+
+            // Renderiza
             listaTimes.forEach(time => {
                 const card = document.createElement('div');
                 card.className = 'team-card';
                 card.onclick = () => selecionarTime(card, time.nome);
                 
-                // Proteção para imagem quebrada
                 const escudo = time.escudo || DEFAULT_SHIELD;
                 const forca = time.forca || 60;
 
@@ -197,13 +222,9 @@
         }
 
         function selecionarTime(elementoCard, nomeTime) {
-            // Remove seleção anterior
             document.querySelectorAll('.team-card').forEach(c => c.classList.remove('selected'));
-            
-            // Adiciona nova
             elementoCard.classList.add('selected');
             timeSelecionado = nomeTime;
-            
             validarFormulario();
         }
 
@@ -216,7 +237,7 @@
             if (nome.length > 0 && timeSelecionado) {
                 btn.disabled = false;
                 btn.style.opacity = "1";
-                btn.innerText = `ASSUMIR O ${timeSelecionado.toUpperCase()}`;
+                btn.innerHTML = `ASSUMIR O <span style="color:#fff">${timeSelecionado.toUpperCase()}</span>`;
             } else {
                 btn.disabled = true;
                 btn.style.opacity = "0.5";
@@ -230,34 +251,33 @@
 
             if (!timeSelecionado) return;
 
-            btn.innerText = "CONTRATANDO...";
-            btn.disabled = true;
+            btn.innerHTML = "CONTRATANDO...";
+            btn.style.cursor = "wait";
 
-            // Pequeno delay para efeito visual
             setTimeout(() => {
                 try {
-                    // Limpa saves antigos para evitar conflito
-                    localStorage.clear();
+                    localStorage.clear(); // Limpa jogo anterior
                     
-                    // Chama a Engine para criar o save, gerar calendário e tabela
-                    // Parâmetros: (Pais, Divisao, NomeDoTime)
-                    // Nota: 'serieA' é a chave usada no DB padrão
+                    // Cria o novo save
+                    // (Certifique-se que engine.js tem essa função novoJogo)
                     Engine.novoJogo('Brasil', 'serieA', timeSelecionado);
                     
-                    // Salva o nome do técnico (extra)
+                    // Atualiza nome do técnico
                     let save = Engine.carregarJogo();
-                    save.info.tecnico = nomeTreinador;
-                    Engine.salvarJogo(save);
-
-                    // Redireciona
-                    window.location.href = 'dashboard.html';
+                    if(save && save.info) {
+                        save.info.tecnico = nomeTreinador;
+                        Engine.salvarJogo(save);
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        throw new Error("Falha ao salvar dados iniciais.");
+                    }
 
                 } catch (err) {
-                    alert("Erro ao iniciar jogo: " + err.message);
+                    alert("Erro ao iniciar: " + err.message + "\nVerifique se o arquivo calendario.js existe.");
                     console.error(err);
-                    btn.innerText = "ERRO AO INICIAR";
+                    btn.innerText = "ERRO TÉCNICO";
                 }
-            }, 800);
+            }, 500);
         }
     </script>
 </body>
