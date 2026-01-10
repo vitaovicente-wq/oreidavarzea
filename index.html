@@ -44,19 +44,23 @@
         /* CONTAINER */
         .container {
             width: 95%; max-width: 1000px;
-            display: flex; flex-direction: column; gap: 20px; padding-bottom: 150px; /* Espaço para o footer fixo */
+            display: flex; flex-direction: column; gap: 20px; padding-bottom: 180px; /* Espaço para o footer fixo */
         }
 
-        /* INPUT NOME */
-        .input-box {
+        /* GRID DE CONFIGURAÇÃO (PAÍS E NOME) */
+        .config-grid {
+            display: grid; grid-template-columns: 1fr 2fr; gap: 15px;
             background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid var(--border);
         }
-        label { display: block; margin-bottom: 8px; font-weight: 700; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; }
-        input[type="text"] {
+
+        .input-box { display: flex; flex-direction: column; gap: 8px; }
+        label { font-weight: 700; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; }
+        
+        input[type="text"], select {
             width: 100%; padding: 12px; background: #0d1117; border: 1px solid var(--border);
-            border-radius: 6px; color: #fff; font-size: 1rem; outline: none;
+            border-radius: 6px; color: #fff; font-size: 1rem; outline: none; height: 45px;
         }
-        input[type="text"]:focus { border-color: var(--neon-green); }
+        input[type="text"]:focus, select:focus { border-color: var(--neon-green); }
 
         /* SELETOR DE DIVISÕES (ABAS) */
         .league-tabs {
@@ -66,14 +70,14 @@
             background: var(--card-bg); border: 1px solid var(--border); color: #888;
             padding: 20px 10px; border-radius: 8px; cursor: pointer;
             font-family: 'Rajdhani'; font-weight: 800; font-size: 1.2rem; text-transform: uppercase;
-            transition: 0.2s;
+            transition: 0.2s; text-align: center;
         }
         .tab-btn:hover { background: #252b33; color: #fff; }
         .tab-btn.active {
             background: rgba(46, 204, 113, 0.15); color: var(--neon-green); border-color: var(--neon-green);
             box-shadow: 0 0 15px rgba(0, 255, 136, 0.1);
         }
-        .tab-sub { display: block; font-size: 0.7rem; font-family: 'Inter'; font-weight: 400; opacity: 0.7; margin-top: 5px; }
+        .tab-sub { display: block; font-size: 0.7rem; font-family: 'Inter'; font-weight: 400; opacity: 0.7; margin-top: 5px; text-transform: none; }
 
         /* GRID DE TIMES */
         .teams-grid {
@@ -110,7 +114,7 @@
         .footer-content {
             width: 100%; max-width: 1000px;
             display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto;
-            gap: 20px; align-items: center; margin-bottom: 20px;
+            gap: 20px; align-items: center;
         }
 
         .info-block { border-right: 1px solid #333; padding-right: 20px; }
@@ -124,15 +128,16 @@
             color: #000; border: none; border-radius: 8px;
             font-family: 'Rajdhani'; font-weight: 900; font-size: 1.2rem; 
             text-transform: uppercase; cursor: pointer; transition: 0.2s;
-            white-space: nowrap;
+            white-space: nowrap; width: 100%;
         }
         .btn-start:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(46, 204, 113, 0.4); }
-        .btn-start:disabled { background: #333; color: #555; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-start:disabled { background: #333; color: #888; cursor: not-allowed; transform: none; box-shadow: none; font-size: 1rem; }
 
         @media (max-width: 800px) {
-            .footer-content { grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 60px; }
+            .config-grid { grid-template-columns: 1fr; }
+            .footer-content { grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px; }
             .info-block { border: none; background: #1e2329; padding: 10px; border-radius: 6px; }
-            .btn-start { position: absolute; bottom: 20px; left: 20px; right: 20px; width: auto; }
+            .btn-start { grid-column: span 2; }
             .teams-grid { grid-template-columns: repeat(3, 1fr); }
             .league-tabs { grid-template-columns: repeat(2, 1fr); }
         }
@@ -147,9 +152,19 @@
 
     <div class="container">
         
-        <div class="input-box">
-            <label>Nome do Treinador</label>
-            <input type="text" id="manager-name" placeholder="Digite seu nome..." maxlength="20" autocomplete="off">
+        <div class="config-grid">
+            <div class="input-box">
+                <label>País da Liga</label>
+                <select id="country-select" onchange="resetarLiga()">
+                    <option value="brasil">🇧🇷 Brasil</option>
+                    <option value="inglaterra" disabled>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra (Em breve)</option>
+                    <option value="espanha" disabled>🇪🇸 Espanha (Em breve)</option>
+                </select>
+            </div>
+            <div class="input-box">
+                <label>Nome do Treinador</label>
+                <input type="text" id="manager-name" placeholder="Como você quer ser chamado?" maxlength="20" autocomplete="off">
+            </div>
         </div>
 
         <div class="league-tabs">
@@ -163,7 +178,7 @@
             </div>
             <div class="tab-btn" onclick="mudarAba('serieC', this)">
                 Série C
-                <span class="tab-sub">Raiz</span>
+                <span class="tab-sub">Regional</span>
             </div>
             <div class="tab-btn" onclick="mudarAba('serieD', this)">
                 Série D
@@ -180,11 +195,11 @@
     <div class="fixed-footer" id="footer-summary">
         <div class="footer-content">
             <div class="info-block">
-                <span class="info-label">Objetivo da Diretoria</span>
+                <span class="info-label">Objetivo</span>
                 <span class="info-value" id="resumo-obj">---</span>
             </div>
             <div class="info-block">
-                <span class="info-label">Orçamento Inicial</span>
+                <span class="info-label">Orçamento</span>
                 <span class="info-value info-highlight" id="resumo-orcamento">R$ ---</span>
             </div>
             <div class="info-block">
@@ -192,11 +207,11 @@
                 <span class="info-value" id="resumo-estadio">---</span>
             </div>
             <div class="info-block">
-                <span class="info-label">Craque do Time</span>
+                <span class="info-label">Destaque</span>
                 <span class="info-value info-highlight" id="resumo-craque">---</span>
             </div>
             
-            <button class="btn-start" id="btn-start" onclick="iniciarCampanha()" disabled>CONTRATAR</button>
+            <button class="btn-start" id="btn-start" onclick="iniciarCampanha()" disabled>DIGITE SEU NOME</button>
         </div>
     </div>
 
@@ -206,13 +221,18 @@
         const DEFAULT_SHIELD = "https://cdn-icons-png.flaticon.com/512/53/53283.png";
 
         window.onload = function() {
-            // Verifica engine
-            if (typeof Engine === 'undefined') {
-                alert("ERRO: engine.js não carregado.");
+            // Verificação de Segurança
+            if (typeof Engine === 'undefined' || typeof CalendarioSystem === 'undefined') {
+                alert("ERRO: engine.js ou calendario.js não carregados.");
                 return;
             }
             carregarTimes(divisaoAtual);
         };
+
+        function resetarLiga() {
+            alert("Apenas a liga Brasileira está disponível nesta versão.");
+            document.getElementById('country-select').value = 'brasil';
+        }
 
         function mudarAba(divisao, elementoBtn) {
             // Atualiza visual dos botões
@@ -277,10 +297,9 @@
         }
 
         function atualizarResumo(time) {
-            // Lógica para gerar dados interessantes baseados na força do time
             const forca = time.forca || 60;
             let objetivo = "Evitar Rebaixamento";
-            let orcamento = 2.5; // Milhões
+            let orcamento = 2.5; 
             let estadio = "Municipal";
 
             if (forca >= 80) {
@@ -300,7 +319,6 @@
             // Tenta achar um craque no elenco ou inventa
             let craque = "Camisa 10";
             if (time.elenco && time.elenco.length > 0) {
-                // Pega o jogador com maior força
                 const melhor = time.elenco.reduce((prev, current) => (prev.forca > current.forca) ? prev : current);
                 craque = melhor.nome;
             }
@@ -317,40 +335,53 @@
             const nome = document.getElementById('manager-name').value.trim();
             const btn = document.getElementById('btn-start');
             
-            if (nome.length > 0 && timeSelecionadoObj) {
-                btn.disabled = false;
-                btn.innerText = "ASSUMIR COMANDO";
-            } else {
+            // Lógica de desbloqueio explicativa
+            if (!timeSelecionadoObj) {
                 btn.disabled = true;
+                btn.innerText = "SELECIONE UM CLUBE";
+                return;
             }
+
+            if (nome.length === 0) {
+                btn.disabled = true;
+                btn.innerText = "DIGITE SEU NOME";
+                return;
+            }
+
+            // Tudo OK
+            btn.disabled = false;
+            btn.innerText = "CONTRATAR";
         }
 
         function iniciarCampanha() {
             const nomeTreinador = document.getElementById('manager-name').value;
             const btn = document.getElementById('btn-start');
 
-            btn.innerText = "CRIANDO MUNDO...";
+            btn.innerText = "ASSINANDO CONTRATO...";
             btn.style.cursor = "wait";
 
             setTimeout(() => {
                 try {
                     localStorage.clear();
-                    // Chama engine passando a divisão certa
+                    
+                    // Cria o jogo (Save + Calendário)
                     Engine.novoJogo('Brasil', divisaoAtual, timeSelecionadoObj.nome);
                     
+                    // Salva técnico
                     let save = Engine.carregarJogo();
                     save.info.tecnico = nomeTreinador;
                     Engine.salvarJogo(save);
                     
                     window.location.href = 'dashboard.html';
                 } catch (err) {
-                    alert("Erro: " + err.message);
+                    alert("Erro ao iniciar: " + err.message);
                     console.error(err);
+                    btn.innerText = "ERRO";
                 }
             }, 500);
         }
 
-        // Função auxiliar para gerar times se não houver DB
+        // Função auxiliar para gerar times se não houver DB na série C/D
         function gerarTimesGenericos(divisao) {
             let lista = [];
             for(let i=1; i<=20; i++) {
@@ -358,7 +389,7 @@
                     nome: `Clube ${divisao.toUpperCase()} ${i}`, 
                     escudo: DEFAULT_SHIELD, 
                     forca: Math.floor(Math.random() * 20) + 50,
-                    elenco: [] // Engine vai preencher se vazio
+                    elenco: [] 
                 });
             }
             return lista;
