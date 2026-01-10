@@ -1,399 +1,59 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRFutebol - Novo Jogo</title>
+function atualizarResumo(time) {
+    const forca = time.forca || 60;
     
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    // 1. Tenta pegar do objeto do time (se tiver no DB)
+    let estadio = time.estadio;
 
-    <script src="database_jogadores.js"></script>
-    <script src="calendario.js"></script>
-    <script src="engine.js"></script>
-
-    <style>
-        :root {
-            --bg-dark: #0f1216;
-            --card-bg: #1e2329;
-            --neon-green: #00ff88;
-            --text-main: #ffffff;
-            --text-muted: #8b949e;
-            --border: #30363d;
-        }
-
-        * { box-sizing: border-box; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh;
-        }
-
-        /* HEADER */
-        .header { text-align: center; margin-top: 30px; margin-bottom: 20px; }
-        .logo {
-            font-family: 'Rajdhani', sans-serif; font-size: 3.5rem; font-weight: 900;
-            letter-spacing: 3px; margin: 0; line-height: 1; color: #fff;
-        }
-        .logo span { color: var(--neon-green); }
-        .subtitle { color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin-top: 5px; }
-
-        /* CONTAINER */
-        .container {
-            width: 95%; max-width: 1000px;
-            display: flex; flex-direction: column; gap: 20px; padding-bottom: 180px; /* Espaço para o footer fixo */
-        }
-
-        /* GRID DE CONFIGURAÇÃO (PAÍS E NOME) */
-        .config-grid {
-            display: grid; grid-template-columns: 1fr 2fr; gap: 15px;
-            background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid var(--border);
-        }
-
-        .input-box { display: flex; flex-direction: column; gap: 8px; }
-        label { font-weight: 700; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; }
-        
-        input[type="text"], select {
-            width: 100%; padding: 12px; background: #0d1117; border: 1px solid var(--border);
-            border-radius: 6px; color: #fff; font-size: 1rem; outline: none; height: 45px;
-        }
-        input[type="text"]:focus, select:focus { border-color: var(--neon-green); }
-
-        /* SELETOR DE DIVISÕES (ABAS) */
-        .league-tabs {
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
-        }
-        .tab-btn {
-            background: var(--card-bg); border: 1px solid var(--border); color: #888;
-            padding: 20px 10px; border-radius: 8px; cursor: pointer;
-            font-family: 'Rajdhani'; font-weight: 800; font-size: 1.2rem; text-transform: uppercase;
-            transition: 0.2s; text-align: center;
-        }
-        .tab-btn:hover { background: #252b33; color: #fff; }
-        .tab-btn.active {
-            background: rgba(46, 204, 113, 0.15); color: var(--neon-green); border-color: var(--neon-green);
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.1);
-        }
-        .tab-sub { display: block; font-size: 0.7rem; font-family: 'Inter'; font-weight: 400; opacity: 0.7; margin-top: 5px; text-transform: none; }
-
-        /* GRID DE TIMES */
-        .teams-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 12px; max-height: 400px; overflow-y: auto;
-            background: #0d1117; border: 1px solid var(--border); border-radius: 10px; padding: 15px;
-        }
-        .teams-grid::-webkit-scrollbar { width: 6px; }
-        .teams-grid::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-
-        .team-card {
-            background: var(--card-bg); border: 1px solid var(--border);
-            border-radius: 8px; padding: 15px; cursor: pointer;
-            display: flex; flex-direction: column; align-items: center; gap: 10px;
-            transition: 0.2s; position: relative;
-        }
-        .team-card:hover { transform: translateY(-3px); background: #252b33; }
-        .team-card.selected { border: 2px solid var(--neon-green); background: rgba(0, 255, 136, 0.05); }
-        
-        .team-img { width: 60px; height: 60px; object-fit: contain; }
-        .team-name { font-size: 0.8rem; font-weight: 700; text-align: center; color: #eee; }
-        .team-ovr { font-family: 'Rajdhani'; font-weight: 800; color: #666; font-size: 0.8rem; }
-
-        /* FOOTER FIXO (RESUMO DO TIME) */
-        .fixed-footer {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: rgba(15, 18, 22, 0.98); border-top: 1px solid var(--neon-green);
-            padding: 20px; box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
-            transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex; flex-direction: column; align-items: center; z-index: 100;
-        }
-        .fixed-footer.visible { transform: translateY(0); }
-
-        .footer-content {
-            width: 100%; max-width: 1000px;
-            display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto;
-            gap: 20px; align-items: center;
-        }
-
-        .info-block { border-right: 1px solid #333; padding-right: 20px; }
-        .info-label { font-size: 0.7rem; color: #888; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 5px; }
-        .info-value { font-family: 'Rajdhani'; font-size: 1.2rem; font-weight: 700; color: #fff; }
-        .info-highlight { color: var(--neon-green); }
-
-        /* BOTÃO INICIAR */
-        .btn-start {
-            padding: 15px 40px; background: var(--neon-green);
-            color: #000; border: none; border-radius: 8px;
-            font-family: 'Rajdhani'; font-weight: 900; font-size: 1.2rem; 
-            text-transform: uppercase; cursor: pointer; transition: 0.2s;
-            white-space: nowrap; width: 100%;
-        }
-        .btn-start:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(46, 204, 113, 0.4); }
-        .btn-start:disabled { background: #333; color: #888; cursor: not-allowed; transform: none; box-shadow: none; font-size: 1rem; }
-
-        @media (max-width: 800px) {
-            .config-grid { grid-template-columns: 1fr; }
-            .footer-content { grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px; }
-            .info-block { border: none; background: #1e2329; padding: 10px; border-radius: 6px; }
-            .btn-start { grid-column: span 2; }
-            .teams-grid { grid-template-columns: repeat(3, 1fr); }
-            .league-tabs { grid-template-columns: repeat(2, 1fr); }
-        }
-    </style>
-</head>
-<body>
-
-    <header class="header">
-        <h1 class="logo">BR<span>FUTEBOL</span></h1>
-        <div class="subtitle">Manager Simulator 2026</div>
-    </header>
-
-    <div class="container">
-        
-        <div class="config-grid">
-            <div class="input-box">
-                <label>País da Liga</label>
-                <select id="country-select" onchange="resetarLiga()">
-                    <option value="brasil">🇧🇷 Brasil</option>
-                    <option value="inglaterra" disabled>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra (Em breve)</option>
-                    <option value="espanha" disabled>🇪🇸 Espanha (Em breve)</option>
-                </select>
-            </div>
-            <div class="input-box">
-                <label>Nome do Treinador</label>
-                <input type="text" id="manager-name" placeholder="Como você quer ser chamado?" maxlength="20" autocomplete="off">
-            </div>
-        </div>
-
-        <div class="league-tabs">
-            <div class="tab-btn active" onclick="mudarAba('serieA', this)">
-                Série A
-                <span class="tab-sub">Elite Nacional</span>
-            </div>
-            <div class="tab-btn" onclick="mudarAba('serieB', this)">
-                Série B
-                <span class="tab-sub">Acesso</span>
-            </div>
-            <div class="tab-btn" onclick="mudarAba('serieC', this)">
-                Série C
-                <span class="tab-sub">Regional</span>
-            </div>
-            <div class="tab-btn" onclick="mudarAba('serieD', this)">
-                Série D
-                <span class="tab-sub">Base</span>
-            </div>
-        </div>
-
-        <div class="teams-grid" id="teams-container">
-            <p style="padding:20px; color:#666; width:100%; text-align:center;">Carregando dados...</p>
-        </div>
-
-    </div>
-
-    <div class="fixed-footer" id="footer-summary">
-        <div class="footer-content">
-            <div class="info-block">
-                <span class="info-label">Objetivo</span>
-                <span class="info-value" id="resumo-obj">---</span>
-            </div>
-            <div class="info-block">
-                <span class="info-label">Orçamento</span>
-                <span class="info-value info-highlight" id="resumo-orcamento">R$ ---</span>
-            </div>
-            <div class="info-block">
-                <span class="info-label">Estádio</span>
-                <span class="info-value" id="resumo-estadio">---</span>
-            </div>
-            <div class="info-block">
-                <span class="info-label">Destaque</span>
-                <span class="info-value info-highlight" id="resumo-craque">---</span>
-            </div>
-            
-            <button class="btn-start" id="btn-start" onclick="iniciarCampanha()" disabled>DIGITE SEU NOME</button>
-        </div>
-    </div>
-
-    <script>
-        let divisaoAtual = 'serieA';
-        let timeSelecionadoObj = null;
-        const DEFAULT_SHIELD = "https://cdn-icons-png.flaticon.com/512/53/53283.png";
-
-        window.onload = function() {
-            // Verificação de Segurança
-            if (typeof Engine === 'undefined' || typeof CalendarioSystem === 'undefined') {
-                alert("ERRO: engine.js ou calendario.js não carregados.");
-                return;
-            }
-            carregarTimes(divisaoAtual);
+    // 2. Se não tiver, usa lista de estádios reais conhecidos
+    if (!estadio) {
+        const estadiosReais = {
+            "Corinthians": "Neo Química Arena",
+            "Palmeiras": "Allianz Parque",
+            "São Paulo": "Morumbi",
+            "Santos": "Vila Belmiro",
+            "Flamengo": "Maracanã",
+            "Fluminense": "Maracanã",
+            "Vasco": "São Januário",
+            "Botafogo": "Nilton Santos",
+            "Grêmio": "Arena do Grêmio",
+            "Internacional": "Beira-Rio",
+            "Atlético-MG": "Arena MRV",
+            "Cruzeiro": "Mineirão",
+            "Bahia": "Fonte Nova",
+            "Vitória": "Barradão",
+            "Fortaleza": "Castelão",
+            "Ceará": "Castelão",
+            "Athletico-PR": "Ligga Arena",
+            "Coritiba": "Couto Pereira"
         };
+        estadio = estadiosReais[time.nome] || null;
+    }
 
-        function resetarLiga() {
-            alert("Apenas a liga Brasileira está disponível nesta versão.");
-            document.getElementById('country-select').value = 'brasil';
-        }
+    // 3. Fallback genérico se ainda não achou
+    if (!estadio) {
+        if (forca >= 80) estadio = "Arena Multiuso";
+        else if (forca >= 70) estadio = "Estádio Municipal";
+        else estadio = "Campo do Bairro";
+    }
 
-        function mudarAba(divisao, elementoBtn) {
-            // Atualiza visual dos botões
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            elementoBtn.classList.add('active');
-            
-            // Troca divisão
-            divisaoAtual = divisao;
-            timeSelecionadoObj = null;
-            document.getElementById('footer-summary').classList.remove('visible');
-            carregarTimes(divisao);
-        }
+    // Define Objetivo e Orçamento
+    let objetivo = "Permanência";
+    let orcamento = 2.0;
 
-        function carregarTimes(divisao) {
-            const container = document.getElementById('teams-container');
-            container.innerHTML = "";
+    if (forca >= 82) { objetivo = "Título / Libertadores"; orcamento = 150.0; }
+    else if (forca >= 76) { objetivo = "Vaga na Libertadores"; orcamento = 60.0; }
+    else if (forca >= 72) { objetivo = "Vaga na Sul-Americana"; orcamento = 25.0; }
 
-            let lista = [];
+    // Craque
+    let craque = "---";
+    if (time.elenco && time.elenco.length > 0) {
+        const melhor = time.elenco.reduce((p, c) => (p.forca > c.forca) ? p : c);
+        craque = melhor.nome;
+    }
 
-            // 1. Tenta pegar do Banco de Dados Real
-            if (window.Database && window.Database.brasil && window.Database.brasil[divisao]) {
-                lista = window.Database.brasil[divisao];
-            } else {
-                // 2. Se não tiver no DB, gera Genéricos para as ligas funcionarem
-                lista = gerarTimesGenericos(divisao);
-            }
-
-            // Ordena
-            lista.sort((a,b) => a.nome.localeCompare(b.nome));
-
-            // Renderiza
-            lista.forEach(time => {
-                const card = document.createElement('div');
-                card.className = 'team-card';
-                card.onclick = () => selecionarTime(card, time);
-                
-                const escudo = time.escudo || DEFAULT_SHIELD;
-                const forca = time.forca || 60;
-
-                card.innerHTML = `
-                    <img src="${escudo}" class="team-img" onerror="this.src='${DEFAULT_SHIELD}'">
-                    <div class="team-name">${time.nome}</div>
-                    <div class="team-ovr">OVR ${forca}</div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function selecionarTime(cardElement, timeObj) {
-            // Visual seleção
-            document.querySelectorAll('.team-card').forEach(c => c.classList.remove('selected'));
-            cardElement.classList.add('selected');
-            
-            timeSelecionadoObj = timeObj;
-
-            // Preenche o Resumo (Footer)
-            atualizarResumo(timeObj);
-            
-            // Mostra o Footer
-            document.getElementById('footer-summary').classList.add('visible');
-            validarFormulario();
-        }
-
-        function atualizarResumo(time) {
-            const forca = time.forca || 60;
-            let objetivo = "Evitar Rebaixamento";
-            let orcamento = 2.5; 
-            let estadio = "Municipal";
-
-            if (forca >= 80) {
-                objetivo = "Ser Campeão";
-                orcamento = 80.0;
-                estadio = "Arena Multiuso";
-            } else if (forca >= 75) {
-                objetivo = "Libertadores";
-                orcamento = 45.0;
-                estadio = "Estádio Olímpico";
-            } else if (forca >= 70) {
-                objetivo = "Sul-Americana";
-                orcamento = 15.0;
-                estadio = "Estádio Centenário";
-            }
-
-            // Tenta achar um craque no elenco ou inventa
-            let craque = "Camisa 10";
-            if (time.elenco && time.elenco.length > 0) {
-                const melhor = time.elenco.reduce((prev, current) => (prev.forca > current.forca) ? prev : current);
-                craque = melhor.nome;
-            }
-
-            document.getElementById('resumo-obj').innerText = objetivo;
-            document.getElementById('resumo-orcamento').innerText = `R$ ${orcamento} Mi`;
-            document.getElementById('resumo-estadio').innerText = estadio;
-            document.getElementById('resumo-craque').innerText = craque;
-        }
-
-        document.getElementById('manager-name').addEventListener('input', validarFormulario);
-
-        function validarFormulario() {
-            const nome = document.getElementById('manager-name').value.trim();
-            const btn = document.getElementById('btn-start');
-            
-            // Lógica de desbloqueio explicativa
-            if (!timeSelecionadoObj) {
-                btn.disabled = true;
-                btn.innerText = "SELECIONE UM CLUBE";
-                return;
-            }
-
-            if (nome.length === 0) {
-                btn.disabled = true;
-                btn.innerText = "DIGITE SEU NOME";
-                return;
-            }
-
-            // Tudo OK
-            btn.disabled = false;
-            btn.innerText = "CONTRATAR";
-        }
-
-        function iniciarCampanha() {
-            const nomeTreinador = document.getElementById('manager-name').value;
-            const btn = document.getElementById('btn-start');
-
-            btn.innerText = "ASSINANDO CONTRATO...";
-            btn.style.cursor = "wait";
-
-            setTimeout(() => {
-                try {
-                    localStorage.clear();
-                    
-                    // Cria o jogo (Save + Calendário)
-                    Engine.novoJogo('Brasil', divisaoAtual, timeSelecionadoObj.nome);
-                    
-                    // Salva técnico
-                    let save = Engine.carregarJogo();
-                    save.info.tecnico = nomeTreinador;
-                    Engine.salvarJogo(save);
-                    
-                    window.location.href = 'dashboard.html';
-                } catch (err) {
-                    alert("Erro ao iniciar: " + err.message);
-                    console.error(err);
-                    btn.innerText = "ERRO";
-                }
-            }, 500);
-        }
-
-        // Função auxiliar para gerar times se não houver DB na série C/D
-        function gerarTimesGenericos(divisao) {
-            let lista = [];
-            for(let i=1; i<=20; i++) {
-                lista.push({ 
-                    nome: `Clube ${divisao.toUpperCase()} ${i}`, 
-                    escudo: DEFAULT_SHIELD, 
-                    forca: Math.floor(Math.random() * 20) + 50,
-                    elenco: [] 
-                });
-            }
-            return lista;
-        }
-    </script>
-</body>
-</html>
+    // Atualiza na tela
+    document.getElementById('resumo-obj').innerText = objetivo;
+    document.getElementById('resumo-orcamento').innerText = `R$ ${orcamento} Mi`;
+    document.getElementById('resumo-estadio').innerText = estadio;
+    document.getElementById('resumo-craque').innerText = craque;
+}
