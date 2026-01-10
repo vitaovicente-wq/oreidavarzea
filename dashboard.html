@@ -63,9 +63,7 @@
         }
         .club-title h1 { margin: 0; font-family: 'Rajdhani'; font-size: 2rem; text-transform: uppercase; }
         .club-title span { color: var(--text-muted); font-size: 0.9rem; letter-spacing: 1px; }
-        .finances {
-            display: flex; gap: 20px;
-        }
+        .finances { display: flex; gap: 20px; }
         .stat-badge {
             background: #0d1117; padding: 8px 15px; border-radius: 6px; border: 1px solid var(--border);
             text-align: right;
@@ -73,33 +71,25 @@
         .stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; display: block; }
         .stat-val { font-family: 'Rajdhani'; font-weight: 700; font-size: 1.2rem; color: var(--neon-green); }
 
-        /* MATCHDAY BANNER (CORRIGIDO PARA SER MAIOR) */
+        /* MATCHDAY BANNER */
         .match-banner {
-            /* Imagem de fundo de estádio genérica */
             background: linear-gradient(to bottom, rgba(15, 18, 22, 0.8), rgba(15, 18, 22, 0.9)), url('https://images.unsplash.com/photo-1522770179533-24471fcdba45?q=80&w=1000&auto=format&fit=crop');
             background-size: cover; background-position: center;
-            
             border-radius: 16px; border: 1px solid var(--border);
-            /* AUMENTADO AQUI: Padding maior e altura mínima */
-            padding: 40px; 
-            min-height: 280px; 
-            
+            padding: 40px; min-height: 280px; 
             display: flex; align-items: center; justify-content: center;
             position: relative; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.6);
         }
         
         .match-content-grid {
-            display: grid; 
-            grid-template-columns: 1fr auto 1fr; 
+            display: grid; grid-template-columns: 1fr auto 1fr; 
             width: 100%; max-width: 800px; 
-            align-items: center; justify-items: center;
-            z-index: 2;
+            align-items: center; justify-items: center; z-index: 2;
         }
 
         .match-info-center { display: flex; flex-direction: column; align-items: center; text-align: center; }
         .match-label { font-family: 'Rajdhani'; font-weight: 700; color: var(--neon-green); letter-spacing: 3px; margin-bottom: 5px; font-size: 0.9rem; text-transform: uppercase; }
         
-        /* ESCUDOS MAIORES */
         .team-display { display: flex; flex-direction: column; align-items: center; gap: 15px; }
         .team-logo-big { 
             width: 110px; height: 110px; object-fit: contain; 
@@ -111,7 +101,6 @@
         
         .vs-text { font-family: 'Rajdhani'; font-size: 4rem; font-weight: 900; color: #fff; opacity: 0.8; margin: 0 40px; font-style: italic; }
         
-        /* BOTÃO MAIOR */
         .play-btn {
             background: linear-gradient(45deg, var(--neon-green), #27ae60);
             color: #000; border: none;
@@ -153,21 +142,28 @@
             font-size: 0.75rem; font-weight: 800; padding: 4px 8px; border-radius: 4px;
             text-align: center; color: #000; min-width: 45px; display: inline-block;
         }
-        .pos-gol { background-color: #f1c40f; } /* Amarelo */
-        .pos-def { background-color: #3498db; color: #fff; } /* Azul */
-        .pos-mei { background-color: #2ecc71; } /* Verde */
-        .pos-ata { background-color: #ff4757; color: #fff; } /* Vermelho */
+        .pos-gol { background-color: #f1c40f; } 
+        .pos-def { background-color: #3498db; color: #fff; } 
+        .pos-mei { background-color: #2ecc71; } 
+        .pos-ata { background-color: #ff4757; color: #fff; } 
 
         .col-name { font-weight: 600; color: #fff; font-size: 1rem; }
         .col-ovr { width: 70px; font-family: 'Rajdhani'; font-weight: 800; font-size: 1.3rem; color: var(--gold); text-align: center; }
         
-        .col-cond { width: 180px; }
+        /* Coluna Característica */
+        .col-carac { width: 140px; }
+        .carac-badge {
+            font-size: 0.75rem; font-weight: 600; color: #ccc;
+            background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 4px;
+            display: inline-block; border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .col-cond { width: 150px; }
         .condition-bar-bg { width: 100%; height: 8px; background: #333; border-radius: 4px; overflow: hidden; }
         .condition-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
 
         .col-status { width: 100px; text-align: center; font-size: 0.85rem; color: #888; font-weight: 600; }
 
-        /* RESPONSIVO */
         @media (max-width: 768px) {
             .match-content-grid { grid-template-columns: 1fr; gap: 30px; }
             .vs-text { margin: 10px 0; transform: rotate(90deg); font-size: 2rem; }
@@ -223,7 +219,7 @@
                             <th class="col-pos">Pos</th>
                             <th>Nome</th>
                             <th class="col-ovr">OVR</th>
-                            <th class="col-cond">Condição Física</th>
+                            <th class="col-carac">Carac.</th> <th class="col-cond">Condição</th>
                             <th class="col-status">Status</th>
                         </tr>
                     </thead>
@@ -246,16 +242,12 @@
                 return;
             }
 
-            // 1. Preencher Topo
             document.getElementById('team-name').innerText = game.info.time;
             document.getElementById('coach-name').innerText = "Manager: " + game.info.tecnico;
             document.getElementById('money-display').innerText = "R$ " + (game.recursos.dinheiro / 1000000).toFixed(1) + " Mi";
             document.getElementById('round-display').innerText = game.rodadaAtual;
 
-            // 2. Preencher Próximo Jogo
             renderizarMatchDay(game);
-
-            // 3. Preencher Elenco
             renderizarElencoPro(game);
         };
 
@@ -280,7 +272,6 @@
                 const mandanteObj = Engine.encontrarTime(meuJogo.mandante) || { escudo: DEFAULT_SHIELD };
                 const visitanteObj = Engine.encontrarTime(meuJogo.visitante) || { escudo: DEFAULT_SHIELD };
 
-                // Usei um Grid para centralizar tudo perfeitamente
                 container.innerHTML = `
                     <div class="match-content-grid">
                         <div class="team-display">
@@ -319,7 +310,7 @@
             else meuTime = game.times.find(t => t.nome === game.info.time);
 
             if (!meuTime || !meuTime.elenco || meuTime.elenco.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:20px'>Elenco não encontrado.</td></tr>";
+                tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; padding:20px'>Elenco não encontrado.</td></tr>";
                 return;
             }
 
@@ -330,6 +321,9 @@
                 const forca = jog.forca || 60;
                 const saude = jog.saude !== undefined ? jog.saude : 100;
                 
+                // Tratamento seguro da característica
+                const caracteristica = jog.caracteristica || jog.carac || "Equilibrado";
+
                 let posClass = "";
                 if(jog.pos === 'GOL') posClass = "pos-gol";
                 else if(['ZAG','LD','LE'].includes(jog.pos)) posClass = "pos-def";
@@ -345,6 +339,7 @@
                     <td><span class="pos-badge ${posClass}">${jog.pos}</span></td>
                     <td class="col-name">${jog.nome}</td>
                     <td class="col-ovr">${forca}</td>
+                    <td><span class="carac-badge">${caracteristica}</span></td>
                     <td>
                         <div class="condition-bar-bg">
                             <div class="condition-bar-fill" style="width:${saude}%; background-color:${barColor}"></div>
