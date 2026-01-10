@@ -289,6 +289,7 @@
     <div id="goal-overlay"><div class="goal-text">GOL!</div><div class="goal-scorer" id="goal-scorer-name">Jogador</div></div>
 
     <script>
+        // Compatibilidade de nome do DB
         if (typeof database !== 'undefined') window.Database = database;
         if (typeof Database !== 'undefined') window.database = Database;
 
@@ -316,15 +317,26 @@
             document.getElementById('sub-formation').value = formacaoAtual;
             document.getElementById('home-form-tag').innerText = formacaoAtual;
 
-            homeTeam = encontrarTime(gameState.meuTime);
+            // === A CORREÇÃO MÁGICA ===
+            // Usa gameState.info.time (nome correto do time no save)
+            homeTeam = encontrarTime(gameState.info.time);
+            
             const opNome = localStorage.getItem('brfutebol_oponente_atual') || "Visitante";
             awayTeam = encontrarTime(opNome);
+            
+            // Se o adversário não tiver elenco (bug), cria genérico
             if(!awayTeam.elenco || awayTeam.elenco.length===0) awayTeam.elenco = gerarGenericos(awayTeam.nome);
+
+            // Se o MEU time não tiver elenco (bug grave), cria genérico
+            if (!homeTeam.elenco || homeTeam.elenco.length === 0) {
+                console.error("Elenco do jogador não encontrado! Gerando genérico.");
+                homeTeam.elenco = gerarGenericos(homeTeam.nome);
+            }
 
             // PREPARA MEU TIME
             homeTeam.elenco.forEach((j, i) => { 
                 if(!j.uid) j.uid = `p_${i}`; 
-                // Saúde: Lê do save se existir
+                // Saúde
                 if(gameState.jogadoresStatus && gameState.jogadoresStatus[j.uid]) {
                     j.saude = gameState.jogadoresStatus[j.uid].saude;
                 } else if(j.saude === undefined) {
@@ -333,14 +345,13 @@
             });
             organizarElenco(homeTeam);
 
-            // PREPARA RIVAL (Formação Aleatória)
+            // PREPARA RIVAL
             const rivalForms = Object.keys(layouts);
             const rForm = rivalForms[Math.floor(Math.random() * rivalForms.length)];
             document.getElementById('away-form-tag').innerText = rForm;
 
             awayTeam.elenco.forEach((j,i) => { j.uid = `cpu_${i}`; j.saude = 100; });
             
-            // Ordenação Tática do Rival
             const ordem = {'GOL':1, 'LD':2, 'LE':2, 'ZAG':3, 'VOL':4, 'MEI':5, 'ATA':6};
             const elencoRival = awayTeam.elenco.sort((a,b) => (ordem[a.pos]||99) - (ordem[b.pos]||99) || b.forca - a.forca);
             awayTitulares = elencoRival.slice(0, 11);
@@ -348,12 +359,43 @@
             renderizarSidebars();
 
             document.getElementById('home-name').innerText = homeTeam.nome;
-            document.getElementById('home-logo').src = homeTeam.escudo;
+            // Escudo
+            const shieldDefault = "https://cdn-icons-png.flaticon.com/512/53/53283.png";
+            document.getElementById('home-logo').src = homeTeam.escudo || shieldDefault;
             document.getElementById('away-name').innerText = awayTeam.nome;
-            document.getElementById('away-logo').src = awayTeam.escudo || "";
+            document.getElementById('away-logo').src = awayTeam.escudo || shieldDefault;
 
             adicionarLog("", "Bola rolando!", "");
             iniciarRelogio();
+        }
+
+        function encontrarTime(nome) {
+            // 1. Prioridade TOTAL: Buscar no Save Game (gameState.times)
+            if (gameState && gameState.times) {
+                const timeNoSave = gameState.times.find(t => t.nome === nome);
+                if (timeNoSave) {
+                    return JSON.parse(JSON.stringify(timeNoSave));
+                }
+            }
+
+            // 2. Fallback: Buscar no Database estático (caso o save esteja incompleto)
+            const db = window.database || window.Database;
+            if (db && db.brasil) {
+                 for(let s in db.brasil) {
+                    if (Array.isArray(db.brasil[s])) {
+                        const t = db.brasil[s].find(x => x.nome === nome);
+                        if(t) return JSON.parse(JSON.stringify(t)); 
+                    }
+                 }
+                 // Tenta se for array direto (legado)
+                 if (Array.isArray(db.brasil)) {
+                     const t = db.brasil.find(x => x.nome === nome);
+                     if(t) return JSON.parse(JSON.stringify(t));
+                 }
+            }
+            
+            // 3. Desisto: Retorna vazio
+            return { nome: nome, escudo: "", elenco: [] };
         }
 
         function organizarElenco(time) {
@@ -372,10 +414,14 @@
                 } catch(e){}
             }
 
+            // Se faltar gente na escalação salva (ou não tiver save), completa com os melhores
             if(titulares.length < 11) {
                 const disp = time.elenco.filter(j => !escaladosIds.includes(j.uid));
-                disp.sort((a,b)=>b.forca-a.forca);
-                for(let k=0; k<(11-titulares.length); k++) if(disp[k]) { titulares.push(disp[k]); escaladosIds.push(disp[k].uid); }
+                // Ordena por força
+                disp.sort((a,b)=> (b.forca||60) - (a.forca||60));
+                for(let k=0; k<(11-titulares.length); k++) {
+                    if(disp[k]) { titulares.push(disp[k]); escaladosIds.push(disp[k].uid); }
+                }
             }
             reservas = time.elenco.filter(j => !escaladosIds.includes(j.uid));
         }
@@ -405,16 +451,15 @@
             if(status === 'out') cls = 'subbed-out';
             if(status === 'in') cls = 'subbed-in';
             
-            // Eventos
             let icons = '';
             if(events[j.uid]) {
                 if(events[j.uid].goals > 0) icons += `<span class="ev-icon">⚽${events[j.uid].goals > 1 ? 'x'+events[j.uid].goals : ''}</span>`;
                 if(events[j.uid].cards) icons += `<span class="ev-icon">${events[j.uid].cards}</span>`;
             }
 
-            // Barra Saúde
             let saude = j.saude !== undefined ? j.saude : 100;
             let cor = saude < 60 ? '#e74c3c' : (saude < 80 ? '#f1c40f' : '#2ecc71');
+            let forca = j.forca || 60;
 
             return `
                 <div class="mini-player ${cls}">
@@ -426,22 +471,19 @@
                         </div>
                     </div>
                     <div class="mp-stats">
-                        <div class="mp-ovr">${j.forca}</div>
+                        <div class="mp-ovr">${forca}</div>
                         <div class="mp-hp-track"><div class="mp-hp-fill" style="width:${saude}%; background:${cor}"></div></div>
                     </div>
                 </div>
             `;
         }
 
-        function encontrarTime(nome) {
-            const db = window.database || window.Database;
-            for(let s in db.brasil) {
-                const t = db.brasil[s].find(x => x.nome === nome);
-                if(t) return JSON.parse(JSON.stringify(t)); 
-            }
-            return { nome: nome, escudo: "", elenco: [] };
+        function gerarGenericos(nome) { 
+            let l=[]; 
+            const posicoes = ['GOL','ZAG','ZAG','LD','LE','VOL','MEI','MEI','ATA','ATA','ATA', 'GOL', 'ZAG', 'MEI', 'ATA'];
+            for(let i=0;i<posicoes.length;i++) l.push({nome:`Jogador ${i+1}`, pos:posicoes[i], forca: Math.floor(Math.random()*20)+60}); 
+            return l; 
         }
-        function gerarGenericos(nome) { let l=[]; for(let i=0;i<18;i++) l.push({nome:`Jogador ${i}`, pos:'ATA', forca:60}); return l; }
 
         function iniciarRelogio() { clearInterval(matchInterval); matchInterval = setInterval(loopJogo, speed); }
 
@@ -466,8 +508,11 @@
         }
 
         function processarLance() {
-            const diff = (calcularMedia(titulares) - (awayTeam.forca||60));
+            const forcaHome = calcularMedia(titulares);
+            const forcaAway = calcularMedia(awayTitulares);
+            const diff = forcaHome - forcaAway;
             const chanceH = 50 + (diff/2);
+
             if((Math.random()*100) < chanceH) { 
                 if(Math.random()<0.15) gol(true); else { stats.homeSho++; adicionarLog(homeTeam.nome, "Perigo!", "danger"); }
             } else { 
@@ -507,56 +552,57 @@
         }
 
         function finalizarPartida() {
-            // DESGASTE REALISTA
-            titulares.forEach(j => { j.saude = Math.max(0, j.saude - 8); }); // Titular cansa
-            indisponiveis.forEach(j => { j.saude = Math.max(0, j.saude - 4); }); // Substituído cansa menos
-            reservas.forEach(j => { j.saude = Math.min(100, j.saude + 6); }); // Banco recupera
+            // DESGASTE
+            titulares.forEach(j => { j.saude = Math.max(0, j.saude - 8); }); 
+            indisponiveis.forEach(j => { j.saude = Math.max(0, j.saude - 4); }); 
+            reservas.forEach(j => { j.saude = Math.min(100, j.saude + 6); }); 
 
+            // Atualiza status global
             const statusJogadores = gameState.jogadoresStatus || {};
             [...titulares, ...reservas, ...indisponiveis].forEach(j => {
                 statusJogadores[j.uid] = { saude: j.saude };
             });
             
-            if(!gameState.tabela) gameState.tabela = gerarTabelaInicial();
-            atualizarTabelaTime(gameState.tabela, homeTeam.nome, placar.home, placar.away);
-            atualizarTabelaTime(gameState.tabela, awayTeam.nome, placar.away, placar.home);
-            simularOutrosJogos(gameState.tabela);
+            if(!gameState.classificacao) gameState.classificacao = []; 
+            if(gameState.classificacao.length === 0 && gameState.times) {
+                 gameState.classificacao = gameState.times.map(t => ({
+                    nome: t.nome, pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0
+                }));
+            }
+            
+            const rodadaIndex = gameState.rodadaAtual - 1;
+            if(gameState.calendario && gameState.calendario[rodadaIndex]) {
+                const jogos = gameState.calendario[rodadaIndex].jogos;
+                const meuJogo = jogos.find(j => j.mandante === homeTeam.nome || j.visitante === homeTeam.nome);
+                if(meuJogo) {
+                    meuJogo.jogado = true;
+                    if(meuJogo.mandante === homeTeam.nome) {
+                        meuJogo.placarCasa = placar.home;
+                        meuJogo.placarFora = placar.away;
+                    } else {
+                        meuJogo.placarCasa = placar.away;
+                        meuJogo.placarFora = placar.home;
+                    }
+                }
+                
+                // Simulação outros jogos
+                jogos.forEach(j => {
+                    if(!j.jogado) {
+                        j.jogado = true;
+                        j.placarCasa = Math.floor(Math.random() * 3);
+                        j.placarFora = Math.floor(Math.random() * 2);
+                        if(Math.random() > 0.6) j.placarCasa++;
+                    }
+                });
+            }
 
+            Engine.atualizarTabela(gameState);
             gameState.jogadoresStatus = statusJogadores;
-            gameState.rodada++;
+            gameState.rodadaAtual++;
             
             Engine.salvarJogo(gameState);
             localStorage.removeItem('brfutebol_oponente_atual');
             window.location.href = 'dashboard.html';
-        }
-
-        function gerarTabelaInicial() {
-            const db = window.database || window.Database;
-            for(let s in db.brasil) {
-                if(db.brasil[s].find(t => t.nome === homeTeam.nome)) {
-                    return db.brasil[s].map(t => ({ nome: t.nome, p:0, j:0, v:0, e:0, d:0, gm:0, gs:0, sg:0 }));
-                }
-            }
-            return [];
-        }
-
-        function atualizarTabelaTime(tabela, nome, gp, gc) {
-            let t = tabela.find(x => x.nome === nome);
-            if(!t) return;
-            t.j++; t.gm += gp; t.gs += gc; t.sg = t.gm - t.gs;
-            if(gp > gc) { t.v++; t.p += 3; } else if(gp === gc) { t.e++; t.p += 1; } else { t.d++; }
-        }
-
-        function simularOutrosJogos(tabela) {
-            tabela.forEach(t => {
-                if(t.nome !== homeTeam.nome && t.nome !== awayTeam.nome) {
-                    if(Math.random() > 0.5) {
-                        const gp = Math.floor(Math.random()*3);
-                        const gc = Math.floor(Math.random()*3);
-                        atualizarTabelaTime(tabela, t.nome, gp, gc);
-                    }
-                }
-            });
         }
 
         // --- SUB & MODAL ---
@@ -603,7 +649,7 @@
                         <span class="row-name">${j.nome}</span>
                     </div>
                     <div class="row-stats">
-                        <span class="row-ovr">${j.forca}</span>
+                        <span class="row-ovr">${j.forca || 60}</span>
                         <div class="row-hp-track"><div class="row-hp-fill" style="width:${saude}%; background:${cor}"></div></div>
                     </div>
                 `;
@@ -634,7 +680,7 @@
                 const sai = titulares[idxS]; const entra = reservas[idxE];
                 titulares[idxS] = entra; reservas.splice(idxE, 1); indisponiveis.push(sai);
                 adicionarLog("Sub", `Sai ${sai.nome} | Entra ${entra.nome}`, "sub");
-                registrarEvento(entra.uid, 'sub_in'); // Marca entrada
+                registrarEvento(entra.uid, 'sub_in'); 
                 subPending={sai:null, entra:null};
                 renderizarCampoSub(); renderizarListaReservas(); renderizarSidebars(); atualizarUIBotao();
             }
@@ -646,7 +692,7 @@
             const jog = titulares.find(j=>j.uid===uid) || reservas.find(j=>j.uid===uid) || indisponiveis.find(j=>j.uid===uid);
             if(!jog)return;
             if(!jog.atributos) gerarAtributos(jog);
-            document.getElementById('tip-name').innerText=jog.nome; document.getElementById('tip-pos').innerText=jog.pos; document.getElementById('tip-ovr').innerText=jog.forca;
+            document.getElementById('tip-name').innerText=jog.nome; document.getElementById('tip-pos').innerText=jog.pos; document.getElementById('tip-ovr').innerText=jog.forca||60;
             const g=document.getElementById('tip-grid'); g.innerHTML='';
             const l={VEL:'PAC',FIN:'SHO',PAS:'PAS',DRI:'DRI',DEF:'DEF',FIS:'PHY'};
             for(let k in l) { let v=jog.atributos[k]; let c='mid'; if(v>=80)c='high'; if(v<60)c='low'; g.innerHTML+=`<div class="fifa-stat"><span>${l[k]}</span><b class="${c}">${v}</b></div>`; }
@@ -655,14 +701,14 @@
         function moveTooltip(e) { const t=document.getElementById('fifa-tooltip'); t.style.top=(e.clientY+15)+'px'; t.style.left=(e.clientX+15)+'px'; }
         function hideTooltip() { document.getElementById('fifa-tooltip').style.display='none'; }
         function gerarAtributos(j) {
-            const b = j.forca;
+            const b = j.forca || 60;
             if(j.pos==='GOL') j.atributos={VEL:b+2, FIN:b-5, PAS:b, DRI:b-10, DEF:b+5, FIS:b};
             else j.atributos={VEL:b, FIN:b-2, PAS:b, DRI:b, DEF:b-5, FIS:b};
         }
 
         // UTIL
         function adicionarLog(h, t, cl) { const f=document.getElementById('feed'); f.insertAdjacentHTML('afterbegin', `<div class="feed-item ${cl}"><div class="feed-time">${tempo}'</div><div><b>${h}</b> ${t}</div></div>`); }
-        function calcularMedia(arr) { return arr.reduce((a,b)=>a+b.forca,0)/arr.length; }
+        function calcularMedia(arr) { if(!arr.length) return 60; return arr.reduce((a,b)=>a+(b.forca||60),0)/arr.length; }
         function atualizarStats() { 
             document.getElementById('stat-sho-h').innerText=stats.homeSho; document.getElementById('stat-sho-a').innerText=stats.awaySho;
             const t = stats.homeSho+stats.awaySho||1; document.getElementById('bar-sho-h').style.width=((stats.homeSho/t)*100)+"%";
