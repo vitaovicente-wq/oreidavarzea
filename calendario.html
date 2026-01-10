@@ -3,205 +3,358 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendário - BRFutebol</title>
-    
+    <title>BRFutebol - Calendário Interativo</title>
+    <script src="engine.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
     <style>
         :root {
-            --bg: #0d1115;
-            --card: #1e272e;
-            --green: #2ecc71;
-            --text: #ecf0f1;
-            --border: #333;
+            --bg-dark: #0f1216;
+            --sidebar-bg: #161b22;
+            --card-bg: #1e2329;
+            --neon-green: #00ff88;
+            --text-main: #ffffff;
+            --text-muted: #8b949e;
+            --border: #30363d;
+            --gold: #f1c40f;
+            --red: #ff4757;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0; padding: 20px;
-            display: flex; flex-direction: column; align-items: center;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0; padding: 0;
+            display: flex; height: 100vh; overflow: hidden;
         }
 
-        /* CABEÇALHO */
-        header {
-            width: 100%; max-width: 600px;
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 20px; border-bottom: 1px solid var(--border);
-            padding-bottom: 15px;
+        /* SIDEBAR */
+        .sidebar {
+            width: 250px; background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            padding: 20px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0;
         }
-        
-        .btn-voltar {
-            background: none; border: 1px solid var(--border);
-            color: #888; padding: 8px 15px; border-radius: 6px;
-            cursor: pointer; text-decoration: none; font-size: 0.9rem;
-            transition: 0.2s;
+        .logo { font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 900; margin-bottom: 20px; color: #fff; }
+        .logo span { color: var(--neon-green); }
+        .menu-btn { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-weight: 600; transition: 0.2s; cursor: pointer; }
+        .menu-btn:hover, .menu-btn.active { background: rgba(0, 255, 136, 0.1); color: var(--neon-green); }
+        .menu-btn.logout { margin-top: auto; color: var(--red); }
+
+        /* CONTEÚDO */
+        .main-content {
+            flex: 1; padding: 30px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 20px;
         }
-        .btn-voltar:hover { border-color: var(--text); color: var(--text); }
 
-        h2 { margin: 0; font-size: 1.4rem; text-transform: uppercase; letter-spacing: 1px; }
-
-        /* NAVEGAÇÃO DE RODADAS */
+        /* HEADER RODADA */
         .round-nav {
-            display: flex; align-items: center; justify-content: center; gap: 20px;
-            background: var(--card); padding: 10px 30px; border-radius: 30px;
-            margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--card-bg); padding: 15px 30px; border-radius: 12px;
+            border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
-        .nav-arrow {
-            background: none; border: none; color: var(--green);
-            font-size: 1.5rem; cursor: pointer; font-weight: bold;
-            padding: 0 10px;
+        .round-title { font-family: 'Rajdhani'; font-size: 2rem; font-weight: 800; text-transform: uppercase; color: #fff; letter-spacing: 1px; }
+        .nav-btn {
+            background: #0d1117; border: 1px solid var(--border); color: #fff;
+            padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 700;
+            transition: 0.2s; font-family: 'Rajdhani'; font-size: 1rem;
         }
-        .nav-arrow:hover { transform: scale(1.2); }
-        .round-title { font-weight: bold; font-size: 1.1rem; min-width: 120px; text-align: center; }
+        .nav-btn:hover { background: var(--neon-green); color: #000; border-color: var(--neon-green); }
 
         /* LISTA DE JOGOS */
-        .match-list {
-            width: 100%; max-width: 600px;
-            display: flex; flex-direction: column; gap: 10px;
-        }
-
+        .match-list { display: flex; flex-direction: column; gap: 10px; padding-bottom: 50px; }
+        
         .match-card {
-            background: var(--card); padding: 15px; border-radius: 8px;
             display: flex; align-items: center; justify-content: space-between;
-            border: 1px solid transparent; transition: 0.2s;
+            background: var(--card-bg); padding: 15px 25px; border-radius: 10px;
+            border: 1px solid var(--border); transition: all 0.2s; position: relative;
         }
-        .match-card:hover { border-color: #444; background: #232d35; }
         
-        /* Layout do Placar: Time Casa (40%) - Placar (20%) - Time Fora (40%) */
-        .team { flex: 1; display: flex; align-items: center; gap: 10px; font-weight: 500; font-size: 0.95rem; }
-        .team.home { justify-content: flex-end; text-align: right; }
-        .team.away { justify-content: flex-start; text-align: left; }
-        
-        .team-logo { width: 30px; height: 30px; object-fit: contain; }
+        /* ESTILO PARA JOGOS JÁ REALIZADOS (CLICÁVEIS) */
+        .match-card.played { 
+            cursor: pointer; border-left: 4px solid var(--neon-green); 
+        }
+        .match-card.played:hover { 
+            background: #252b33; transform: translateX(5px); box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        /* Ícone de "olho" para indicar que pode ver detalhes */
+        .match-card.played .view-icon {
+            display: block; position: absolute; right: 10px; top: 5px;
+            font-size: 0.7rem; color: var(--text-muted); opacity: 0.5;
+        }
+        .match-card.played:hover .view-icon { opacity: 1; color: var(--neon-green); }
+
+        .team-side { display: flex; align-items: center; gap: 15px; width: 40%; }
+        .team-side.away { justify-content: flex-end; }
+        .team-logo { width: 45px; height: 45px; object-fit: contain; }
+        .team-name { font-weight: 700; font-size: 1rem; color: #fff; }
         
         .score-board {
-            width: 80px; text-align: center;
-            font-weight: 900; font-size: 1.2rem;
-            background: #111; padding: 5px 0; border-radius: 4px;
-            margin: 0 10px; border: 1px solid #333;
-            color: var(--green);
+            font-family: 'Rajdhani'; font-weight: 800; font-size: 1.8rem;
+            background: #0d1117; padding: 5px 20px; border-radius: 8px;
+            min-width: 100px; text-align: center; border: 1px solid var(--border); color: #fff;
         }
-        .score-board.pending { color: #555; font-size: 0.9rem; font-weight: normal; }
+        .score-board.pending { color: #555; font-size: 1.2rem; padding: 8px; }
 
-        /* DESTAQUE PARA O SEU TIME */
-        .match-card.my-match { border: 1px solid var(--green); background: rgba(46, 204, 113, 0.05); }
+        /* --- MODAL DETALHES --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); backdrop-filter: blur(5px);
+            display: none; align-items: center; justify-content: center; z-index: 2000;
+        }
+        .modal-card {
+            background: #161b22; border: 1px solid var(--border); border-radius: 12px;
+            width: 95%; max-width: 600px; display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 0 50px rgba(0, 255, 136, 0.1);
+        }
+        
+        .modal-header {
+            background: linear-gradient(180deg, #1e2329 0%, #161b22 100%);
+            padding: 20px; text-align: center; border-bottom: 1px solid var(--border);
+        }
+        .modal-label { font-size: 0.8rem; color: var(--neon-green); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; font-weight: 700; }
+        
+        .modal-teams { display: flex; justify-content: space-around; align-items: center; }
+        .m-team-col { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 30%; }
+        .m-logo { width: 70px; height: 70px; object-fit: contain; }
+        .m-name { font-weight: 800; font-size: 1rem; text-align: center; line-height: 1.2; }
+        .m-score { font-family: 'Rajdhani'; font-size: 3.5rem; font-weight: 900; color: #fff; text-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        
+        .modal-body { padding: 20px; max-height: 60vh; overflow-y: auto; }
+        .event-list { display: flex; flex-direction: column; gap: 8px; }
+        .event-row { 
+            display: flex; align-items: center; gap: 10px; 
+            padding: 8px; background: rgba(255,255,255,0.03); border-radius: 6px; 
+            font-size: 0.9rem; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .ev-time { color: var(--gold); font-weight: 700; width: 30px; text-align: right; }
+        .ev-icon { font-size: 1rem; }
+        .ev-player { font-weight: 600; color: #fff; flex: 1; }
+        .ev-team { font-size: 0.75rem; color: #888; text-transform: uppercase; font-weight: 700; }
+
+        .btn-close {
+            width: 100%; padding: 15px; background: #161b22; color: #888;
+            border: none; border-top: 1px solid var(--border); font-weight: 700;
+            cursor: pointer; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-close:hover { background: #222; color: #fff; }
 
     </style>
 </head>
 <body>
 
-    <header>
-        <a href="dashboard.html" class="btn-voltar">← Voltar</a>
-        <h2>Calendário</h2>
-        <div style="width: 70px;"></div> </header>
+    <nav class="sidebar">
+        <div class="logo">BR<span>FUTEBOL</span></div>
+        <a class="menu-btn" href="dashboard.html">📊 Visão Geral</a>
+        <a class="menu-btn" href="escalacao.html">👕 Escalação</a>
+        <a class="menu-btn active">📅 Calendário</a>
+        <a class="menu-btn" onclick="alert('Em breve')">💰 Transferências</a>
+        <a class="menu-btn logout" onclick="sair()">✖ Sair</a>
+    </nav>
 
-    <div class="round-nav">
-        <button class="nav-arrow" onclick="mudarRodada(-1)">‹</button>
-        <div class="round-title" id="round-display">Rodada 1</div>
-        <button class="nav-arrow" onclick="mudarRodada(1)">›</button>
-    </div>
-
-    <div id="matches-container" class="match-list">
+    <main class="main-content">
+        
+        <div class="round-nav">
+            <button class="nav-btn" onclick="mudarRodada(-1)">❮ Anterior</button>
+            <div class="round-title" id="round-display">Rodada 1</div>
+            <button class="nav-btn" onclick="mudarRodada(1)">Próxima ❯</button>
         </div>
 
+        <div class="match-list" id="match-container">
+            </div>
+
+    </main>
+
+    <div id="match-modal" class="modal-overlay" onclick="fecharModal(event)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-label">Resumo da Partida</div>
+                <div class="modal-teams">
+                    <div class="m-team-col">
+                        <img id="mod-h-logo" class="m-logo" src="">
+                        <span id="mod-h-name" class="m-name">Casa</span>
+                    </div>
+                    <div class="m-score">
+                        <span id="mod-score-h">0</span> - <span id="mod-score-a">0</span>
+                    </div>
+                    <div class="m-team-col">
+                        <img id="mod-a-logo" class="m-logo" src="">
+                        <span id="mod-a-name" class="m-name">Fora</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body">
+                <h4 style="margin-top:0; color:#888; text-transform:uppercase; font-size:0.8rem;">Gols e Lances</h4>
+                <div class="event-list" id="mod-events">
+                    </div>
+            </div>
+            <button class="btn-close" onclick="fecharModal()">Fechar</button>
+        </div>
+    </div>
+
     <script>
-        // --- LÓGICA DE EXIBIÇÃO ---
-
-        let jogoSalvo = null;
+        const DEFAULT_SHIELD = "https://cdn-icons-png.flaticon.com/512/53/53283.png";
+        let gameState = null;
         let rodadaVisualizada = 1;
-        let meuTimeNome = "";
 
-        // 1. Carrega os dados ao abrir a tela
         window.onload = function() {
-            // Pega o save do LocalStorage
-            const saveJson = localStorage.getItem('brfutebol_save');
-            
-            if (!saveJson) {
-                alert("Nenhum jogo salvo encontrado! Volte para o início.");
+            gameState = Engine.carregarJogo();
+            if (!gameState) {
+                alert("Sem jogo salvo!");
                 window.location.href = 'index.html';
                 return;
             }
-
-            jogoSalvo = JSON.parse(saveJson);
-            meuTimeNome = jogoSalvo.meuTime; // Nome do time controlado pelo jogador
             
-            // Define a rodada inicial como a rodada atual do jogo
-            // (ou a última se o campeonato acabou)
-            rodadaVisualizada = jogoSalvo.rodadaAtual || 1;
+            // Começa na rodada atual ou na última se o campeonato acabou
+            rodadaVisualizada = gameState.rodadaAtual || 1;
+            if (gameState.calendario && rodadaVisualizada > gameState.calendario.length) {
+                rodadaVisualizada = gameState.calendario.length;
+            }
             
-            // Garante que não passe do limite de rodadas
-            const totalRodadas = jogoSalvo.calendario.length;
-            if (rodadaVisualizada > totalRodadas) rodadaVisualizada = totalRodadas;
-
             renderizarRodada();
         };
 
-        // 2. Função para desenhar os jogos na tela
-        function renderizarRodada() {
-            const container = document.getElementById('matches-container');
-            const display = document.getElementById('round-display');
-            
-            // Limpa a lista
-            container.innerHTML = '';
-            
-            // Atualiza o título da rodada
-            display.innerText = `Rodada ${rodadaVisualizada}`;
-
-            // Pega os dados da rodada específica (lembrando que array começa no 0)
-            const dadosRodada = jogoSalvo.calendario[rodadaVisualizada - 1];
-
-            if (!dadosRodada || !dadosRodada.jogos) {
-                container.innerHTML = '<p style="text-align:center; color:#666">Nenhum jogo nesta rodada.</p>';
-                return;
+        function mudarRodada(delta) {
+            if(!gameState || !gameState.calendario) return;
+            const nova = rodadaVisualizada + delta;
+            if (nova >= 1 && nova <= gameState.calendario.length) {
+                rodadaVisualizada = nova;
+                renderizarRodada();
             }
+        }
 
-            // Cria o card de cada jogo
-            dadosRodada.jogos.forEach(jogo => {
-                const card = document.createElement('div');
-                card.className = 'match-card';
+        function renderizarRodada() {
+            document.getElementById('round-display').innerText = `RODADA ${rodadaVisualizada}`;
+            const container = document.getElementById('match-container');
+            container.innerHTML = '';
 
-                // Verifica se é o jogo do usuário para destacar
-                if (jogo.mandante === meuTimeNome || jogo.visitante === meuTimeNome) {
-                    card.classList.add('my-match');
-                }
+            const rodadaDados = gameState.calendario[rodadaVisualizada - 1];
+            if (!rodadaDados) return;
 
-                // Define o placar (ou "x" se ainda não jogou)
-                let placarHTML = '';
-                if (jogo.jogado) {
+            rodadaDados.jogos.forEach((jogo, index) => {
+                // Pega escudos
+                const tCasa = Engine.encontrarTime(jogo.mandante) || { escudo: DEFAULT_SHIELD };
+                const tFora = Engine.encontrarTime(jogo.visitante) || { escudo: DEFAULT_SHIELD };
+
+                let placarHTML = `<div class="score-board pending">VS</div>`;
+                let classPlayed = "";
+                let clickAttr = "";
+                let viewIcon = "";
+
+                // Se o jogo já aconteceu (tem placar), habilita o clique
+                if (jogo.jogado || (jogo.placarCasa !== null && jogo.placarCasa !== undefined)) {
                     placarHTML = `<div class="score-board">${jogo.placarCasa} - ${jogo.placarFora}</div>`;
-                } else {
-                    placarHTML = `<div class="score-board pending">VS</div>`;
+                    classPlayed = "played";
+                    // Passa o índice do jogo na rodada para saber qual abrir
+                    clickAttr = `onclick="abrirDetalhes(${index})"`;
+                    viewIcon = `<div class="view-icon">VER DETALHES 👁️</div>`;
                 }
 
-                // Busca escudos (se você tiver salvo no objeto times, senão usa genérico)
-                // Aqui assume um escudo padrão para evitar erro de imagem quebrada
-                const escudoPadrao = "https://cdn-icons-png.flaticon.com/512/53/53283.png";
-
-                card.innerHTML = `
-                    <div class="team home">
-                        <span>${jogo.mandante}</span>
-                        <img src="${escudoPadrao}" class="team-logo">
-                    </div>
-                    ${placarHTML}
-                    <div class="team away">
-                        <img src="${escudoPadrao}" class="team-logo">
-                        <span>${jogo.visitante}</span>
+                const card = `
+                    <div class="match-card ${classPlayed}" ${clickAttr}>
+                        ${viewIcon}
+                        <div class="team-side">
+                            <img src="${tCasa.escudo || DEFAULT_SHIELD}" class="team-logo" onerror="this.src='${DEFAULT_SHIELD}'">
+                            <span class="team-name">${jogo.mandante}</span>
+                        </div>
+                        
+                        ${placarHTML}
+                        
+                        <div class="team-side away">
+                            <span class="team-name">${jogo.visitante}</span>
+                            <img src="${tFora.escudo || DEFAULT_SHIELD}" class="team-logo" onerror="this.src='${DEFAULT_SHIELD}'">
+                        </div>
                     </div>
                 `;
-
-                container.appendChild(card);
+                container.innerHTML += card;
             });
         }
 
-        // 3. Botões de Navegação
-        function mudarRodada(direcao) {
-            const novaRodada = rodadaVisualizada + direcao;
-            const totalRodadas = jogoSalvo.calendario.length;
+        // --- SISTEMA DE DETALHES (SIMULAÇÃO) ---
 
-            if (novaRodada >= 1 && novaRodada <= totalRodadas) {
-                rodadaVisualizada = novaRodada;
-                renderizarRodada();
+        function abrirDetalhes(idx) {
+            const jogo = gameState.calendario[rodadaVisualizada - 1].jogos[idx];
+            if (!jogo.jogado && jogo.placarCasa === null) return;
+
+            const tCasa = Engine.encontrarTime(jogo.mandante);
+            const tFora = Engine.encontrarTime(jogo.visitante);
+
+            // Preenche Header
+            document.getElementById('mod-h-name').innerText = jogo.mandante;
+            document.getElementById('mod-a-name').innerText = jogo.visitante;
+            document.getElementById('mod-h-logo').src = tCasa.escudo || DEFAULT_SHIELD;
+            document.getElementById('mod-a-logo').src = tFora.escudo || DEFAULT_SHIELD;
+            document.getElementById('mod-score-h').innerText = jogo.placarCasa;
+            document.getElementById('mod-score-a').innerText = jogo.placarFora;
+
+            // Gera lista de eventos (gols)
+            const eventos = gerarEventos(jogo, tCasa, tFora);
+            const listContainer = document.getElementById('mod-events');
+            listContainer.innerHTML = '';
+
+            if (eventos.length === 0) {
+                listContainer.innerHTML = '<div style="text-align:center; color:#666; padding:10px;">0 - 0 (Sem gols)</div>';
+            } else {
+                eventos.forEach(ev => {
+                    listContainer.innerHTML += `
+                        <div class="event-row">
+                            <div class="ev-time">${ev.min}'</div>
+                            <div class="ev-icon">⚽</div>
+                            <div class="ev-player">${ev.jogador}</div>
+                            <div class="ev-team">${ev.time}</div>
+                        </div>
+                    `;
+                });
             }
+
+            document.getElementById('match-modal').style.display = 'flex';
+        }
+
+        // Função Criativa: Inventa quem fez os gols baseado no placar
+        function gerarEventos(jogo, tCasa, tFora) {
+            let lista = [];
+            
+            // Gols Mandante
+            for(let i=0; i<jogo.placarCasa; i++) {
+                lista.push({
+                    min: Math.floor(Math.random() * 90) + 1,
+                    time: tCasa.nome,
+                    jogador: sortearArtilheiro(tCasa)
+                });
+            }
+            // Gols Visitante
+            for(let i=0; i<jogo.placarFora; i++) {
+                lista.push({
+                    min: Math.floor(Math.random() * 90) + 1,
+                    time: tFora.nome,
+                    jogador: sortearArtilheiro(tFora)
+                });
+            }
+            // Ordena por tempo
+            return lista.sort((a,b) => a.min - b.min);
+        }
+
+        function sortearArtilheiro(timeObj) {
+            // Se o time tem elenco real, pega um atacante ou meia
+            if (timeObj && timeObj.elenco && timeObj.elenco.length > 0) {
+                const ofensivos = timeObj.elenco.filter(j => j.pos === 'ATA' || j.pos === 'MEI');
+                if (ofensivos.length > 0) {
+                    return ofensivos[Math.floor(Math.random() * ofensivos.length)].nome;
+                }
+                // Senão pega qualquer um
+                return timeObj.elenco[Math.floor(Math.random() * timeObj.elenco.length)].nome;
+            }
+            // Se não tem elenco (time genérico da CPU), inventa nome
+            return "Camisa " + (Math.floor(Math.random() * 3) + 9); 
+        }
+
+        function fecharModal(e) {
+            if (!e || e.target.id === 'match-modal' || e.target.classList.contains('btn-close')) {
+                document.getElementById('match-modal').style.display = 'none';
+            }
+        }
+
+        function sair() {
+            if(confirm("Sair?")) window.location.href = 'index.html';
         }
     </script>
 </body>
