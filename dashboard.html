@@ -153,7 +153,9 @@
         <a class="menu-btn active">📊 Visão Geral</a>
         <a class="menu-btn" href="escalacao.html">👕 Escalação</a>
         <a class="menu-btn" href="calendario.html">📅 Calendário</a>
-        <a class="menu-btn" onclick="alert('Em breve')">💰 Transferências</a>
+        <a class="menu-btn" href="classificacao.html">🏆 Classificação</a>
+        <a class="menu-btn" onclick="alert('Em breve: Mercado da Bola')">💰 Transferências</a>
+        <a class="menu-btn" onclick="alert('Em breve: Finanças')">🏦 Clube</a>
         <a class="menu-btn logout" onclick="sair()">✖ Sair</a>
     </nav>
 
@@ -286,7 +288,8 @@
                             <div class="team-name-big">${meuJogo.mandante}</div>
                         </div>
                         <div class="match-info-center">
-                            <div class="match-label">RODADA ${game.rodadaAtual} • <span style="color:#fff">${nomeEstadio}</span></div>
+                            <div class="match-label">RODADA ${game.rodadaAtual}</div>
+                            <div class="stadium-name">🏟️ ${nomeEstadio}</div>
                             <div class="vs-text">VS</div>
                             <button class="play-btn" onclick="irParaEstadio()">JOGAR</button>
                         </div>
