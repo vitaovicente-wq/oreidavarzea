@@ -127,20 +127,20 @@
         .squad-table { width: 100%; border-collapse: collapse; }
         .squad-table th {
             text-align: left; background: rgba(0,0,0,0.3); color: var(--text-muted);
-            padding: 15px 20px; font-size: 0.8rem; text-transform: uppercase; font-weight: 700;
+            padding: 15px 10px; font-size: 0.8rem; text-transform: uppercase; font-weight: 700;
         }
         .squad-table td {
-            padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05);
-            font-size: 0.95rem; vertical-align: middle;
+            padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.9rem; vertical-align: middle;
         }
         .squad-table tr:hover { background: rgba(255,255,255,0.03); }
         .squad-table tr:last-child td { border-bottom: none; }
 
         /* Colunas Específicas */
-        .col-pos { width: 60px; }
+        .col-pos { width: 50px; text-align: center; }
         .pos-badge {
-            font-size: 0.75rem; font-weight: 800; padding: 4px 8px; border-radius: 4px;
-            text-align: center; color: #000; min-width: 45px; display: inline-block;
+            font-size: 0.75rem; font-weight: 800; padding: 4px 0; border-radius: 4px;
+            text-align: center; color: #000; width: 40px; display: inline-block;
         }
         .pos-gol { background-color: #f1c40f; } 
         .pos-def { background-color: #3498db; color: #fff; } 
@@ -148,23 +148,26 @@
         .pos-ata { background-color: #ff4757; color: #fff; } 
 
         .col-name { font-weight: 600; color: #fff; font-size: 1rem; }
-        .col-ovr { width: 70px; font-family: 'Rajdhani'; font-weight: 800; font-size: 1.3rem; color: var(--gold); text-align: center; }
+        .col-ovr { width: 50px; font-family: 'Rajdhani'; font-weight: 800; font-size: 1.2rem; color: var(--gold); text-align: center; }
         
-        /* Coluna Característica */
-        .col-carac { width: 140px; }
+        /* Colunas de Atributos */
+        .col-stat { width: 40px; text-align: center; font-family: 'Rajdhani'; font-weight: 600; color: #ccc; font-size: 0.9rem; }
+        .stat-high { color: var(--neon-green); font-weight: 700; }
+        .stat-low { color: #555; }
+
+        .col-carac { width: 120px; }
         .carac-badge {
-            font-size: 0.75rem; font-weight: 600; color: #ccc;
-            background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 4px;
-            display: inline-block; border: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.7rem; font-weight: 600; color: #aaa;
+            background: rgba(255,255,255,0.05); padding: 3px 8px; border-radius: 4px;
+            display: inline-block; border: 1px solid rgba(255,255,255,0.1); white-space: nowrap;
         }
 
-        .col-cond { width: 150px; }
-        .condition-bar-bg { width: 100%; height: 8px; background: #333; border-radius: 4px; overflow: hidden; }
-        .condition-bar-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
+        .col-cond { width: 100px; }
+        .condition-bar-bg { width: 100%; height: 6px; background: #333; border-radius: 3px; overflow: hidden; }
+        .condition-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
 
-        .col-status { width: 100px; text-align: center; font-size: 0.85rem; color: #888; font-weight: 600; }
-
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
+            .col-stat { display: none; } /* Esconde atributos detalhados no mobile */
             .match-content-grid { grid-template-columns: 1fr; gap: 30px; }
             .vs-text { margin: 10px 0; transform: rotate(90deg); font-size: 2rem; }
             .play-btn { width: 100%; }
@@ -219,8 +222,14 @@
                             <th class="col-pos">Pos</th>
                             <th>Nome</th>
                             <th class="col-ovr">OVR</th>
-                            <th class="col-carac">Carac.</th> <th class="col-cond">Condição</th>
-                            <th class="col-status">Status</th>
+                            <th class="col-stat" title="Velocidade">PAC</th>
+                            <th class="col-stat" title="Finalização">SHO</th>
+                            <th class="col-stat" title="Passe">PAS</th>
+                            <th class="col-stat" title="Drible">DRI</th>
+                            <th class="col-stat" title="Defesa">DEF</th>
+                            <th class="col-stat" title="Físico">PHY</th>
+                            <th class="col-carac">Carac.</th>
+                            <th class="col-cond">Condição</th>
                         </tr>
                     </thead>
                     <tbody id="squad-body">
@@ -310,7 +319,7 @@
             else meuTime = game.times.find(t => t.nome === game.info.time);
 
             if (!meuTime || !meuTime.elenco || meuTime.elenco.length === 0) {
-                tbody.innerHTML = "<tr><td colspan='6' style='text-align:center; padding:20px'>Elenco não encontrado.</td></tr>";
+                tbody.innerHTML = "<tr><td colspan='10' style='text-align:center; padding:20px'>Elenco não encontrado.</td></tr>";
                 return;
             }
 
@@ -321,8 +330,11 @@
                 const forca = jog.forca || 60;
                 const saude = jog.saude !== undefined ? jog.saude : 100;
                 
+                // Garante que o jogador tem atributos (Gera na hora se não tiver)
+                const atr = garantirAtributos(jog);
+
                 // Tratamento seguro da característica
-                const caracteristica = jog.caracteristica || jog.carac || "Equilibrado";
+                const caracteristica = jog.caracteristica || jog.carac || "-";
 
                 let posClass = "";
                 if(jog.pos === 'GOL') posClass = "pos-gol";
@@ -334,21 +346,52 @@
                 if(saude < 80) barColor = "#f1c40f"; 
                 if(saude < 50) barColor = "#ff4757"; 
 
+                // Função auxiliar para colorir atributos altos
+                const fmtStat = (val) => {
+                    if(val >= 80) return `<span class="stat-high">${val}</span>`;
+                    if(val < 60) return `<span class="stat-low">${val}</span>`;
+                    return val;
+                };
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><span class="pos-badge ${posClass}">${jog.pos}</span></td>
                     <td class="col-name">${jog.nome}</td>
                     <td class="col-ovr">${forca}</td>
-                    <td><span class="carac-badge">${caracteristica}</span></td>
+                    
+                    <td class="col-stat">${fmtStat(atr.VEL)}</td>
+                    <td class="col-stat">${fmtStat(atr.FIN)}</td>
+                    <td class="col-stat">${fmtStat(atr.PAS)}</td>
+                    <td class="col-stat">${fmtStat(atr.DRI)}</td>
+                    <td class="col-stat">${fmtStat(atr.DEF)}</td>
+                    <td class="col-stat">${fmtStat(atr.FIS)}</td>
+
+                    <td class="col-carac"><span class="carac-badge">${caracteristica}</span></td>
                     <td>
-                        <div class="condition-bar-bg">
+                        <div class="condition-bar-bg" title="${saude}%">
                             <div class="condition-bar-fill" style="width:${saude}%; background-color:${barColor}"></div>
                         </div>
                     </td>
-                    <td class="col-status">${saude === 100 ? 'Apto' : (saude < 50 ? 'Cansado' : 'Normal')}</td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        // Função mágica que gera atributos baseados no OVR se não existirem
+        function garantirAtributos(jog) {
+            if(jog.atributos && jog.atributos.VEL) return jog.atributos;
+
+            const base = jog.forca || 60;
+            // Lógica simples para gerar stats coerentes com a posição
+            if(jog.pos === 'GOL') {
+                return { VEL: base+2, FIN: base-5, PAS: base, DRI: base-10, DEF: base+5, FIS: base };
+            } else if (jog.pos === 'ATA') {
+                return { VEL:base+5, FIN:base+5, PAS:base-5, DRI:base+5, DEF:base-30, FIS:base };
+            } else if (['ZAG','LD','LE'].includes(jog.pos)) {
+                return { VEL:base, FIN:base-20, PAS:base-5, DRI:base-10, DEF:base+5, FIS:base+5 };
+            } else { // MEIO
+                return { VEL:base, FIN:base-5, PAS:base+5, DRI:base, DEF:base, FIS:base };
+            }
         }
 
         function irParaEstadio() {
