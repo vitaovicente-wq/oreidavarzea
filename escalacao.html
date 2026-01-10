@@ -409,6 +409,7 @@
     </div>
 
     <script>
+        // Correção de compatibilidade
         if (typeof database !== 'undefined') window.Database = database;
         if (typeof Database !== 'undefined') window.database = Database;
 
@@ -429,21 +430,24 @@
 
         window.onload = function() {
             try {
+                // CORREÇÃO: Usa a Engine para carregar o jogo e o time do jogador
                 gameState = Engine.carregarJogo();
                 if(!gameState) throw new Error("Sem jogo salvo");
 
-                let timeDB = encontrarTimeNoDatabase(gameState.meuTime);
-                let timeSave = Engine.encontrarTime(gameState, gameState.meuTime);
-                meuTime = timeSave || timeDB;
-
-                if(!meuTime) throw new Error("Time não encontrado.");
-
-                if(!meuTime.elenco || meuTime.elenco.length === 0) {
-                    if(timeDB && timeDB.elenco && timeDB.elenco.length > 0) meuTime.elenco = timeDB.elenco;
-                    else meuTime.elenco = gerarElencoGenerico(meuTime.nome);
+                // Carrega o time DO SAVE (que tem elenco), não do Database
+                if(Engine.getMeuTime) {
+                    meuTime = Engine.getMeuTime();
+                } else {
+                    // Fallback se a engine for antiga
+                    meuTime = gameState.times.find(t => t.nome === gameState.info.time);
                 }
 
-                meuTime.elenco.forEach((j, i) => { if(!j.uid) j.uid = `p_${i}`; });
+                if(!meuTime) throw new Error("Time não encontrado no save.");
+
+                // Garante que todo jogador tenha UID
+                if(meuTime.elenco) {
+                    meuTime.elenco.forEach((j, i) => { if(!j.uid) j.uid = `p_${i}`; });
+                }
 
                 carregarDadosSalvos();
                 aplicarLayout(formacaoAtual);
@@ -451,25 +455,12 @@
                 atualizarCampo();
                 povoarDropdowns();
                 atualizarLabelsTatica();
-            } catch(e) { console.error(e); alert("Erro: " + e.message); window.location.href='index.html'; }
-        };
-
-        function encontrarTimeNoDatabase(nomeOuId) {
-            const db = window.database || window.Database;
-            if (!db || !db.brasil) return null;
-            for (let serie in db.brasil) {
-                const lista = db.brasil[serie];
-                const achou = lista.find(t => t.id === nomeOuId || t.nome === nomeOuId);
-                if (achou) return achou;
+            } catch(e) { 
+                console.error(e); 
+                alert("Erro ao carregar time: " + e.message); 
+                window.location.href='index.html'; 
             }
-            return null;
-        }
-
-        function gerarElencoGenerico(nome) {
-            let lista = [];
-            ['GOL','ZAG','ZAG','LE','LD','VOL','VOL','MEI','MEI','ATA','ATA'].forEach((p,i)=>lista.push({nome:`Jogador ${i+1}`, pos:p, forca:70, uid:`gen_${i}`}));
-            return lista;
-        }
+        };
 
         function carregarDadosSalvos() {
             const fs = localStorage.getItem('brfutebol_esquema');
@@ -477,6 +468,7 @@
             
             const fj = localStorage.getItem('brfutebol_formacao');
             if(fj) { try{ escalacaoAtual = JSON.parse(fj); }catch(e){ escalacaoAtual = {}; } }
+            // Se não tiver nada salvo, auto-escala
             if (Object.keys(escalacaoAtual).length === 0) autoEscalar(true);
 
             const ff = localStorage.getItem('brfutebol_funcoes');
@@ -517,6 +509,8 @@
             const container = document.getElementById('roster-list');
             container.innerHTML = '';
             const emCampo = Object.values(escalacaoAtual);
+            
+            // Filtra quem NÃO está na escalação
             let lista = meuTime.elenco.filter(j => !emCampo.includes(j.uid));
 
             const ordem = {'GOL':1, 'LD':2, 'LE':2, 'ZAG':3, 'VOL':4, 'MEI':5, 'ATA':6};
@@ -531,7 +525,7 @@
                 div.className = 'roster-item';
                 div.draggable = true;
                 div.id = `card-${jog.uid}`;
-                div.dataset.uid = jog.uid; // IMPORTANTE PRO HOVER
+                div.dataset.uid = jog.uid; 
                 
                 const saude = jog.saude !== undefined ? jog.saude : 100;
                 let cor = saude < 60 ? '#e74c3c' : (saude < 80 ? '#f1c40f' : '#2ecc71');
@@ -653,7 +647,6 @@
             const grid = document.getElementById('tip-grid');
             grid.innerHTML = '';
             
-            // MAPA DE LABELS: Se for goleiro, usaremos nomes diferentes mas as chaves internas são as mesmas adaptadas
             const labels = { VEL:'PAC', FIN:'SHO', PAS:'PAS', DRI:'DRI', DEF:'DEF', FIS:'PHY' };
             for(let key in labels) {
                 const val = jog.atributos[key];
@@ -673,22 +666,11 @@
 
         function hideTooltip() { document.getElementById('fifa-tooltip').style.display = 'none'; }
 
-        // CORREÇÃO DOS ATRIBUTOS (Garante que Goleiro tenha os stats para o card não quebrar)
         function gerarAtributosSeNecessario(jog) {
-            // Se faltar atributo OU se for goleiro e faltar o 'VEL' (bug do undefined), recria
             if(!jog.atributos || !jog.atributos.VEL) {
                 const base = jog.forca;
                 if(jog.pos === 'GOL') {
-                    // Mapeia atributos de Goleiro para os slots do Card FIFA
-                    // VEL=Reflexo, FIN=Mergulho, PAS=Chute, DRI=Posic, DEF=Mãos, FIS=Físico
-                    jog.atributos = { 
-                        VEL: base+2, // Reflexo
-                        FIN: base-5, // Mergulho
-                        PAS: base,   // Reposição
-                        DRI: base-10,// Posicionamento
-                        DEF: base+5, // Segurança
-                        FIS: base    // Físico
-                    };
+                    jog.atributos = { VEL: base+2, FIN: base-5, PAS: base, DRI: base-10, DEF: base+5, FIS: base };
                 } else if (jog.pos === 'ATA') {
                     jog.atributos = { VEL:base+5, FIN:base+5, PAS:base-5, DRI:base+5, DEF:base-30, FIS:base };
                 } else {
@@ -763,10 +745,17 @@
             if(!silencioso && !confirm("Auto-escalar?")) return;
             escalacaoAtual = {};
             const usados = [];
+            // Prioriza posição certa
             layouts[formacaoAtual].forEach(p => {
                 let m = meuTime.elenco.find(j => j.pos===p.r && !usados.includes(j.uid) && (j.saude||100)>50);
-                if(!m) m = meuTime.elenco.find(j => j.pos!=='GOL' && !usados.includes(j.uid) && (j.saude||100)>40);
                 if(m) { escalacaoAtual[p.id] = m.uid; usados.push(m.uid); }
+            });
+            // Tapa buraco
+            layouts[formacaoAtual].forEach(p => {
+                if(!escalacaoAtual[p.id]) {
+                    let m = meuTime.elenco.find(j => j.pos!=='GOL' && !usados.includes(j.uid) && (j.saude||100)>40);
+                    if(m) { escalacaoAtual[p.id] = m.uid; usados.push(m.uid); }
+                }
             });
             renderizarLista(); atualizarCampo(); povoarDropdowns();
             const cap = document.getElementById('role-capitao');
