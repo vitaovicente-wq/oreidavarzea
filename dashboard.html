@@ -16,6 +16,8 @@
             --text-muted: #8b949e;
             --border: #30363d;
             --gradient: linear-gradient(45deg, #00ff88, #00b8ff);
+            --gold: #f1c40f;
+            --red: #ff4757;
         }
 
         body {
@@ -31,6 +33,7 @@
             width: 260px; background: #161b22;
             border-right: 1px solid var(--border);
             padding: 25px; display: flex; flex-direction: column; gap: 10px;
+            flex-shrink: 0;
         }
 
         .logo {
@@ -100,7 +103,7 @@
             display: flex; justify-content: space-between;
         }
 
-        /* MATCH CARD (PRÓXIMO JOGO) */
+        /* PRÓXIMO JOGO CARD */
         .match-area {
             flex: 1; display: flex; flex-direction: column;
             align-items: center; justify-content: center; gap: 20px; padding: 20px 0;
@@ -108,7 +111,7 @@
         .matchup { display: flex; align-items: center; gap: 30px; }
         .team-emblem { width: 80px; height: 80px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(255,255,255,0.1)); }
         .vs { font-family: 'Rajdhani'; font-size: 2.5rem; font-weight: 900; color: #333; }
-        .team-name-display { font-weight: 700; margin-top: 10px; font-size: 1.1rem; }
+        .team-name-display { font-weight: 700; margin-top: 10px; font-size: 1.1rem; text-align: center; }
         
         .btn-action {
             width: 100%; padding: 18px; border: none; border-radius: 12px;
@@ -132,15 +135,15 @@
         /* ELENCO LISTA */
         .squad-scroll { overflow-y: auto; max-height: 350px; padding-right: 5px; }
         .player-item {
-            display: grid; grid-template-columns: 40px 1fr 50px 50px;
-            padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: grid; grid-template-columns: 35px 1fr 40px 50px;
+            padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05);
             align-items: center; transition: 0.2s;
         }
         .player-item:hover { background: rgba(255,255,255,0.03); }
-        .p-pos { font-size: 0.75rem; font-weight: bold; background: #333; padding: 2px 6px; border-radius: 4px; text-align: center; }
-        .p-name { font-weight: 600; padding-left: 10px; }
-        .p-ovr { font-family: 'Rajdhani'; font-weight: 700; font-size: 1.1rem; color: #f1c40f; text-align: center; }
-        .p-cond { font-size: 0.8rem; color: var(--neon-green); text-align: right; }
+        .p-pos { font-size: 0.7rem; font-weight: bold; background: #333; padding: 2px; border-radius: 4px; text-align: center; color: #ccc; }
+        .p-name { font-weight: 600; padding-left: 10px; font-size: 0.9rem; }
+        .p-ovr { font-family: 'Rajdhani'; font-weight: 700; font-size: 1rem; color: var(--gold); text-align: center; }
+        .p-cond { font-size: 0.8rem; color: var(--neon-green); text-align: right; font-weight: bold; }
 
         /* SCROLLBAR */
         ::-webkit-scrollbar { width: 6px; }
@@ -200,7 +203,10 @@
         </div>
 
         <div class="card">
-            <div class="card-header">Elenco Principal</div>
+            <div class="card-header">
+                <span>Elenco Principal</span>
+                <span style="font-size:0.7rem; opacity:0.6">POS | NOME | OVR | SAÚDE</span>
+            </div>
             <div class="squad-scroll" id="squad-body">
                 </div>
         </div>
@@ -209,7 +215,7 @@
 
     <script>
         window.onload = function() {
-            // Verifica se tem jogo salvo
+            // Verifica se tem jogo salvo e válido
             const game = Engine.carregarJogo();
             if (!game || !game.info) {
                 alert("Erro: Jogo não encontrado. Iniciando novo...");
@@ -265,7 +271,7 @@
                 `;
             } else {
                 container.innerHTML = "<p>Seu time folga nesta rodada.</p>";
-                btn.innerText = "SIMULAR RODADA";
+                btn.innerText = "SIMULAR RODADA (Folga)";
             }
         }
 
@@ -274,7 +280,7 @@
             tbody.innerHTML = "";
             const lista = game.classificacao || [];
 
-            lista.slice(0, 12).forEach((time, i) => {
+            lista.slice(0, 14).forEach((time, i) => {
                 const isMe = time.nome === game.info.time ? "my-team" : "";
                 tbody.innerHTML += `
                     <tr class="${isMe}">
@@ -290,7 +296,7 @@
             const container = document.getElementById('squad-body');
             container.innerHTML = "";
             
-            // Tenta pegar o meu time (via Engine ou busca manual)
+            // Busca segura pelo meu time
             let meuTime = null;
             if(Engine.getMeuTime) meuTime = Engine.getMeuTime();
             else meuTime = game.times.find(t => t.nome === game.info.time);
@@ -302,11 +308,14 @@
                 return;
             }
 
+            // Ordena por posição (Goleiro primeiro)
+            const ordem = {'GOL':1, 'ZAG':2, 'LD':3, 'LE':3, 'VOL':4, 'MEI':5, 'ATA':6};
+            elenco.sort((a,b) => (ordem[a.pos]||9) - (ordem[b.pos]||9));
+
             elenco.forEach(jog => {
                 const forca = jog.forca || 60;
-                const saude = jog.saude || 100;
+                const saude = jog.saude !== undefined ? jog.saude : 100;
                 
-                // Define cor da barrinha de saúde
                 let colorHealth = "#2ecc71";
                 if(saude < 70) colorHealth = "#f1c40f";
                 if(saude < 40) colorHealth = "#ff4757";
@@ -322,9 +331,34 @@
             });
         }
 
+        // --- A FUNÇÃO QUE FAZ O BOTÃO FUNCIONAR ---
         function irParaEstadio() {
-            // Agora o botão tenta levar para a página certa
-            window.location.href = 'partida.html';
+            // 1. Carrega dados
+            const game = Engine.carregarJogo();
+            const rodadaIndex = game.rodadaAtual - 1;
+
+            if (!game.calendario || !game.calendario[rodadaIndex]) {
+                alert("Temporada finalizada!");
+                return;
+            }
+
+            // 2. Acha meu jogo
+            const jogos = game.calendario[rodadaIndex].jogos;
+            const meuJogo = jogos.find(j => j.mandante === game.info.time || j.visitante === game.info.time);
+
+            if (meuJogo) {
+                // 3. Define quem é o inimigo
+                const adversario = meuJogo.mandante === game.info.time ? meuJogo.visitante : meuJogo.mandante;
+                
+                // 4. Salva o inimigo na memória para a partida.html ler
+                localStorage.setItem('brfutebol_oponente_atual', adversario);
+                
+                // 5. Vai para o arquivo da partida
+                window.location.href = 'partida.html';
+            } else {
+                alert("Seu time folga nesta rodada!");
+                // Aqui no futuro podemos fazer a engine simular os outros jogos e pular a rodada
+            }
         }
         
         function sair() {
