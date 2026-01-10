@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRFutebol - Classificação</title>
+    <script src="engine.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #0f1216;
+            --sidebar-bg: #161b22;
+            --card-bg: #1e2329;
+            --neon-green: #00ff88;
+            --text-main: #ffffff;
+            --text-muted: #8b949e;
+            --border: #30363d;
+            --gold: #f1c40f;
+            --red: #ff4757;
+            --blue: #3498db;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0; padding: 0;
+            display: flex; height: 100vh; overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 250px; background: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            padding: 20px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0;
+        }
+        .logo { font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 900; margin-bottom: 20px; color: #fff; }
+        .logo span { color: var(--neon-green); }
+        .menu-btn { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-weight: 600; transition: 0.2s; cursor: pointer; }
+        .menu-btn:hover, .menu-btn.active { background: rgba(0, 255, 136, 0.1); color: var(--neon-green); }
+        .menu-btn.logout { margin-top: auto; color: var(--red); }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1; padding: 30px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 20px;
+        }
+
+        .page-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-bottom: 15px; border-bottom: 1px solid var(--border);
+        }
+        .page-title { font-family: 'Rajdhani'; font-size: 2rem; font-weight: 800; text-transform: uppercase; color: #fff; }
+
+        /* LAYOUT GRID */
+        .content-grid {
+            display: grid; grid-template-columns: 2fr 1fr; gap: 20px;
+        }
+
+        /* TABELA */
+        .table-card {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 12px; overflow: hidden;
+        }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: rgba(0,0,0,0.3); color: var(--text-muted); text-align: center;
+            padding: 12px 8px; font-size: 0.8rem; text-transform: uppercase; font-weight: 700;
+        }
+        th.th-left { text-align: left; padding-left: 15px; }
+        
+        td {
+            padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.9rem; text-align: center; vertical-align: middle;
+        }
+        td.td-left { text-align: left; padding-left: 15px; display: flex; align-items: center; gap: 10px; }
+        
+        tr:hover { background: rgba(255,255,255,0.03); }
+
+        /* Cores da Tabela */
+        .pos-num { width: 25px; height: 25px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; margin-right: 5px; }
+        .zone-liberta { background: rgba(46, 204, 113, 0.2); color: #2ecc71; }
+        .zone-sula { background: rgba(241, 196, 15, 0.2); color: #f1c40f; }
+        .zone-z4 { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
+        .zone-mid { background: rgba(255,255,255,0.05); color: #888; }
+
+        .my-team-row { background: rgba(0, 255, 136, 0.08) !important; border-left: 3px solid var(--neon-green); }
+        .team-logo-small { width: 30px; height: 30px; object-fit: contain; }
+        .team-name { font-weight: 600; color: #fff; }
+
+        /* ESTATÍSTICAS */
+        .stats-column { display: flex; flex-direction: column; gap: 20px; }
+        .stat-card {
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 12px; padding: 20px;
+        }
+        .stat-title { font-family: 'Rajdhani'; font-weight: 700; text-transform: uppercase; color: var(--neon-green); border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; }
+        
+        .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.9rem; }
+        .stat-name { color: #fff; font-weight: 600; }
+        .stat-val { font-weight: 700; color: var(--gold); }
+
+        .legend-box {
+            display: flex; gap: 15px; margin-top: 15px; font-size: 0.75rem; color: #888;
+        }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+        @media (max-width: 900px) {
+            .content-grid { grid-template-columns: 1fr; }
+            .hide-mobile { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo">BR<span>FUTEBOL</span></div>
+        <a class="menu-btn" href="dashboard.html">📊 Visão Geral</a>
+        <a class="menu-btn" href="escalacao.html">👕 Escalação</a>
+        <a class="menu-btn" href="calendario.html">📅 Calendário</a>
+        <a class="menu-btn active">🏆 Classificação</a>
+        <a class="menu-btn logout" onclick="sair()">✖ Sair</a>
+    </nav>
+
+    <main class="main-content">
+        
+        <div class="page-header">
+            <div class="page-title">Brasileirão Série A</div>
+            <div style="color:#888; font-family:'Rajdhani'; font-weight:700;">TEMPORADA 2026</div>
+        </div>
+
+        <div class="content-grid">
+            
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:50px">Pos</th>
+                            <th class="th-left">Clube</th>
+                            <th title="Pontos">PTS</th>
+                            <th title="Jogos">J</th>
+                            <th title="Vitórias" class="hide-mobile">V</th>
+                            <th title="Empates" class="hide-mobile">E</th>
+                            <th title="Derrotas" class="hide-mobile">D</th>
+                            <th title="Gols Pró" class="hide-mobile">GP</th>
+                            <th title="Saldo de Gols">SG</th>
+                            <th title="Aproveitamento">%</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-body">
+                        </tbody>
+                </table>
+                <div style="padding:15px;">
+                    <div class="legend-box">
+                        <div class="legend-item"><div class="dot" style="background:#2ecc71"></div>Libertadores</div>
+                        <div class="legend-item"><div class="dot" style="background:#f1c40f"></div>Sul-Americana</div>
+                        <div class="legend-item"><div class="dot" style="background:#e74c3c"></div>Rebaixamento</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-column">
+                <div class="stat-card">
+                    <div class="stat-title">🔥 Melhores Ataques</div>
+                    <div id="stats-attack">Carregando...</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-title">🛡️ Melhores Defesas</div>
+                    <div id="stats-defense">Carregando...</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-title">👟 Artilharia (Simulada)</div>
+                    <div id="stats-scorers">Carregando...</div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        const DEFAULT_SHIELD = "https://cdn-icons-png.flaticon.com/512/53/53283.png";
+
+        window.onload = function() {
+            const game = Engine.carregarJogo();
+            if (!game || !game.classificacao) {
+                alert("Dados não encontrados. Inicie um novo jogo.");
+                window.location.href = 'index.html';
+                return;
+            }
+            renderizarTabela(game);
+            renderizarStats(game);
+        };
+
+        function renderizarTabela(game) {
+            const tbody = document.getElementById('tabela-body');
+            tbody.innerHTML = "";
+            
+            // Ordena: Pontos > Vitórias > Saldo > Gols Pró
+            // (Assumindo que Engine.js já ordena, mas garantimos aqui)
+            game.classificacao.sort((a,b) => {
+                if (b.pts !== a.pts) return b.pts - a.pts;
+                if (b.v !== a.v) return b.v - a.v;
+                if (b.sg !== a.sg) return b.sg - a.sg;
+                return b.gp - a.gp;
+            });
+
+            game.classificacao.forEach((time, index) => {
+                const pos = index + 1;
+                let zoneClass = "zone-mid";
+                
+                // Regras Brasileirão
+                if (pos <= 6) zoneClass = "zone-liberta";
+                else if (pos <= 12) zoneClass = "zone-sula";
+                else if (pos >= 17) zoneClass = "zone-z4";
+
+                // Pega escudo
+                const timeObj = Engine.encontrarTime(time.nome) || { escudo: DEFAULT_SHIELD };
+                
+                // Verifica se é o time do usuário
+                const isMyTeam = (time.nome === game.info.time) ? "my-team-row" : "";
+
+                // Calcula %
+                const aproveitamento = time.j > 0 ? Math.round((time.pts / (time.j * 3)) * 100) : 0;
+
+                const tr = `
+                    <tr class="${isMyTeam}">
+                        <td><div class="pos-num ${zoneClass}">${pos}</div></td>
+                        <td class="td-left">
+                            <img src="${timeObj.escudo || DEFAULT_SHIELD}" class="team-logo-small" onerror="this.src='${DEFAULT_SHIELD}'">
+                            <span class="team-name">${time.nome}</span>
+                        </td>
+                        <td style="font-weight:700; color:#fff; font-size:1rem;">${time.pts}</td>
+                        <td style="color:#ddd;">${time.j}</td>
+                        <td class="hide-mobile">${time.v}</td>
+                        <td class="hide-mobile">${time.e}</td>
+                        <td class="hide-mobile">${time.d}</td>
+                        <td class="hide-mobile">${time.gp}</td>
+                        <td style="font-weight:700;">${time.sg}</td>
+                        <td style="color:#888; font-size:0.8rem;">${aproveitamento}%</td>
+                    </tr>
+                `;
+                tbody.innerHTML += tr;
+            });
+        }
+
+        function renderizarStats(game) {
+            // Melhores Ataques
+            const ataques = [...game.classificacao].sort((a,b) => b.gp - a.gp).slice(0, 3);
+            const divAtk = document.getElementById('stats-attack');
+            divAtk.innerHTML = ataques.map(t => 
+                `<div class="stat-row"><span>${t.nome}</span><span class="stat-val" style="color:var(--neon-green)">${t.gp} Gols</span></div>`
+            ).join('');
+
+            // Melhores Defesas (Menos gols sofridos)
+            // Filtra times com 0 jogos para não bugar no inicio
+            const defesas = [...game.classificacao]
+                .filter(t => t.j > 0)
+                .sort((a,b) => a.gc - b.gc).slice(0, 3);
+            
+            const divDef = document.getElementById('stats-defense');
+            if(defesas.length === 0) divDef.innerHTML = "<div class='stat-row'><span>Sem dados</span></div>";
+            else {
+                divDef.innerHTML = defesas.map(t => 
+                    `<div class="stat-row"><span>${t.nome}</span><span class="stat-val" style="color:var(--blue)">${t.gc} Gols</span></div>`
+                ).join('');
+            }
+
+            // Artilharia Simulada (Visual)
+            // Como a engine não salva gol a gol, vamos simular baseado nos gols pró (GP)
+            let artilheiros = [];
+            game.classificacao.forEach(t => {
+                if(t.gp > 0) {
+                    // Chuta que o artilheiro do time fez aprox 30% dos gols
+                    const golsArtilheiro = Math.ceil(t.gp * 0.35);
+                    // Pega um nome do elenco ou gera
+                    const timeObj = Engine.encontrarTime(t.nome);
+                    let nomeJog = "Camisa 9";
+                    if(timeObj && timeObj.elenco && timeObj.elenco.length > 0) {
+                        const atacante = timeObj.elenco.find(j => j.pos === 'ATA');
+                        nomeJog = atacante ? atacante.nome : timeObj.elenco[0].nome;
+                    }
+                    artilheiros.push({ time: t.nome, nome: nomeJog, gols: golsArtilheiro });
+                }
+            });
+
+            artilheiros.sort((a,b) => b.gols - a.gols);
+            const top5 = artilheiros.slice(0, 5);
+            
+            const divArt = document.getElementById('stats-scorers');
+            if(top5.length === 0) divArt.innerHTML = "<div class='stat-row'><span>Sem gols ainda</span></div>";
+            else {
+                divArt.innerHTML = top5.map((j, i) => 
+                    `<div class="stat-row">
+                        <span style="display:flex; gap:5px;">
+                            <span style="color:#666; width:15px;">${i+1}.</span> 
+                            ${j.nome} <span style="color:#444; font-size:0.7rem; margin-top:2px;">(${j.time})</span>
+                        </span>
+                        <span class="stat-val">${j.gols}</span>
+                    </div>`
+                ).join('');
+            }
+        }
+
+        function sair() {
+            if(confirm("Voltar ao menu inicial?")) window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
