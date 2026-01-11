@@ -13,38 +13,14 @@
     
     <style>
         :root {
-            --bg-dark: #0f1216;
-            --bg-panel: rgba(20, 25, 30, 0.98);
-            --accent: #00ff88;
-            --text-main: #ffffff;
-            --text-dim: #8b9bb4;
-            --gold: #f1c40f;
-            --red: #ff4757;
-            --blue: #3498db;
-            --pos-ok: #2ecc71;
-            --pos-med: #f1c40f;
-            --pos-bad: #e74c3c;
+            --bg-dark: #0f1216; --bg-panel: rgba(20, 25, 30, 0.98); --accent: #00ff88;
+            --text-main: #ffffff; --text-dim: #8b9bb4; --gold: #f1c40f; --red: #ff4757;
+            --blue: #3498db; --pos-ok: #2ecc71; --pos-med: #f1c40f; --pos-bad: #e74c3c;
         }
-
         * { box-sizing: border-box; user-select: none; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            background-image: radial-gradient(circle at 50% 50%, #1a202c 0%, #0f1216 100%);
-            color: var(--text-main);
-            margin: 0; height: 100vh;
-            display: flex; flex-direction: column; overflow: hidden;
-        }
-
-        /* PLACAR */
-        .scoreboard {
-            flex-shrink: 0;
-            background: linear-gradient(180deg, #1e2329 0%, #161b22 100%);
-            border-bottom: 2px solid var(--accent); padding: 10px 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); background-image: radial-gradient(circle at 50% 50%, #1a202c 0%, #0f1216 100%); color: var(--text-main); margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        .scoreboard { flex-shrink: 0; background: linear-gradient(180deg, #1e2329 0%, #161b22 100%); border-bottom: 2px solid var(--accent); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10; }
         .team-display { display: flex; align-items: center; gap: 15px; width: 35%; }
         .team-display.right { justify-content: flex-end; text-align: right; }
         .team-logo { width: 50px; height: 50px; object-fit: contain; filter: drop-shadow(0 0 5px rgba(0,0,0,0.5)); }
@@ -54,57 +30,30 @@
         .score-box { background: #000; padding: 2px 15px; border-radius: 6px; border: 1px solid #333; min-width: 60px; text-align: center; }
         .timer-badge { background: var(--accent); color: #000; padding: 2px 12px; border-radius: 15px; font-size: 0.9rem; font-weight: 800; margin-bottom: 5px; }
 
-        /* LAYOUT */
-        .match-layout {
-            flex: 1; display: grid; 
-            grid-template-columns: 260px 1fr 260px; 
-            overflow: hidden;
-        }
-
-        /* LATERAIS */
-        .side-panel {
-            background: rgba(0,0,0,0.2); border-right: 1px solid rgba(255,255,255,0.05);
-            display: flex; flex-direction: column; overflow: hidden;
-        }
+        .match-layout { flex: 1; display: grid; grid-template-columns: 260px 1fr 260px; overflow: hidden; }
+        .side-panel { background: rgba(0,0,0,0.2); border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; overflow: hidden; }
         .side-panel.right { border-right: none; border-left: 1px solid rgba(255,255,255,0.05); }
-        .side-header {
-            padding: 10px; background: rgba(255,255,255,0.05); 
-            font-family: 'Rajdhani'; font-weight: 700; font-size: 0.85rem; 
-            color: var(--text-dim); text-transform: uppercase; text-align: center;
-            display: flex; flex-direction: column; gap: 2px;
-        }
+        .side-header { padding: 10px; background: rgba(255,255,255,0.05); font-family: 'Rajdhani'; font-weight: 700; font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; text-align: center; display: flex; flex-direction: column; gap: 2px; }
         .formation-tag { font-size: 0.7rem; color: var(--accent); letter-spacing: 1px; }
-
         .squad-list { flex: 1; overflow-y: auto; padding: 10px; }
-        .squad-list::-webkit-scrollbar { width: 4px; }
-        .squad-list::-webkit-scrollbar-thumb { background: #333; }
+        .squad-list::-webkit-scrollbar { width: 4px; } .squad-list::-webkit-scrollbar-thumb { background: #333; }
         .squad-section { margin-bottom: 15px; }
         .sec-title { font-size: 0.7rem; color: #888; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* JOGADOR MINI */
-        .mini-player {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.03);
-            font-size: 0.85rem; cursor: default;
-        }
-        .mini-player.subbed-out { opacity: 0.5; }
-        .mini-player.subbed-out .mp-name { text-decoration: line-through; }
+        .mini-player { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.85rem; cursor: default; }
+        .mini-player.subbed-out { opacity: 0.5; } .mini-player.subbed-out .mp-name { text-decoration: line-through; }
         .mini-player.subbed-in { border-left: 2px solid var(--blue); padding-left: 6px; }
         .mini-player.red-card { background: rgba(231, 76, 60, 0.2); }
-        
         .mp-pos { width: 25px; font-weight: 700; color: #666; font-size: 0.75rem; }
         .mp-info { flex: 1; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
         .mp-top-row { display: flex; align-items: center; gap: 5px; }
         .mp-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
-        .mp-events { display: flex; gap: 2px; }
-        .ev-icon { font-size: 0.8rem; margin-left: 2px; }
-
+        .mp-events { display: flex; gap: 2px; } .ev-icon { font-size: 0.8rem; margin-left: 2px; }
         .mp-stats { text-align: right; min-width: 35px; }
         .mp-ovr { font-weight: 800; font-size: 0.8rem; color: #fff; }
         .mp-hp-track { width: 100%; height: 3px; background: #333; margin-top: 2px; border-radius: 2px; }
         .mp-hp-fill { height: 100%; border-radius: 2px; }
 
-        /* CENTRO */
         .center-panel { padding: 15px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
         .feed-panel { background: var(--bg-panel); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; display: flex; flex-direction: column; flex: 2; overflow: hidden; }
         .feed-header { padding: 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid #333; font-family: 'Rajdhani'; font-weight: 700; display: flex; justify-content: space-between; color: var(--text-dim); font-size: 0.9rem; }
@@ -123,49 +72,34 @@
         .bar-bg { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; display: flex; }
         .bar-L { height: 100%; background: var(--text-main); }
 
-        /* FOOTER */
         .footer-controls { width: 100%; padding: 10px 20px; background: #161b22; display: flex; justify-content: center; gap: 15px; border-top: 1px solid #333; flex-shrink: 0; }
         .btn-speed { padding: 8px 15px; border-radius: 4px; border: 1px solid #444; background: #222; color: #888; font-family: 'Rajdhani'; font-weight: 700; cursor: pointer; }
         .btn-speed.active { background: var(--accent); color: #000; border-color: var(--accent); }
         .btn-sub { background: var(--blue); color: #fff; border: none; padding: 8px 25px; border-radius: 4px; font-weight: 700; cursor: pointer; }
         .btn-finish { background: var(--gold); color: #000; border: none; padding: 8px 30px; border-radius: 4px; font-weight: 800; cursor: pointer; display: none; }
 
-        /* MODAL */
         .sub-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .sub-card { width: 90%; max-width: 900px; height: 85vh; background: #161b22; border: 1px solid #444; border-radius: 12px; display: flex; flex-direction: column; }
         .sub-header { padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
         .sub-body { flex: 1; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; padding: 20px; overflow: hidden; }
         .modal-tac-select { background: #000; color: var(--accent); border: 1px solid var(--accent); padding: 5px 15px; border-radius: 4px; font-family: 'Rajdhani'; font-weight: 700; cursor: pointer; outline: none; }
-        
         .mini-pitch { position: relative; width: 100%; height: 100%; background: repeating-linear-gradient(to right, #2e7d32, #2e7d32 10%, #368e3c 10%, #368e3c 20%); border: 2px solid rgba(255,255,255,0.5); border-radius: 6px; }
         .sub-p-node { position: absolute; width: 50px; height: 50px; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.3s; }
         .sub-p-node:hover { transform: translate(-50%, -50%) scale(1.1); z-index: 10; }
         .sub-kit { width: 30px; height: 30px; background: #222; border: 2px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.7rem; color: #fff; }
         .sub-p-node.selected-out .sub-kit { border-color: var(--red); background: rgba(231, 76, 60, 0.5); box-shadow: 0 0 15px var(--red); }
         .sub-name { font-size: 0.7rem; background: rgba(0,0,0,0.8); padding: 1px 4px; border-radius: 3px; margin-top: 2px; }
-
         .sub-list-modal { overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 8px; padding: 10px; border: 1px solid #333; }
-        
-        /* LINHA DE JOGADOR NO MODAL */
         .player-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; }
         .player-row:hover { background: rgba(255,255,255,0.05); }
         .player-row.selected-in { background: rgba(0, 255, 136, 0.2); border-left: 3px solid var(--accent); }
-        
-        .row-info { display: flex; flex-direction: column; }
-        .row-name { font-weight: 700; font-size: 0.9rem; color: #fff; }
-        .row-pos { font-size: 0.7rem; font-weight: 700; color: #888; }
-        
-        .row-stats { display: flex; flex-direction: column; align-items: flex-end; }
-        .row-ovr { font-family: 'Rajdhani'; font-weight: 800; color: var(--gold); font-size: 1rem; }
-        .row-hp-track { width: 40px; height: 4px; background: #333; margin-top: 3px; border-radius: 2px; }
-        .row-hp-fill { height: 100%; border-radius: 2px; }
-
+        .row-info { display: flex; flex-direction: column; } .row-name { font-weight: 700; font-size: 0.9rem; color: #fff; } .row-pos { font-size: 0.7rem; font-weight: 700; color: #888; }
+        .row-stats { display: flex; flex-direction: column; align-items: flex-end; } .row-ovr { font-family: 'Rajdhani'; font-weight: 800; color: var(--gold); font-size: 1rem; }
+        .row-hp-track { width: 40px; height: 4px; background: #333; margin-top: 3px; border-radius: 2px; } .row-hp-fill { height: 100%; border-radius: 2px; }
         .sub-footer { padding: 15px; border-top: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
-        .btn-confirm { background: var(--accent); color: #000; border: none; padding: 10px 25px; border-radius: 4px; font-weight: 800; cursor: pointer; }
-        .btn-confirm:disabled { background: #333; color: #666; cursor: not-allowed; }
+        .btn-confirm { background: var(--accent); color: #000; border: none; padding: 10px 25px; border-radius: 4px; font-weight: 800; cursor: pointer; } .btn-confirm:disabled { background: #333; color: #666; cursor: not-allowed; }
         .btn-back-game { background: transparent; border: 1px solid #666; color: #ccc; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: 600; }
 
-        /* TOOLTIP FIFA */
         #fifa-tooltip { position: fixed; display: none; width: 150px; background: rgba(18, 20, 24, 0.95); border: 1px solid #666; border-radius: 6px; box-shadow: 0 5px 20px rgba(0,0,0,0.9); z-index: 3000; pointer-events: none; padding: 8px; backdrop-filter: blur(5px); }
         .fifa-header { display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; margin-bottom: 5px; }
         .fifa-ovr { font-family: 'Rajdhani'; font-size: 1.5rem; font-weight: 900; color: var(--gold); margin-right: 8px; }
@@ -201,7 +135,6 @@
     </div>
 
     <div class="match-layout">
-        
         <div class="side-panel">
             <div class="side-header">
                 <div>MEU ELENCO</div>
@@ -242,7 +175,6 @@
             </div>
             <div class="squad-list" id="away-squad-list"></div>
         </div>
-
     </div>
 
     <div class="footer-controls">
@@ -347,9 +279,11 @@
             const opNome = localStorage.getItem('brfutebol_oponente_atual') || "Visitante";
             awayTeam = encontrarTime(opNome);
             
+            // Garantia de elenco
             if(!awayTeam.elenco || awayTeam.elenco.length===0) awayTeam.elenco = gerarGenericos(awayTeam.nome);
             if (!homeTeam.elenco || homeTeam.elenco.length === 0) homeTeam.elenco = gerarGenericos(homeTeam.nome);
 
+            // Prepara MEU Time
             homeTeam.elenco.forEach((j, i) => { 
                 if(!j.uid) j.uid = `p_${i}`; 
                 if(!j.atributos) gerarAtributos(j);
@@ -365,14 +299,35 @@
             const rForm = rivalForms[Math.floor(Math.random() * rivalForms.length)];
             document.getElementById('away-form-tag').innerText = rForm;
 
+            // Prepara Adversário (Carga Inicial)
             awayTeam.elenco.forEach((j,i) => { 
                 j.uid = `cpu_${i}`; 
-                j.saude = 100; 
+                if(gameState.jogadoresStatus && gameState.jogadoresStatus[j.uid]) {
+                    j.saude = gameState.jogadoresStatus[j.uid].saude;
+                } else {
+                    j.saude = 100; 
+                }
                 if(!j.atributos) gerarAtributos(j); 
             });
-            const ordem = {'GOL':1, 'LD':2, 'LE':2, 'ZAG':3, 'VOL':4, 'MEI':5, 'ATA':6};
-            const elencoRival = awayTeam.elenco.sort((a,b) => (ordem[a.pos]||99) - (ordem[b.pos]||99) || b.forca - a.forca);
-            awayTitulares = elencoRival.slice(0, 11);
+
+            // Lógica de Escalação da CPU (Poupando cansados)
+            let aptos = awayTeam.elenco.filter(p => p.saude >= 50); // Só quem aguenta jogar
+            let cansados = awayTeam.elenco.filter(p => p.saude < 50);
+            
+            // Ordena os aptos por posição e força
+            const ordem = {'GOL':0, 'ZAG':1, 'LD':2, 'LE':3, 'VOL':4, 'MEI':5, 'ATA':6};
+            aptos.sort((a,b) => (ordem[a.pos]||9) - (ordem[b.pos]||9) || b.forca - a.forca);
+            
+            // Seleciona os 11 titulares
+            if (aptos.length >= 11) {
+                awayTitulares = aptos.slice(0, 11);
+            } else {
+                // Se faltar gente, completa com os menos cansados
+                awayTitulares = aptos.concat(cansados.slice(0, 11 - aptos.length));
+            }
+            
+            // Reordena para garantir Goleiro no gol (índice 0)
+            awayTitulares.sort((a,b) => (ordem[a.pos]||9) - (ordem[b.pos]||9));
 
             renderizarSidebars();
 
@@ -439,7 +394,7 @@
             `;
         }
 
-        // --- MOTOR DE JOGO (LOOP E SIMULAÇÃO) ---
+        // --- MOTOR DE JOGO ---
         function iniciarRelogio() { clearInterval(matchInterval); matchInterval = setInterval(loopJogo, speed); }
         function pausarJogo() { clearInterval(matchInterval); }
 
@@ -447,7 +402,7 @@
             tempo++;
             document.getElementById('timer-display').innerText = `${etapa}º ${tempo}'`;
 
-            if(Math.random() < 0.05) processarLance(); // 5% chance por minuto
+            if(Math.random() < 0.05) processarLance();
 
             if(tempo === 45 && etapa === 1) {
                 pausarJogo();
@@ -463,7 +418,7 @@
             }
         }
 
-        // --- CÁLCULO DE FORÇA BASEADO EM ATRIBUTOS ---
+        // --- LÓGICA DE SIMULAÇÃO (Setores e Atributos) ---
         function calcularSetoresReais(timeJogadores, taticaNome, isHome) {
             let s = { def: 0, mid: 0, att: 0 };
             
@@ -552,7 +507,7 @@
         // --- EVENTOS (GOL, CARTÃO, LESÃO) ---
         function gol(isHome) {
             let timeJogadores = isHome ? titulares : awayTitulares;
-            let validos = timeJogadores.filter(j => !events[j.uid] || !events[j.uid].cards.includes('🟥'));
+            let validos = timeJogadores.filter(j => j.pos !== 'GOL' && (!events[j.uid] || !events[j.uid].cards.includes('🟥')));
             
             if (validos.length === 0) return;
 
@@ -648,13 +603,28 @@
         }
 
         function finalizarPartida() {
-            titulares.forEach(j => { j.saude = Math.max(0, j.saude - 8); }); 
-            indisponiveis.forEach(j => { j.saude = Math.max(0, j.saude - 4); }); 
-            reservas.forEach(j => { j.saude = Math.min(100, j.saude + 6); }); 
-
             const statusJogadores = gameState.jogadoresStatus || {};
-            [...titulares, ...reservas, ...indisponiveis].forEach(j => {
-                statusJogadores[j.uid] = { saude: j.saude };
+            const todosJogadores = [...homeTeam.elenco, ...awayTeam.elenco]; // Todos os elencos dos dois times
+
+            // Set para saber quem jogou
+            const jogaramIDs = new Set([...titulares, ...indisponiveis, ...awayTitulares].map(j => j.uid));
+
+            todosJogadores.forEach(j => {
+                if(!j.uid) return;
+                
+                // Recupera saúde atual (ou 100 se for novo)
+                let saudeAtual = (statusJogadores[j.uid] && statusJogadores[j.uid].saude) ? statusJogadores[j.uid].saude : 100;
+
+                if (jogaramIDs.has(j.uid)) {
+                    // Quem jogou cansa
+                    saudeAtual = Math.max(0, saudeAtual - 8);
+                } else {
+                    // Quem descansou recupera
+                    saudeAtual = Math.min(100, saudeAtual + 15);
+                }
+                
+                // Salva
+                statusJogadores[j.uid] = { saude: saudeAtual };
             });
             
             if(!gameState.classificacao) gameState.classificacao = []; 
@@ -733,6 +703,7 @@
             else if(j.pos==='ATA') j.atributos={VEL:b+5, FIN:b+5, PAS:b-5, DRI:b+5, DEF:b-25, FIS:b};
             else j.atributos={VEL:b, FIN:b-5, PAS:b+5, DRI:b, DEF:b, FIS:b};
         }
+        
         function organizarElenco(time) {
             const savedForm = localStorage.getItem('brfutebol_formacao');
             titulares = []; reservas = []; indisponiveis = [];
@@ -749,7 +720,11 @@
             }
             if(titulares.length < 11) {
                 const disp = time.elenco.filter(j => !escaladosIds.includes(j.uid));
-                disp.sort((a,b)=> (b.forca||60) - (a.forca||60));
+                
+                // ORDENAÇÃO FORÇADA: GOL -> ZAG -> LD/LE -> VOL -> MEI -> ATA
+                const ordem = {'GOL':0, 'ZAG':1, 'LD':2, 'LE':3, 'VOL':4, 'MEI':5, 'ATA':6};
+                disp.sort((a,b)=> (ordem[a.pos]||9) - (ordem[b.pos]||9));
+
                 for(let k=0; k<(11-titulares.length); k++) {
                     if(disp[k]) { titulares.push(disp[k]); escaladosIds.push(disp[k].uid); }
                 }
@@ -757,93 +732,12 @@
             reservas = time.elenco.filter(j => !escaladosIds.includes(j.uid));
         }
 
-        // TOOLTIP
-        function showTooltip(e) {
-            const uid = this.dataset.uid; if(!uid)return;
-            const jog = titulares.find(j=>j.uid===uid) || reservas.find(j=>j.uid===uid) || indisponiveis.find(j=>j.uid===uid);
-            if(!jog)return;
-            if(!jog.atributos) gerarAtributos(jog);
-            document.getElementById('tip-name').innerText=jog.nome; document.getElementById('tip-pos').innerText=jog.pos; document.getElementById('tip-ovr').innerText=jog.forca||60;
-            const g=document.getElementById('tip-grid'); g.innerHTML='';
-            const l={VEL:'PAC',FIN:'SHO',PAS:'PAS',DRI:'DRI',DEF:'DEF',FIS:'PHY'};
-            for(let k in l) { let v=jog.atributos[k]; let c='mid'; if(v>=80)c='high'; if(v<60)c='low'; g.innerHTML+=`<div class="fifa-stat"><span>${l[k]}</span><b class="${c}">${v}</b></div>`; }
-            document.getElementById('fifa-tooltip').style.display='block'; moveTooltip(e);
-        }
-        function moveTooltip(e) { const t=document.getElementById('fifa-tooltip'); t.style.top=(e.clientY+15)+'px'; t.style.left=(e.clientX+15)+'px'; }
-        function hideTooltip() { document.getElementById('fifa-tooltip').style.display='none'; }
-
-        // --- SUB & MODAL ---
-        function abrirModalSub() {
-            pausarJogo();
-            document.getElementById('sub-modal').style.display = 'flex';
-            renderizarCampoSub(); renderizarListaReservas();
-            subPending = { sai: null, entra: null }; atualizarUIBotao();
-        }
-        function fecharModalSub() {
-            document.getElementById('sub-modal').style.display = 'none';
-            if(etapa===1 && tempo===45) { etapa=2; tempo=0; }
-            iniciarRelogio();
-        }
-        function mudarFormacaoJogo() { formacaoAtual=document.getElementById('sub-formation').value; renderizarCampoSub(); adicionarLog("Téc", `Mudou para ${formacaoAtual}`, "sub"); document.getElementById('home-form-tag').innerText = formacaoAtual; }
-        
-        function renderizarCampoSub() {
-            const c = document.getElementById('pitch-container');
-            c.querySelectorAll('.sub-p-node').forEach(n=>n.remove());
-            const layout = layouts[formacaoAtual] || layouts['4-3-3'];
-            titulares.forEach((j, i) => {
-                const pos = layout[i] || {t:"50%",l:"50%"};
-                const el = document.createElement('div');
-                el.className = 'sub-p-node'; el.style.top=pos.t; el.style.left=pos.l;
-                el.innerHTML = `<div class="sub-kit">${j.pos}</div><div class="sub-name">${j.nome.split(' ')[0]}</div>`;
-                el.onclick = () => selecionarSai(j.uid, el);
-                el.dataset.uid=j.uid;
-                el.addEventListener('mouseenter', showTooltip); el.addEventListener('mousemove', moveTooltip); el.addEventListener('mouseleave', hideTooltip);
-                c.appendChild(el);
-            });
-        }
-
-        function renderizarListaReservas() {
-            const l = document.getElementById('list-reservas-modal'); l.innerHTML='';
-            const disp = reservas.filter(r => !indisponiveis.includes(r));
-            disp.forEach(j => {
-                const saude = j.saude !== undefined ? j.saude : 100;
-                let cor = saude < 60 ? '#e74c3c' : '#2ecc71';
-                const el = document.createElement('div'); el.className='player-row';
-                el.innerHTML=`
-                    <div class="row-info"><span class="row-pos">${j.pos}</span><span class="row-name">${j.nome}</span></div>
-                    <div class="row-stats"><span class="row-ovr">${j.forca || 60}</span><div class="row-hp-track"><div class="row-hp-fill" style="width:${saude}%; background:${cor}"></div></div></div>
-                `;
-                el.onclick = () => selecionarEntra(j.uid, el);
-                el.dataset.uid=j.uid;
-                el.addEventListener('mouseenter', showTooltip); el.addEventListener('mousemove', moveTooltip); el.addEventListener('mouseleave', hideTooltip);
-                l.appendChild(el);
-            });
-        }
-
-        function selecionarSai(uid, el) {
-            document.querySelectorAll('.sub-p-node').forEach(n=>n.classList.remove('selected-out'));
-            el.classList.add('selected-out'); subPending.sai=uid; atualizarUIBotao();
-        }
-        function selecionarEntra(uid, el) {
-            document.querySelectorAll('.player-row').forEach(n=>n.classList.remove('selected-in'));
-            el.classList.add('selected-in'); subPending.entra=uid; atualizarUIBotao();
-        }
-        function atualizarUIBotao() {
-            const btn = document.getElementById('btn-confirm-sub');
-            if(subPending.sai && subPending.entra) { btn.disabled=false; } else { btn.disabled=true; }
-        }
-        function confirmarSub() {
-            if(!subPending.sai || !subPending.entra) return;
-            const idxS = titulares.findIndex(j=>j.uid===subPending.sai);
-            const idxE = reservas.findIndex(j=>j.uid===subPending.entra);
-            if(idxS>-1 && idxE>-1) {
-                const sai = titulares[idxS]; const entra = reservas[idxE];
-                titulares[idxS] = entra; reservas.splice(idxE, 1); indisponiveis.push(sai);
-                adicionarLog("Sub", `Sai ${sai.nome} | Entra ${entra.nome}`, "sub");
-                registrarEvento(entra.uid, 'sub_in'); 
-                subPending={sai:null, entra:null};
-                renderizarCampoSub(); renderizarListaReservas(); renderizarSidebars(); atualizarUIBotao();
-            }
+        function iniciarRelogio() { clearInterval(matchInterval); matchInterval = setInterval(loopJogo, speed); }
+        function pausarJogo() { clearInterval(matchInterval); }
+        function setSpeed(m, btn) {
+            document.querySelectorAll('.btn-speed').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+            speed = m===1?200 : m===2?80 : 10;
+            if(!document.getElementById('sub-modal').style.display.includes('flex')) iniciarRelogio();
         }
     </script>
 </body>
