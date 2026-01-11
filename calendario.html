@@ -147,6 +147,7 @@
         <a class="menu-btn" href="dashboard.html">📊 Visão Geral</a>
         <a class="menu-btn" href="escalacao.html">👕 Escalação</a>
         <a class="menu-btn active">📅 Calendário</a>
+        <a class="menu-btn" href="classificacao.html">🏆 Classificação</a>
         <a class="menu-btn" onclick="alert('Em breve')">💰 Transferências</a>
         <a class="menu-btn logout" onclick="sair()">✖ Sair</a>
     </nav>
@@ -269,7 +270,7 @@
             });
         }
 
-        // --- SISTEMA DE DETALHES (SIMULAÇÃO) ---
+        // --- SISTEMA DE DETALHES ---
 
         function abrirDetalhes(idx) {
             const jogo = gameState.calendario[rodadaVisualizada - 1].jogos[idx];
@@ -286,8 +287,18 @@
             document.getElementById('mod-score-h').innerText = jogo.placarCasa;
             document.getElementById('mod-score-a').innerText = jogo.placarFora;
 
-            // Gera lista de eventos (gols)
-            const eventos = gerarEventos(jogo, tCasa, tFora);
+            // LÓGICA DE EVENTOS (REAL OU SIMULADA)
+            let eventos = [];
+            // Se o jogo tem eventos salvos (jogos jogados pelo usuário), usa eles
+            if (jogo.eventos && Array.isArray(jogo.eventos) && jogo.eventos.length > 0) {
+                eventos = jogo.eventos;
+                // Garante ordenação
+                eventos.sort((a,b) => a.min - b.min);
+            } else {
+                // Se não tem (jogos da CPU ou saves antigos), simula agora
+                eventos = gerarEventos(jogo, tCasa, tFora);
+            }
+
             const listContainer = document.getElementById('mod-events');
             listContainer.innerHTML = '';
 
@@ -309,7 +320,7 @@
             document.getElementById('match-modal').style.display = 'flex';
         }
 
-        // Função Criativa: Inventa quem fez os gols baseado no placar
+        // Função Criativa: Inventa quem fez os gols (Fallback para CPU)
         function gerarEventos(jogo, tCasa, tFora) {
             let lista = [];
             
