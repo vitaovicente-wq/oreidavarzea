@@ -7,7 +7,8 @@
     
     <script src="database_jogadores.js"></script>
     <script src="engine.js"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
@@ -321,11 +322,10 @@
             "3-4-3": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"40%",l:"45%"},{t:"60%",l:"45%"},{t:"85%",l:"45%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}]
         };
 
-        // INICIALIZAÇÃO SEGURA
+        // INICIALIZAÇÃO
         window.onload = function() {
             try {
-                // Checa Engine
-                if (typeof Engine === 'undefined') throw new Error("Erro: Engine não carregada. Verifique engine.js");
+                if (typeof Engine === 'undefined') throw new Error("Erro: Engine não carregada.");
                 carregarDados();
             } catch (err) {
                 alert("Erro ao iniciar partida: " + err.message);
@@ -343,16 +343,13 @@
             document.getElementById('sub-formation').value = formacaoAtual;
             document.getElementById('home-form-tag').innerText = formacaoAtual;
 
-            // Busca Times
             homeTeam = encontrarTime(gameState.info.time);
             const opNome = localStorage.getItem('brfutebol_oponente_atual') || "Visitante";
             awayTeam = encontrarTime(opNome);
             
-            // Proteção contra times sem elenco
             if(!awayTeam.elenco || awayTeam.elenco.length===0) awayTeam.elenco = gerarGenericos(awayTeam.nome);
             if (!homeTeam.elenco || homeTeam.elenco.length === 0) homeTeam.elenco = gerarGenericos(homeTeam.nome);
 
-            // Prepara MEU Time
             homeTeam.elenco.forEach((j, i) => { 
                 if(!j.uid) j.uid = `p_${i}`; 
                 if(!j.atributos) gerarAtributos(j);
@@ -364,7 +361,6 @@
             });
             organizarElenco(homeTeam);
 
-            // Prepara RIVAL
             const rivalForms = Object.keys(layouts);
             const rForm = rivalForms[Math.floor(Math.random() * rivalForms.length)];
             document.getElementById('away-form-tag').innerText = rForm;
@@ -389,7 +385,63 @@
             iniciarRelogio();
         }
 
-        // LÓGICA DE JOGO - CÁLCULO DE SETORES
+        // --- SISTEMAS VISUAIS RECUPERADOS ---
+
+        function renderizarSidebars() {
+            // MEU TIME
+            const hl = document.getElementById('home-squad-list');
+            hl.innerHTML = '<div class="squad-section"><div class="sec-title">EM CAMPO</div></div>';
+            titulares.forEach(j => hl.innerHTML += criarMiniPlayer(j));
+            
+            hl.innerHTML += '<div class="squad-section" style="margin-top:10px;"><div class="sec-title">BANCO</div></div>';
+            reservas.forEach(j => hl.innerHTML += criarMiniPlayer(j));
+
+            if(indisponiveis.length > 0) {
+                hl.innerHTML += '<div class="squad-section" style="margin-top:10px;"><div class="sec-title">SAÍRAM</div></div>';
+                indisponiveis.forEach(j => hl.innerHTML += criarMiniPlayer(j, 'out'));
+            }
+
+            // ADVERSÁRIO
+            const al = document.getElementById('away-squad-list');
+            al.innerHTML = '<div class="squad-section"><div class="sec-title">TITULARES</div></div>';
+            awayTitulares.forEach(j => al.innerHTML += criarMiniPlayer(j));
+        }
+
+        function criarMiniPlayer(j, status='') {
+            let cls = '';
+            if(status === 'out') cls = 'subbed-out';
+            if(status === 'in') cls = 'subbed-in';
+            
+            let icons = '';
+            if(events[j.uid]) {
+                if(events[j.uid].goals > 0) icons += `<span class="ev-icon">⚽${events[j.uid].goals > 1 ? 'x'+events[j.uid].goals : ''}</span>`;
+                if(events[j.uid].cards) icons += `<span class="ev-icon">${events[j.uid].cards}</span>`;
+                if(events[j.uid].cards.includes('🟥')) cls += ' red-card';
+            }
+
+            let saude = j.saude !== undefined ? j.saude : 100;
+            let cor = saude < 60 ? '#e74c3c' : (saude < 80 ? '#f1c40f' : '#2ecc71');
+            let forca = j.forca || 60;
+
+            return `
+                <div class="mini-player ${cls}">
+                    <div class="mp-pos">${j.pos}</div>
+                    <div class="mp-info">
+                        <div class="mp-top-row">
+                            <span class="mp-name">${j.nome}</span>
+                            <div class="mp-events">${icons}</div>
+                        </div>
+                    </div>
+                    <div class="mp-stats">
+                        <div class="mp-ovr">${forca}</div>
+                        <div class="mp-hp-track"><div class="mp-hp-fill" style="width:${saude}%; background:${cor}"></div></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- CÁLCULO DE FORÇA BASEADO EM ATRIBUTOS ---
+
         function calcularSetoresReais(timeJogadores, taticaNome, isHome) {
             let s = { def: 0, mid: 0, att: 0 };
             
@@ -406,7 +458,6 @@
             timeJogadores.forEach(j => {
                 if (events[j.uid] && events[j.uid].cards.includes('🟥')) return;
 
-                // Fallback seguro se não tiver atributos
                 const atr = j.atributos || { VEL:60, FIN:60, PAS:60, DRI:60, DEF:60, FIS:60 };
                 const peso = pPos[j.pos] || { def: 0.3, mid: 0.3, att: 0.3 };
                 
@@ -434,7 +485,6 @@
             const taticaCpu = document.getElementById('away-form-tag').innerText || "4-4-2";
             const sAway = calcularSetoresReais(awayTitulares, taticaCpu, false);
 
-            // 1. POSSE
             const totalMid = sHome.mid + sAway.mid || 1;
             let posseHome = (sHome.mid / totalMid) * 100;
             posseHome += (Math.random() * 24) - 12;
@@ -445,7 +495,6 @@
             document.getElementById('bar-pos-h').style.width = stats.homePos + "%";
             document.getElementById('stat-pos-a').innerText = (100 - stats.homePos) + "%";
 
-            // 2. ATAQUE
             const isHomeAttacking = Math.random() * 100 < stats.homePos;
             
             if (isHomeAttacking) {
@@ -481,12 +530,13 @@
 
             pausarJogo();
             
-            // Sorteio ponderado por Finalização
             let totalFin = 0;
             validos.forEach(j => totalFin += (j.atributos ? j.atributos.FIN : 60));
+            
             let r = Math.random() * totalFin;
             let autorObj = validos[0];
             let acumulado = 0;
+            
             for(let j of validos) {
                 acumulado += (j.atributos ? j.atributos.FIN : 60);
                 if (r <= acumulado) { autorObj = j; break; }
@@ -507,7 +557,7 @@
             document.getElementById('goal-scorer-name').innerText = autorObj.nome;
             document.getElementById('goal-overlay').style.display = 'flex';
             
-            adicionarLog("GOL", `${autorObj.nome} marca!`, "goal");
+            adicionarLog("GOL", `${autorObj.nome} balança a rede!`, "goal");
             registrarEvento(autorObj.uid, 'goals');
             renderizarSidebars();
 
@@ -640,6 +690,7 @@
         }
 
         function gerarAtributos(j) {
+            // Garante atributos se o jogador não tiver
             const b = j.forca || 60;
             if(j.pos==='GOL') j.atributos={VEL:b+2, FIN:b-15, PAS:b, DRI:b-15, DEF:b+5, FIS:b};
             else if(j.pos==='ZAG') j.atributos={VEL:b-5, FIN:b-20, PAS:b-5, DRI:b-10, DEF:b+5, FIS:b+5};
