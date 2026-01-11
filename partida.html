@@ -303,7 +303,7 @@
         let stats = { homeSho:0, awaySho:0, homePos:50 };
         let speed = 200; 
         let subPending = { sai: null, entra: null };
-        let gameEvents = []; // Array para armazenar os eventos da partida (gols, etc)
+        let gameEvents = []; // LISTA DE GOLS PARA O HISTÓRICO REAL
 
         const layouts = { "4-3-3": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"50%",l:"40%"},{t:"30%",l:"55%"},{t:"70%",l:"55%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}], "4-4-2": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"30%",l:"45%"},{t:"70%",l:"45%"},{t:"15%",l:"60%"},{t:"85%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}], "3-5-2": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"85%",l:"45%"},{t:"50%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}], "4-2-3-1":[{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"20%",l:"65%"},{t:"50%",l:"60%"},{t:"80%",l:"65%"},{t:"50%",l:"88%"}], "3-4-3": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"40%",l:"45%"},{t:"60%",l:"45%"},{t:"85%",l:"45%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}] };
 
@@ -318,26 +318,15 @@
             document.getElementById('sub-formation').value = formacaoAtual;
             document.getElementById('home-form-tag').innerText = formacaoAtual;
 
-            // === A CORREÇÃO MÁGICA ===
-            // Usa gameState.info.time (nome correto do time no save)
             homeTeam = encontrarTime(gameState.info.time);
-            
             const opNome = localStorage.getItem('brfutebol_oponente_atual') || "Visitante";
             awayTeam = encontrarTime(opNome);
             
-            // Se o adversário não tiver elenco (bug), cria genérico
             if(!awayTeam.elenco || awayTeam.elenco.length===0) awayTeam.elenco = gerarGenericos(awayTeam.nome);
+            if (!homeTeam.elenco || homeTeam.elenco.length === 0) homeTeam.elenco = gerarGenericos(homeTeam.nome);
 
-            // Se o MEU time não tiver elenco (bug grave), cria genérico
-            if (!homeTeam.elenco || homeTeam.elenco.length === 0) {
-                console.error("Elenco do jogador não encontrado! Gerando genérico.");
-                homeTeam.elenco = gerarGenericos(homeTeam.nome);
-            }
-
-            // PREPARA MEU TIME
             homeTeam.elenco.forEach((j, i) => { 
                 if(!j.uid) j.uid = `p_${i}`; 
-                // Saúde
                 if(gameState.jogadoresStatus && gameState.jogadoresStatus[j.uid]) {
                     j.saude = gameState.jogadoresStatus[j.uid].saude;
                 } else if(j.saude === undefined) {
@@ -346,13 +335,11 @@
             });
             organizarElenco(homeTeam);
 
-            // PREPARA RIVAL
             const rivalForms = Object.keys(layouts);
             const rForm = rivalForms[Math.floor(Math.random() * rivalForms.length)];
             document.getElementById('away-form-tag').innerText = rForm;
 
             awayTeam.elenco.forEach((j,i) => { j.uid = `cpu_${i}`; j.saude = 100; });
-            
             const ordem = {'GOL':1, 'LD':2, 'LE':2, 'ZAG':3, 'VOL':4, 'MEI':5, 'ATA':6};
             const elencoRival = awayTeam.elenco.sort((a,b) => (ordem[a.pos]||99) - (ordem[b.pos]||99) || b.forca - a.forca);
             awayTitulares = elencoRival.slice(0, 11);
@@ -360,7 +347,6 @@
             renderizarSidebars();
 
             document.getElementById('home-name').innerText = homeTeam.nome;
-            // Escudo
             const shieldDefault = "https://cdn-icons-png.flaticon.com/512/53/53283.png";
             document.getElementById('home-logo').src = homeTeam.escudo || shieldDefault;
             document.getElementById('away-name').innerText = awayTeam.nome;
@@ -371,15 +357,10 @@
         }
 
         function encontrarTime(nome) {
-            // 1. Prioridade TOTAL: Buscar no Save Game (gameState.times)
             if (gameState && gameState.times) {
                 const timeNoSave = gameState.times.find(t => t.nome === nome);
-                if (timeNoSave) {
-                    return JSON.parse(JSON.stringify(timeNoSave));
-                }
+                if (timeNoSave) return JSON.parse(JSON.stringify(timeNoSave));
             }
-
-            // 2. Fallback: Buscar no Database estático (caso o save esteja incompleto)
             const db = window.database || window.Database;
             if (db && db.brasil) {
                  for(let s in db.brasil) {
@@ -388,14 +369,7 @@
                         if(t) return JSON.parse(JSON.stringify(t)); 
                     }
                  }
-                 // Tenta se for array direto (legado)
-                 if (Array.isArray(db.brasil)) {
-                     const t = db.brasil.find(x => x.nome === nome);
-                     if(t) return JSON.parse(JSON.stringify(t));
-                 }
             }
-            
-            // 3. Desisto: Retorna vazio
             return { nome: nome, escudo: "", elenco: [] };
         }
 
@@ -415,10 +389,8 @@
                 } catch(e){}
             }
 
-            // Se faltar gente na escalação salva (ou não tiver save), completa com os melhores
             if(titulares.length < 11) {
                 const disp = time.elenco.filter(j => !escaladosIds.includes(j.uid));
-                // Ordena por força
                 disp.sort((a,b)=> (b.forca||60) - (a.forca||60));
                 for(let k=0; k<(11-titulares.length); k++) {
                     if(disp[k]) { titulares.push(disp[k]); escaladosIds.push(disp[k].uid); }
@@ -428,20 +400,15 @@
         }
 
         function renderizarSidebars() {
-            // MEU TIME
             const hl = document.getElementById('home-squad-list');
             hl.innerHTML = '<div class="squad-section"><div class="sec-title">EM CAMPO</div></div>';
             titulares.forEach(j => hl.innerHTML += criarMiniPlayer(j));
-            
             hl.innerHTML += '<div class="squad-section" style="margin-top:10px;"><div class="sec-title">BANCO</div></div>';
             reservas.forEach(j => hl.innerHTML += criarMiniPlayer(j));
-
             if(indisponiveis.length > 0) {
                 hl.innerHTML += '<div class="squad-section" style="margin-top:10px;"><div class="sec-title">SAÍRAM</div></div>';
                 indisponiveis.forEach(j => hl.innerHTML += criarMiniPlayer(j, 'out'));
             }
-
-            // ADVERSÁRIO
             const al = document.getElementById('away-squad-list');
             al.innerHTML = '<div class="squad-section"><div class="sec-title">TITULARES</div></div>';
             awayTitulares.forEach(j => al.innerHTML += criarMiniPlayer(j));
@@ -451,17 +418,14 @@
             let cls = '';
             if(status === 'out') cls = 'subbed-out';
             if(status === 'in') cls = 'subbed-in';
-            
             let icons = '';
             if(events[j.uid]) {
                 if(events[j.uid].goals > 0) icons += `<span class="ev-icon">⚽${events[j.uid].goals > 1 ? 'x'+events[j.uid].goals : ''}</span>`;
                 if(events[j.uid].cards) icons += `<span class="ev-icon">${events[j.uid].cards}</span>`;
             }
-
             let saude = j.saude !== undefined ? j.saude : 100;
             let cor = saude < 60 ? '#e74c3c' : (saude < 80 ? '#f1c40f' : '#2ecc71');
             let forca = j.forca || 60;
-
             return `
                 <div class="mini-player ${cls}">
                     <div class="mp-pos">${j.pos}</div>
@@ -491,9 +455,7 @@
         function loopJogo() {
             tempo++;
             document.getElementById('timer-display').innerText = `${etapa}º ${tempo}'`;
-
             if(Math.random() < 0.04) processarLance();
-
             if(tempo === 45 && etapa === 1) {
                 pausarJogo();
                 adicionarLog("Juiz", "Fim do 1º tempo.", "card");
@@ -513,7 +475,6 @@
             const forcaAway = calcularMedia(awayTitulares);
             const diff = forcaHome - forcaAway;
             const chanceH = 50 + (diff/2);
-
             if((Math.random()*100) < chanceH) { 
                 if(Math.random()<0.15) gol(true); else { stats.homeSho++; adicionarLog(homeTeam.nome, "Perigo!", "danger"); }
             } else { 
@@ -537,9 +498,9 @@
                 timeGol = awayTeam.nome;
             }
             
-            // Registra o evento do gol para o histórico
+            // --- GUARDA NA MEMÓRIA PARA O CALENDÁRIO ---
             gameEvents.push({
-                min: tempo + (etapa === 2 ? 45 : 0),
+                min: tempo + (etapa===2?45:0),
                 time: timeGol,
                 jogador: autorObj.nome,
                 tipo: 'gol'
@@ -549,11 +510,9 @@
             document.getElementById('score-away').innerText = placar.away;
             document.getElementById('goal-scorer-name').innerText = autorObj.nome;
             document.getElementById('goal-overlay').style.display = 'flex';
-            
             adicionarLog("GOL", `${autorObj.nome} marca!`, "goal");
             registrarEvento(autorObj.uid, 'goals');
             renderizarSidebars();
-
             setTimeout(() => { document.getElementById('goal-overlay').style.display='none'; iniciarRelogio(); }, 2000);
         }
 
@@ -564,12 +523,12 @@
         }
 
         function finalizarPartida() {
-            // DESGASTE
+            // 1. Aplica Cansaço
             titulares.forEach(j => { j.saude = Math.max(0, j.saude - 8); }); 
             indisponiveis.forEach(j => { j.saude = Math.max(0, j.saude - 4); }); 
             reservas.forEach(j => { j.saude = Math.min(100, j.saude + 6); }); 
 
-            // Atualiza status global
+            // 2. Salva Status
             const statusJogadores = gameState.jogadoresStatus || {};
             [...titulares, ...reservas, ...indisponiveis].forEach(j => {
                 statusJogadores[j.uid] = { saude: j.saude };
@@ -582,33 +541,27 @@
                 }));
             }
             
+            // 3. Processa Rodada
             const rodadaIndex = gameState.rodadaAtual - 1;
             if(gameState.calendario && gameState.calendario[rodadaIndex]) {
                 const jogos = gameState.calendario[rodadaIndex].jogos;
                 const meuJogo = jogos.find(j => j.mandante === homeTeam.nome || j.visitante === homeTeam.nome);
+                
+                // Salva O MEU jogo com a súmula real
                 if(meuJogo) {
                     meuJogo.jogado = true;
-                    // Salva os eventos (gols) na estrutura do jogo
-                    meuJogo.eventos = gameEvents;
-
+                    meuJogo.eventos = gameEvents; // <--- AQUI O SEGREDO
                     if(meuJogo.mandante === homeTeam.nome) {
-                        meuJogo.placarCasa = placar.home;
-                        meuJogo.placarFora = placar.away;
+                        meuJogo.placarCasa = placar.home; meuJogo.placarFora = placar.away;
                     } else {
-                        meuJogo.placarCasa = placar.away;
-                        meuJogo.placarFora = placar.home;
+                        meuJogo.placarCasa = placar.away; meuJogo.placarFora = placar.home;
                     }
                 }
                 
-                // Simulação outros jogos
+                // Simula OS OUTROS jogos (agora com nomes reais de artilheiros)
                 jogos.forEach(j => {
                     if(!j.jogado) {
-                        j.jogado = true;
-                        j.placarCasa = Math.floor(Math.random() * 3);
-                        j.placarFora = Math.floor(Math.random() * 2);
-                        if(Math.random() > 0.6) j.placarCasa++;
-                        // Aqui também poderíamos gerar eventos simulados para os outros jogos
-                        // j.eventos = gerarEventosSimulados(j); 
+                        Engine.simularJogoCPU(j);
                     }
                 });
             }
@@ -658,17 +611,10 @@
             disp.forEach(j => {
                 const saude = j.saude !== undefined ? j.saude : 100;
                 let cor = saude < 60 ? '#e74c3c' : '#2ecc71';
-                
                 const el = document.createElement('div'); el.className='player-row';
                 el.innerHTML=`
-                    <div class="row-info">
-                        <span class="row-pos">${j.pos}</span>
-                        <span class="row-name">${j.nome}</span>
-                    </div>
-                    <div class="row-stats">
-                        <span class="row-ovr">${j.forca || 60}</span>
-                        <div class="row-hp-track"><div class="row-hp-fill" style="width:${saude}%; background:${cor}"></div></div>
-                    </div>
+                    <div class="row-info"><span class="row-pos">${j.pos}</span><span class="row-name">${j.nome}</span></div>
+                    <div class="row-stats"><span class="row-ovr">${j.forca || 60}</span><div class="row-hp-track"><div class="row-hp-fill" style="width:${saude}%; background:${cor}"></div></div></div>
                 `;
                 el.onclick = () => selecionarEntra(j.uid, el);
                 el.dataset.uid=j.uid;
@@ -703,7 +649,6 @@
             }
         }
 
-        // TOOLTIP
         function showTooltip(e) {
             const uid = this.dataset.uid; if(!uid)return;
             const jog = titulares.find(j=>j.uid===uid) || reservas.find(j=>j.uid===uid) || indisponiveis.find(j=>j.uid===uid);
@@ -723,7 +668,6 @@
             else j.atributos={VEL:b, FIN:b-2, PAS:b, DRI:b, DEF:b-5, FIS:b};
         }
 
-        // UTIL
         function adicionarLog(h, t, cl) { const f=document.getElementById('feed'); f.insertAdjacentHTML('afterbegin', `<div class="feed-item ${cl}"><div class="feed-time">${tempo}'</div><div><b>${h}</b> ${t}</div></div>`); }
         function calcularMedia(arr) { if(!arr.length) return 60; return arr.reduce((a,b)=>a+(b.forca||60),0)/arr.length; }
         function atualizarStats() { 
