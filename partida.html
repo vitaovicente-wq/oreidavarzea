@@ -224,7 +224,7 @@
     <div id="goal-overlay"><div class="goal-text">GOL!</div><div class="goal-scorer" id="goal-scorer-name">Jogador</div></div>
 
     <script>
-        // --- VARIÁVEIS GLOBAIS ---
+        // VARIAVEIS GLOBAIS
         let gameState, homeTeam, awayTeam;
         let titulares = [], reservas = [], indisponiveis = [];
         let awayTitulares = []; 
@@ -237,7 +237,7 @@
         let subPending = { sai: null, entra: null };
         let gameEvents = [];
 
-        // --- DEFINIÇÕES DE TÁTICAS E LAYOUTS ---
+        // TÁTICAS
         const TATICAS = {
             "4-3-3": { def: 1.0, mid: 1.0, att: 1.2, nome: "Ofensiva" },
             "4-4-2": { def: 1.1, mid: 1.1, att: 1.0, nome: "Linhas de 4" },
@@ -254,7 +254,7 @@
             "3-4-3": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"40%",l:"45%"},{t:"60%",l:"45%"},{t:"85%",l:"45%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}]
         };
 
-        // --- INICIALIZAÇÃO SEGURA ---
+        // INICIALIZAÇÃO
         window.onload = function() {
             try {
                 if (typeof Engine === 'undefined') throw new Error("Erro: Engine não carregada.");
@@ -279,11 +279,9 @@
             const opNome = localStorage.getItem('brfutebol_oponente_atual') || "Visitante";
             awayTeam = encontrarTime(opNome);
             
-            // Garantia de elenco
             if(!awayTeam.elenco || awayTeam.elenco.length===0) awayTeam.elenco = gerarGenericos(awayTeam.nome);
             if (!homeTeam.elenco || homeTeam.elenco.length === 0) homeTeam.elenco = gerarGenericos(homeTeam.nome);
 
-            // Prepara MEU Time
             homeTeam.elenco.forEach((j, i) => { 
                 if(!j.uid) j.uid = `p_${i}`; 
                 if(!j.atributos) gerarAtributos(j);
@@ -299,7 +297,6 @@
             const rForm = rivalForms[Math.floor(Math.random() * rivalForms.length)];
             document.getElementById('away-form-tag').innerText = rForm;
 
-            // Prepara Adversário (Carga Inicial)
             awayTeam.elenco.forEach((j,i) => { 
                 j.uid = `cpu_${i}`; 
                 if(gameState.jogadoresStatus && gameState.jogadoresStatus[j.uid]) {
@@ -309,25 +306,10 @@
                 }
                 if(!j.atributos) gerarAtributos(j); 
             });
-
-            // Lógica de Escalação da CPU (Poupando cansados)
-            let aptos = awayTeam.elenco.filter(p => p.saude >= 50); // Só quem aguenta jogar
-            let cansados = awayTeam.elenco.filter(p => p.saude < 50);
             
-            // Ordena os aptos por posição e força
-            const ordem = {'GOL':0, 'ZAG':1, 'LD':2, 'LE':3, 'VOL':4, 'MEI':5, 'ATA':6};
-            aptos.sort((a,b) => (ordem[a.pos]||9) - (ordem[b.pos]||9) || b.forca - a.forca);
-            
-            // Seleciona os 11 titulares
-            if (aptos.length >= 11) {
-                awayTitulares = aptos.slice(0, 11);
-            } else {
-                // Se faltar gente, completa com os menos cansados
-                awayTitulares = aptos.concat(cansados.slice(0, 11 - aptos.length));
-            }
-            
-            // Reordena para garantir Goleiro no gol (índice 0)
-            awayTitulares.sort((a,b) => (ordem[a.pos]||9) - (ordem[b.pos]||9));
+            // Ordenação Adversário: Goleiro sempre no topo para ser o titular do gol
+            awayTitulares = awayTeam.elenco.slice(0,11);
+            ordenarPorPosicao(awayTitulares);
 
             renderizarSidebars();
 
@@ -338,6 +320,12 @@
 
             adicionarLog("", "Bola rolando! Estratégia definida.", "");
             iniciarRelogio();
+        }
+
+        // AUXILIAR: ORDENA GOL > DEF > MID > ATK
+        function ordenarPorPosicao(lista) {
+            const priority = { 'GOL':0, 'LD':1, 'ZAG':2, 'LE':3, 'VOL':4, 'MEI':5, 'ATA':6 };
+            return lista.sort((a,b) => (priority[a.pos]||9) - (priority[b.pos]||9));
         }
 
         // --- SISTEMA VISUAL (SIDEBARS & MINI-PLAYER) ---
@@ -507,6 +495,7 @@
         // --- EVENTOS (GOL, CARTÃO, LESÃO) ---
         function gol(isHome) {
             let timeJogadores = isHome ? titulares : awayTitulares;
+            // CORREÇÃO: Filtra goleiros para não fazerem gol
             let validos = timeJogadores.filter(j => j.pos !== 'GOL' && (!events[j.uid] || !events[j.uid].cards.includes('🟥')));
             
             if (validos.length === 0) return;
@@ -603,59 +592,92 @@
         }
 
         function finalizarPartida() {
-            const statusJogadores = gameState.jogadoresStatus || {};
-            const todosJogadores = [...homeTeam.elenco, ...awayTeam.elenco]; // Todos os elencos dos dois times
-
-            // Set para saber quem jogou
-            const jogaramIDs = new Set([...titulares, ...indisponiveis, ...awayTitulares].map(j => j.uid));
-
-            todosJogadores.forEach(j => {
-                if(!j.uid) return;
+            try {
+                // 1. Atualização de Cansaço (Protegido)
+                const statusJogadores = gameState.jogadoresStatus || {};
                 
-                // Recupera saúde atual (ou 100 se for novo)
-                let saudeAtual = (statusJogadores[j.uid] && statusJogadores[j.uid].saude) ? statusJogadores[j.uid].saude : 100;
+                // Cria lista segura de jogadores (evita erro se elenco for nulo)
+                let todosJogadores = [];
+                if(homeTeam && homeTeam.elenco) todosJogadores = todosJogadores.concat(homeTeam.elenco);
+                if(awayTeam && awayTeam.elenco) todosJogadores = todosJogadores.concat(awayTeam.elenco);
 
-                if (jogaramIDs.has(j.uid)) {
-                    // Quem jogou cansa
-                    saudeAtual = Math.max(0, saudeAtual - 8);
-                } else {
-                    // Quem descansou recupera
-                    saudeAtual = Math.min(100, saudeAtual + 15);
-                }
-                
-                // Salva
-                statusJogadores[j.uid] = { saude: saudeAtual };
-            });
-            
-            if(!gameState.classificacao) gameState.classificacao = []; 
-            if(gameState.classificacao.length === 0 && gameState.times) {
-                 gameState.classificacao = gameState.times.map(t => ({
-                    nome: t.nome, pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0
-                }));
-            }
-            
-            const rodadaIndex = gameState.rodadaAtual - 1;
-            if(gameState.calendario && gameState.calendario[rodadaIndex]) {
-                const jogos = gameState.calendario[rodadaIndex].jogos;
-                const meuJogo = jogos.find(j => j.mandante === homeTeam.nome || j.visitante === homeTeam.nome);
-                if(meuJogo) {
-                    meuJogo.jogado = true;
-                    meuJogo.eventos = gameEvents;
-                    if(meuJogo.mandante === homeTeam.nome) {
-                        meuJogo.placarCasa = placar.home; meuJogo.placarFora = placar.away;
+                // Identifica quem jogou
+                const jogaramIDs = new Set();
+                [...titulares, ...indisponiveis, ...awayTitulares].forEach(j => {
+                    if(j && j.uid) jogaramIDs.add(j.uid);
+                });
+
+                todosJogadores.forEach(j => {
+                    if(!j || !j.uid) return;
+                    
+                    let saudeAtual = (statusJogadores[j.uid] && statusJogadores[j.uid].saude !== undefined) ? statusJogadores[j.uid].saude : 100;
+
+                    if (jogaramIDs.has(j.uid)) {
+                        saudeAtual = Math.max(0, saudeAtual - 8); // Cansaço de jogo
                     } else {
-                        meuJogo.placarCasa = placar.away; meuJogo.placarFora = placar.home;
+                        saudeAtual = Math.min(100, saudeAtual + 15); // Recuperação de banco
                     }
-                }
-                jogos.forEach(j => { if(!j.jogado) Engine.simularJogoCPU(j); });
-            }
+                    
+                    statusJogadores[j.uid] = { saude: saudeAtual };
+                });
+                
+                gameState.jogadoresStatus = statusJogadores;
 
-            Engine.atualizarTabela(gameState);
-            gameState.jogadoresStatus = statusJogadores;
-            gameState.rodadaAtual++;
-            Engine.salvarJogo(gameState);
-            localStorage.removeItem('brfutebol_oponente_atual');
-            window.location.href = 'dashboard.html';
+                // 2. Garante Tabela
+                if(!gameState.classificacao) gameState.classificacao = []; 
+                if(gameState.classificacao.length === 0 && gameState.times) {
+                     gameState.classificacao = gameState.times.map(t => ({
+                        nome: t.nome, pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0
+                    }));
+                }
+                
+                // 3. Salva Resultado e Simula Rodada
+                const rodadaIndex = gameState.rodadaAtual - 1;
+                if(gameState.calendario && gameState.calendario[rodadaIndex]) {
+                    const jogos = gameState.calendario[rodadaIndex].jogos;
+                    const meuJogo = jogos.find(j => j.mandante === homeTeam.nome || j.visitante === homeTeam.nome);
+                    
+                    if(meuJogo) {
+                        meuJogo.jogado = true;
+                        meuJogo.eventos = gameEvents; // Salva histórico
+                        
+                        if(meuJogo.mandante === homeTeam.nome) {
+                            meuJogo.placarCasa = placar.home; meuJogo.placarFora = placar.away;
+                        } else {
+                            meuJogo.placarCasa = placar.away; meuJogo.placarFora = placar.home;
+                        }
+                    }
+                    
+                    // Simula CPU
+                    jogos.forEach(j => { 
+                        if(!j.jogado && Engine && Engine.simularJogoCPU) {
+                            Engine.simularJogoCPU(j);
+                        }
+                    });
+                }
+
+                // 4. Finaliza
+                Engine.atualizarTabela(gameState);
+                gameState.rodadaAtual++;
+                Engine.salvarJogo(gameState);
+                localStorage.removeItem('brfutebol_oponente_atual');
+                
+                console.log("Jogo salvo! Redirecionando...");
+                window.location.href = 'dashboard.html';
+
+            } catch (err) {
+                // SE DEU ERRO, SALVA O BÁSICO E SAI MESMO ASSIM
+                alert("Erro ao processar dados finais: " + err.message + "\nTentando voltar ao menu...");
+                console.error(err);
+                
+                // Tenta salvar pelo menos o avanço de rodada para não travar
+                try {
+                    gameState.rodadaAtual++;
+                    Engine.salvarJogo(gameState);
+                } catch(e) {}
+                
+                window.location.href = 'dashboard.html';
+            }
         }
 
         // --- HELPERS E MODAL ---
@@ -704,6 +726,7 @@
             else j.atributos={VEL:b, FIN:b-5, PAS:b+5, DRI:b, DEF:b, FIS:b};
         }
         
+        // CORREÇÃO: Função para organizar elenco garantindo Goleiro na posição certa
         function organizarElenco(time) {
             const savedForm = localStorage.getItem('brfutebol_formacao');
             titulares = []; reservas = []; indisponiveis = [];
