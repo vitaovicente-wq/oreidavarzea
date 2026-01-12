@@ -12,7 +12,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
-        /* (MANTIVE O MESMO CSS PERFEITO DE ANTES) */
         :root { --bg-dark: #0f1216; --bg-panel: rgba(20, 25, 30, 0.98); --accent: #00ff88; --text-main: #ffffff; --text-dim: #8b9bb4; --gold: #f1c40f; --red: #ff4757; --blue: #3498db; --pos-ok: #2ecc71; --pos-med: #f1c40f; --pos-bad: #e74c3c; }
         * { box-sizing: border-box; user-select: none; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); background-image: radial-gradient(circle at 50% 50%, #1a202c 0%, #0f1216 100%); color: var(--text-main); margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
@@ -199,7 +198,14 @@
         </div>
     </div>
 
-    <div id="fifa-tooltip"><div class="fifa-header"><div class="fifa-ovr" id="tip-ovr">00</div><div class="fifa-info"><div class="fifa-name" id="tip-name">NOME</div><div class="fifa-pos" id="tip-pos">POS</div></div></div><div class="fifa-grid" id="tip-grid"></div></div>
+    <div id="fifa-tooltip">
+        <div class="fifa-header">
+            <div class="fifa-ovr" id="tip-ovr">00</div>
+            <div class="fifa-info"><div class="fifa-name" id="tip-name">NOME</div><div class="fifa-pos" id="tip-pos">POS</div></div>
+        </div>
+        <div class="fifa-grid" id="tip-grid"></div>
+    </div>
+
     <div id="goal-overlay"><div class="goal-text">GOL!</div><div class="goal-scorer" id="goal-scorer-name">Jogador</div></div>
 
     <script>
@@ -208,17 +214,72 @@
         let titulares=[], reservas=[], indisponiveis=[], awayTitulares=[], events={}, formacaoAtual="4-3-3", placar={home:0,away:0}, stats={homeSho:0,awaySho:0,homePos:50}, speed=200, subPending={sai:null,entra:null}, gameEvents=[];
         let matchInterval=null, tempo=0, etapa=1;
 
-        // BANCO DE NARRAÇÃO CONTEXTUAL
+        // --- BANCO DE NARRAÇÃO GIGANTE (80+ Frases) ---
         const NARRATION_DB = {
-            inicio: [ "Apita o árbitro! Começa o jogo!", "Bola rolando! A torcida faz barulho.", "As equipes se estudam no começo.", "O time da casa tenta impor pressão.", "Troca de passes no campo de defesa." ],
-            meio: [ "O jogo fica mais pegado no meio-campo.", "Busca o espaço na lateral!", "Cruzamento cortado pela zaga.", "Tentativa de lançamento... interceptado!", "O técnico pede para adiantar a marcação.", "Jogo equilibrado por enquanto.", "Bela triangulação no ataque.", "A torcida canta sem parar!" ],
-            final: [ "O jogo se aproxima do fim.", "Pressão total nos minutos finais!", "O cansaço começa a bater nos jogadores.", "Vai para o abafa final!", "Segura a bola para gastar o tempo." ],
-            danger: [ "Chutou com muito perigo!", "O goleiro opera um milagre!", "Tira tinta da trave!", "Quase!", "Defesaça do goleiro!" ],
-            miss: [ "Chutou longe...", "Mandou na arquibancada.", "Isolou a bola!", "Pegou mal demais.", "Errou o alvo." ],
-            card: [ "Entrada dura! Amarelo.", "Falta tática. Cartão.", "Reclamação. Levou amarelo." ],
-            red: [ "VERMELHO DIRETO! Agressão!", "Segundo amarelo! Expulso!" ],
-            injury: [ "Caiu sentindo dores...", "Parece lesão muscular.", "Pede substituição." ],
-            goal: [ "GOOOOOOL! No ângulo!", "GOLAÇO!", "Empurrou pro fundo da rede!", "É caixa!", "Soltou a bomba! GOL!" ]
+            inicio: [
+                "Apita o árbitro! A bola está rolando!", "Começa o espetáculo! Saída de bola autorizada.",
+                "Primeiros movimentos da partida.", "As equipes se estudam neste início.",
+                "Troca de passes no campo de defesa.", "O time tenta manter a posse de bola.",
+                "Lançamento longo buscando o ataque... cortado!", "Começa quente o jogo! Disputa forte no meio.",
+                "O técnico já grita orientações na beira do campo.", "Bola em jogo! Vamos para 90 minutos de emoção."
+            ],
+            meio: [
+                "O jogo fica concentrado no meio-campo.", "Bela virada de jogo buscando a ponta.",
+                "Tentativa de tabela... interceptada pela zaga.", "O time roda a bola com paciência.",
+                "Marcação implacável, não deixa o adversário respirar.", "O jogo segue equilibrado.",
+                "Muitos erros de passe neste momento.", "Busca o espaço na entrada da área...",
+                "O público faz barulho nas arquibancadas!", "Toque de bola envolvente.",
+                "O zagueiro sai jogando com categoria.", "Tentou o drible e perdeu a bola.",
+                "O lateral apoia bem o ataque.", "Cruzamento na área... a zaga afasta!",
+                "Jogo truncado, muitas faltas no meio.", "O time adversário se fecha na defesa.",
+                "Belo domínio de bola no meio.", "Inverte o jogo para o outro lado.",
+                "Tentativa de chute de longe... bloqueado!", "O goleiro orienta a barreira.",
+                "Troca passes buscando uma brecha.", "O jogo ganha velocidade no contra-ataque!",
+                "Recua a bola para recomeçar a jogada.", "Disputa aérea ganha pela defesa."
+            ],
+            final: [
+                "Entramos na reta final da partida.", "O cansaço começa a bater nos jogadores.",
+                "Pressão total! É tudo ou nada!", "O time se lança todo ao ataque.",
+                "Segura a bola para gastar o tempo.", "Últimos minutos de tensão!",
+                "Vai para o abafa final!", "O técnico pede raça aos jogadores.",
+                "Bola na área... confusão!", "Tenta o último suspiro no ataque."
+            ],
+            danger: [
+                "QUE PERIGO! A bola tirou tinta da trave!", "O goleiro opera um MILAGRE!",
+                "Salva em cima da linha! Incrível!", "A bola explode no travessão!",
+                "Uuuuh! Passou raspando!", "Defesaça à queima-roupa!",
+                "Cabeçada perigosa, o goleiro voa para buscar!", "Quase o gol olímpico!",
+                "Chute venenoso de fora da área!", "Saiu cara a cara... e perdeu!",
+                "O goleiro espalma para escanteio!"
+            ],
+            miss: [
+                "Chutou muito longe do gol.", "Isolou! Mandou na arquibancada.",
+                "Pegou mal na bola.", "Tentou o chute colocado e errou o alvo.",
+                "Finalização fraca, fácil para o goleiro.", "Mandou a bola lá na bandeirinha de escanteio.",
+                "Chute torto, sem perigo."
+            ],
+            card: [
+                "Entrada dura! O juiz puxa o cartão amarelo.", "Falta tática para parar o ataque. Amarelo.",
+                "Carrinho perigoso. Cartão amarelo merecido.", "Reclamação acintosa. Levou amarelo.",
+                "Puxou a camisa. Amarelo para ele."
+            ],
+            red: [
+                "QUE ISSO! Vermelho direto! Agressão!", "Entrada criminosa! Foi pro chuveiro mais cedo.",
+                "Segundo cartão amarelo e VERMELHO! Está expulso!", "O juiz não teve dúvida: Rua!",
+                "Deixou o time com um a menos. Irresponsabilidade."
+            ],
+            injury: [
+                "Jogador caído no gramado... parece sério.", "Mão na coxa. Lesão muscular.",
+                "Os médicos entram em campo.", "Sai mancando. Não vai dar pra continuar.",
+                "Preocupação no banco de reservas."
+            ],
+            goal: [
+                "GOOOOOOOOOOOL! É caixa!", "GOLAÇO! No ângulo, indefensável!",
+                "Empurrou pro fundo da rede! Gol!", "Cabeçada fatal! GOOOOL!",
+                "Cobrança de falta perfeita! Golaço!", "Driblou o goleiro e marcou! Gol!",
+                "Soltou uma bomba! A rede balançou!", "Aproveitou o rebote! É Gol!",
+                "Contra-ataque mortal! Gol!", "Categoria pura na finalização! Gol!"
+            ]
         };
 
         const TATICAS = { "4-3-3":{def:1,mid:1,att:1.2}, "4-4-2":{def:1.1,mid:1.1,att:1}, "3-5-2":{def:0.9,mid:1.3,att:1}, "4-2-3-1":{def:1.15,mid:1,att:0.9}, "3-4-3":{def:0.8,mid:1,att:1.25} };
@@ -249,10 +310,7 @@
             homeTeam.elenco.forEach((j,i) => { if(!j.uid) j.uid=`p_${i}`; if(!j.atributos) gerarAtributos(j); });
             organizarElenco(homeTeam);
 
-            const rivalForms = Object.keys(layouts);
-            document.getElementById('away-form-tag').innerText = rivalForms[Math.floor(Math.random()*rivalForms.length)];
-
-            // PREPARA ADVERSARIO COM SAUDE
+            // PREPARA ADVERSARIO (ESCALAÇÃO CPU LÓGICA)
             awayTeam.elenco.forEach((j,i) => { 
                 j.uid = `cpu_${i}`; 
                 if(!j.atributos) gerarAtributos(j);
@@ -260,20 +318,27 @@
                 else j.saude = 100;
             });
 
-            // ESCALAÇÃO INTELIGENTE CPU (POUPAR CANSADOS)
-            let aptos = awayTeam.elenco.filter(p => p.saude >= 50);
-            let cansados = awayTeam.elenco.filter(p => p.saude < 50);
+            // 1. Separa Goleiros e Linha
+            let goleiros = awayTeam.elenco.filter(p => p.pos === 'GOL');
+            let linha = awayTeam.elenco.filter(p => p.pos !== 'GOL');
             
-            // Prioridade na ordenação: GOL > ZAG...
-            const priority = {'GOL':0, 'ZAG':1, 'LD':2, 'LE':2, 'VOL':3, 'MEI':4, 'ATA':5};
-            const sortFunc = (a,b) => (priority[a.pos]||9) - (priority[b.pos]||9) || b.forca - a.forca;
-            aptos.sort(sortFunc);
+            // 2. Ordena Linha por Força
+            linha.sort((a,b) => b.forca - a.forca);
             
-            if(aptos.length >= 11) awayTitulares = aptos.slice(0,11);
-            else awayTitulares = aptos.concat(cansados.slice(0, 11-aptos.length));
-            
-            // Reordena para visualização correta
-            awayTitulares.sort(sortFunc);
+            // 3. Seleciona Titulares (1 Goleiro + 10 Linha)
+            awayTitulares = [];
+            if(goleiros.length > 0) awayTitulares.push(goleiros[0]); else awayTitulares.push(linha[0]); // Fallback
+            for(let i=0; i<10; i++) { if(linha[i]) awayTitulares.push(linha[i]); }
+
+            // 4. Identifica Formação CPU Baseada nos Atacantes Escolhidos
+            let numAtacantes = awayTitulares.filter(p => p.pos === 'ATA').length;
+            let cpuForm = "4-4-2"; // Padrão
+            if(numAtacantes >= 3) cpuForm = "4-3-3";
+            else if(numAtacantes === 1) cpuForm = "4-5-1";
+            document.getElementById('away-form-tag').innerText = cpuForm;
+
+            // 5. Ordena Visualmente para a Lista (GOL > LAT > ZAG...)
+            awayTitulares = ordenarPorPosicao(awayTitulares);
 
             renderizarSidebars();
             document.getElementById('home-name').innerText = homeTeam.nome; document.getElementById('home-logo').src = homeTeam.escudo||"";
@@ -281,11 +346,20 @@
             iniciarRelogio();
         }
 
-        // NARRAÇÃO INTELIGENTE
+        // Função de Ordenação Visual Rigorosa
+        function ordenarPorPosicao(lista) {
+            const priority = {'GOL':0, 'LD':1, 'ZAG':2, 'LE':3, 'VOL':4, 'MEI':5, 'ATA':6};
+            return lista.sort((a,b) => (priority[a.pos]||9) - (priority[b.pos]||9));
+        }
+
+        // NARRAÇÃO INTELIGENTE COM SUJEITO
         function narrar(tipo, sujeito) {
+            // Se o jogo acabou, não narra lance normal
+            if (tipo === 'normal' && (tempo >= 45 && tempo <= 46 && etapa === 1) || (tempo >= 90)) return;
+
             let opcoes = NARRATION_DB[tipo];
             
-            // Se for narração "normal", escolhe baseada no tempo
+            // Lógica Temporal para 'normal'
             if (tipo === 'normal') {
                 if (tempo < 20) opcoes = NARRATION_DB.inicio;
                 else if (tempo > 75) opcoes = NARRATION_DB.final;
@@ -295,11 +369,23 @@
             if(!opcoes) opcoes = NARRATION_DB.meio;
             const frase = opcoes[Math.floor(Math.random() * opcoes.length)];
             
+            // Adiciona o nome do time se for relevante
+            let textoFinal = frase;
+            if(sujeito && tipo !== 'inicio' && tipo !== 'final') {
+                textoFinal = `<strong>${sujeito}:</strong> ${frase}`;
+            }
+
             let cl = "";
             if(tipo==='goal') cl="goal"; else if(tipo==='danger') cl="danger"; else if(tipo==='card') cl="card"; else if(tipo==='red') cl="red-card"; else if(tipo==='injury') cl="injury"; else if(tipo==='sub') cl="sub";
-            adicionarLog(sujeito||"", frase, cl);
+            adicionarLog("", textoFinal, cl); // Header vazio pq já pus no texto
         }
-        function adicionarLog(h, t, cl) { const f=document.getElementById('feed'); f.insertAdjacentHTML('afterbegin', `<div class="feed-item ${cl}"><div class="feed-time">${tempo}'</div><div><b>${h}</b> ${t}</div></div>`); }
+
+        function adicionarLog(h, t, cl) { 
+            const f = document.getElementById('feed'); 
+            // Se houver header, usa, senão só texto
+            let content = h ? `<b>${h}</b> ${t}` : t;
+            f.insertAdjacentHTML('afterbegin', `<div class="feed-item ${cl}"><div class="feed-time">${tempo}'</div><div>${content}</div></div>`); 
+        }
 
         // ENGINE LOOP
         function iniciarRelogio() { clearInterval(matchInterval); matchInterval = setInterval(loopJogo, speed); }
@@ -310,40 +396,46 @@
             tempo++;
             document.getElementById('timer-display').innerText = `${etapa}º ${tempo}'`;
 
-            if(Math.random() < 0.05) processarLance();
-            if(Math.random() < 0.04) narrar('normal', "");
+            // ALTA FREQUÊNCIA: 30% chance de narrar algo a cada minuto
+            if(Math.random() < 0.35) {
+                // Decide quem tem a bola para a narração
+                let donoBola = (Math.random()*100 < stats.homePos) ? homeTeam.nome : awayTeam.nome;
+                narrar('normal', donoBola);
+            }
 
+            if(Math.random() < 0.06) processarLance(); // 6% chance de lance real (chute/gol)
+
+            // Fim 1º Tempo (Trava em 45)
             if(tempo === 45 && etapa === 1) {
                 pausarJogo();
                 narrar('normal', "Fim do 1º tempo.");
                 setTimeout(() => abrirModalSub(true), 1000);
             }
-            if(tempo === 45 && etapa === 2) {
+            
+            // Fim de Jogo (Trava em 48 para simular acréscimo e para)
+            if(tempo === 49 && etapa === 2) {
                 pausarJogo();
                 document.getElementById('timer-display').innerText = "FIM";
-                narrar('normal', "Fim de jogo!");
+                adicionarLog("FIM", "Apita o árbitro! Fim de partida.", "card");
                 document.getElementById('btn-sub-menu').style.display = 'none';
                 document.getElementById('btn-finish-game').style.display = 'block';
             }
         }
 
         function processarLance() {
-            // Lógica Simplificada de Setores
             const sHome = calcularForca(titulares, formacaoAtual, true);
             const sAway = calcularForca(awayTitulares, document.getElementById('away-form-tag').innerText, false);
             
-            // Posse
             let posse = 50 + (sHome.mid - sAway.mid) + (Math.random()*20-10);
             posse = Math.max(20, Math.min(80, posse));
             stats.homePos = Math.round(posse);
             document.getElementById('stat-pos-h').innerText=stats.homePos+"%"; document.getElementById('bar-pos-h').style.width=stats.homePos+"%"; document.getElementById('stat-pos-a').innerText=(100-stats.homePos)+"%";
 
-            // Ataque
             if(Math.random()*100 < stats.homePos) tentaGol(homeTeam, awayTeam, true, sHome.att, sAway.def);
             else tentaGol(awayTeam, homeTeam, false, sAway.att, sHome.def);
 
-            if(Math.random()<0.01) aplicarCartao();
-            if(Math.random()<0.003) aplicarLesao();
+            if(Math.random()<0.015) aplicarCartao();
+            if(Math.random()<0.005) aplicarLesao();
         }
 
         function calcularForca(lista, tatica, isHome) {
@@ -362,11 +454,15 @@
 
         function tentaGol(atkTeam, defTeam, isHome, atkVal, defVal) {
             const ratio = atkVal / (defVal||1);
-            if(Math.random() < 0.06 * ratio) {
+            if(Math.random() < 0.08 * ratio) { // Chance de chute aumentada
                 if(isHome) stats.homeSho++; else stats.awaySho++;
                 atualizarStats();
-                if(Math.random() < 0.15 * ratio) gol(isHome);
-                else narrar('danger', atkTeam.nome);
+                
+                if(Math.random() < 0.18 * ratio) {
+                    gol(isHome);
+                } else {
+                    narrar(Math.random()>0.5 ? 'danger' : 'miss', atkTeam.nome);
+                }
             }
         }
 
@@ -384,10 +480,13 @@
             document.getElementById('score-home').innerText=placar.home; document.getElementById('score-away').innerText=placar.away;
             document.getElementById('goal-scorer-name').innerText=autor.nome;
             document.getElementById('goal-overlay').style.display='flex';
-            narrar('goal', autor.nome);
+            
+            // Narração Específica de Gol
+            adicionarLog("GOL!", `${autor.nome} balança a rede para o ${isHome?homeTeam.nome:awayTeam.nome}!`, "goal");
+            
             registrarEvento(autor.uid, 'goals');
             renderizarSidebars();
-            setTimeout(()=>{ document.getElementById('goal-overlay').style.display='none'; iniciarRelogio(); }, 2000);
+            setTimeout(()=>{ document.getElementById('goal-overlay').style.display='none'; iniciarRelogio(); }, 2500);
         }
 
         function aplicarCartao() {
@@ -403,7 +502,7 @@
             if(!events[jog.uid]) events[jog.uid]={goals:0,cards:''};
             if(card==='🟥') events[jog.uid].cards='🟥'; else events[jog.uid].cards+='🟨';
             
-            narrar(tipo, jog.nome);
+            narrar(tipo, jog.nome + ` (${isHome?homeTeam.nome:awayTeam.nome})`);
             gameEvents.push({min: tempo+(etapa===2?45:0), time: isHome?homeTeam.nome:awayTeam.nome, jogador: jog.nome, tipo: 'card', detalhe: card});
             renderizarSidebars();
         }
@@ -414,7 +513,7 @@
             let jog = lista[Math.floor(Math.random()*lista.length)];
             jog.saude = 15;
             narrar('injury', jog.nome);
-            if(isHome) { pausarJogo(); setTimeout(()=>{ if(confirm("Lesão! Substituir?")) abrirModalSub(); else iniciarRelogio(); }, 200); }
+            if(isHome) { pausarJogo(); setTimeout(()=>{ if(confirm(`${jog.nome} sentiu! Substituir?`)) abrirModalSub(); else iniciarRelogio(); }, 200); }
             renderizarSidebars();
         }
 
@@ -467,7 +566,7 @@
         
         function abrirModalSub(isHalf=false) {
             pausarJogo(); document.getElementById('sub-modal').style.display='flex';
-            if(isHalf) { document.getElementById('sub-msg').innerText="Intervalo"; etapa=2; tempo=0; }
+            if(isHalf) { document.getElementById('sub-msg').innerText="Intervalo: Descanse ou mude o time."; etapa=2; tempo=0; }
             renderizarCampoSub(); renderizarListaReservas();
             subPending={sai:null,entra:null}; atualizarUIBotao();
         }
@@ -483,7 +582,6 @@
             for(let i=1;i<=11;i++) { let j=t.elenco.find(p=>p.uid===map[`slot-${i}`]); if(j){titulares.push(j);uids.add(j.uid);} }
             if(titulares.length<11) {
                 let disp=t.elenco.filter(p=>!uids.has(p.uid));
-                // ORDENAÇÃO FORÇADA: GOL PRIMEIRO
                 const prio={'GOL':0,'ZAG':1,'LD':2,'LE':2,'VOL':3,'MEI':4,'ATA':5};
                 disp.sort((a,b)=>(prio[a.pos]||9)-(prio[b.pos]||9));
                 for(let k=0;k<11-titulares.length;k++) if(disp[k]) titulares.push(disp[k]);
