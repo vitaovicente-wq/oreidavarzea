@@ -299,17 +299,6 @@
             "3-4-3": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"40%",l:"45%"},{t:"60%",l:"45%"},{t:"85%",l:"45%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}]
         };
 
-        // INICIALIZAÇÃO
-        window.onload = function() {
-            try {
-                if (typeof Engine === 'undefined') throw new Error("Erro: Engine não carregada.");
-                carregarDados();
-            } catch (err) {
-                alert("Erro ao iniciar partida: " + err.message);
-                console.error(err);
-            }
-        };
-
         function carregarDados() {
             gameState = Engine.carregarJogo();
             if(!gameState) { window.location.href='index.html'; return; }
@@ -343,7 +332,6 @@
             document.getElementById('away-form-tag').innerText = rForm;
 
             // Ordena o elenco ADVERSÁRIO antes de selecionar os titulares
-            // Prioridade: Posição (GOL, ZAG...) e depois Força
             const ordemPos = {'GOL':0, 'LD':1, 'ZAG':2, 'LE':3, 'VOL':4, 'MEI':5, 'ATA':6};
             awayTeam.elenco.sort((a,b) => (ordemPos[a.pos]||9) - (ordemPos[b.pos]||9) || b.forca - a.forca);
 
@@ -357,10 +345,8 @@
                 if(!j.atributos) gerarAtributos(j); 
             });
             
-            // Pega os 11 primeiros (já ordenados)
+            // Pega os 11 primeiros e reordena
             awayTitulares = awayTeam.elenco.slice(0, 11);
-            
-            // Reordena para garantir visualização correta na lista (Goleiro em cima)
             ordenarPorPosicao(awayTitulares);
 
             renderizarSidebars();
@@ -379,12 +365,10 @@
             return lista.sort((a,b) => (priority[a.pos]||9) - (priority[b.pos]||9));
         }
 
-        // --- SISTEMA DE NARRAÇÃO ALEATÓRIA ---
         function narrar(tipo, sujeito) {
             const opcoes = NARRATION_DB[tipo] || NARRATION_DB['normal'];
             const frase = opcoes[Math.floor(Math.random() * opcoes.length)];
             
-            // Define cor do log
             let classe = "";
             if(tipo === 'goal') classe = "goal";
             else if(tipo === 'danger') classe = "danger";
@@ -401,30 +385,22 @@
             f.insertAdjacentHTML('afterbegin', `<div class="feed-item ${cl}"><div class="feed-time">${tempo}'</div><div><b>${h}</b> ${t}</div></div>`); 
         }
 
-        // --- LOOP DE JOGO E INTERVALOS ---
         function iniciarRelogio() { clearInterval(matchInterval); matchInterval = setInterval(loopJogo, speed); }
         function pausarJogo() { clearInterval(matchInterval); }
 
         function loopJogo() {
-            // INCREMENTA TEMPO
             tempo++;
             document.getElementById('timer-display').innerText = `${etapa}º ${tempo}'`;
 
-            // EVENTOS DE JOGO
-            if(Math.random() < 0.05) processarLance(); // 5% chance/min
-            
-            // EVENTOS DE NARRAÇÃO EXTRA (AMBIENTE)
+            if(Math.random() < 0.05) processarLance();
             if(Math.random() < 0.03) narrar('normal', ""); 
 
-            // INTERVALO (45')
             if(tempo >= 45 && etapa === 1) {
                 pausarJogo();
                 narrar('normal', "Fim do 1º tempo. Jogadores vão para o vestiário.");
-                // Abre modal AUTOMATICAMENTE após 1s
                 setTimeout(() => { abrirModalSub(true); }, 1000);
             }
             
-            // FIM DE JOGO (90')
             if(tempo >= 45 && etapa === 2) {
                 pausarJogo();
                 document.getElementById('timer-display').innerText = "FIM";
@@ -434,13 +410,11 @@
             }
         }
 
-        // --- MODAL E CONTROLE DE INTERVALO ---
         function abrirModalSub(isHalfTime = false) {
             pausarJogo();
             document.getElementById('sub-modal').style.display = 'flex';
             if(isHalfTime) {
                 document.getElementById('sub-msg').innerText = "Intervalo! Faça alterações ou volte para o 2º tempo.";
-                // Reseta variáveis para o 2º tempo aqui para garantir
                 etapa = 2; tempo = 0;
             } else {
                 document.getElementById('sub-msg').innerText = "Selecione quem sai e quem entra";
@@ -451,11 +425,9 @@
 
         function fecharModalSub() {
             document.getElementById('sub-modal').style.display = 'none';
-            // Se estava no intervalo, ao fechar já começa o 2º tempo
             iniciarRelogio();
         }
 
-        // --- LÓGICA DE SIMULAÇÃO ---
         function processarLance() {
             const sHome = calcularSetoresReais(titulares, formacaoAtual, true);
             const taticaCpu = document.getElementById('away-form-tag').innerText || "4-4-2";
@@ -519,7 +491,6 @@
             return s;
         }
 
-        // --- EVENTOS DE JOGO ---
         function gol(isHome) {
             let timeJogadores = isHome ? titulares : awayTitulares;
             let validos = timeJogadores.filter(j => j.pos !== 'GOL' && (!events[j.uid] || !events[j.uid].cards.includes('🟥')));
@@ -735,6 +706,75 @@
         function moveTooltip(e) { const t=document.getElementById('fifa-tooltip'); t.style.top=(e.clientY+15)+'px'; t.style.left=(e.clientX+15)+'px'; }
         function hideTooltip() { document.getElementById('fifa-tooltip').style.display='none'; }
         
+        function encontrarTime(nome) {
+            if (gameState && gameState.times) {
+                const timeNoSave = gameState.times.find(t => t.nome === nome);
+                if (timeNoSave) return JSON.parse(JSON.stringify(timeNoSave));
+            }
+            const db = window.database || window.Database;
+            if (db && db.brasil) {
+                 for(let s in db.brasil) {
+                    if (Array.isArray(db.brasil[s])) {
+                        const t = db.brasil[s].find(x => x.nome === nome);
+                        if(t) return JSON.parse(JSON.stringify(t)); 
+                    }
+                 }
+            }
+            return { nome: nome, escudo: "", elenco: [] };
+        }
+        function gerarGenericos(nome) { 
+            let l=[]; 
+            const posicoes = ['GOL','ZAG','ZAG','LD','LE','VOL','MEI','MEI','ATA','ATA','ATA', 'GOL', 'ZAG', 'MEI', 'ATA'];
+            for(let i=0;i<posicoes.length;i++) {
+                let j = {nome:`Jogador ${i+1}`, pos:posicoes[i], forca: Math.floor(Math.random()*20)+60};
+                gerarAtributos(j);
+                l.push(j);
+            }
+            return l; 
+        }
+        function gerarAtributos(j) {
+            const b = j.forca || 60;
+            if(j.pos==='GOL') j.atributos={VEL:b+2, FIN:b-15, PAS:b, DRI:b-15, DEF:b+5, FIS:b};
+            else if(j.pos==='ZAG') j.atributos={VEL:b-5, FIN:b-20, PAS:b-5, DRI:b-10, DEF:b+5, FIS:b+5};
+            else if(j.pos==='ATA') j.atributos={VEL:b+5, FIN:b+5, PAS:b-5, DRI:b+5, DEF:b-25, FIS:b};
+            else j.atributos={VEL:b, FIN:b-5, PAS:b+5, DRI:b, DEF:b, FIS:b};
+        }
+        function organizarElenco(time) {
+            const savedForm = localStorage.getItem('brfutebol_formacao');
+            titulares = []; reservas = []; indisponiveis = [];
+            let escaladosIds = [];
+            if(savedForm) {
+                try {
+                    const map = JSON.parse(savedForm);
+                    for(let i=1; i<=11; i++) {
+                        const uid = map[`slot-${i}`];
+                        const jog = time.elenco.find(j => j.uid === uid);
+                        if(jog) { titulares.push(jog); escaladosIds.push(jog.uid); }
+                    }
+                } catch(e){}
+            }
+            if(titulares.length < 11) {
+                const disp = time.elenco.filter(j => !escaladosIds.includes(j.uid));
+                const ordem = {'GOL':0, 'ZAG':1, 'LD':2, 'LE':3, 'VOL':4, 'MEI':5, 'ATA':6};
+                disp.sort((a,b)=> (ordem[a.pos]||9) - (ordem[b.pos]||9));
+                for(let k=0; k<(11-titulares.length); k++) {
+                    if(disp[k]) { titulares.push(disp[k]); escaladosIds.push(disp[k].uid); }
+                }
+            }
+            reservas = time.elenco.filter(j => !escaladosIds.includes(j.uid));
+        }
+
+        // --- INICIALIZAÇÃO FINAL ---
+        window.onload = function() {
+            try {
+                if (typeof Engine === 'undefined') throw new Error("Erro: Engine não carregada.");
+                carregarDados();
+            } catch (err) {
+                alert("Erro ao iniciar partida: " + err.message);
+                console.error(err);
+            }
+        };
+
         function setSpeed(m, btn) {
             document.querySelectorAll('.btn-speed').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
             speed = m===1?200 : m===2?80 : 10;
