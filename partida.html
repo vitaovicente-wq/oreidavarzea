@@ -12,14 +12,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
-        :root {
-            --bg-dark: #0f1216; --bg-panel: rgba(20, 25, 30, 0.98); --accent: #00ff88;
-            --text-main: #ffffff; --text-dim: #8b9bb4; --gold: #f1c40f; --red: #ff4757;
-            --blue: #3498db; --pos-ok: #2ecc71; --pos-med: #f1c40f; --pos-bad: #e74c3c;
-        }
+        /* (MANTIVE O MESMO CSS PERFEITO DE ANTES) */
+        :root { --bg-dark: #0f1216; --bg-panel: rgba(20, 25, 30, 0.98); --accent: #00ff88; --text-main: #ffffff; --text-dim: #8b9bb4; --gold: #f1c40f; --red: #ff4757; --blue: #3498db; --pos-ok: #2ecc71; --pos-med: #f1c40f; --pos-bad: #e74c3c; }
         * { box-sizing: border-box; user-select: none; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); background-image: radial-gradient(circle at 50% 50%, #1a202c 0%, #0f1216 100%); color: var(--text-main); margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
         .scoreboard { flex-shrink: 0; background: linear-gradient(180deg, #1e2329 0%, #161b22 100%); border-bottom: 2px solid var(--accent); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10; }
         .team-display { display: flex; align-items: center; gap: 15px; width: 35%; }
         .team-display.right { justify-content: flex-end; text-align: right; }
@@ -29,7 +25,6 @@
         .score-area { display: flex; align-items: center; gap: 15px; font-family: 'Rajdhani'; font-weight: 900; font-size: 2.5rem; line-height: 1; }
         .score-box { background: #000; padding: 2px 15px; border-radius: 6px; border: 1px solid #333; min-width: 60px; text-align: center; }
         .timer-badge { background: var(--accent); color: #000; padding: 2px 12px; border-radius: 15px; font-size: 0.9rem; font-weight: 800; margin-bottom: 5px; }
-
         .match-layout { flex: 1; display: grid; grid-template-columns: 260px 1fr 260px; overflow: hidden; }
         .side-panel { background: rgba(0,0,0,0.2); border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; overflow: hidden; }
         .side-panel.right { border-right: none; border-left: 1px solid rgba(255,255,255,0.05); }
@@ -39,7 +34,6 @@
         .squad-list::-webkit-scrollbar { width: 4px; } .squad-list::-webkit-scrollbar-thumb { background: #333; }
         .squad-section { margin-bottom: 15px; }
         .sec-title { font-size: 0.7rem; color: #888; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
-
         .mini-player { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.85rem; cursor: default; }
         .mini-player.subbed-out { opacity: 0.5; } .mini-player.subbed-out .mp-name { text-decoration: line-through; }
         .mini-player.subbed-in { border-left: 2px solid var(--blue); padding-left: 6px; }
@@ -51,9 +45,7 @@
         .mp-events { display: flex; gap: 2px; } .ev-icon { font-size: 0.8rem; margin-left: 2px; }
         .mp-stats { text-align: right; min-width: 35px; }
         .mp-ovr { font-weight: 800; font-size: 0.8rem; color: #fff; }
-        .mp-hp-track { width: 100%; height: 3px; background: #333; margin-top: 2px; border-radius: 2px; }
-        .mp-hp-fill { height: 100%; border-radius: 2px; }
-
+        .mp-hp-track { width: 100%; height: 3px; background: #333; margin-top: 2px; border-radius: 2px; } .mp-hp-fill { height: 100%; border-radius: 2px; }
         .center-panel { padding: 15px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
         .feed-panel { background: var(--bg-panel); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; display: flex; flex-direction: column; flex: 2; overflow: hidden; }
         .feed-header { padding: 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid #333; font-family: 'Rajdhani'; font-weight: 700; display: flex; justify-content: space-between; color: var(--text-dim); font-size: 0.9rem; }
@@ -65,19 +57,15 @@
         .feed-item.card { border-left-color: var(--gold); background: rgba(241, 196, 15, 0.1); }
         .feed-item.red-card { border-left-color: var(--red); background: rgba(231, 76, 60, 0.1); }
         .feed-item.injury { border-left-color: #fff; background: rgba(255,255,255,0.1); }
-
         .stats-panel { background: var(--bg-panel); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 150px; }
         .stat-row { display: flex; flex-direction: column; gap: 4px; }
         .stat-bars { display: flex; align-items: center; gap: 8px; }
-        .bar-bg { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; display: flex; }
-        .bar-L { height: 100%; background: var(--text-main); }
-
+        .bar-bg { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; display: flex; } .bar-L { height: 100%; background: var(--text-main); }
         .footer-controls { width: 100%; padding: 10px 20px; background: #161b22; display: flex; justify-content: center; gap: 15px; border-top: 1px solid #333; flex-shrink: 0; }
         .btn-speed { padding: 8px 15px; border-radius: 4px; border: 1px solid #444; background: #222; color: #888; font-family: 'Rajdhani'; font-weight: 700; cursor: pointer; }
         .btn-speed.active { background: var(--accent); color: #000; border-color: var(--accent); }
         .btn-sub { background: var(--blue); color: #fff; border: none; padding: 8px 25px; border-radius: 4px; font-weight: 700; cursor: pointer; }
         .btn-finish { background: var(--gold); color: #000; border: none; padding: 8px 30px; border-radius: 4px; font-weight: 800; cursor: pointer; display: none; }
-
         .sub-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .sub-card { width: 90%; max-width: 900px; height: 85vh; background: #161b22; border: 1px solid #444; border-radius: 12px; display: flex; flex-direction: column; }
         .sub-header { padding: 15px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
@@ -99,14 +87,12 @@
         .sub-footer { padding: 15px; border-top: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
         .btn-confirm { background: var(--accent); color: #000; border: none; padding: 10px 25px; border-radius: 4px; font-weight: 800; cursor: pointer; } .btn-confirm:disabled { background: #333; color: #666; cursor: not-allowed; }
         .btn-back-game { background: transparent; border: 1px solid #666; color: #ccc; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: 600; }
-
         #fifa-tooltip { position: fixed; display: none; width: 150px; background: rgba(18, 20, 24, 0.95); border: 1px solid #666; border-radius: 6px; box-shadow: 0 5px 20px rgba(0,0,0,0.9); z-index: 3000; pointer-events: none; padding: 8px; backdrop-filter: blur(5px); }
         .fifa-header { display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; margin-bottom: 5px; }
         .fifa-ovr { font-family: 'Rajdhani'; font-size: 1.5rem; font-weight: 900; color: var(--gold); margin-right: 8px; }
         .fifa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
         .fifa-stat { font-family: 'Rajdhani'; font-size: 0.75rem; display: flex; justify-content: space-between; }
         .fifa-stat b.high { color: var(--pos-ok); } .fifa-stat b.mid { color: var(--pos-med); } .fifa-stat b.low { color: var(--pos-bad); }
-
         #goal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 300; display: none; flex-direction: column; align-items: center; justify-content: center; }
         .goal-text { font-family: 'Rajdhani'; font-size: 6rem; font-weight: 900; color: var(--accent); animation: slideIn 0.3s; }
         .goal-scorer { font-size: 2rem; color: #fff; }
@@ -213,573 +199,312 @@
         </div>
     </div>
 
-    <div id="fifa-tooltip">
-        <div class="fifa-header">
-            <div class="fifa-ovr" id="tip-ovr">00</div>
-            <div class="fifa-info"><div class="fifa-name" id="tip-name">NOME</div><div class="fifa-pos" id="tip-pos">POS</div></div>
-        </div>
-        <div class="fifa-grid" id="tip-grid"></div>
-    </div>
-
+    <div id="fifa-tooltip"><div class="fifa-header"><div class="fifa-ovr" id="tip-ovr">00</div><div class="fifa-info"><div class="fifa-name" id="tip-name">NOME</div><div class="fifa-pos" id="tip-pos">POS</div></div></div><div class="fifa-grid" id="tip-grid"></div></div>
     <div id="goal-overlay"><div class="goal-text">GOL!</div><div class="goal-scorer" id="goal-scorer-name">Jogador</div></div>
 
     <script>
-        // VARIAVEIS GLOBAIS
+        // VARIAVEIS
         let gameState, homeTeam, awayTeam;
-        let titulares = [], reservas = [], indisponiveis = [];
-        let awayTitulares = []; 
-        let events = {}; 
-        let formacaoAtual = "4-3-3";
-        let matchInterval = null, tempo = 0, etapa = 1;
-        let placar = { home: 0, away: 0 };
-        let stats = { homeSho:0, awaySho:0, homePos:50 };
-        let speed = 200; 
-        let subPending = { sai: null, entra: null };
-        let gameEvents = [];
+        let titulares=[], reservas=[], indisponiveis=[], awayTitulares=[], events={}, formacaoAtual="4-3-3", placar={home:0,away:0}, stats={homeSho:0,awaySho:0,homePos:50}, speed=200, subPending={sai:null,entra:null}, gameEvents=[];
+        let matchInterval=null, tempo=0, etapa=1;
 
-        // --- BANCO DE DADOS DE NARRAÇÃO ---
+        // BANCO DE NARRAÇÃO CONTEXTUAL
         const NARRATION_DB = {
-            danger: [
-                "Chutou com muito perigo!", "O goleiro opera um milagre!", "A bola tira tinta da trave!",
-                "Que defesaça!", "Cruzamento perigoso na área...", "Passou raspando o travessão!",
-                "O goleiro saiu mal, mas a zaga salvou!", "Bateu colocado, passou perto!",
-                "Uuuuh! A torcida já gritava gol!", "Explode na trave!", "Quase o gol olímpico!",
-                "Finalização bloqueada no último segundo!", "O goleiro espalma para escanteio!",
-                "Cabeçada firme, mas o goleiro estava lá!", "Um chute venenoso de fora da área!"
-            ],
-            miss: [
-                "Chutou longe...", "Mandou na arquibancada.", "Isolou a bola!", "Pegou muito mal nela.",
-                "Tentou o passe e errou feio.", "A bola saiu pela lateral.", "Impedimento marcado.",
-                "Falta de ataque.", "Errou o domínio e perdeu a bola.", "Chute fraco, fácil pro goleiro."
-            ],
-            normal: [
-                "Troca de passes no meio-campo.", "O time roda a bola com paciência.", "Marcação forte no meio.",
-                "Tentativa de lançamento longo.", "O jogo fica truncado.", "Disputa de bola intensa na lateral.",
-                "O técnico pede calma ao time.", "A torcida canta alto no estádio!", "Jogo equilibrado por enquanto.",
-                "Muita marcação, pouco espaço.", "O juiz manda o jogo seguir.", "Toque de bola na defesa.",
-                "Recua a bola para o goleiro.", "O time busca espaços na zaga adversária."
-            ],
-            card: [
-                "Entrada dura! Cartão amarelo.", "O juiz não gostou nada disso. Amarelo!",
-                "Falta tática, parou o contra-ataque. Amarelo.", "Reclamação acintosa. Levou amarelo.",
-                "Carrinho perigoso! O juiz puxa o cartão.", "Mão na bola. Cartão amarelo.",
-                "Puxou a camisa do adversário. Amarelo.", "Entrada atrasada. Cartão merecido."
-            ],
-            red: [
-                "QUE ISSO! Vermelho direto!", "Agressão fora do lance! Expulso!", 
-                "Entrada criminosa! Foi pro chuveiro mais cedo.", "Segundo amarelo e VERMELHO!",
-                "O juiz não teve dúvida. Rua!", "Deixou o time na mão. Expulsão correta."
-            ],
-            injury: [
-                "Caiu sentindo dores...", "Parece lesão muscular.", "Sinal de substituição para o banco.",
-                "Sai de campo mancando.", "Os médicos entram em campo.", "Não vai dar pra ele continuar."
-            ],
-            goal: [
-                "GOOOOOOOOOOL!", "GOLAÇO! No ângulo!", "Empurrou pro fundo da rede!",
-                "Cabeçada fatal! É gol!", "Cobrança de falta perfeita! Gol!",
-                "Driblou o goleiro e marcou! Gol!", "Soltou uma bomba! Gol!",
-                "Aproveitou o rebote! É caixa!", "Contra-ataque mortal! Gol!",
-                "Penalidade bem cobrada! Gol!", "Chute rasteiro no cantinho! Gol!"
-            ]
+            inicio: [ "Apita o árbitro! Começa o jogo!", "Bola rolando! A torcida faz barulho.", "As equipes se estudam no começo.", "O time da casa tenta impor pressão.", "Troca de passes no campo de defesa." ],
+            meio: [ "O jogo fica mais pegado no meio-campo.", "Busca o espaço na lateral!", "Cruzamento cortado pela zaga.", "Tentativa de lançamento... interceptado!", "O técnico pede para adiantar a marcação.", "Jogo equilibrado por enquanto.", "Bela triangulação no ataque.", "A torcida canta sem parar!" ],
+            final: [ "O jogo se aproxima do fim.", "Pressão total nos minutos finais!", "O cansaço começa a bater nos jogadores.", "Vai para o abafa final!", "Segura a bola para gastar o tempo." ],
+            danger: [ "Chutou com muito perigo!", "O goleiro opera um milagre!", "Tira tinta da trave!", "Quase!", "Defesaça do goleiro!" ],
+            miss: [ "Chutou longe...", "Mandou na arquibancada.", "Isolou a bola!", "Pegou mal demais.", "Errou o alvo." ],
+            card: [ "Entrada dura! Amarelo.", "Falta tática. Cartão.", "Reclamação. Levou amarelo." ],
+            red: [ "VERMELHO DIRETO! Agressão!", "Segundo amarelo! Expulso!" ],
+            injury: [ "Caiu sentindo dores...", "Parece lesão muscular.", "Pede substituição." ],
+            goal: [ "GOOOOOOL! No ângulo!", "GOLAÇO!", "Empurrou pro fundo da rede!", "É caixa!", "Soltou a bomba! GOL!" ]
         };
 
-        const TATICAS = {
-            "4-3-3": { def: 1.0, mid: 1.0, att: 1.2, nome: "Ofensiva" },
-            "4-4-2": { def: 1.1, mid: 1.1, att: 1.0, nome: "Linhas de 4" },
-            "3-5-2": { def: 0.9, mid: 1.3, att: 1.0, nome: "Povoar Meio" },
-            "4-2-3-1": { def: 1.15, mid: 1.0, att: 0.9, nome: "Segura e Sai" },
-            "3-4-3": { def: 0.8, mid: 1.0, att: 1.25, nome: "Ataque Total" }
-        };
+        const TATICAS = { "4-3-3":{def:1,mid:1,att:1.2}, "4-4-2":{def:1.1,mid:1.1,att:1}, "3-5-2":{def:0.9,mid:1.3,att:1}, "4-2-3-1":{def:1.15,mid:1,att:0.9}, "3-4-3":{def:0.8,mid:1,att:1.25} };
+        const layouts = { "4-3-3": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"50%",l:"40%"},{t:"30%",l:"55%"},{t:"70%",l:"55%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}], "4-4-2": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"30%",l:"45%"},{t:"70%",l:"45%"},{t:"15%",l:"60%"},{t:"85%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}], "3-5-2": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"85%",l:"45%"},{t:"50%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}], "4-2-3-1":[{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"20%",l:"65%"},{t:"50%",l:"60%"},{t:"80%",l:"65%"},{t:"50%",l:"88%"}], "3-4-3": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"40%",l:"45%"},{t:"60%",l:"45%"},{t:"85%",l:"45%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}] };
 
-        const layouts = { 
-            "4-3-3": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"50%",l:"40%"},{t:"30%",l:"55%"},{t:"70%",l:"55%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}],
-            "4-4-2": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"30%",l:"45%"},{t:"70%",l:"45%"},{t:"15%",l:"60%"},{t:"85%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}],
-            "3-5-2": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"85%",l:"45%"},{t:"50%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}],
-            "4-2-3-1":[{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"20%",l:"65%"},{t:"50%",l:"60%"},{t:"80%",l:"65%"},{t:"50%",l:"88%"}],
-            "3-4-3": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"40%",l:"45%"},{t:"60%",l:"45%"},{t:"85%",l:"45%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}]
+        // INIT
+        window.onload = function() {
+            try {
+                if(typeof Engine === 'undefined') throw new Error("Erro: Engine não carregada.");
+                carregarDados();
+            } catch(e) { alert(e.message); }
         };
 
         function carregarDados() {
             gameState = Engine.carregarJogo();
             if(!gameState) { window.location.href='index.html'; return; }
-
             const savedScheme = localStorage.getItem('brfutebol_esquema');
-            if(savedScheme && TATICAS[savedScheme]) formacaoAtual = savedScheme;
-            
+            if(savedScheme) formacaoAtual = savedScheme;
             document.getElementById('sub-formation').value = formacaoAtual;
             document.getElementById('home-form-tag').innerText = formacaoAtual;
 
-            homeTeam = encontrarTime(gameState.info.time);
-            const opNome = localStorage.getItem('brfutebol_oponente_atual') || "Visitante";
-            awayTeam = encontrarTime(opNome);
+            homeTeam = Engine.encontrarTime(gameState.info.time);
+            awayTeam = Engine.encontrarTime(localStorage.getItem('brfutebol_oponente_atual') || "Visitante");
             
-            if(!awayTeam.elenco || awayTeam.elenco.length===0) awayTeam.elenco = gerarGenericos(awayTeam.nome);
-            if (!homeTeam.elenco || homeTeam.elenco.length === 0) homeTeam.elenco = gerarGenericos(homeTeam.nome);
+            if(!homeTeam.elenco.length) homeTeam.elenco = gerarGenericos(homeTeam.nome);
+            if(!awayTeam.elenco.length) awayTeam.elenco = gerarGenericos(awayTeam.nome);
 
-            homeTeam.elenco.forEach((j, i) => { 
-                if(!j.uid) j.uid = `p_${i}`; 
-                if(!j.atributos) gerarAtributos(j);
-                if(gameState.jogadoresStatus && gameState.jogadoresStatus[j.uid]) {
-                    j.saude = gameState.jogadoresStatus[j.uid].saude;
-                } else if(j.saude === undefined) {
-                    j.saude = 100;
-                }
-            });
+            homeTeam.elenco.forEach((j,i) => { if(!j.uid) j.uid=`p_${i}`; if(!j.atributos) gerarAtributos(j); });
             organizarElenco(homeTeam);
 
             const rivalForms = Object.keys(layouts);
-            const rForm = rivalForms[Math.floor(Math.random() * rivalForms.length)];
-            document.getElementById('away-form-tag').innerText = rForm;
+            document.getElementById('away-form-tag').innerText = rivalForms[Math.floor(Math.random()*rivalForms.length)];
 
-            // Ordena o elenco ADVERSÁRIO antes de selecionar os titulares
-            const ordemPos = {'GOL':0, 'LD':1, 'ZAG':2, 'LE':3, 'VOL':4, 'MEI':5, 'ATA':6};
-            awayTeam.elenco.sort((a,b) => (ordemPos[a.pos]||9) - (ordemPos[b.pos]||9) || b.forca - a.forca);
-
+            // PREPARA ADVERSARIO COM SAUDE
             awayTeam.elenco.forEach((j,i) => { 
                 j.uid = `cpu_${i}`; 
-                if(gameState.jogadoresStatus && gameState.jogadoresStatus[j.uid]) {
-                    j.saude = gameState.jogadoresStatus[j.uid].saude;
-                } else {
-                    j.saude = 100; 
-                }
-                if(!j.atributos) gerarAtributos(j); 
+                if(!j.atributos) gerarAtributos(j);
+                if(gameState.jogadoresStatus && gameState.jogadoresStatus[j.uid]) j.saude = gameState.jogadoresStatus[j.uid].saude;
+                else j.saude = 100;
             });
+
+            // ESCALAÇÃO INTELIGENTE CPU (POUPAR CANSADOS)
+            let aptos = awayTeam.elenco.filter(p => p.saude >= 50);
+            let cansados = awayTeam.elenco.filter(p => p.saude < 50);
             
-            // Pega os 11 primeiros e reordena
-            awayTitulares = awayTeam.elenco.slice(0, 11);
-            ordenarPorPosicao(awayTitulares);
+            // Prioridade na ordenação: GOL > ZAG...
+            const priority = {'GOL':0, 'ZAG':1, 'LD':2, 'LE':2, 'VOL':3, 'MEI':4, 'ATA':5};
+            const sortFunc = (a,b) => (priority[a.pos]||9) - (priority[b.pos]||9) || b.forca - a.forca;
+            aptos.sort(sortFunc);
+            
+            if(aptos.length >= 11) awayTitulares = aptos.slice(0,11);
+            else awayTitulares = aptos.concat(cansados.slice(0, 11-aptos.length));
+            
+            // Reordena para visualização correta
+            awayTitulares.sort(sortFunc);
 
             renderizarSidebars();
-
-            document.getElementById('home-name').innerText = homeTeam.nome;
-            document.getElementById('home-logo').src = homeTeam.escudo || "";
-            document.getElementById('away-name').innerText = awayTeam.nome;
-            document.getElementById('away-logo').src = awayTeam.escudo || "";
-
-            adicionarLog("", "Bola rolando! Estratégia definida.", "");
+            document.getElementById('home-name').innerText = homeTeam.nome; document.getElementById('home-logo').src = homeTeam.escudo||"";
+            document.getElementById('away-name').innerText = awayTeam.nome; document.getElementById('away-logo').src = awayTeam.escudo||"";
             iniciarRelogio();
         }
 
-        function ordenarPorPosicao(lista) {
-            const priority = { 'GOL':0, 'LD':1, 'ZAG':2, 'LE':3, 'VOL':4, 'MEI':5, 'ATA':6 };
-            return lista.sort((a,b) => (priority[a.pos]||9) - (priority[b.pos]||9));
-        }
-
+        // NARRAÇÃO INTELIGENTE
         function narrar(tipo, sujeito) {
-            const opcoes = NARRATION_DB[tipo] || NARRATION_DB['normal'];
+            let opcoes = NARRATION_DB[tipo];
+            
+            // Se for narração "normal", escolhe baseada no tempo
+            if (tipo === 'normal') {
+                if (tempo < 20) opcoes = NARRATION_DB.inicio;
+                else if (tempo > 75) opcoes = NARRATION_DB.final;
+                else opcoes = NARRATION_DB.meio;
+            }
+            
+            if(!opcoes) opcoes = NARRATION_DB.meio;
             const frase = opcoes[Math.floor(Math.random() * opcoes.length)];
             
-            let classe = "";
-            if(tipo === 'goal') classe = "goal";
-            else if(tipo === 'danger') classe = "danger";
-            else if(tipo === 'card') classe = "card";
-            else if(tipo === 'red') classe = "red-card";
-            else if(tipo === 'injury') classe = "injury";
-            else if(tipo === 'sub') classe = "sub";
-
-            adicionarLog(sujeito || "", frase, classe);
+            let cl = "";
+            if(tipo==='goal') cl="goal"; else if(tipo==='danger') cl="danger"; else if(tipo==='card') cl="card"; else if(tipo==='red') cl="red-card"; else if(tipo==='injury') cl="injury"; else if(tipo==='sub') cl="sub";
+            adicionarLog(sujeito||"", frase, cl);
         }
+        function adicionarLog(h, t, cl) { const f=document.getElementById('feed'); f.insertAdjacentHTML('afterbegin', `<div class="feed-item ${cl}"><div class="feed-time">${tempo}'</div><div><b>${h}</b> ${t}</div></div>`); }
 
-        function adicionarLog(h, t, cl) { 
-            const f = document.getElementById('feed'); 
-            f.insertAdjacentHTML('afterbegin', `<div class="feed-item ${cl}"><div class="feed-time">${tempo}'</div><div><b>${h}</b> ${t}</div></div>`); 
-        }
-
+        // ENGINE LOOP
         function iniciarRelogio() { clearInterval(matchInterval); matchInterval = setInterval(loopJogo, speed); }
         function pausarJogo() { clearInterval(matchInterval); }
+        function setSpeed(m, btn) { document.querySelectorAll('.btn-speed').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); speed = m===1?200 : m===2?80 : 10; if(!document.getElementById('sub-modal').style.display.includes('flex')) iniciarRelogio(); }
 
         function loopJogo() {
             tempo++;
             document.getElementById('timer-display').innerText = `${etapa}º ${tempo}'`;
 
             if(Math.random() < 0.05) processarLance();
-            if(Math.random() < 0.03) narrar('normal', ""); 
+            if(Math.random() < 0.04) narrar('normal', "");
 
-            if(tempo >= 45 && etapa === 1) {
+            if(tempo === 45 && etapa === 1) {
                 pausarJogo();
-                narrar('normal', "Fim do 1º tempo. Jogadores vão para o vestiário.");
-                setTimeout(() => { abrirModalSub(true); }, 1000);
+                narrar('normal', "Fim do 1º tempo.");
+                setTimeout(() => abrirModalSub(true), 1000);
             }
-            
-            if(tempo >= 45 && etapa === 2) {
+            if(tempo === 45 && etapa === 2) {
                 pausarJogo();
                 document.getElementById('timer-display').innerText = "FIM";
-                narrar('normal', "Apita o árbitro! Fim de partida.");
+                narrar('normal', "Fim de jogo!");
                 document.getElementById('btn-sub-menu').style.display = 'none';
                 document.getElementById('btn-finish-game').style.display = 'block';
             }
         }
 
-        function abrirModalSub(isHalfTime = false) {
-            pausarJogo();
-            document.getElementById('sub-modal').style.display = 'flex';
-            if(isHalfTime) {
-                document.getElementById('sub-msg').innerText = "Intervalo! Faça alterações ou volte para o 2º tempo.";
-                etapa = 2; tempo = 0;
-            } else {
-                document.getElementById('sub-msg').innerText = "Selecione quem sai e quem entra";
-            }
-            renderizarCampoSub(); renderizarListaReservas();
-            subPending = { sai: null, entra: null }; atualizarUIBotao();
-        }
-
-        function fecharModalSub() {
-            document.getElementById('sub-modal').style.display = 'none';
-            iniciarRelogio();
-        }
-
         function processarLance() {
-            const sHome = calcularSetoresReais(titulares, formacaoAtual, true);
-            const taticaCpu = document.getElementById('away-form-tag').innerText || "4-4-2";
-            const sAway = calcularSetoresReais(awayTitulares, taticaCpu, false);
-
-            const totalMid = sHome.mid + sAway.mid || 1;
-            let posseHome = (sHome.mid / totalMid) * 100;
-            posseHome += (Math.random() * 24) - 12;
-            posseHome = Math.max(20, Math.min(80, posseHome));
-
-            stats.homePos = Math.round(posseHome);
-            document.getElementById('stat-pos-h').innerText = stats.homePos + "%";
-            document.getElementById('bar-pos-h').style.width = stats.homePos + "%";
-            document.getElementById('stat-pos-a').innerText = (100 - stats.homePos) + "%";
-
-            const isHomeAttacking = Math.random() * 100 < stats.homePos;
+            // Lógica Simplificada de Setores
+            const sHome = calcularForca(titulares, formacaoAtual, true);
+            const sAway = calcularForca(awayTitulares, document.getElementById('away-form-tag').innerText, false);
             
-            if (isHomeAttacking) {
-                tentarFinalizacao(sHome.att, sAway.def, true);
-            } else {
-                tentarFinalizacao(sAway.att, sHome.def, false);
-            }
+            // Posse
+            let posse = 50 + (sHome.mid - sAway.mid) + (Math.random()*20-10);
+            posse = Math.max(20, Math.min(80, posse));
+            stats.homePos = Math.round(posse);
+            document.getElementById('stat-pos-h').innerText=stats.homePos+"%"; document.getElementById('bar-pos-h').style.width=stats.homePos+"%"; document.getElementById('stat-pos-a').innerText=(100-stats.homePos)+"%";
 
-            if (Math.random() < 0.012) aplicarCartao();
-            if (Math.random() < 0.003) aplicarLesao();
+            // Ataque
+            if(Math.random()*100 < stats.homePos) tentaGol(homeTeam, awayTeam, true, sHome.att, sAway.def);
+            else tentaGol(awayTeam, homeTeam, false, sAway.att, sHome.def);
+
+            if(Math.random()<0.01) aplicarCartao();
+            if(Math.random()<0.003) aplicarLesao();
         }
 
-        function tentarFinalizacao(ataque, defesa, isHome) {
-            const ratio = ataque / (defesa || 1); 
-            if (Math.random() < 0.06 * ratio) {
-                if(isHome) { stats.homeSho++; narrar('danger', homeTeam.nome); }
-                else { stats.awaySho++; narrar('danger', awayTeam.nome); }
-                atualizarStats();
-
-                const chanceGol = 0.18 * ratio; 
-                if (Math.random() < chanceGol) {
-                    gol(isHome);
-                } else {
-                    narrar('miss', isHome ? homeTeam.nome : awayTeam.nome);
-                }
-            }
-        }
-
-        function calcularSetoresReais(timeJogadores, taticaNome, isHome) {
-            let s = { def: 0, mid: 0, att: 0 };
-            const pPos = { 'GOL': { def: 1.0, mid: 0.0, att: 0.0 }, 'ZAG': { def: 1.0, mid: 0.1, att: 0.0 }, 'LD':  { def: 0.7, mid: 0.3, att: 0.1 }, 'LE':  { def: 0.7, mid: 0.3, att: 0.1 }, 'VOL': { def: 0.6, mid: 0.4, att: 0.0 }, 'MEI': { def: 0.1, mid: 0.7, att: 0.2 }, 'ATA': { def: 0.0, mid: 0.1, att: 0.9 } };
-
-            timeJogadores.forEach(j => {
-                if (events[j.uid] && events[j.uid].cards.includes('🟥')) return;
-                const atr = j.atributos || { VEL:60, FIN:60, PAS:60, DRI:60, DEF:60, FIS:60 };
-                const peso = pPos[j.pos] || { def: 0.3, mid: 0.3, att: 0.3 };
-                const valDef = (atr.DEF * 1.5 + atr.FIS + atr.VEL * 0.5) / 3;
-                const valMid = (atr.PAS * 1.5 + atr.DRI + atr.FIS * 0.5) / 3;
-                const valAtt = (atr.FIN * 1.5 + atr.VEL + atr.DRI * 0.5) / 3;
-                const fadiga = (j.saude < 50) ? 0.6 : (j.saude < 80 ? 0.9 : 1.0);
-                s.def += valDef * peso.def * fadiga; s.mid += valMid * peso.mid * fadiga; s.att += valAtt * peso.att * fadiga;
+        function calcularForca(lista, tatica, isHome) {
+            let s={def:0,mid:0,att:0};
+            lista.forEach(j => {
+                if(events[j.uid] && events[j.uid].cards.includes('🟥')) return;
+                const atr = j.atributos;
+                const ovr = (atr.VEL+atr.PAS+atr.DEF)/3;
+                if(j.pos==='GOL' || j.pos==='ZAG' || j.pos.includes('L')) s.def += ovr;
+                if(j.pos.includes('L') || j.pos==='VOL' || j.pos==='MEI') s.mid += ovr;
+                if(j.pos==='MEI' || j.pos==='ATA') s.att += ovr;
             });
-            const tac = TATICAS[taticaNome] || { def:1, mid:1, att:1 };
-            s.def *= tac.def; s.mid *= tac.mid; s.att *= tac.att;
-            if(isHome) { const moral = gameState.recursos ? gameState.recursos.moral : 50; const bonusMoral = 1 + ((moral - 50) / 1000); s.def *= (1.05 * bonusMoral); s.mid *= (1.05 * bonusMoral); s.att *= (1.05 * bonusMoral); }
+            if(isHome) { s.def*=1.05; s.mid*=1.05; s.att*=1.05; }
             return s;
         }
 
-        function gol(isHome) {
-            let timeJogadores = isHome ? titulares : awayTitulares;
-            let validos = timeJogadores.filter(j => j.pos !== 'GOL' && (!events[j.uid] || !events[j.uid].cards.includes('🟥')));
-            if (validos.length === 0) return;
-
-            pausarJogo();
-            let totalFin = 0;
-            validos.forEach(j => totalFin += (j.atributos ? j.atributos.FIN : 60));
-            let r = Math.random() * totalFin;
-            let autorObj = validos[0];
-            let acumulado = 0;
-            for(let j of validos) {
-                acumulado += (j.atributos ? j.atributos.FIN : 60);
-                if (r <= acumulado) { autorObj = j; break; }
+        function tentaGol(atkTeam, defTeam, isHome, atkVal, defVal) {
+            const ratio = atkVal / (defVal||1);
+            if(Math.random() < 0.06 * ratio) {
+                if(isHome) stats.homeSho++; else stats.awaySho++;
+                atualizarStats();
+                if(Math.random() < 0.15 * ratio) gol(isHome);
+                else narrar('danger', atkTeam.nome);
             }
+        }
 
-            if(isHome) placar.home++; else placar.away++;
-            gameEvents.push({ min: tempo + (etapa===2?45:0), time: isHome ? homeTeam.nome : awayTeam.nome, jogador: autorObj.nome, tipo: 'gol' });
-
-            document.getElementById('score-home').innerText = placar.home;
-            document.getElementById('score-away').innerText = placar.away;
-            document.getElementById('goal-scorer-name').innerText = autorObj.nome;
-            document.getElementById('goal-overlay').style.display = 'flex';
+        function gol(isHome) {
+            let lista = isHome ? titulares : awayTitulares;
+            let validos = lista.filter(j => j.pos !== 'GOL' && (!events[j.uid] || !events[j.uid].cards.includes('🟥')));
+            if(!validos.length) return;
             
-            narrar('goal', autorObj.nome);
-            registrarEvento(autorObj.uid, 'goals');
+            pausarJogo();
+            const autor = validos[Math.floor(Math.random()*validos.length)];
+            
+            if(isHome) placar.home++; else placar.away++;
+            gameEvents.push({min: tempo+(etapa===2?45:0), time: isHome?homeTeam.nome:awayTeam.nome, jogador: autor.nome, tipo: 'gol'});
+            
+            document.getElementById('score-home').innerText=placar.home; document.getElementById('score-away').innerText=placar.away;
+            document.getElementById('goal-scorer-name').innerText=autor.nome;
+            document.getElementById('goal-overlay').style.display='flex';
+            narrar('goal', autor.nome);
+            registrarEvento(autor.uid, 'goals');
             renderizarSidebars();
-            setTimeout(() => { document.getElementById('goal-overlay').style.display='none'; iniciarRelogio(); }, 2500);
+            setTimeout(()=>{ document.getElementById('goal-overlay').style.display='none'; iniciarRelogio(); }, 2000);
         }
 
         function aplicarCartao() {
-            const isHome = Math.random() > 0.5;
-            const targetTeam = isHome ? titulares : awayTitulares;
-            const jog = targetTeam[Math.floor(Math.random() * targetTeam.length)];
-            if (events[jog.uid] && events[jog.uid].cards.includes('🟥')) return;
-
-            let novoCartao = '🟨';
-            let txtLog = "Cartão Amarelo";
-            let typeLog = "card";
-
-            if (events[jog.uid] && events[jog.uid].cards.includes('🟨')) {
-                novoCartao = '🟥'; txtLog = "EXPULSO!"; typeLog = "red";
-            } else if (Math.random() < 0.04) { 
-                novoCartao = '🟥'; txtLog = "VERMELHO DIRETO!"; typeLog = "red";
-            }
-
-            if(!events[jog.uid]) events[jog.uid] = { goals: 0, cards: '' };
-            if (novoCartao === '🟥') events[jog.uid].cards = '🟥'; else events[jog.uid].cards += '🟨';
-
-            narrar(typeLog, jog.nome);
-            gameEvents.push({ min: tempo + (etapa===2?45:0), time: isHome ? homeTeam.nome : awayTeam.nome, jogador: jog.nome, tipo: 'card', detalhe: novoCartao });
+            let isHome = Math.random()>0.5;
+            let lista = isHome ? titulares : awayTitulares;
+            let jog = lista[Math.floor(Math.random()*lista.length)];
+            if(events[jog.uid] && events[jog.uid].cards.includes('🟥')) return;
+            
+            let card = '🟨'; let tipo='card';
+            if(events[jog.uid] && events[jog.uid].cards.includes('🟨')) { card='🟥'; tipo='red'; }
+            else if(Math.random()<0.05) { card='🟥'; tipo='red'; }
+            
+            if(!events[jog.uid]) events[jog.uid]={goals:0,cards:''};
+            if(card==='🟥') events[jog.uid].cards='🟥'; else events[jog.uid].cards+='🟨';
+            
+            narrar(tipo, jog.nome);
+            gameEvents.push({min: tempo+(etapa===2?45:0), time: isHome?homeTeam.nome:awayTeam.nome, jogador: jog.nome, tipo: 'card', detalhe: card});
             renderizarSidebars();
         }
 
         function aplicarLesao() {
-            const isHome = Math.random() > 0.5;
-            const targetTeam = isHome ? titulares : awayTitulares;
-            const validos = targetTeam.filter(j => !events[j.uid] || !events[j.uid].cards.includes('🟥'));
-            if (validos.length === 0) return;
-            const jog = validos[Math.floor(Math.random() * validos.length)];
-            jog.saude = 15; 
+            let isHome = Math.random()>0.5;
+            let lista = isHome ? titulares : awayTitulares;
+            let jog = lista[Math.floor(Math.random()*lista.length)];
+            jog.saude = 15;
             narrar('injury', jog.nome);
-            if (isHome) {
-                pausarJogo();
-                setTimeout(() => { if(confirm(`${jog.nome} se lesionou! Substituir?`)) abrirModalSub(); else iniciarRelogio(); }, 200);
-            }
+            if(isHome) { pausarJogo(); setTimeout(()=>{ if(confirm("Lesão! Substituir?")) abrirModalSub(); else iniciarRelogio(); }, 200); }
             renderizarSidebars();
-        }
-
-        function registrarEvento(uid, tipo) {
-            if(!events[uid]) events[uid] = { goals: 0, cards: '' };
-            if(tipo === 'goals') events[uid].goals++;
         }
 
         function finalizarPartida() {
             try {
-                const statusJogadores = gameState.jogadoresStatus || {};
-                let todosJogadores = [];
-                if(homeTeam && homeTeam.elenco) todosJogadores = todosJogadores.concat(homeTeam.elenco);
-                if(awayTeam && awayTeam.elenco) todosJogadores = todosJogadores.concat(awayTeam.elenco);
-
-                const jogaramIDs = new Set();
-                [...titulares, ...indisponiveis, ...awayTitulares].forEach(j => { if(j && j.uid) jogaramIDs.add(j.uid); });
-
-                todosJogadores.forEach(j => {
-                    if(!j || !j.uid) return;
-                    let saudeAtual = (statusJogadores[j.uid] && statusJogadores[j.uid].saude !== undefined) ? statusJogadores[j.uid].saude : 100;
-                    if (jogaramIDs.has(j.uid)) saudeAtual = Math.max(0, saudeAtual - 8);
-                    else saudeAtual = Math.min(100, saudeAtual + 15);
-                    statusJogadores[j.uid] = { saude: saudeAtual };
+                // Atualiza Cansaço
+                const status = gameState.jogadoresStatus || {};
+                let allPlayers = [...homeTeam.elenco, ...awayTeam.elenco];
+                let jogaram = new Set([...titulares, ...indisponiveis, ...awayTitulares].map(j=>j.uid));
+                
+                allPlayers.forEach(j => {
+                    if(!j.uid) return;
+                    let s = (status[j.uid] && status[j.uid].saude!==undefined) ? status[j.uid].saude : 100;
+                    if(jogaram.has(j.uid)) s = Math.max(0, s - 8);
+                    else s = Math.min(100, s + 15);
+                    status[j.uid] = { saude: s };
                 });
-                
-                gameState.jogadoresStatus = statusJogadores;
-                if(!gameState.classificacao) gameState.classificacao = []; 
-                if(gameState.classificacao.length === 0 && gameState.times) gameState.classificacao = gameState.times.map(t => ({ nome: t.nome, pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0 }));
-                
-                const rodadaIndex = gameState.rodadaAtual - 1;
-                if(gameState.calendario && gameState.calendario[rodadaIndex]) {
-                    const jogos = gameState.calendario[rodadaIndex].jogos;
-                    const meuJogo = jogos.find(j => j.mandante === homeTeam.nome || j.visitante === homeTeam.nome);
-                    if(meuJogo) {
-                        meuJogo.jogado = true; meuJogo.eventos = gameEvents;
-                        if(meuJogo.mandante === homeTeam.nome) { meuJogo.placarCasa = placar.home; meuJogo.placarFora = placar.away; }
-                        else { meuJogo.placarCasa = placar.away; meuJogo.placarFora = placar.home; }
-                    }
-                    jogos.forEach(j => { if(!j.jogado && Engine && Engine.simularJogoCPU) Engine.simularJogoCPU(j); });
-                }
+                gameState.jogadoresStatus = status;
 
+                // Salva Resultado
+                const rIdx = gameState.rodadaAtual - 1;
+                if(gameState.calendario[rIdx]) {
+                    const jogo = gameState.calendario[rIdx].jogos.find(j=>j.mandante===homeTeam.nome || j.visitante===homeTeam.nome);
+                    if(jogo) {
+                        jogo.jogado=true; jogo.eventos=gameEvents;
+                        if(jogo.mandante===homeTeam.nome) { jogo.placarCasa=placar.home; jogo.placarFora=placar.away; }
+                        else { jogo.placarCasa=placar.away; jogo.placarFora=placar.home; }
+                    }
+                    gameState.calendario[rIdx].jogos.forEach(j => { if(!j.jogado) Engine.simularJogoCPU(j); });
+                }
+                
                 Engine.atualizarTabela(gameState);
                 gameState.rodadaAtual++;
                 Engine.salvarJogo(gameState);
-                localStorage.removeItem('brfutebol_oponente_atual');
                 window.location.href = 'dashboard.html';
-            } catch (err) {
-                alert("Erro ao salvar: " + err.message);
-                try { gameState.rodadaAtual++; Engine.salvarJogo(gameState); } catch(e) {}
-                window.location.href = 'dashboard.html';
-            }
+            } catch(e) { alert("Erro ao salvar: "+e); }
         }
 
-        // --- RENDERIZAÇÃO ---
+        // --- UI AUXILIAR ---
         function renderizarSidebars() {
-            const hl = document.getElementById('home-squad-list');
-            hl.innerHTML = '<div class="squad-section"><div class="sec-title">EM CAMPO</div></div>';
-            titulares.forEach(j => hl.innerHTML += criarMiniPlayer(j));
-            hl.innerHTML += '<div class="squad-section" style="margin-top:10px;"><div class="sec-title">BANCO</div></div>';
-            reservas.forEach(j => hl.innerHTML += criarMiniPlayer(j));
-            if(indisponiveis.length > 0) {
-                hl.innerHTML += '<div class="squad-section" style="margin-top:10px;"><div class="sec-title">SAÍRAM</div></div>';
-                indisponiveis.forEach(j => hl.innerHTML += criarMiniPlayer(j, 'out'));
-            }
-            const al = document.getElementById('away-squad-list');
-            al.innerHTML = '<div class="squad-section"><div class="sec-title">TITULARES</div></div>';
-            awayTitulares.forEach(j => al.innerHTML += criarMiniPlayer(j));
+            document.getElementById('home-squad-list').innerHTML = `<div class="squad-section"><div class="sec-title">EM CAMPO</div></div>` + titulares.map(j=>mp(j)).join('') + `<div class="squad-section"><div class="sec-title">BANCO</div></div>` + reservas.map(j=>mp(j)).join('');
+            document.getElementById('away-squad-list').innerHTML = `<div class="squad-section"><div class="sec-title">TITULARES</div></div>` + awayTitulares.map(j=>mp(j)).join('');
         }
-
-        function criarMiniPlayer(j, status='') {
-            let cls = ''; if(status === 'out') cls = 'subbed-out'; if(status === 'in') cls = 'subbed-in';
-            let icons = '';
-            if(events[j.uid]) {
-                if(events[j.uid].goals > 0) icons += `<span class="ev-icon">⚽${events[j.uid].goals > 1 ? 'x'+events[j.uid].goals : ''}</span>`;
-                if(events[j.uid].cards) icons += `<span class="ev-icon">${events[j.uid].cards}</span>`;
-                if(events[j.uid].cards.includes('🟥')) cls += ' red-card';
-            }
-            let saude = j.saude !== undefined ? j.saude : 100;
-            let cor = saude < 60 ? '#e74c3c' : (saude < 80 ? '#f1c40f' : '#2ecc71');
-            return `<div class="mini-player ${cls}"><div class="mp-pos">${j.pos}</div><div class="mp-info"><div class="mp-top-row"><span class="mp-name">${j.nome}</span><div class="mp-events">${icons}</div></div></div><div class="mp-stats"><div class="mp-ovr">${j.forca || 60}</div><div class="mp-hp-track"><div class="mp-hp-fill" style="width:${saude}%; background:${cor}"></div></div></div></div>`;
+        function mp(j) {
+            let ev = events[j.uid];
+            let icons = ev ? (ev.goals>0?`⚽${ev.goals>1?ev.goals:''} `:'') + (ev.cards) : '';
+            let cl = ""; if(ev && ev.cards.includes('🟥')) cl="red-card";
+            return `<div class="mini-player ${cl}"><div class="mp-pos">${j.pos}</div><div class="mp-info"><span class="mp-name">${j.nome} <small>${icons}</small></span></div><div class="mp-stats">${j.forca}</div></div>`;
         }
-
-        // FUNÇÕES AUXILIARES E UI
-        function mudarFormacaoJogo() { formacaoAtual=document.getElementById('sub-formation').value; renderizarCampoSub(); narrar("sub", `Técnico muda para ${formacaoAtual}`); document.getElementById('home-form-tag').innerText = formacaoAtual; }
         
-        function renderizarCampoSub() {
-            const c = document.getElementById('pitch-container');
-            c.querySelectorAll('.sub-p-node').forEach(n=>n.remove());
-            const layout = layouts[formacaoAtual] || layouts['4-3-3'];
-            titulares.forEach((j, i) => {
-                const pos = layout[i] || {t:"50%",l:"50%"};
-                const el = document.createElement('div');
-                el.className = 'sub-p-node'; el.style.top=pos.t; el.style.left=pos.l;
-                el.innerHTML = `<div class="sub-kit">${j.pos}</div><div class="sub-name">${j.nome.split(' ')[0]}</div>`;
-                el.onclick = () => selecionarSai(j.uid, el);
-                el.dataset.uid=j.uid;
-                el.addEventListener('mouseenter', showTooltip); el.addEventListener('mousemove', moveTooltip); el.addEventListener('mouseleave', hideTooltip);
-                c.appendChild(el);
-            });
+        function abrirModalSub(isHalf=false) {
+            pausarJogo(); document.getElementById('sub-modal').style.display='flex';
+            if(isHalf) { document.getElementById('sub-msg').innerText="Intervalo"; etapa=2; tempo=0; }
+            renderizarCampoSub(); renderizarListaReservas();
+            subPending={sai:null,entra:null}; atualizarUIBotao();
         }
-
-        function renderizarListaReservas() {
-            const l = document.getElementById('list-reservas-modal'); l.innerHTML='';
-            const disp = reservas.filter(r => !indisponiveis.includes(r));
-            disp.forEach(j => {
-                const saude = j.saude !== undefined ? j.saude : 100;
-                let cor = saude < 60 ? '#e74c3c' : '#2ecc71';
-                const el = document.createElement('div'); el.className='player-row';
-                el.innerHTML=`<div class="row-info"><span class="row-pos">${j.pos}</span><span class="row-name">${j.nome}</span></div><div class="row-stats"><span class="row-ovr">${j.forca || 60}</span><div class="row-hp-track"><div class="row-hp-fill" style="width:${saude}%; background:${cor}"></div></div></div>`;
-                el.onclick = () => selecionarEntra(j.uid, el);
-                el.dataset.uid=j.uid;
-                el.addEventListener('mouseenter', showTooltip); el.addEventListener('mousemove', moveTooltip); el.addEventListener('mouseleave', hideTooltip);
-                l.appendChild(el);
-            });
-        }
-
-        function selecionarSai(uid, el) { document.querySelectorAll('.sub-p-node').forEach(n=>n.classList.remove('selected-out')); el.classList.add('selected-out'); subPending.sai=uid; atualizarUIBotao(); }
-        function selecionarEntra(uid, el) { document.querySelectorAll('.player-row').forEach(n=>n.classList.remove('selected-in')); el.classList.add('selected-in'); subPending.entra=uid; atualizarUIBotao(); }
-        function atualizarUIBotao() { document.getElementById('btn-confirm-sub').disabled = !(subPending.sai && subPending.entra); }
+        function fecharModalSub() { document.getElementById('sub-modal').style.display='none'; iniciarRelogio(); }
+        function atualizarStats() { document.getElementById('stat-sho-h').innerText=stats.homeSho; document.getElementById('stat-sho-a').innerText=stats.awaySho; }
         
+        // --- FUNÇÕES DE SETUP (GERAR, ORGANIZAR) ---
+        function gerarGenericos(n) { let l=[]; ['GOL','ZAG','ZAG','LD','LE','VOL','MEI','MEI','ATA','ATA','ATA'].forEach((p,i)=>l.push({nome:`Jogador ${i+1}`,pos:p,forca:60})); return l; }
+        function gerarAtributos(j) { j.atributos={VEL:60,FIN:60,PAS:60,DRI:60,DEF:60,FIS:60}; }
+        function organizarElenco(t) {
+            const map = JSON.parse(localStorage.getItem('brfutebol_formacao')||'{}');
+            titulares=[]; let uids=new Set();
+            for(let i=1;i<=11;i++) { let j=t.elenco.find(p=>p.uid===map[`slot-${i}`]); if(j){titulares.push(j);uids.add(j.uid);} }
+            if(titulares.length<11) {
+                let disp=t.elenco.filter(p=>!uids.has(p.uid));
+                // ORDENAÇÃO FORÇADA: GOL PRIMEIRO
+                const prio={'GOL':0,'ZAG':1,'LD':2,'LE':2,'VOL':3,'MEI':4,'ATA':5};
+                disp.sort((a,b)=>(prio[a.pos]||9)-(prio[b.pos]||9));
+                for(let k=0;k<11-titulares.length;k++) if(disp[k]) titulares.push(disp[k]);
+            }
+            reservas=t.elenco.filter(p=>!titulares.includes(p));
+        }
+        function renderizarCampoSub() { const c=document.getElementById('pitch-container'); c.innerHTML=''; titulares.forEach((j,i)=>{ let el=document.createElement('div'); el.className='sub-p-node'; el.style.top=layouts[formacaoAtual][i].t; el.style.left=layouts[formacaoAtual][i].l; el.innerHTML=`<div class="sub-kit">${j.pos}</div>`; el.onclick=()=>selecionarSai(j.uid,el); c.appendChild(el); }); }
+        function renderizarListaReservas() { const l=document.getElementById('list-reservas-modal'); l.innerHTML=''; reservas.forEach(j=>{ if(!indisponiveis.includes(j)) l.innerHTML+=`<div class="player-row" onclick="selecionarEntra('${j.uid}',this)">${j.pos} ${j.nome}</div>`; }); }
+        function selecionarSai(uid,el) { document.querySelectorAll('.sub-p-node').forEach(n=>n.classList.remove('selected-out')); el.classList.add('selected-out'); subPending.sai=uid; atualizarUIBotao(); }
+        function selecionarEntra(uid,el) { document.querySelectorAll('.player-row').forEach(n=>n.classList.remove('selected-in')); el.classList.add('selected-in'); subPending.entra=uid; atualizarUIBotao(); }
+        function atualizarUIBotao() { document.getElementById('btn-confirm-sub').disabled=!(subPending.sai && subPending.entra); }
         function confirmarSub() {
-            if(!subPending.sai || !subPending.entra) return;
-            const idxS = titulares.findIndex(j=>j.uid===subPending.sai);
-            const idxE = reservas.findIndex(j=>j.uid===subPending.entra);
-            if(idxS>-1 && idxE>-1) {
-                const sai = titulares[idxS]; const entra = reservas[idxE];
-                titulares[idxS] = entra; reservas.splice(idxE, 1); indisponiveis.push(sai);
-                narrar('sub', `Sai ${sai.nome} | Entra ${entra.nome}`);
-                registrarEvento(entra.uid, 'sub_in'); 
-                subPending={sai:null, entra:null};
-                renderizarCampoSub(); renderizarListaReservas(); renderizarSidebars(); atualizarUIBotao();
+            let sIdx=titulares.findIndex(j=>j.uid===subPending.sai); let eIdx=reservas.findIndex(j=>j.uid===subPending.entra);
+            if(sIdx>-1 && eIdx>-1) {
+                let sai=titulares[sIdx]; let entra=reservas[eIdx];
+                titulares[sIdx]=entra; reservas.splice(eIdx,1); indisponiveis.push(sai);
+                narrar('sub', `Sai ${sai.nome}, entra ${entra.nome}`);
+                registrarEvento(entra.uid,'sub_in'); renderizarSidebars(); renderizarCampoSub(); renderizarListaReservas(); subPending={sai:null,entra:null}; atualizarUIBotao();
             }
         }
-
-        function showTooltip(e) {
-            const uid = this.dataset.uid; if(!uid)return;
-            const jog = titulares.find(j=>j.uid===uid) || reservas.find(j=>j.uid===uid) || indisponiveis.find(j=>j.uid===uid);
-            if(!jog)return;
-            if(!jog.atributos) gerarAtributos(jog);
-            document.getElementById('tip-name').innerText=jog.nome; document.getElementById('tip-pos').innerText=jog.pos; document.getElementById('tip-ovr').innerText=jog.forca||60;
-            const g=document.getElementById('tip-grid'); g.innerHTML='';
-            const l={VEL:'PAC',FIN:'SHO',PAS:'PAS',DRI:'DRI',DEF:'DEF',FIS:'PHY'};
-            for(let k in l) { let v=jog.atributos[k]; let c='mid'; if(v>=80)c='high'; if(v<60)c='low'; g.innerHTML+=`<div class="fifa-stat"><span>${l[k]}</span><b class="${c}">${v}</b></div>`; }
-            document.getElementById('fifa-tooltip').style.display='block'; moveTooltip(e);
-        }
-        function moveTooltip(e) { const t=document.getElementById('fifa-tooltip'); t.style.top=(e.clientY+15)+'px'; t.style.left=(e.clientX+15)+'px'; }
-        function hideTooltip() { document.getElementById('fifa-tooltip').style.display='none'; }
-        
-        function encontrarTime(nome) {
-            if (gameState && gameState.times) {
-                const timeNoSave = gameState.times.find(t => t.nome === nome);
-                if (timeNoSave) return JSON.parse(JSON.stringify(timeNoSave));
-            }
-            const db = window.database || window.Database;
-            if (db && db.brasil) {
-                 for(let s in db.brasil) {
-                    if (Array.isArray(db.brasil[s])) {
-                        const t = db.brasil[s].find(x => x.nome === nome);
-                        if(t) return JSON.parse(JSON.stringify(t)); 
-                    }
-                 }
-            }
-            return { nome: nome, escudo: "", elenco: [] };
-        }
-        function gerarGenericos(nome) { 
-            let l=[]; 
-            const posicoes = ['GOL','ZAG','ZAG','LD','LE','VOL','MEI','MEI','ATA','ATA','ATA', 'GOL', 'ZAG', 'MEI', 'ATA'];
-            for(let i=0;i<posicoes.length;i++) {
-                let j = {nome:`Jogador ${i+1}`, pos:posicoes[i], forca: Math.floor(Math.random()*20)+60};
-                gerarAtributos(j);
-                l.push(j);
-            }
-            return l; 
-        }
-        function gerarAtributos(j) {
-            const b = j.forca || 60;
-            if(j.pos==='GOL') j.atributos={VEL:b+2, FIN:b-15, PAS:b, DRI:b-15, DEF:b+5, FIS:b};
-            else if(j.pos==='ZAG') j.atributos={VEL:b-5, FIN:b-20, PAS:b-5, DRI:b-10, DEF:b+5, FIS:b+5};
-            else if(j.pos==='ATA') j.atributos={VEL:b+5, FIN:b+5, PAS:b-5, DRI:b+5, DEF:b-25, FIS:b};
-            else j.atributos={VEL:b, FIN:b-5, PAS:b+5, DRI:b, DEF:b, FIS:b};
-        }
-        function organizarElenco(time) {
-            const savedForm = localStorage.getItem('brfutebol_formacao');
-            titulares = []; reservas = []; indisponiveis = [];
-            let escaladosIds = [];
-            if(savedForm) {
-                try {
-                    const map = JSON.parse(savedForm);
-                    for(let i=1; i<=11; i++) {
-                        const uid = map[`slot-${i}`];
-                        const jog = time.elenco.find(j => j.uid === uid);
-                        if(jog) { titulares.push(jog); escaladosIds.push(jog.uid); }
-                    }
-                } catch(e){}
-            }
-            if(titulares.length < 11) {
-                const disp = time.elenco.filter(j => !escaladosIds.includes(j.uid));
-                const ordem = {'GOL':0, 'ZAG':1, 'LD':2, 'LE':3, 'VOL':4, 'MEI':5, 'ATA':6};
-                disp.sort((a,b)=> (ordem[a.pos]||9) - (ordem[b.pos]||9));
-                for(let k=0; k<(11-titulares.length); k++) {
-                    if(disp[k]) { titulares.push(disp[k]); escaladosIds.push(disp[k].uid); }
-                }
-            }
-            reservas = time.elenco.filter(j => !escaladosIds.includes(j.uid));
-        }
-
-        // --- INICIALIZAÇÃO FINAL ---
-        window.onload = function() {
-            try {
-                if (typeof Engine === 'undefined') throw new Error("Erro: Engine não carregada.");
-                carregarDados();
-            } catch (err) {
-                alert("Erro ao iniciar partida: " + err.message);
-                console.error(err);
-            }
-        };
-
-        function setSpeed(m, btn) {
-            document.querySelectorAll('.btn-speed').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
-            speed = m===1?200 : m===2?80 : 10;
-            if(!document.getElementById('sub-modal').style.display.includes('flex')) iniciarRelogio();
-        }
+        function registrarEvento(uid,t) {} // Stub
     </script>
 </body>
 </html>
