@@ -12,11 +12,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
-        /* CSS MANTIDO */
+        /* (MANTIVE O VISUAL IDÊNTICO) */
         :root { --bg-dark: #0f1216; --bg-panel: rgba(20, 25, 30, 0.98); --accent: #00ff88; --text-main: #ffffff; --text-dim: #8b9bb4; --gold: #f1c40f; --red: #ff4757; --blue: #3498db; --pos-ok: #2ecc71; --pos-med: #f1c40f; --pos-bad: #e74c3c; }
         * { box-sizing: border-box; user-select: none; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); background-image: radial-gradient(circle at 50% 50%, #1a202c 0%, #0f1216 100%); color: var(--text-main); margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
         .scoreboard { flex-shrink: 0; background: linear-gradient(180deg, #1e2329 0%, #161b22 100%); border-bottom: 2px solid var(--accent); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10; }
         .team-display { display: flex; align-items: center; gap: 15px; width: 35%; }
         .team-display.right { justify-content: flex-end; text-align: right; }
@@ -26,7 +25,6 @@
         .score-area { display: flex; align-items: center; gap: 15px; font-family: 'Rajdhani'; font-weight: 900; font-size: 2.5rem; line-height: 1; }
         .score-box { background: #000; padding: 2px 15px; border-radius: 6px; border: 1px solid #333; min-width: 60px; text-align: center; }
         .timer-badge { background: var(--accent); color: #000; padding: 2px 12px; border-radius: 15px; font-size: 0.9rem; font-weight: 800; margin-bottom: 5px; }
-
         .match-layout { flex: 1; display: grid; grid-template-columns: 260px 1fr 260px; overflow: hidden; }
         .side-panel { background: rgba(0,0,0,0.2); border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; overflow: hidden; }
         .side-panel.right { border-right: none; border-left: 1px solid rgba(255,255,255,0.05); }
@@ -36,7 +34,6 @@
         .squad-list::-webkit-scrollbar { width: 4px; } .squad-list::-webkit-scrollbar-thumb { background: #333; }
         .squad-section { margin-bottom: 15px; }
         .sec-title { font-size: 0.7rem; color: #888; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
-
         .mini-player { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.85rem; cursor: default; }
         .mini-player.subbed-out { opacity: 0.5; } .mini-player.subbed-out .mp-name { text-decoration: line-through; }
         .mini-player.subbed-in { border-left: 2px solid var(--blue); padding-left: 6px; }
@@ -49,7 +46,6 @@
         .mp-stats { text-align: right; min-width: 35px; }
         .mp-ovr { font-weight: 800; font-size: 0.8rem; color: #fff; }
         .mp-hp-track { width: 100%; height: 3px; background: #333; margin-top: 2px; border-radius: 2px; } .mp-hp-fill { height: 100%; border-radius: 2px; }
-
         .center-panel { padding: 15px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
         .feed-panel { background: var(--bg-panel); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; display: flex; flex-direction: column; flex: 2; overflow: hidden; }
         .feed-header { padding: 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid #333; font-family: 'Rajdhani'; font-weight: 700; display: flex; justify-content: space-between; color: var(--text-dim); font-size: 0.9rem; }
@@ -61,19 +57,15 @@
         .feed-item.card { border-left-color: var(--gold); background: rgba(241, 196, 15, 0.1); }
         .feed-item.red-card { border-left-color: var(--red); background: rgba(231, 76, 60, 0.1); }
         .feed-item.injury { border-left-color: #fff; background: rgba(255,255,255,0.1); }
-
         .stats-panel { background: var(--bg-panel); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 150px; }
         .stat-row { display: flex; flex-direction: column; gap: 4px; }
         .stat-bars { display: flex; align-items: center; gap: 8px; }
-        .bar-bg { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; display: flex; }
-        .bar-L { height: 100%; background: var(--text-main); }
-
+        .bar-bg { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; display: flex; } .bar-L { height: 100%; background: var(--text-main); }
         .footer-controls { width: 100%; padding: 10px 20px; background: #161b22; display: flex; justify-content: center; gap: 15px; border-top: 1px solid #333; flex-shrink: 0; }
         .btn-speed { padding: 8px 15px; border-radius: 4px; border: 1px solid #444; background: #222; color: #888; font-family: 'Rajdhani'; font-weight: 700; cursor: pointer; }
         .btn-speed.active { background: var(--accent); color: #000; border-color: var(--accent); }
         .btn-sub { background: var(--blue); color: #fff; border: none; padding: 8px 25px; border-radius: 4px; font-weight: 700; cursor: pointer; }
         .btn-finish { background: var(--gold); color: #000; border: none; padding: 8px 30px; border-radius: 4px; font-weight: 800; cursor: pointer; display: none; }
-
         .sub-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .sub-card { width: 95%; max-width: 1000px; height: 90vh; background: #161b22; border: 1px solid #444; border-radius: 12px; display: flex; flex-direction: column; }
         .sub-header { padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
@@ -101,7 +93,6 @@
         .sub-footer { padding: 20px; border-top: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: #121519; }
         .btn-confirm { background: var(--accent); color: #000; border: none; padding: 12px 30px; border-radius: 6px; font-weight: 800; cursor: pointer; font-size: 1rem; text-transform: uppercase; } .btn-confirm:disabled { background: #333; color: #666; cursor: not-allowed; }
         .btn-back-game { background: transparent; border: 1px solid #666; color: #ccc; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: 600; text-transform: uppercase; }
-
         #fifa-tooltip { position: fixed; display: none; width: 150px; background: rgba(18, 20, 24, 0.98); border: 1px solid #666; border-radius: 6px; box-shadow: 0 5px 20px rgba(0,0,0,0.9); z-index: 3000; pointer-events: none; padding: 10px; backdrop-filter: blur(5px); }
         .fifa-header { display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; margin-bottom: 5px; }
         .fifa-ovr { font-family: 'Rajdhani'; font-size: 1.5rem; font-weight: 900; color: var(--gold); margin-right: 8px; }
@@ -118,7 +109,7 @@
 
     <div class="scoreboard">
         <div class="team-display">
-            <img id="home-logo" src="" class="team-logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/53/53283.png'">
+            <img id="home-logo" src="" class="team-logo">
             <div class="team-name" id="home-name">CASA</div>
         </div>
         <div class="score-center">
@@ -131,7 +122,7 @@
         </div>
         <div class="team-display right">
             <div class="team-name" id="away-name">FORA</div>
-            <img id="away-logo" src="" class="team-logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/53/53283.png'">
+            <img id="away-logo" src="" class="team-logo">
         </div>
     </div>
 
@@ -233,15 +224,15 @@
         let matchInterval=null, tempo=0, etapa=1;
 
         const NARRATION_DB = {
-            inicio: [ "Apita o árbitro! A bola está rolando!", "Começa o espetáculo! Saída autorizada.", "Primeiros movimentos da partida.", "As equipes se estudam neste início.", "Troca de passes na defesa." ],
-            meio: [ "O jogo fica concentrado no meio.", "Bela virada de jogo.", "Tentativa de tabela... interceptada!", "Roda a bola com paciência.", "Marcação forte.", "Jogo equilibrado.", "Muitos erros de passe.", "Busca o espaço na área...", "O público faz barulho!", "Toque de bola envolvente." ],
-            final: [ "Reta final de partida!", "O cansaço começa a bater.", "Pressão total!", "O time se lança ao ataque.", "Segura a bola para gastar o tempo." ],
-            danger: [ "QUE PERIGO! Tirou tinta!", "O goleiro opera um MILAGRE!", "Explode no travessão!", "Uuuuh! Passou raspando!", "Cabeçada perigosa, goleiro busca!" ],
-            miss: [ "Chutou longe...", "Mandou na arquibancada.", "Isolou!", "Pegou mal na bola.", "Finalização fraca." ],
-            card: [ "Entrada dura! Amarelo.", "Falta tática. Cartão amarelo.", "Carrinho perigoso." ],
-            red: [ "VERMELHO DIRETO! Agressão!", "Entrada criminosa! Rua!", "Segundo amarelo e VERMELHO!" ],
-            injury: [ "Caiu sentindo dores...", "Parece lesão muscular.", "Os médicos entram em campo." ],
-            goal: [ "GOOOOOOL! É caixa!", "GOLAÇO! No ângulo!", "Empurrou pro fundo da rede!", "Cabeçada fatal! GOOOOL!" ]
+            inicio: [ "Apita o árbitro! Começa o jogo!", "Bola rolando! Vamos para 90 minutos de emoção.", "As equipes se estudam.", "O time da casa parte pra cima!", "Começa a partida no estádio lotado!" ],
+            meio: [ "O jogo fica concentrado no meio-campo.", "Bela troca de passes.", "Tenta abrir o jogo pelas pontas.", "Marcação forte da defesa.", "O técnico pede calma ao time.", "Jogo lá e cá!", "Busca o espaço na entrada da área...", "O público empurra o time!", "Toque de bola envolvente.", "O adversário se fecha na defesa." ],
+            final: [ "Reta final de partida!", "O cansaço começa a bater nos jogadores.", "Pressão total! É o abafa final!", "O time se lança todo ao ataque.", "Segura a bola para gastar o tempo." ],
+            danger: [ "QUE PERIGO! A bola raspou a trave!", "O goleiro opera um MILAGRE!", "Explode no travessão! Incrível!", "Uuuuh! A torcida já gritava gol!", "Cabeçada perigosa, o goleiro vai buscar!" ],
+            miss: [ "Chutou longe... isolou a bola!", "Mandou na arquibancada.", "Pegou muito mal na bola.", "Finalização fraca, fácil para o goleiro.", "Errou o alvo por pouco." ],
+            card: [ "Entrada dura! O juiz puxa o amarelo.", "Falta tática para matar o contra-ataque. Amarelo.", "Carrinho perigoso. Cartão merecido." ],
+            red: [ "VERMELHO DIRETO! Entrada criminosa!", "Agressão fora do lance! Rua!", "Segundo cartão amarelo e VERMELHO!" ],
+            injury: [ "Caiu sentindo dores... parece sério.", "Mão na coxa. Lesão muscular.", "Os médicos entram em campo para o atendimento." ],
+            goal: [ "GOOOOOOOOOOOL! É caixa!", "GOLAÇO! No ângulo, indefensável!", "Empurrou pro fundo da rede!", "Cabeçada fatal! GOOOOL!", "Contra-ataque mortal! Gol!" ]
         };
 
         const TATICAS = { "4-3-3":{def:1,mid:1,att:1.2}, "4-4-2":{def:1.1,mid:1.1,att:1}, "3-5-2":{def:0.9,mid:1.3,att:1}, "4-2-3-1":{def:1.15,mid:1,att:0.9}, "3-4-3":{def:0.8,mid:1,att:1.25} };
@@ -281,14 +272,11 @@
             if(!homeTeam.elenco.length) homeTeam.elenco = gerarGenericos(homeTeam.nome);
             if(!awayTeam.elenco.length) awayTeam.elenco = gerarGenericos(awayTeam.nome);
 
-            // Prepara Home
             homeTeam.elenco.forEach((j,i) => { if(!j.uid) j.uid=`p_${i}`; if(!j.atributos) gerarAtributos(j); if(gameState.jogadoresStatus?.[j.uid]) j.saude=gameState.jogadoresStatus[j.uid].saude; else j.saude=100; });
             organizarElenco(homeTeam);
 
-            // Prepara Away
             awayTeam.elenco.forEach((j,i) => { j.uid=`cpu_${i}`; if(!j.atributos) gerarAtributos(j); if(gameState.jogadoresStatus?.[j.uid]) j.saude=gameState.jogadoresStatus[j.uid].saude; else j.saude=100; });
             
-            // Escalação Inteligente CPU
             let goleiros = awayTeam.elenco.filter(p=>p.pos==='GOL');
             let linha = awayTeam.elenco.filter(p=>p.pos!=='GOL');
             linha.sort((a,b)=>b.forca-a.forca);
@@ -297,7 +285,6 @@
             if(goleiros.length) awayTitulares.push(goleiros[0]); else awayTitulares.push(linha.pop());
             for(let k=0; k<10; k++) if(linha[k]) awayTitulares.push(linha[k]);
             
-            // Define Formação Visual CPU
             let nDef = awayTitulares.filter(p=>['ZAG','LD','LE'].includes(p.pos)).length;
             let nMid = awayTitulares.filter(p=>['VOL','MEI'].includes(p.pos)).length;
             let nAta = awayTitulares.filter(p=>p.pos==='ATA').length;
@@ -320,7 +307,7 @@
             document.getElementById('timer-display').innerText = `${etapa}º ${tempo}'`;
 
             if(Math.random() < 0.45) narrar('normal', (Math.random()*100<stats.homePos)?homeTeam.nome:awayTeam.nome);
-            if(Math.random() < 0.20) processarLance(); // 20% chance por minuto (Muito mais chutes!)
+            if(Math.random() < 0.25) processarLance(); // 25% chance por minuto (Muito mais chutes!)
 
             if(tempo===45 && etapa===1) { pausarJogo(); narrar('normal',"Fim do 1º tempo."); setTimeout(()=>abrirModalSub(true),1000); }
             if(tempo>=49 && etapa===2) { 
@@ -351,9 +338,9 @@
             if(Math.random()*100 < stats.homePos) tentarGol(homeTeam, awayTeam, true, sHome.att, sAway.def);
             else tentarGol(awayTeam, homeTeam, false, sAway.att, sHome.def);
             
-            // CARTÕES: 1.5% chance por minuto (~1.3 cartões por jogo)
-            if(Math.random()<0.015) aplicarCartao(); 
-            if(Math.random()<0.003) aplicarLesao();
+            // CARTÕES E LESÕES (EQUILIBRADOS)
+            if(Math.random()<0.005) aplicarCartao(); // ~0.5% por minuto (baixo)
+            if(Math.random()<0.002) aplicarLesao(); // Muito raro
         }
 
         function calcularForca(lista) {
@@ -370,15 +357,17 @@
         }
 
         function tentarGol(atk, def, isH, av, dv) {
-            // MATEMÁTICA AGRESSIVA PARA SAIR GOL
-            if(Math.random() < 0.12 * (av/(dv||1))) {
+            // LÓGICA DE FUTEBOL REAL: Fator Torcida + Força do Ataque
+            let factor = 0.35 * (av/(dv||1));
+            if(isH) factor *= 1.1; // 10% bônus em casa
+
+            if(Math.random() < factor) {
                 if(isH) stats.homeSho++; else stats.awaySho++; atualizarStats();
                 narrar('danger', atk.nome);
-                if(Math.random() < 0.20 * (av/(dv||1))) gol(isH); else narrar('miss', atk.nome);
+                if(Math.random() < 0.40) gol(isH); else narrar('miss', atk.nome);
             }
         }
 
-        // --- EVENTOS ESPECIFICOS ---
         function gol(isH) {
             let l = isH?titulares:awayTitulares; let v=l.filter(j=>j.pos!=='GOL' && !events[j.uid]?.cards.includes('🟥'));
             if(!v.length) return;
@@ -396,7 +385,7 @@
             let isH=Math.random()>0.5, l=isH?titulares:awayTitulares, j=l[Math.floor(Math.random()*l.length)];
             if(events[j.uid]?.cards.includes('🟥')) return;
             let c='🟨', t='card'; 
-            if(events[j.uid]?.cards.includes('🟨') || Math.random()<0.03) { c='🟥'; t='red'; } // 3% chance red
+            if(events[j.uid]?.cards.includes('🟨') || Math.random()<0.02) { c='🟥'; t='red'; } // Vermelho raro
             if(!events[j.uid]) events[j.uid]={goals:0,cards:''};
             if(c==='🟥') events[j.uid].cards='🟥'; else events[j.uid].cards+='🟨';
             narrar(t, j.nome + ` (${isH?homeTeam.nome:awayTeam.nome})`);
