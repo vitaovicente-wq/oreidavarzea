@@ -12,12 +12,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     
     <style>
-        /* --- ESTILOS GERAIS --- */
+        /* --- ESTILOS ORIGINAIS (MANTIDOS) --- */
         :root { --bg-dark: #0f1216; --bg-panel: rgba(20, 25, 30, 0.98); --accent: #00ff88; --text-main: #ffffff; --text-dim: #8b9bb4; --gold: #f1c40f; --red: #ff4757; --blue: #3498db; --pos-ok: #2ecc71; --pos-med: #f1c40f; --pos-bad: #e74c3c; }
         * { box-sizing: border-box; user-select: none; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); background-image: radial-gradient(circle at 50% 50%, #1a202c 0%, #0f1216 100%); color: var(--text-main); margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
-        /* PLACAR */
         .scoreboard { flex-shrink: 0; background: linear-gradient(180deg, #1e2329 0%, #161b22 100%); border-bottom: 2px solid var(--accent); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10; }
         .team-display { display: flex; align-items: center; gap: 15px; width: 35%; }
         .team-display.right { justify-content: flex-end; text-align: right; }
@@ -25,20 +23,18 @@
         .team-name { font-family: 'Rajdhani'; font-weight: 800; font-size: 1.2rem; text-transform: uppercase; }
         .score-center { display: flex; flex-direction: column; align-items: center; }
         .score-area { display: flex; align-items: center; gap: 15px; font-family: 'Rajdhani'; font-weight: 900; font-size: 2.5rem; line-height: 1; }
-        .score-box { background: #000; padding: 2px 15px; border-radius: 6px; border: 1px solid #333; min-width: 60px; text-align: center; }
+        .score-box { background: #000; padding: 2px 15px; border-radius: 6px; border: 1px solid #333; min-width: 60px; text-align: center; transition:0.3s; }
+        .score-box.goal-anim { transform: scale(1.5); background: var(--accent); color:#000; }
         .timer-badge { background: var(--accent); color: #000; padding: 2px 12px; border-radius: 15px; font-size: 0.9rem; font-weight: 800; margin-bottom: 5px; }
-
-        /* LAYOUT PRINCIPAL */
         .match-layout { flex: 1; display: grid; grid-template-columns: 260px 1fr 260px; overflow: hidden; }
         .side-panel { background: rgba(0,0,0,0.2); border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; overflow: hidden; }
         .side-panel.right { border-right: none; border-left: 1px solid rgba(255,255,255,0.05); }
         .side-header { padding: 10px; background: rgba(255,255,255,0.05); font-family: 'Rajdhani'; font-weight: 700; font-size: 0.85rem; color: var(--text-dim); text-transform: uppercase; text-align: center; display: flex; flex-direction: column; gap: 2px; }
         .formation-tag { font-size: 0.7rem; color: var(--accent); letter-spacing: 1px; }
         .squad-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .squad-list::-webkit-scrollbar { width: 4px; } .squad-list::-webkit-scrollbar-thumb { background: #333; }
         .squad-section { margin-bottom: 15px; }
         .sec-title { font-size: 0.7rem; color: #888; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
-
-        /* MINI JOGADOR (SIDEBAR) */
         .mini-player { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.85rem; cursor: default; }
         .mini-player.subbed-out { opacity: 0.5; } .mini-player.subbed-out .mp-name { text-decoration: line-through; }
         .mini-player.subbed-in { border-left: 2px solid var(--blue); padding-left: 6px; }
@@ -51,75 +47,53 @@
         .mp-stats { text-align: right; min-width: 35px; }
         .mp-ovr { font-weight: 800; font-size: 0.8rem; color: #fff; }
         .mp-hp-track { width: 100%; height: 3px; background: #333; margin-top: 2px; border-radius: 2px; } .mp-hp-fill { height: 100%; border-radius: 2px; }
-
-        /* PAINEL CENTRAL (NARRAÇÃO) */
         .center-panel { padding: 15px; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
         .feed-panel { background: var(--bg-panel); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; display: flex; flex-direction: column; flex: 2; overflow: hidden; }
         .feed-header { padding: 10px; background: rgba(0,0,0,0.3); border-bottom: 1px solid #333; font-family: 'Rajdhani'; font-weight: 700; display: flex; justify-content: space-between; color: var(--text-dim); font-size: 0.9rem; }
         .feed-content { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
-        
-        /* ESTILOS DE FEED */
         .feed-item { display: flex; gap: 8px; align-items: flex-start; padding: 6px; border-radius: 4px; background: rgba(255,255,255,0.02); border-left: 2px solid transparent; font-size: 0.85rem; animation: slideIn 0.3s; }
         .feed-item.goal { background: rgba(0, 255, 136, 0.1); border-left-color: var(--accent); }
+        .feed-item.sub { background: rgba(52, 152, 219, 0.2); border-left-color: var(--blue); color: #fff; font-weight: bold; border: 1px solid rgba(52, 152, 219, 0.3); }
         .feed-item.danger { border-left-color: var(--gold); }
         .feed-item.card { border-left-color: var(--gold); background: rgba(241, 196, 15, 0.1); }
         .feed-item.red-card { border-left-color: var(--red); background: rgba(231, 76, 60, 0.1); }
         .feed-item.injury { border-left-color: #fff; background: rgba(255,255,255,0.1); }
-        
-        /* Destaque para Substituição */
-        .feed-item.sub { background: rgba(52, 152, 219, 0.2); border-left-color: var(--blue); color: #fff; font-weight: bold; border: 1px solid rgba(52, 152, 219, 0.3); }
-
         .stats-panel { background: var(--bg-panel); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 150px; }
         .stat-row { display: flex; flex-direction: column; gap: 4px; }
         .stat-bars { display: flex; align-items: center; gap: 8px; }
         .bar-bg { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; display: flex; } .bar-L { height: 100%; background: var(--text-main); }
-
         .footer-controls { width: 100%; padding: 10px 20px; background: #161b22; display: flex; justify-content: center; gap: 15px; border-top: 1px solid #333; flex-shrink: 0; }
         .btn-speed { padding: 8px 15px; border-radius: 4px; border: 1px solid #444; background: #222; color: #888; font-family: 'Rajdhani'; font-weight: 700; cursor: pointer; }
         .btn-speed.active { background: var(--accent); color: #000; border-color: var(--accent); }
         .btn-sub { background: var(--blue); color: #fff; border: none; padding: 8px 25px; border-radius: 4px; font-weight: 700; cursor: pointer; }
         .btn-finish { background: var(--gold); color: #000; border: none; padding: 8px 30px; border-radius: 4px; font-weight: 800; cursor: pointer; display: none; }
-
-        /* --- MODAL MELHORADO --- */
         .sub-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .sub-card { width: 95%; max-width: 1000px; height: 90vh; background: #161b22; border: 1px solid #444; border-radius: 12px; display: flex; flex-direction: column; }
         .sub-header { padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
         .sub-body { flex: 1; display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; padding: 20px; overflow: hidden; }
         .modal-tac-select { background: #000; color: var(--accent); border: 1px solid var(--accent); padding: 8px 15px; border-radius: 4px; font-family: 'Rajdhani'; font-weight: 700; cursor: pointer; outline: none; }
-        
         .mini-pitch { position: relative; width: 100%; height: 100%; background: repeating-linear-gradient(to right, #2e7d32, #2e7d32 10%, #368e3c 10%, #368e3c 20%); border: 2px solid rgba(255,255,255,0.5); border-radius: 6px; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); }
-        
         .sub-p-node { position: absolute; width: 60px; height: 70px; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.2s; }
         .sub-p-node:hover { transform: translate(-50%, -50%) scale(1.1); z-index: 10; }
         .sub-kit { width: 35px; height: 35px; background: #222; border: 2px solid #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem; color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         .sub-name { font-size: 0.7rem; background: rgba(0,0,0,0.8); padding: 2px 6px; border-radius: 4px; margin-top: 2px; white-space: nowrap; text-shadow: 0 1px 2px black; }
-        /* Barra de Vida no Pitch */
         .node-hp-bar { width: 30px; height: 4px; background: #333; margin-top: 2px; border-radius: 2px; overflow: hidden; }
         .node-hp-fill { height: 100%; border-radius: 2px; }
-
         .sub-p-node.selected-out .sub-kit { border-color: var(--red); background: rgba(231, 76, 60, 0.8); box-shadow: 0 0 20px var(--red); }
-
         .sub-list-modal { overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; border: 1px solid #333; display: flex; flex-direction: column; gap: 5px; }
-        
-        /* LINHA DE JOGADOR NO MODAL */
         .player-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 6px; background: rgba(255,255,255,0.03); cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
         .player-row:hover { background: rgba(255,255,255,0.08); }
         .player-row.selected-in { background: rgba(0, 255, 136, 0.1); border-color: var(--accent); }
-        
         .row-info { display: flex; gap: 10px; align-items: center; }
         .row-pos-badge { font-size: 0.7rem; font-weight: 800; background: #000; padding: 3px 6px; border-radius: 4px; color: #aaa; width: 30px; text-align: center; }
         .row-name { font-weight: 700; font-size: 0.95rem; color: #fff; }
-        
         .row-stats { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
         .row-ovr { font-family: 'Rajdhani'; font-weight: 800; color: var(--gold); font-size: 1.1rem; }
         .row-hp-track { width: 60px; height: 6px; background: #222; border-radius: 3px; overflow: hidden; }
         .row-hp-fill { height: 100%; border-radius: 3px; }
-
         .sub-footer { padding: 20px; border-top: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: #121519; }
         .btn-confirm { background: var(--accent); color: #000; border: none; padding: 12px 30px; border-radius: 6px; font-weight: 800; cursor: pointer; font-size: 1rem; text-transform: uppercase; } .btn-confirm:disabled { background: #333; color: #666; cursor: not-allowed; }
         .btn-back-game { background: transparent; border: 1px solid #666; color: #ccc; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: 600; text-transform: uppercase; }
-
-        /* TOOLTIPS E EXTRAS */
         #fifa-tooltip { position: fixed; display: none; width: 150px; background: rgba(18, 20, 24, 0.98); border: 1px solid #666; border-radius: 6px; box-shadow: 0 5px 20px rgba(0,0,0,0.9); z-index: 3000; pointer-events: none; padding: 10px; backdrop-filter: blur(5px); }
         .fifa-header { display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; margin-bottom: 5px; }
         .fifa-ovr { font-family: 'Rajdhani'; font-size: 1.5rem; font-weight: 900; color: var(--gold); margin-right: 8px; }
@@ -130,6 +104,14 @@
         .goal-text { font-family: 'Rajdhani'; font-size: 6rem; font-weight: 900; color: var(--accent); animation: slideIn 0.3s; }
         .goal-scorer { font-size: 2rem; color: #fff; }
         @keyframes slideIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        .version-tag { position: absolute; bottom: 5px; right: 10px; font-size: 0.6rem; color: #444; }
+
+        /* NOVA ANIMAÇÃO: FLASH VERDE AO ENTRAR */
+        @keyframes flashGreen { 
+            0% { box-shadow: 0 0 0 0 rgba(0,255,136,0.9); transform: translate(-50%, -50%) scale(1.4); filter: brightness(1.5); } 
+            100% { box-shadow: 0 0 0 20px rgba(0,255,136,0); transform: translate(-50%, -50%) scale(1); filter: brightness(1); } 
+        }
+        .sub-p-node.just-entered .sub-kit { animation: flashGreen 0.8s ease-out; border-color: var(--accent); background: #004422; }
     </style>
 </head>
 <body>
@@ -209,16 +191,9 @@
         <div class="sub-card">
             <div class="sub-header">
                 <h2>Gerenciar Equipe</h2>
-                <div style="display:flex; gap:10px; align-items:center;">
-                    <span style="color:#888; font-size:0.8rem;">ESQUEMA:</span>
-                    <select id="sub-formation" class="modal-tac-select" onchange="mudarFormacaoJogo()">
-                        <option value="4-3-3">4-3-3</option>
-                        <option value="4-4-2">4-4-2</option>
-                        <option value="3-5-2">3-5-2</option>
-                        <option value="4-2-3-1">4-2-3-1</option>
-                        <option value="3-4-3">3-4-3</option>
-                    </select>
-                </div>
+                <select id="sub-formation" class="modal-tac-select" onchange="mudarFormacaoJogo()">
+                    <option value="4-3-3">4-3-3</option><option value="4-4-2">4-4-2</option><option value="3-5-2">3-5-2</option><option value="4-2-3-1">4-2-3-1</option><option value="3-4-3">3-4-3</option>
+                </select>
             </div>
             <div class="sub-body">
                 <div class="mini-pitch" id="pitch-container"></div>
@@ -232,63 +207,34 @@
         </div>
     </div>
 
-    <div id="fifa-tooltip">
-        <div class="fifa-header">
-            <div class="fifa-ovr" id="tip-ovr">00</div>
-            <div class="fifa-info"><div class="fifa-name" id="tip-name">NOME</div><div class="fifa-pos" id="tip-pos">POS</div></div>
-        </div>
-        <div class="fifa-grid" id="tip-grid"></div>
-    </div>
-
+    <div id="fifa-tooltip"><div class="fifa-header"><div class="fifa-ovr" id="tip-ovr">00</div><div class="fifa-info"><div class="fifa-name" id="tip-name">NOME</div><div class="fifa-pos" id="tip-pos">POS</div></div></div><div class="fifa-grid" id="tip-grid"></div></div>
     <div id="goal-overlay"><div class="goal-text">GOL!</div><div class="goal-scorer" id="goal-scorer-name">Jogador</div></div>
+    <div class="version-tag">v4.1 - UX Fix</div>
 
     <script>
-        // --- 1. DEFINIÇÕES GLOBAIS ---
         let gameState, homeTeam, awayTeam;
-        let titulares=[], reservas=[], indisponiveis=[], awayTitulares=[];
-        let events={}, formacaoAtual="4-3-3", placar={home:0,away:0}, stats={homeSho:0,awaySho:0,homePos:50};
+        let titulares=[], reservas=[], indisponiveis=[], awayTitulares=[], events={}, formacaoAtual="4-3-3", placar={home:0,away:0}, stats={homeSho:0,awaySho:0,homePos:50};
         let speed=200, subPending={sai:null,entra:null}, gameEvents=[];
         let matchInterval=null, tempo=0, etapa=1;
 
         const NARRATION_DB = {
-            inicio: [ "Apita o árbitro! A bola está rolando!", "Começa o espetáculo! Saída autorizada.", "Primeiros movimentos da partida.", "As equipes se estudam neste início.", "Troca de passes na defesa." ],
-            meio: [ "O jogo fica concentrado no meio.", "Bela virada de jogo.", "Tentativa de tabela... interceptada!", "Roda a bola com paciência.", "Marcação forte.", "Jogo equilibrado.", "Muitos erros de passe.", "Busca o espaço na área...", "O público faz barulho!", "Toque de bola envolvente." ],
-            final: [ "Reta final de partida!", "O cansaço começa a bater.", "Pressão total!", "O time se lança ao ataque.", "Segura a bola para gastar o tempo." ],
-            danger: [ "QUE PERIGO! Tirou tinta!", "O goleiro opera um MILAGRE!", "Explode no travessão!", "Uuuuh! Passou raspando!", "Cabeçada perigosa, goleiro busca!" ],
-            miss: [ "Chutou longe...", "Mandou na arquibancada.", "Isolou!", "Pegou mal na bola.", "Finalização fraca." ],
-            card: [ "Entrada dura! Amarelo.", "Falta tática. Cartão amarelo.", "Carrinho perigoso." ],
-            red: [ "VERMELHO DIRETO! Agressão!", "Entrada criminosa! Rua!", "Segundo amarelo e VERMELHO!" ],
-            injury: [ "Caiu sentindo dores...", "Parece lesão muscular.", "Os médicos entram em campo." ],
-            goal: [ "GOOOOOOL! É caixa!", "GOLAÇO! No ângulo!", "Empurrou pro fundo da rede!", "Cabeçada fatal! GOOOOL!" ]
+            inicio: ["Apita o árbitro!", "Bola rolando!", "Começa o jogo!", "Vamos para o futebol!"],
+            meio: ["Toca a bola no meio.", "Bela troca de passes.", "Tenta o lançamento...", "Jogo pegado no meio.", "Busca o ataque.", "A torcida canta!", "Marcação forte.", "O técnico grita na beira do campo."],
+            final: ["Reta final de jogo!", "Pressão total!", "O relógio corre!", "Vai acabar!"],
+            danger: ["QUE PERIGO!", "Uuuuh! Passou perto!", "O goleiro salva!", "Na trave!", "Quase o gol!"],
+            miss: ["Chutou longe.", "Isolou!", "Errou o alvo.", "Tirou tinta da trave."],
+            card: ["Entrada dura! Amarelo.", "Falta feia. Cartão.", "Reclamação. Amarelo."],
+            red: ["VERMELHO! Foi pra rua!", "Expulso! Deixou o time na mão."],
+            injury: ["Caiu sentindo. Lesão.", "Pede atendimento médico."],
+            goal: ["GOOOOOOL!", "GOLAÇO!", "É caixa!", "Balançou a rede!", "Gol do time da casa!"]
         };
 
         const TATICAS = { "4-3-3":{def:1,mid:1,att:1.2}, "4-4-2":{def:1.1,mid:1.1,att:1}, "3-5-2":{def:0.9,mid:1.3,att:1}, "4-2-3-1":{def:1.15,mid:1,att:0.9}, "3-4-3":{def:0.8,mid:1,att:1.25} };
         const layouts = { "4-3-3": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"50%",l:"40%"},{t:"30%",l:"55%"},{t:"70%",l:"55%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}], "4-4-2": [{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"30%",l:"45%"},{t:"70%",l:"45%"},{t:"15%",l:"60%"},{t:"85%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}], "3-5-2": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"85%",l:"45%"},{t:"50%",l:"60%"},{t:"35%",l:"85%"},{t:"65%",l:"85%"}], "4-2-3-1":[{t:"50%",l:"6%"},{t:"15%",l:"25%"},{t:"38%",l:"20%"},{t:"62%",l:"20%"},{t:"85%",l:"25%"},{t:"35%",l:"40%"},{t:"65%",l:"40%"},{t:"20%",l:"65%"},{t:"50%",l:"60%"},{t:"80%",l:"65%"},{t:"50%",l:"88%"}], "3-4-3": [{t:"50%",l:"6%"},{t:"20%",l:"20%"},{t:"50%",l:"18%"},{t:"80%",l:"20%"},{t:"15%",l:"45%"},{t:"40%",l:"45%"},{t:"60%",l:"45%"},{t:"85%",l:"45%"},{t:"20%",l:"85%"},{t:"50%",l:"85%"},{t:"80%",l:"85%"}] };
 
-        // --- 2. FUNÇÕES AUXILIARES ---
-        function gerarGenericos(n){ let l=[]; ['GOL','ZAG','ZAG','LD','LE','VOL','MEI','MEI','ATA','ATA','ATA'].forEach((p,i)=>l.push({nome:`Jogador ${i+1}`,pos:p,forca:60})); return l; }
-        function gerarAtributos(j){ j.atributos={VEL:60,FIN:60,PAS:60,DRI:60,DEF:60,FIS:60}; }
-        function encontrarTime(nome){ const s=Engine.carregarJogo(); return (s&&s.times?s.times.find(t=>t.nome===nome):null) || {nome:nome,elenco:[],escudo:""}; }
-        function ordenarPorPosicao(l){ const p={'GOL':0,'LD':1,'ZAG':2,'LE':3,'VOL':4,'MEI':5,'ATA':6}; return l.sort((a,b)=>(p[a.pos]||9)-(p[b.pos]||9)); }
-        
-        function organizarElenco(t) {
-            const map = JSON.parse(localStorage.getItem('brfutebol_formacao')||'{}');
-            titulares=[]; let uids=new Set();
-            for(let i=1;i<=11;i++) { let j=t.elenco.find(p=>p.uid===map[`slot-${i}`]); if(j){titulares.push(j);uids.add(j.uid);} }
-            if(titulares.length<11) {
-                let disp=t.elenco.filter(p=>!uids.has(p.uid));
-                const p={'GOL':0,'ZAG':1,'LD':2,'LE':2,'VOL':3,'MEI':4,'ATA':5};
-                disp.sort((a,b)=>(p[a.pos]||9)-(p[b.pos]||9));
-                for(let k=0;k<11-titulares.length;k++) if(disp[k]) titulares.push(disp[k]);
-            }
-            reservas=t.elenco.filter(p=>!titulares.includes(p));
-        }
-
-        // --- 3. CARREGAMENTO INICIAL ---
         function carregarDados() {
             gameState = Engine.carregarJogo();
             if(!gameState) { window.location.href='index.html'; return; }
-            
             formacaoAtual = localStorage.getItem('brfutebol_esquema') || "4-3-3";
             document.getElementById('sub-formation').value = formacaoAtual;
             document.getElementById('home-form-tag').innerText = formacaoAtual;
@@ -299,28 +245,22 @@
             if(!homeTeam.elenco.length) homeTeam.elenco = gerarGenericos(homeTeam.nome);
             if(!awayTeam.elenco.length) awayTeam.elenco = gerarGenericos(awayTeam.nome);
 
-            // Prepara Home
             homeTeam.elenco.forEach((j,i) => { if(!j.uid) j.uid=`p_${i}`; if(!j.atributos) gerarAtributos(j); if(gameState.jogadoresStatus?.[j.uid]) j.saude=gameState.jogadoresStatus[j.uid].saude; else j.saude=100; });
             organizarElenco(homeTeam);
 
-            // Prepara Away
             awayTeam.elenco.forEach((j,i) => { j.uid=`cpu_${i}`; if(!j.atributos) gerarAtributos(j); if(gameState.jogadoresStatus?.[j.uid]) j.saude=gameState.jogadoresStatus[j.uid].saude; else j.saude=100; });
             
-            // Escalação Inteligente CPU
             let goleiros = awayTeam.elenco.filter(p=>p.pos==='GOL');
             let linha = awayTeam.elenco.filter(p=>p.pos!=='GOL');
             linha.sort((a,b)=>b.forca-a.forca);
-            
             awayTitulares = [];
             if(goleiros.length) awayTitulares.push(goleiros[0]); else awayTitulares.push(linha.pop());
             for(let k=0; k<10; k++) if(linha[k]) awayTitulares.push(linha[k]);
             
-            // Define Formação Visual CPU
             let nDef = awayTitulares.filter(p=>['ZAG','LD','LE'].includes(p.pos)).length;
             let nMid = awayTitulares.filter(p=>['VOL','MEI'].includes(p.pos)).length;
             let nAta = awayTitulares.filter(p=>p.pos==='ATA').length;
             document.getElementById('away-form-tag').innerText = `${nDef}-${nMid}-${nAta}`;
-            
             awayTitulares = ordenarPorPosicao(awayTitulares);
 
             renderizarSidebars();
@@ -329,7 +269,13 @@
             iniciarRelogio();
         }
 
-        // --- 4. ENGINE DE JOGO ---
+        function ordenarPorPosicao(l){ const p={'GOL':0,'LD':1,'ZAG':2,'LE':3,'VOL':4,'MEI':5,'ATA':6}; return l.sort((a,b)=>(p[a.pos]||9)-(p[b.pos]||9)); }
+        function gerarGenericos(n){ let l=[]; ['GOL','ZAG','ZAG','LD','LE','VOL','MEI','MEI','ATA','ATA','ATA'].forEach((p,i)=>l.push({nome:`Jogador ${i+1}`,pos:p,forca:60})); return l; }
+        function gerarAtributos(j){ j.atributos={VEL:60,FIN:60,PAS:60,DRI:60,DEF:60,FIS:60}; }
+        function encontrarTime(n){ const s=Engine.carregarJogo(); return (s&&s.times?s.times.find(t=>t.nome===n):null) || {nome:n,elenco:[],escudo:""}; }
+        function organizarElenco(t){ const map=JSON.parse(localStorage.getItem('brfutebol_formacao')||'{}'); titulares=[]; let u=new Set(); for(let i=1;i<=11;i++){let j=t.elenco.find(p=>p.uid===map[`slot-${i}`]); if(j){titulares.push(j);u.add(j.uid);}} if(titulares.length<11){let d=t.elenco.filter(p=>!u.has(p.uid)); const p={'GOL':0,'ZAG':1,'LD':2,'LE':2,'VOL':3,'MEI':4,'ATA':5}; d.sort((a,b)=>(p[a.pos]||9)-(p[b.pos]||9)); for(let k=0;k<11-titulares.length;k++) if(d[k]) titulares.push(d[k]);} reservas=t.elenco.filter(p=>!titulares.includes(p)); }
+
+        // --- ENGINE TURBO ---
         function iniciarRelogio() { clearInterval(matchInterval); matchInterval = setInterval(loopJogo, speed); }
         function pausarJogo() { clearInterval(matchInterval); }
         
@@ -338,7 +284,9 @@
             document.getElementById('timer-display').innerText = `${etapa}º ${tempo}'`;
 
             if(Math.random() < 0.45) narrar('normal', (Math.random()*100<stats.homePos)?homeTeam.nome:awayTeam.nome);
-            if(Math.random() < 0.25) processarLance(); // 25% chance por minuto
+            
+            // TURBO MODE: 40% chance de lance por minuto
+            if(Math.random() < 0.40) processarLance(); 
 
             if(tempo===45 && etapa===1) { pausarJogo(); narrar('normal',"Fim do 1º tempo."); setTimeout(()=>abrirModalSub(true),1000); }
             if(tempo>=49 && etapa===2) { 
@@ -352,15 +300,13 @@
 
         function narrar(tipo, sujeito) {
             if(tipo==='normal' && (tempo>=90 || (etapa===1 && tempo>=45))) return;
-            let db = NARRATION_DB[tipo];
-            if(tipo==='normal') { if(tempo<20) db=NARRATION_DB.inicio; else if(tempo>75) db=NARRATION_DB.final; else db=NARRATION_DB.meio; }
+            let db = NARRATION_DB[tipo] || NARRATION_DB.meio;
+            if(tipo==='normal') { if(tempo<20) db=NARRATION_DB.inicio; else if(tempo>75) db=NARRATION_DB.final; }
             const txt = db[Math.floor(Math.random()*db.length)];
-            const finalTxt = (sujeito && !['inicio','final'].includes(tipo)) ? `<strong>${sujeito}:</strong> ${txt}` : txt;
             let cl = (['goal','danger','card','red','injury','sub'].includes(tipo)) ? (tipo==='red'?'red-card':tipo) : "";
             const f = document.getElementById('feed');
-            // Insere no topo
-            f.insertAdjacentHTML('afterbegin', `<div class="feed-item ${cl}"><div class="feed-time">${tempo}'</div><div>${finalTxt}</div></div>`);
-            f.scrollTop = 0; // Garante que o topo é visível
+            f.insertAdjacentHTML('afterbegin', `<div class="feed-item ${cl}"><div class="feed-time">${tempo}'</div><div>${sujeito ? `<strong>${sujeito}:</strong> ` : ''}${txt}</div></div>`);
+            f.scrollTop = 0;
         }
 
         function processarLance() {
@@ -371,8 +317,7 @@
             if(Math.random()*100 < stats.homePos) tentarGol(homeTeam, awayTeam, true, sHome.att, sAway.def);
             else tentarGol(awayTeam, homeTeam, false, sAway.att, sHome.def);
             
-            // CARTÕES (1.5%) e LESÕES (0.2%)
-            if(Math.random()<0.015) aplicarCartao(); 
+            if(Math.random()<0.005) aplicarCartao(); 
             if(Math.random()<0.002) aplicarLesao();
         }
 
@@ -390,10 +335,11 @@
         }
 
         function tentarGol(atk, def, isH, av, dv) {
-            if(Math.random() < 0.12 * (av/(dv||1))) {
+            // MATEMÁTICA VÁRZEA (MUITOS GOLS)
+            if(Math.random() < 0.50 * (av/(dv||1))) {
                 if(isH) stats.homeSho++; else stats.awaySho++; atualizarStats();
                 narrar('danger', atk.nome);
-                if(Math.random() < 0.20 * (av/(dv||1))) gol(isH); else narrar('miss', atk.nome);
+                if(Math.random() < 0.40 * (av/(dv||1))) gol(isH); else narrar('miss', atk.nome);
             }
         }
 
@@ -405,7 +351,10 @@
             if(isH) placar.home++; else placar.away++;
             gameEvents.push({min:tempo+(etapa===2?45:0), time:isH?homeTeam.nome:awayTeam.nome, jogador:autor.nome, tipo:'gol'});
             document.getElementById('score-home').innerText=placar.home; document.getElementById('score-away').innerText=placar.away;
-            document.getElementById('goal-scorer-name').innerText=autor.nome; document.getElementById('goal-overlay').style.display='flex';
+            document.getElementById('goal-scorer-name').innerText=autor.nome; 
+            const sb = document.getElementById('score-'+(isH?'home':'away'));
+            sb.classList.add('goal-anim'); setTimeout(()=>sb.classList.remove('goal-anim'), 1000);
+            document.getElementById('goal-overlay').style.display='flex';
             narrar('goal', autor.nome); if(!events[autor.uid]) events[autor.uid]={goals:0,cards:''}; events[autor.uid].goals++; renderizarSidebars();
             setTimeout(()=>{document.getElementById('goal-overlay').style.display='none'; iniciarRelogio();}, 2500);
         }
@@ -413,8 +362,7 @@
         function aplicarCartao() {
             let isH=Math.random()>0.5, l=isH?titulares:awayTitulares, j=l[Math.floor(Math.random()*l.length)];
             if(events[j.uid]?.cards.includes('🟥')) return;
-            let c='🟨', t='card'; 
-            if(events[j.uid]?.cards.includes('🟨') || Math.random()<0.03) { c='🟥'; t='red'; } 
+            let c='🟨', t='card'; if(events[j.uid]?.cards.includes('🟨') || Math.random()<0.03) { c='🟥'; t='red'; } 
             if(!events[j.uid]) events[j.uid]={goals:0,cards:''};
             if(c==='🟥') events[j.uid].cards='🟥'; else events[j.uid].cards+='🟨';
             narrar(t, j.nome + ` (${isH?homeTeam.nome:awayTeam.nome})`);
@@ -466,10 +414,12 @@
         function fecharModalSub() { document.getElementById('sub-modal').style.display='none'; iniciarRelogio(); }
         function atualizarStats() { document.getElementById('stat-sho-h').innerText=stats.homeSho; document.getElementById('stat-sho-a').innerText=stats.awaySho; }
         
-        function renderizarCampoSub() {
+        function renderizarCampoSub(highlightUid=null) {
             const c=document.getElementById('pitch-container'); c.innerHTML='';
             titulares.forEach((j,i)=>{ 
-                let el=document.createElement('div'); el.className='sub-p-node'; el.style.top=layouts[formacaoAtual][i].t; el.style.left=layouts[formacaoAtual][i].l; 
+                let el=document.createElement('div'); el.className='sub-p-node'; 
+                if(j.uid===highlightUid) el.classList.add('just-entered'); // CLASSE DE FLASH
+                el.style.top=layouts[formacaoAtual][i].t; el.style.left=layouts[formacaoAtual][i].l; 
                 let h = j.saude<50?'#e74c3c':(j.saude<80?'#f1c40f':'#2ecc71');
                 el.innerHTML=`<div class="sub-kit">${j.pos}</div><div class="sub-name">${j.nome.split(' ')[0]}</div><div class="node-hp-bar"><div class="node-hp-fill" style="width:${j.saude}%; background:${h}"></div></div>`;
                 el.onclick=()=>selecionarSai(j.uid,el); el.onmouseenter=(e)=>showTooltip(e,j); el.onmouseleave=hideTooltip; c.appendChild(el); 
@@ -488,25 +438,21 @@
         function selecionarEntra(uid,el) { document.querySelectorAll('.player-row').forEach(n=>n.classList.remove('selected-in')); el.classList.add('selected-in'); subPending.entra=uid; atualizarUIBotao(); }
         function atualizarUIBotao() { document.getElementById('btn-confirm-sub').disabled=!(subPending.sai && subPending.entra); }
         
-        // --- FUNÇÃO DE SUBSTITUIÇÃO CORRIGIDA ---
         function confirmarSub() {
             let s=titulares.findIndex(j=>j.uid===subPending.sai), e=reservas.findIndex(j=>j.uid===subPending.entra);
             if(s>-1 && e>-1) {
                 let sai=titulares[s], entra=reservas[e];
                 titulares[s]=entra; reservas.splice(e,1); indisponiveis.push(sai);
                 
-                // 1. Narração Imediata e Destaque
                 narrar('sub', `Sai <strong>${sai.nome}</strong> e entra <strong>${entra.nome}</strong>`);
                 if(!events[entra.uid]) events[entra.uid]={goals:0,cards:''};
                 
-                // 2. Atualização Visual Forçada
+                // FEEDBACK VISUAL FORTE
                 renderizarSidebars(); 
-                renderizarCampoSub(); 
+                renderizarCampoSub(entra.uid); // Passa o ID pra piscar
                 renderizarListaReservas(); 
                 
-                // 3. Reset
-                subPending={sai:null,entra:null}; 
-                atualizarUIBotao();
+                subPending={sai:null,entra:null}; atualizarUIBotao();
             }
         }
 
