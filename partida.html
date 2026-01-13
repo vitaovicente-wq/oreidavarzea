@@ -16,7 +16,8 @@
         :root { --bg-dark: #0f1216; --bg-panel: rgba(20, 25, 30, 0.98); --accent: #00ff88; --text-main: #ffffff; --text-dim: #8b9bb4; --gold: #f1c40f; --red: #ff4757; --blue: #3498db; --pos-ok: #2ecc71; --pos-med: #f1c40f; --pos-bad: #e74c3c; }
         * { box-sizing: border-box; user-select: none; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); background-image: radial-gradient(circle at 50% 50%, #1a202c 0%, #0f1216 100%); color: var(--text-main); margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        .scoreboard { flex-shrink: 0; background: linear-gradient(180deg, #1e2329 0%, #161b22 100%); border-bottom: 2px solid var(--accent); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10; }
+        
+        .scoreboard { flex-shrink: 0; background: linear-gradient(180deg, #1e2329 0%, #161b22 100%); border-bottom: 1px solid #333; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10; }
         .team-display { display: flex; align-items: center; gap: 15px; width: 35%; }
         .team-display.right { justify-content: flex-end; text-align: right; }
         .team-logo { width: 50px; height: 50px; object-fit: contain; filter: drop-shadow(0 0 5px rgba(0,0,0,0.5)); }
@@ -26,6 +27,12 @@
         .score-box { background: #000; padding: 2px 15px; border-radius: 6px; border: 1px solid #333; min-width: 60px; text-align: center; transition:0.3s; }
         .score-box.goal-anim { transform: scale(1.5); background: var(--accent); color:#000; }
         .timer-badge { background: var(--accent); color: #000; padding: 2px 12px; border-radius: 15px; font-size: 0.9rem; font-weight: 800; margin-bottom: 5px; }
+        
+        /* NOVA BARRA DE INFORMAÇÕES (PÚBLICO E RENDA) */
+        .info-bar { background: #111; border-bottom: 2px solid var(--accent); padding: 5px 0; display: flex; justify-content: center; gap: 30px; font-size: 0.85rem; color: #888; flex-shrink: 0; }
+        .info-item { display: flex; gap: 6px; align-items: center; }
+        .info-val { color: #fff; font-weight: 700; font-family: 'Rajdhani'; letter-spacing: 1px; }
+
         .match-layout { flex: 1; display: grid; grid-template-columns: 260px 1fr 260px; overflow: hidden; }
         .side-panel { background: rgba(0,0,0,0.2); border-right: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; overflow: hidden; }
         .side-panel.right { border-right: none; border-left: 1px solid rgba(255,255,255,0.05); }
@@ -61,7 +68,7 @@
         .stats-panel { background: var(--bg-panel); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 150px; }
         .stat-row { display: flex; flex-direction: column; gap: 4px; }
         .stat-bars { display: flex; align-items: center; gap: 8px; }
-        .bar-bg { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; display: flex; } .bar-L { height: 100%; background: var(--text-main); }
+        .bar-bg { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; display: flex; } .bar-L { height: 100%; background: var(--text-main); transition: width 0.5s ease; } /* Transição suave na barra */
         .footer-controls { width: 100%; padding: 10px 20px; background: #161b22; display: flex; justify-content: center; gap: 15px; border-top: 1px solid #333; flex-shrink: 0; }
         .btn-speed { padding: 8px 15px; border-radius: 4px; border: 1px solid #444; background: #222; color: #888; font-family: 'Rajdhani'; font-weight: 700; cursor: pointer; }
         .btn-speed.active { background: var(--accent); color: #000; border-color: var(--accent); }
@@ -105,12 +112,7 @@
         .goal-scorer { font-size: 2rem; color: #fff; }
         @keyframes slideIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
         .version-tag { position: absolute; bottom: 5px; right: 10px; font-size: 0.6rem; color: #444; }
-
-        /* NOVA ANIMAÇÃO: FLASH VERDE AO ENTRAR */
-        @keyframes flashGreen { 
-            0% { box-shadow: 0 0 0 0 rgba(0,255,136,0.9); transform: translate(-50%, -50%) scale(1.4); filter: brightness(1.5); } 
-            100% { box-shadow: 0 0 0 20px rgba(0,255,136,0); transform: translate(-50%, -50%) scale(1); filter: brightness(1); } 
-        }
+        @keyframes flashGreen { 0% { box-shadow: 0 0 0 0 rgba(0,255,136,0.9); transform: translate(-50%, -50%) scale(1.4); filter: brightness(1.5); } 100% { box-shadow: 0 0 0 20px rgba(0,255,136,0); transform: translate(-50%, -50%) scale(1); filter: brightness(1); } }
         .sub-p-node.just-entered .sub-kit { animation: flashGreen 0.8s ease-out; border-color: var(--accent); background: #004422; }
     </style>
 </head>
@@ -133,6 +135,11 @@
             <div class="team-name" id="away-name">FORA</div>
             <img id="away-logo" src="" class="team-logo">
         </div>
+    </div>
+
+    <div class="info-bar" id="match-info-bar">
+        <div class="info-item">🏟️ Público: <span class="info-val" id="disp-publico">0</span></div>
+        <div class="info-item">💰 Renda: <span class="info-val" id="disp-renda">R$ 0,00</span></div>
     </div>
 
     <div class="match-layout">
@@ -209,7 +216,7 @@
 
     <div id="fifa-tooltip"><div class="fifa-header"><div class="fifa-ovr" id="tip-ovr">00</div><div class="fifa-info"><div class="fifa-name" id="tip-name">NOME</div><div class="fifa-pos" id="tip-pos">POS</div></div></div><div class="fifa-grid" id="tip-grid"></div></div>
     <div id="goal-overlay"><div class="goal-text">GOL!</div><div class="goal-scorer" id="goal-scorer-name">Jogador</div></div>
-    <div class="version-tag">v4.1 - UX Fix</div>
+    <div class="version-tag">v4.2 - Arena & Dinâmica</div>
 
     <script>
         let gameState, homeTeam, awayTeam;
@@ -218,15 +225,15 @@
         let matchInterval=null, tempo=0, etapa=1;
 
         const NARRATION_DB = {
-            inicio: ["Apita o árbitro!", "Bola rolando!", "Começa o jogo!", "Vamos para o futebol!"],
+            inicio: ["Apita o árbitro! A bola está rolando!", "Começa o espetáculo!", "Primeiros movimentos da partida.", "Vamos para o futebol!", "Tudo pronto, autoriza o árbitro!"],
             meio: ["Toca a bola no meio.", "Bela troca de passes.", "Tenta o lançamento...", "Jogo pegado no meio.", "Busca o ataque.", "A torcida canta!", "Marcação forte.", "O técnico grita na beira do campo."],
-            final: ["Reta final de jogo!", "Pressão total!", "O relógio corre!", "Vai acabar!"],
-            danger: ["QUE PERIGO!", "Uuuuh! Passou perto!", "O goleiro salva!", "Na trave!", "Quase o gol!"],
-            miss: ["Chutou longe.", "Isolou!", "Errou o alvo.", "Tirou tinta da trave."],
-            card: ["Entrada dura! Amarelo.", "Falta feia. Cartão.", "Reclamação. Amarelo."],
-            red: ["VERMELHO! Foi pra rua!", "Expulso! Deixou o time na mão."],
-            injury: ["Caiu sentindo. Lesão.", "Pede atendimento médico."],
-            goal: ["GOOOOOOL!", "GOLAÇO!", "É caixa!", "Balançou a rede!", "Gol do time da casa!"]
+            final: ["Reta final de jogo!", "Pressão total!", "O relógio corre!", "Vai acabar!", "Últimos lances!"],
+            danger: ["QUE PERIGO! Tirou tinta!", "O goleiro opera um MILAGRE!", "Explode no travessão!", "Uuuuh! Passou raspando!", "Cabeçada perigosa, goleiro busca!"],
+            miss: ["Chutou longe.", "Isolou!", "Errou o alvo.", "Pegou mal na bola.", "Finalização fraca."],
+            card: ["Entrada dura! Amarelo.", "Falta feia. Cartão.", "Reclamação. Amarelo.", "Carrinho perigoso."],
+            red: ["VERMELHO DIRETO! Agressão!", "Entrada criminosa! Rua!", "Segundo amarelo e VERMELHO!"],
+            injury: ["Caiu sentindo dores...", "Parece lesão muscular.", "Os médicos entram em campo."],
+            goal: ["GOOOOOOL! É caixa!", "GOLAÇO! No ângulo!", "Empurrou pro fundo da rede!", "Cabeçada fatal! GOOOOL!"]
         };
 
         const TATICAS = { "4-3-3":{def:1,mid:1,att:1.2}, "4-4-2":{def:1.1,mid:1.1,att:1}, "3-5-2":{def:0.9,mid:1.3,att:1}, "4-2-3-1":{def:1.15,mid:1,att:0.9}, "3-4-3":{def:0.8,mid:1,att:1.25} };
@@ -266,6 +273,21 @@
             renderizarSidebars();
             document.getElementById('home-name').innerText = homeTeam.nome; document.getElementById('home-logo').src = homeTeam.escudo||"";
             document.getElementById('away-name').innerText = awayTeam.nome; document.getElementById('away-logo').src = awayTeam.escudo||"";
+            
+            // --- NOVO: EXIBIR PÚBLICO E RENDA ---
+            try {
+                if(Engine.estadios && homeTeam.nome === gameState.info.time) {
+                    const bilheteria = Engine.estadios.calcularBilheteria(awayTeam.nome);
+                    document.getElementById('disp-publico').innerText = bilheteria.publico.toLocaleString();
+                    document.getElementById('disp-renda').innerText = bilheteria.rendaTotal.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+                } else {
+                    // Jogando fora: Simula público
+                    const fakePub = Math.floor(Math.random() * 40000) + 5000;
+                    document.getElementById('disp-publico').innerText = fakePub.toLocaleString();
+                    document.getElementById('disp-renda').innerText = "---";
+                }
+            } catch(e) { console.log("Engine de estadio nao carregada"); }
+
             iniciarRelogio();
         }
 
@@ -311,8 +333,18 @@
 
         function processarLance() {
             const sHome = calcularForca(titulares); const sAway = calcularForca(awayTitulares);
-            stats.homePos = Math.max(20, Math.min(80, Math.round(50 + (sHome.mid - sAway.mid) + (Math.random()*20-10))));
-            document.getElementById('stat-pos-h').innerText=stats.homePos+"%"; document.getElementById('bar-pos-h').style.width=stats.homePos+"%"; document.getElementById('stat-pos-a').innerText=(100-stats.homePos)+"%";
+            
+            // --- POSSE DE BOLA DINÂMICA (ATUALIZADA) ---
+            // Adiciona uma variação aleatória forte (-25 a +25) para a barra oscilar mais
+            let randomSwing = (Math.random() * 50) - 25; 
+            // Diferença técnica influencia, mas o random deixa vivo
+            let base = 50 + (sHome.mid - sAway.mid) * 1.5; 
+            
+            stats.homePos = Math.max(25, Math.min(75, Math.round(base + randomSwing)));
+            
+            document.getElementById('stat-pos-h').innerText = stats.homePos+"%"; 
+            document.getElementById('bar-pos-h').style.width = stats.homePos+"%"; 
+            document.getElementById('stat-pos-a').innerText = (100-stats.homePos)+"%";
 
             if(Math.random()*100 < stats.homePos) tentarGol(homeTeam, awayTeam, true, sHome.att, sAway.def);
             else tentarGol(awayTeam, homeTeam, false, sAway.att, sHome.def);
@@ -335,7 +367,6 @@
         }
 
         function tentarGol(atk, def, isH, av, dv) {
-            // MATEMÁTICA VÁRZEA (MUITOS GOLS)
             if(Math.random() < 0.50 * (av/(dv||1))) {
                 if(isH) stats.homeSho++; else stats.awaySho++; atualizarStats();
                 narrar('danger', atk.nome);
@@ -418,7 +449,7 @@
             const c=document.getElementById('pitch-container'); c.innerHTML='';
             titulares.forEach((j,i)=>{ 
                 let el=document.createElement('div'); el.className='sub-p-node'; 
-                if(j.uid===highlightUid) el.classList.add('just-entered'); // CLASSE DE FLASH
+                if(j.uid===highlightUid) el.classList.add('just-entered');
                 el.style.top=layouts[formacaoAtual][i].t; el.style.left=layouts[formacaoAtual][i].l; 
                 let h = j.saude<50?'#e74c3c':(j.saude<80?'#f1c40f':'#2ecc71');
                 el.innerHTML=`<div class="sub-kit">${j.pos}</div><div class="sub-name">${j.nome.split(' ')[0]}</div><div class="node-hp-bar"><div class="node-hp-fill" style="width:${j.saude}%; background:${h}"></div></div>`;
@@ -447,9 +478,8 @@
                 narrar('sub', `Sai <strong>${sai.nome}</strong> e entra <strong>${entra.nome}</strong>`);
                 if(!events[entra.uid]) events[entra.uid]={goals:0,cards:''};
                 
-                // FEEDBACK VISUAL FORTE
                 renderizarSidebars(); 
-                renderizarCampoSub(entra.uid); // Passa o ID pra piscar
+                renderizarCampoSub(entra.uid); 
                 renderizarListaReservas(); 
                 
                 subPending={sai:null,entra:null}; atualizarUIBotao();
@@ -461,7 +491,7 @@
         function setSpeed(m,b) { document.querySelectorAll('.btn-speed').forEach(x=>x.classList.remove('active')); b.classList.add('active'); speed=m===1?200:m===2?80:10; if(!document.getElementById('sub-modal').style.display.includes('flex')) iniciarRelogio(); }
         function mudarFormacaoJogo() { formacaoAtual=document.getElementById('sub-formation').value; renderizarCampoSub(); narrar("sub", `Muda para ${formacaoAtual}`); document.getElementById('home-form-tag').innerText = formacaoAtual; }
 
-        // --- 5. START ---
+        // --- 5. START (PROTEGIDO) ---
         window.onload = function() {
             try {
                 if (typeof Engine === 'undefined') throw new Error("Engine não carregada.");
