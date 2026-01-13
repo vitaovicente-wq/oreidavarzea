@@ -17,10 +17,16 @@
 
         .main-container { flex: 1; display: grid; grid-template-columns: 1fr 350px; gap: 20px; padding: 20px; overflow-y: auto; }
 
-        /* VISUAL DO ESTADIO (CORRIGIDO PARA IMAGEM NOTURNA) */
+        /* --- VISUAL DO ESTADIO (CORRIGIDO) --- */
         .stadium-view { 
-            /* Foto de Estádio Noturno */
-            background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2)), url('https://images.unsplash.com/photo-1522778119026-d647f0565c6a?q=80&w=1000&auto=format&fit=crop'); 
+            /* 1. Cor de fundo de segurança (Verde escuro) - aparece se a imagem falhar */
+            background-color: #1e3c2f; 
+            
+            /* 2. Imagem de fundo (Estádio Iluminado) */
+            background-image: 
+                linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.1)), 
+                url('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=1000&auto=format&fit=crop'); 
+            
             background-size: cover; 
             background-position: center; 
             border-radius: 12px; 
@@ -31,7 +37,9 @@
             padding: 30px; 
             position: relative; 
             box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            min-height: 250px;
         }
+
         .stadium-info h1 { font-family: 'Rajdhani'; font-size: 3.5rem; margin: 0; line-height: 1; text-shadow: 0 4px 10px #000; letter-spacing: -1px; }
         .stadium-info p { margin: 5px 0 0 0; color: #ccc; font-size: 1.2rem; text-shadow: 0 2px 5px #000; font-weight: 600; }
         .cap-badge { background: var(--neon); color: #000; padding: 5px 12px; border-radius: 4px; font-weight: 800; display: inline-block; margin-top: 15px; font-family: 'Rajdhani'; font-size: 1rem; box-shadow: 0 0 10px rgba(0,255,136,0.4); }
@@ -191,25 +199,11 @@
                 estacionamento: parseInt(document.getElementById('range-park').value)
             };
 
-            // Salva estado original para não alterar o save real apenas visualizando
-            const original = JSON.parse(JSON.stringify(estadioDados.precos));
-            estadioDados.precos = tempPrecos;
+            // Salva estado temporário na memória da Engine para o cálculo
+            Engine.estadios.salvarPrecos(tempPrecos); 
             
             // Simula contra um time "Padrão" para ver a média
-            // A Engine usa o 'estadioDados' que acabamos de alterar na memória
-            // Precisamos garantir que a engine use esses dados temporários.
-            // Como a função da engine puxa do localStorage, vamos simular a lógica aqui localmente
-            // OU: Injetamos temporariamente na engine se ela suportar, mas o método atual lê do disco.
-            
-            // SOLUÇÃO: Vamos replicar a chamada, mas passando os preços manuais se possível, 
-            // ou salvar temporariamente. Vamos salvar temporariamente para garantir consistência.
-            Engine.estadios.salvarPrecos(tempPrecos); // Salva temp
-            
             const sim = Engine.estadios.calcularBilheteria("Time Médio");
-            
-            // Restaura visualmente mas deixa salvo o que está na tela como "prévia"
-            // Se o usuário sair sem salvar no botão, tecnicamente já salvou aqui.
-            // Para ser UX perfeita, o botão salvar é mais "feedback", já que o slider atualiza em tempo real.
             
             // Atualiza UI
             document.getElementById('proj-pub').innerText = sim.publico.toLocaleString() + " pagantes";
