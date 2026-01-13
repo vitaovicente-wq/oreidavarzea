@@ -28,7 +28,7 @@
         .score-box.goal-anim { transform: scale(1.5); background: var(--accent); color:#000; }
         .timer-badge { background: var(--accent); color: #000; padding: 2px 12px; border-radius: 15px; font-size: 0.9rem; font-weight: 800; margin-bottom: 5px; }
         
-        /* NOVA BARRA DE INFORMAÇÕES (PÚBLICO E RENDA) */
+        /* BARRA DE INFORMAÇÕES (PÚBLICO E RENDA) */
         .info-bar { background: #111; border-bottom: 2px solid var(--accent); padding: 5px 0; display: flex; justify-content: center; gap: 30px; font-size: 0.85rem; color: #888; flex-shrink: 0; }
         .info-item { display: flex; gap: 6px; align-items: center; }
         .info-val { color: #fff; font-weight: 700; font-family: 'Rajdhani'; letter-spacing: 1px; }
@@ -68,12 +68,13 @@
         .stats-panel { background: var(--bg-panel); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 150px; }
         .stat-row { display: flex; flex-direction: column; gap: 4px; }
         .stat-bars { display: flex; align-items: center; gap: 8px; }
-        .bar-bg { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; display: flex; } .bar-L { height: 100%; background: var(--text-main); transition: width 0.5s ease; } /* Transição suave na barra */
+        .bar-bg { flex: 1; height: 6px; background: #222; border-radius: 3px; overflow: hidden; display: flex; } .bar-L { height: 100%; background: var(--text-main); transition: width 0.5s ease; }
         .footer-controls { width: 100%; padding: 10px 20px; background: #161b22; display: flex; justify-content: center; gap: 15px; border-top: 1px solid #333; flex-shrink: 0; }
         .btn-speed { padding: 8px 15px; border-radius: 4px; border: 1px solid #444; background: #222; color: #888; font-family: 'Rajdhani'; font-weight: 700; cursor: pointer; }
         .btn-speed.active { background: var(--accent); color: #000; border-color: var(--accent); }
         .btn-sub { background: var(--blue); color: #fff; border: none; padding: 8px 25px; border-radius: 4px; font-weight: 700; cursor: pointer; }
         .btn-finish { background: var(--gold); color: #000; border: none; padding: 8px 30px; border-radius: 4px; font-weight: 800; cursor: pointer; display: none; }
+        
         .sub-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 200; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .sub-card { width: 95%; max-width: 1000px; height: 90vh; background: #161b22; border: 1px solid #444; border-radius: 12px; display: flex; flex-direction: column; }
         .sub-header { padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center; }
@@ -101,12 +102,14 @@
         .sub-footer { padding: 20px; border-top: 1px solid #333; display: flex; justify-content: space-between; align-items: center; background: #121519; }
         .btn-confirm { background: var(--accent); color: #000; border: none; padding: 12px 30px; border-radius: 6px; font-weight: 800; cursor: pointer; font-size: 1rem; text-transform: uppercase; } .btn-confirm:disabled { background: #333; color: #666; cursor: not-allowed; }
         .btn-back-game { background: transparent; border: 1px solid #666; color: #ccc; padding: 10px 25px; border-radius: 6px; cursor: pointer; font-weight: 600; text-transform: uppercase; }
+        
         #fifa-tooltip { position: fixed; display: none; width: 150px; background: rgba(18, 20, 24, 0.98); border: 1px solid #666; border-radius: 6px; box-shadow: 0 5px 20px rgba(0,0,0,0.9); z-index: 3000; pointer-events: none; padding: 10px; backdrop-filter: blur(5px); }
         .fifa-header { display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; margin-bottom: 5px; }
         .fifa-ovr { font-family: 'Rajdhani'; font-size: 1.5rem; font-weight: 900; color: var(--gold); margin-right: 8px; }
         .fifa-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
         .fifa-stat { font-family: 'Rajdhani'; font-size: 0.8rem; display: flex; justify-content: space-between; }
         .fifa-stat b.high { color: var(--pos-ok); } .fifa-stat b.mid { color: var(--pos-med); } .fifa-stat b.low { color: var(--pos-bad); }
+        
         #goal-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.9); z-index: 300; display: none; flex-direction: column; align-items: center; justify-content: center; }
         .goal-text { font-family: 'Rajdhani'; font-size: 6rem; font-weight: 900; color: var(--accent); animation: slideIn 0.3s; }
         .goal-scorer { font-size: 2rem; color: #fff; }
@@ -216,7 +219,7 @@
 
     <div id="fifa-tooltip"><div class="fifa-header"><div class="fifa-ovr" id="tip-ovr">00</div><div class="fifa-info"><div class="fifa-name" id="tip-name">NOME</div><div class="fifa-pos" id="tip-pos">POS</div></div></div><div class="fifa-grid" id="tip-grid"></div></div>
     <div id="goal-overlay"><div class="goal-text">GOL!</div><div class="goal-scorer" id="goal-scorer-name">Jogador</div></div>
-    <div class="version-tag">v4.2 - Arena & Dinâmica</div>
+    <div class="version-tag">v4.4 - Financeiro Fix</div>
 
     <script>
         let gameState, homeTeam, awayTeam;
@@ -274,14 +277,12 @@
             document.getElementById('home-name').innerText = homeTeam.nome; document.getElementById('home-logo').src = homeTeam.escudo||"";
             document.getElementById('away-name').innerText = awayTeam.nome; document.getElementById('away-logo').src = awayTeam.escudo||"";
             
-            // --- NOVO: EXIBIR PÚBLICO E RENDA ---
             try {
                 if(Engine.estadios && homeTeam.nome === gameState.info.time) {
                     const bilheteria = Engine.estadios.calcularBilheteria(awayTeam.nome);
                     document.getElementById('disp-publico').innerText = bilheteria.publico.toLocaleString();
                     document.getElementById('disp-renda').innerText = bilheteria.rendaTotal.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
                 } else {
-                    // Jogando fora: Simula público
                     const fakePub = Math.floor(Math.random() * 40000) + 5000;
                     document.getElementById('disp-publico').innerText = fakePub.toLocaleString();
                     document.getElementById('disp-renda').innerText = "---";
@@ -334,12 +335,8 @@
         function processarLance() {
             const sHome = calcularForca(titulares); const sAway = calcularForca(awayTitulares);
             
-            // --- POSSE DE BOLA DINÂMICA (ATUALIZADA) ---
-            // Adiciona uma variação aleatória forte (-25 a +25) para a barra oscilar mais
             let randomSwing = (Math.random() * 50) - 25; 
-            // Diferença técnica influencia, mas o random deixa vivo
             let base = 50 + (sHome.mid - sAway.mid) * 1.5; 
-            
             stats.homePos = Math.max(25, Math.min(75, Math.round(base + randomSwing)));
             
             document.getElementById('stat-pos-h').innerText = stats.homePos+"%"; 
@@ -408,6 +405,7 @@
             renderizarSidebars();
         }
 
+        // --- FUNÇÃO FINALIZAR (CORRIGIDA V2 - RACE CONDITION FIX) ---
         function finalizarPartida() {
             try {
                 const st = gameState.jogadoresStatus || {};
@@ -426,8 +424,27 @@
                     }
                     gameState.calendario[rIdx].jogos.forEach(j => { if(!j.jogado) Engine.simularJogoCPU(j); });
                 }
-                Engine.atualizarTabela(gameState); gameState.rodadaAtual++; Engine.salvarJogo(gameState);
+                
+                // 1. ATUALIZA A TABELA E PROCESSA FINANCEIRO (DENTRO DA ENGINE)
+                Engine.atualizarTabela(gameState); 
+                
+                // 2. IMPORTANTE: RECARREGA O SAVE PARA PEGAR AS FINANÇAS ATUALIZADAS
+                // (Evita que a mudança de rodada abaixo apague o dinheiro que acabou de entrar)
+                gameState = Engine.carregarJogo();
+                
+                // 3. INCREMENTA RODADA
+                gameState.rodadaAtual++;
+                
+                // 4. DESTRAVA O PAGAMENTO PARA A PRÓXIMA RODADA
+                if(gameState.recursos) gameState.recursos.rodadaFinanceiraProcessada = false;
+                
+                // 5. SALVA TUDO
+                Engine.salvarJogo(gameState);
+                
+                // Feedback visual
+                alert("Fim de jogo! Bilheteria e Salários processados.");
                 window.location.href = 'dashboard.html';
+
             } catch(e) { alert("Erro: "+e); window.location.href='dashboard.html'; }
         }
 
