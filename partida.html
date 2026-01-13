@@ -219,7 +219,7 @@
 
     <div id="fifa-tooltip"><div class="fifa-header"><div class="fifa-ovr" id="tip-ovr">00</div><div class="fifa-info"><div class="fifa-name" id="tip-name">NOME</div><div class="fifa-pos" id="tip-pos">POS</div></div></div><div class="fifa-grid" id="tip-grid"></div></div>
     <div id="goal-overlay"><div class="goal-text">GOL!</div><div class="goal-scorer" id="goal-scorer-name">Jogador</div></div>
-    <div class="version-tag">v4.4 - Financeiro Fix</div>
+    <div class="version-tag">v4.6 - Arena Logic</div>
 
     <script>
         let gameState, homeTeam, awayTeam;
@@ -277,17 +277,44 @@
             document.getElementById('home-name').innerText = homeTeam.nome; document.getElementById('home-logo').src = homeTeam.escudo||"";
             document.getElementById('away-name').innerText = awayTeam.nome; document.getElementById('away-logo').src = awayTeam.escudo||"";
             
+            // --- CÁLCULO DE PÚBLICO E RENDA (CORRIGIDO) ---
             try {
-                if(Engine.estadios && homeTeam.nome === gameState.info.time) {
-                    const bilheteria = Engine.estadios.calcularBilheteria(awayTeam.nome);
-                    document.getElementById('disp-publico').innerText = bilheteria.publico.toLocaleString();
-                    document.getElementById('disp-renda').innerText = bilheteria.rendaTotal.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-                } else {
-                    const fakePub = Math.floor(Math.random() * 40000) + 5000;
-                    document.getElementById('disp-publico').innerText = fakePub.toLocaleString();
-                    document.getElementById('disp-renda').innerText = "---";
+                // 1. Descobre se é Mandante de verdade olhando o calendário
+                const rodadaIdx = gameState.rodadaAtual - 1;
+                let isMandante = true; 
+                let nomeAdversarioReal = awayTeam.nome;
+
+                if(gameState.calendario && gameState.calendario[rodadaIdx]) {
+                    const jogoReal = gameState.calendario[rodadaIdx].jogos.find(j => j.mandante === gameState.info.time || j.visitante === gameState.info.time);
+                    if(jogoReal) {
+                        isMandante = (jogoReal.mandante === gameState.info.time);
+                        nomeAdversarioReal = isMandante ? jogoReal.visitante : jogoReal.mandante;
+                    }
                 }
-            } catch(e) { console.log("Engine de estadio nao carregada"); }
+
+                if(Engine.estadios) {
+                    if (isMandante) {
+                        // JOGANDO EM CASA: Usa cálculo real da Engine
+                        const bilheteria = Engine.estadios.calcularBilheteria(nomeAdversarioReal);
+                        document.getElementById('disp-publico').innerText = bilheteria.publico.toLocaleString();
+                        document.getElementById('disp-renda').innerText = bilheteria.rendaTotal.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+                    } else {
+                        // JOGANDO FORA: Simulação baseada na capacidade do adversário
+                        let capOponente = 20000;
+                        if(Engine.estadios.db[nomeAdversarioReal]) capOponente = Engine.estadios.db[nomeAdversarioReal].cap;
+                        else if(Engine.estadios.db["Padrao"]) capOponente = Engine.estadios.db["Padrao"].cap;
+
+                        // Ocupação realista para fora de casa (40% a 95% do estádio do rival)
+                        const fakePub = Math.floor(capOponente * (0.4 + Math.random() * 0.55));
+                        
+                        document.getElementById('disp-publico').innerText = fakePub.toLocaleString();
+                        document.getElementById('disp-renda').innerText = "R$ --- (Visitante)";
+                    }
+                }
+            } catch(e) { 
+                console.log("Erro ao calcular bilheteria:", e);
+                document.getElementById('disp-publico').innerText = "---";
+            }
 
             iniciarRelogio();
         }
@@ -442,7 +469,7 @@
                 Engine.salvarJogo(gameState);
                 
                 // Feedback visual
-                alert("Fim de jogo! Bilheteria e Salários processados.");
+                alert("Fim de jogo! Resultado e Finanças processados.");
                 window.location.href = 'dashboard.html';
 
             } catch(e) { alert("Erro: "+e); window.location.href='dashboard.html'; }
