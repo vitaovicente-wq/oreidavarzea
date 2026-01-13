@@ -4,237 +4,247 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BRFutebol - Finanças</title>
-    
-    <script src="database_jogadores.js"></script>
     <script src="engine.js"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: #0d1115;
-            --card: #1e272e;
-            --text: #ecf0f1;
-            --green: #2ecc71;
-            --red: #ff4757;
-            --gold: #f1c40f;
-        }
-
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0; padding: 0;
-            display: grid; grid-template-rows: 70px 1fr;
-            height: 100vh; overflow: hidden;
-        }
-
-        /* HEADER */
-        header {
-            background-color: rgba(30, 39, 46, 0.95);
-            border-bottom: 2px solid var(--gold);
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 30px;
-        }
-        .btn-back { background: #444; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-back:hover { background: #555; }
-
-        /* LAYOUT */
-        main {
-            padding: 30px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box;
-            overflow-y: auto;
-        }
-
-        /* CARDS */
-        .card {
-            background: var(--card); border-radius: 12px; padding: 25px;
-            border: 1px solid #333; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
+        :root { --bg-dark: #0f1216; --card: #1e2329; --neon: #00ff88; --red: #ff4757; --orange: #ff9f43; --text: #fff; --border: #333; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text); margin: 0; padding: 20px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* CARD PRINCIPAL (FULL WIDTH) */
-        .hero-card {
-            grid-column: 1 / -1;
-            background: linear-gradient(135deg, #2d3436 0%, #000 100%);
-            border: 1px solid var(--gold);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .hero-val { font-size: 3rem; font-weight: 800; color: #fff; margin-top: 5px; }
-        .hero-label { text-transform: uppercase; color: #888; font-size: 0.9rem; letter-spacing: 1px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        .title { font-family: 'Rajdhani'; font-weight: 800; font-size: 2rem; text-transform: uppercase; }
+        .back-btn { text-decoration: none; color: #ccc; border: 1px solid #444; padding: 8px 20px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s; }
+        .back-btn:hover { border-color: var(--neon); color: var(--neon); }
 
-        /* LISTAS DE VALORES */
-        .finance-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1rem; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .finance-row:last-child { border: none; }
-        .val-plus { color: var(--green); font-weight: bold; font-family: monospace; }
-        .val-minus { color: var(--red); font-weight: bold; font-family: monospace; }
+        .dashboard { display: grid; grid-template-columns: 300px 1fr; gap: 20px; flex: 1; overflow: hidden; }
+        
+        /* SIDEBAR DE RESUMO */
+        .summary-col { display: flex; flex-direction: column; gap: 15px; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+        .card-label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .card-value { font-family: 'Rajdhani'; font-weight: 900; font-size: 2rem; color: #fff; }
+        .card-value.pos { color: var(--neon); }
+        .card-value.neg { color: var(--red); }
 
-        /* BARRA DE ORÇAMENTO */
-        .budget-bar { height: 10px; background: #333; border-radius: 5px; overflow: hidden; margin-top: 20px; }
-        .budget-fill { height: 100%; transition: width 1s; }
-
-        /* TABELA SALÁRIOS */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { text-align: left; color: #888; font-size: 0.8rem; padding-bottom: 10px; border-bottom: 2px solid #444; }
-        td { padding: 12px 0; border-bottom: 1px solid #333; }
-        .salary-val { text-align: right; font-family: monospace; color: #fff; }
-
+        .list-container { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
+        .list-header { padding: 15px; background: rgba(0,0,0,0.2); font-family: 'Rajdhani'; font-weight: 700; border-bottom: 1px solid var(--border); }
+        .trans-list { overflow-y: auto; flex: 1; }
+        .trans-item { display: flex; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
+        .trans-item:last-child { border-bottom: none; }
+        .t-desc { color: #ccc; }
+        .t-val { font-weight: 700; font-family: 'Rajdhani'; }
+        
+        /* ÁREA DO GRÁFICO */
+        .chart-col { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; }
+        .chart-wrapper { flex: 1; position: relative; min-height: 0; }
     </style>
 </head>
 <body>
 
-    <header>
-        <button class="btn-back" onclick="window.location.href='dashboard.html'">⬅ Dashboard</button>
-        <h1 style="color:white; font-size:1.2rem; text-transform:uppercase;">Departamento Financeiro</h1>
-        <div style="width:100px"></div>
-    </header>
+    <div class="header">
+        <div class="title">Departamento Financeiro</div>
+        <a href="dashboard.html" class="back-btn">❮ Voltar</a>
+    </div>
 
-    <main>
-        <div class="card hero-card">
-            <div>
-                <div class="hero-label">Dinheiro em Caixa</div>
-                <div class="hero-val" id="val-caixa">R$ 0</div>
+    <div class="dashboard">
+        <div class="summary-col">
+            <div class="card">
+                <div class="card-label">Saldo em Caixa</div>
+                <div class="card-value" id="disp-saldo">R$ 0,00</div>
             </div>
-            <div style="text-align:right;">
-                <div class="hero-label">Balanço da Temporada</div>
-                <div id="val-projecao" style="font-size:1.5rem; font-weight:bold; margin-top:5px;">R$ 0</div>
-            </div>
-        </div>
-
-        <div class="card">
-            <h3 style="color:var(--green); margin-top:0;">▲ Receitas</h3>
             
-            <div class="finance-row">
-                <span>📺 Cotas de TV</span>
-                <span class="val-plus" id="rec-tv">0</span>
-            </div>
-            <div class="finance-row">
-                <span>👕 Patrocínio Master</span>
-                <span class="val-plus" id="rec-patro">0</span>
-            </div>
-            <div class="finance-row">
-                <span>🎟️ Bilheteria (Acumulado)</span>
-                <span class="val-plus" id="rec-bilh">0</span>
-            </div>
-            <div class="finance-row">
-                <span>🏆 Premiações</span>
-                <span class="val-plus" id="rec-premios">0</span>
+            <div class="list-container">
+                <div class="list-header">Últimos Lançamentos</div>
+                <div class="trans-list" id="lista-transacoes">
+                    </div>
             </div>
         </div>
 
-        <div class="card">
-            <h3 style="color:var(--red); margin-top:0;">▼ Despesas (Anual)</h3>
-            
-            <div class="finance-row">
-                <span>👥 Folha Salarial (Elenco)</span>
-                <span class="val-minus" id="desp-folha">0</span>
-            </div>
-            <div class="finance-row">
-                <span>🏟️ Manutenção Estádio/CT</span>
-                <span class="val-minus" id="desp-manu">0</span>
-            </div>
-            <div class="finance-row">
-                <span>🔄 Transferências</span>
-                <span class="val-minus" id="desp-transf">0</span>
-            </div>
-
-            <div style="margin-top:25px;">
-                <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#aaa; margin-bottom:5px;">
-                    <span>Comprometimento da Receita</span>
-                    <span id="lbl-pct">0%</span>
-                </div>
-                <div class="budget-bar">
-                    <div id="bar-pct" class="budget-fill" style="width:0%; background:var(--green);"></div>
-                </div>
+        <div class="chart-col">
+            <div class="card-label">Fluxo de Caixa (Mensal)</div>
+            <div class="chart-wrapper">
+                <canvas id="finChart"></canvas>
             </div>
         </div>
-
-        <div class="card" style="grid-column: 1 / -1;">
-            <h3 style="color:var(--gold); margin-top:0;">⭐ Folha de Pagamento</h3>
-            <table id="salary-table">
-                <thead>
-                    <tr>
-                        <th>Jogador</th>
-                        <th>Posição</th>
-                        <th>Status</th>
-                        <th style="text-align:right;">Salário Mensal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    </tbody>
-            </table>
-        </div>
-
-    </main>
+    </div>
 
     <script>
         window.onload = function() {
-            if (typeof Engine === 'undefined') { alert("Engine Off"); return; }
-            
-            const gameState = Engine.carregarJogo();
-            if (!gameState) { window.location.href = 'index.html'; return; }
+            const game = Engine.carregarJogo();
+            if(!game) return;
 
-            // Busca o time na estrutura global nova
-            const time = Engine.encontrarTime(gameState, gameState.meuTime);
-            
-            // Inicializa se necessário (compatibilidade)
-            if(!time.financas) {
-                Engine.inicializarFinancas(time);
-                Engine.salvarJogo(gameState);
-            }
+            // 1. ATUALIZA SALDO
+            const saldo = game.recursos.dinheiro;
+            const elSaldo = document.getElementById('disp-saldo');
+            elSaldo.innerText = saldo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            elSaldo.className = `card-value ${saldo >= 0 ? 'pos' : 'neg'}`;
 
-            renderizarTela(time);
+            // 2. LISTA DE TRANSAÇÕES
+            const lista = document.getElementById('lista-transacoes');
+            const historico = game.financas ? game.financas.historico : [];
+            
+            [...historico].reverse().forEach(t => {
+                const div = document.createElement('div');
+                div.className = 'trans-item';
+                const cor = t.tipo === 'entrada' ? 'var(--neon)' : 'var(--red)';
+                const sinal = t.tipo === 'entrada' ? '+' : '';
+                div.innerHTML = `
+                    <span class="t-desc">${t.texto}</span>
+                    <span class="t-val" style="color:${cor}">${sinal} ${t.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                `;
+                lista.appendChild(div);
+            });
+
+            // 3. PREPARAR DADOS DO GRÁFICO (AGRUPADO POR "MÊS" = 4 RODADAS)
+            renderizarGrafico(historico);
         };
 
-        function renderizarTela(time) {
-            const f = time.financas;
-            const m = f.moeda || "R$";
-
-            // 1. Valores Principais
-            document.getElementById('val-caixa').innerText = Engine.formatarDinheiro(f.caixa, m);
-            document.getElementById('rec-tv').innerText = Engine.formatarDinheiro(f.receitas.tv, m);
-            document.getElementById('rec-patro').innerText = Engine.formatarDinheiro(f.receitas.patrocinioMaster, m);
-            document.getElementById('rec-bilh').innerText = Engine.formatarDinheiro(f.receitas.bilheteria, m);
-            document.getElementById('rec-premios').innerText = Engine.formatarDinheiro(f.receitas.premios || 0, m);
-
-            document.getElementById('desp-folha').innerText = Engine.formatarDinheiro(f.despesas.folhaSalarial, m);
-            document.getElementById('desp-manu').innerText = Engine.formatarDinheiro(f.despesas.manutencao, m);
-            document.getElementById('desp-transf').innerText = Engine.formatarDinheiro(f.despesas.transferencias || 0, m);
-
-            // 2. Projeção (Receita Total - Despesa Total)
-            const totalRec = f.receitas.tv + f.receitas.patrocinioMaster + f.receitas.bilheteria + (f.receitas.premios||0);
-            const totalDesp = f.despesas.folhaSalarial + f.despesas.manutencao + (f.despesas.transferencias||0);
-            const balanco = totalRec - totalDesp;
-
-            const elProj = document.getElementById('val-projecao');
-            elProj.innerText = (balanco > 0 ? "+" : "") + Engine.formatarDinheiro(balanco, m);
-            elProj.style.color = balanco >= 0 ? "#2ecc71" : "#ff4757";
-
-            // 3. Barra de Percentual
-            const pct = Math.min(100, Math.floor((totalDesp / totalRec) * 100));
-            document.getElementById('lbl-pct').innerText = pct + "%";
-            document.getElementById('bar-pct').style.width = pct + "%";
+        function renderizarGrafico(historico) {
+            // Agrupa dados
+            const meses = {};
             
-            if(pct > 90) document.getElementById('bar-pct').style.backgroundColor = "#ff4757";
-            else if(pct > 70) document.getElementById('bar-pct').style.backgroundColor = "#f1c40f";
-            else document.getElementById('bar-pct').style.backgroundColor = "#2ecc71";
-
-            // 4. Tabela de Salários
-            const tbody = document.querySelector('#salary-table tbody');
-            
-            // Ordena por salário
-            const elencoOrdenado = [...time.elenco].sort((a,b) => b.salario - a.salario);
-
-            elencoOrdenado.forEach(jog => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><b>${jog.nome}</b> <small style="color:#777">(${jog.forca})</small></td>
-                    <td>${jog.pos}</td>
-                    <td>${jog.carac !== 'Normal' ? '⭐ Estrela' : 'Base'}</td>
-                    <td class="salary-val">${Engine.formatarDinheiro(jog.salario, m)}</td>
-                `;
-                tbody.appendChild(tr);
+            historico.forEach(h => {
+                // Se o histórico não tiver 'rodada', assume 1.
+                // Simulamos Mês: Rodada 1-4 = Mês 1, 5-8 = Mês 2, etc.
+                // Como o objeto histórico original não salvava rodada, vamos inferir pela ordem ou adicionar suporte futuro.
+                // Para simplificar, vamos agrupar sequencialmente em blocos de 4 lançamentos de cada tipo ou usar um índice simulado.
+                // MELHOR: Vamos considerar que cada 5 lançamentos representam um período se não tiver data.
+                
+                // Mas, para ficar perfeito com a engine nova, vamos assumir que o jogo avança.
+                // Vamos criar uma lógica simples: Agrupar por "Rodada" se disponível, ou sequencial.
+                
+                let label = "Atual";
+                // Lógica simples para demonstração visual imediata
+                // Pega os últimos lançamentos e categoriza
             });
+
+            // Como o histórico pode ser antigo e sem data, vamos criar datasets baseados nos tipos
+            // Para o gráfico ficar bonito agora, vamos somar tudo por CATEGORIA.
+            
+            let receitaTotal = 0;
+            let gastoSalario = 0;
+            let gastoManutencao = 0;
+
+            // Simula evolução temporal (acumulado)
+            let labels = [];
+            let dataRec = [];
+            let dataSal = [];
+            let dataMan = [];
+            
+            // Vamos pegar as últimas 10 "rodadas financeiras" (onde houve pagamento de salário)
+            let salariosP = historico.filter(h => h.texto.includes("Salários"));
+            
+            // Se tiver pouco dado, cria fictício pro gráfico não ficar vazio
+            if(salariosP.length < 2) {
+                labels = ["Mês 1", "Mês 2 (Proj)"];
+                dataRec = [0, 0]; 
+                dataSal = [0, 0];
+                dataMan = [0, 0];
+            } else {
+                // Monta timeline baseada nos pagamentos de salário (que ocorrem 1x por rodada)
+                salariosP.forEach((s, i) => {
+                    labels.push(`Rodada ${i+1}`);
+                    dataSal.push(Math.abs(s.valor));
+                    
+                    // Tenta achar manutenção próxima desse salário
+                    // (Lógica aproximada para visualização)
+                    dataMan.push(Math.random() * 50000); // Placeholder até a engine gerar dados reais
+                    dataRec.push(Math.random() * 500000); // Placeholder
+                });
+            }
+
+            // REFAZENDO A LÓGICA PARA DADOS REAIS DA ENGINE ATUALIZADA
+            // O gráfico vai mostrar as últimas entradas reais
+            const chartData = processarDadosReais(historico);
+
+            const ctx = document.getElementById('finChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [
+                        {
+                            label: 'Receitas (Bilheteria/Vendas)',
+                            data: chartData.receitas,
+                            backgroundColor: '#00ff88',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Despesa: Salários',
+                            data: chartData.salarios,
+                            backgroundColor: '#ff4757',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Despesa: Manutenção Arena',
+                            data: chartData.manutencao,
+                            backgroundColor: '#ff9f43', // Laranja
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#fff' } }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: '#333' },
+                            ticks: { color: '#888' } 
+                        },
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: '#fff' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function processarDadosReais(historico) {
+            let labels = [];
+            let receitas = [];
+            let salarios = [];
+            let manutencao = [];
+
+            // Agrupa por índice sequencial de eventos de "fechamento de caixa"
+            // Vamos varrer o histórico. Toda vez que acharmos "Salários", fechamos um bloco (uma rodada)
+            
+            let tempRec = 0;
+            let tempSal = 0;
+            let tempMan = 0;
+            let rodadaCount = 1;
+
+            // Inverter para processar do antigo pro novo
+            const histCronologico = [...historico]; 
+
+            histCronologico.forEach(h => {
+                if(h.tipo === 'entrada') tempRec += h.valor;
+                if(h.texto.includes("Salários")) tempSal += Math.abs(h.valor);
+                if(h.texto.includes("Manutenção")) tempMan += Math.abs(h.valor);
+
+                // Gatilho: Se pagou salário, fecha a coluna do gráfico
+                if(h.texto.includes("Salários")) {
+                    labels.push(`Rod ${rodadaCount}`);
+                    receitas.push(tempRec);
+                    salarios.push(tempSal);
+                    manutencao.push(tempMan);
+                    
+                    // Reseta para proxima
+                    tempRec = 0; tempSal = 0; tempMan = 0;
+                    rodadaCount++;
+                }
+            });
+
+            // Se não tiver dados suficientes, cria um dummy inicial zerado
+            if(labels.length === 0) {
+                return { labels: ["Início"], receitas: [0], salarios: [0], manutencao: [0] };
+            }
+
+            return { labels, receitas, salarios, manutencao };
         }
     </script>
 </body>
