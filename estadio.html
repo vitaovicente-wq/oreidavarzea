@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRFutebol - Gestão de Estádio</title>
+    <script src="engine.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg-dark: #0f1216; --card: #1e2329; --neon: #00ff88; --text: #fff; --border: #333; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text); margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        .header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #161b22; }
+        .title { font-family: 'Rajdhani'; font-weight: 800; font-size: 1.5rem; text-transform: uppercase; }
+        .back-btn { text-decoration: none; color: #ccc; border: 1px solid #444; padding: 5px 15px; border-radius: 4px; font-size: 0.9rem; }
+
+        .main-container { flex: 1; display: grid; grid-template-columns: 1fr 350px; gap: 20px; padding: 20px; overflow-y: auto; }
+
+        /* VISUAL DO ESTADIO */
+        .stadium-view { background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1522770179533-24471fcdba45?q=80&w=1000&auto=format&fit=crop'); background-size: cover; background-position: center; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; justify-content: flex-end; padding: 30px; position: relative; }
+        .stadium-info h1 { font-family: 'Rajdhani'; font-size: 3rem; margin: 0; line-height: 1; text-shadow: 0 4px 10px #000; }
+        .stadium-info p { margin: 5px 0 0 0; color: #ccc; font-size: 1.2rem; text-shadow: 0 2px 5px #000; }
+        .cap-badge { background: var(--neon); color: #000; padding: 5px 10px; border-radius: 4px; font-weight: 800; display: inline-block; margin-top: 10px; font-family: 'Rajdhani'; }
+
+        /* PAINEL DE PREÇOS */
+        .controls-panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        .panel-title { font-family: 'Rajdhani'; font-weight: 700; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 10px; }
+        
+        .price-control { display: flex; flex-direction: column; gap: 5px; }
+        .pc-label { font-size: 0.85rem; color: #888; display: flex; justify-content: space-between; }
+        .pc-input-group { display: flex; align-items: center; gap: 10px; }
+        .pc-input { background: #000; border: 1px solid #444; color: #fff; padding: 8px; border-radius: 4px; width: 100px; text-align: right; font-weight: 700; }
+        input[type=range] { flex: 1; accent-color: var(--neon); cursor: pointer; }
+
+        .projection-box { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px dashed #444; margin-top: auto; }
+        .proj-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 5px; color: #aaa; }
+        .proj-total { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 700; color: var(--neon); margin-top: 10px; border-top: 1px solid #444; padding-top: 5px; font-family: 'Rajdhani'; }
+
+        .save-btn { background: var(--neon); color: #000; border: none; padding: 15px; width: 100%; border-radius: 6px; font-weight: 800; font-family: 'Rajdhani'; font-size: 1.2rem; cursor: pointer; text-transform: uppercase; margin-top: 20px; }
+        .save-btn:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(0,255,136,0.3); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="title">Gestão de Arena</div>
+        <a href="dashboard.html" class="back-btn">❮ Voltar ao Menu</a>
+    </div>
+
+    <div class="main-container">
+        
+        <div class="stadium-view">
+            <div class="stadium-info">
+                <h1 id="std-name">Nome do Estádio</h1>
+                <p>Casa do <span id="team-name">Time</span></p>
+                <div class="cap-badge">CAPACIDADE: <span id="std-cap">00.000</span></div>
+            </div>
+        </div>
+
+        <div class="controls-panel">
+            <div class="panel-title">Definição de Preços (R$)</div>
+
+            <div class="price-control">
+                <div class="pc-label"><span>Arquibancada / Geral</span> <span id="val-geral">R$ 40</span></div>
+                <div class="pc-input-group">
+                    <input type="range" min="10" max="200" value="40" id="range-geral" oninput="updateVal('geral')">
+                </div>
+            </div>
+
+            <div class="price-control">
+                <div class="pc-label"><span>Cadeiras Numeradas</span> <span id="val-cadeiras">R$ 80</span></div>
+                <div class="pc-input-group">
+                    <input type="range" min="30" max="400" value="80" id="range-cadeiras" oninput="updateVal('cadeiras')">
+                </div>
+            </div>
+
+            <div class="price-control">
+                <div class="pc-label"><span>Camarote / VIP</span> <span id="val-vip">R$ 250</span></div>
+                <div class="pc-input-group">
+                    <input type="range" min="100" max="1000" value="250" id="range-vip" oninput="updateVal('vip')">
+                </div>
+            </div>
+
+            <div class="price-control">
+                <div class="pc-label"><span>Estacionamento</span> <span id="val-park">R$ 30</span></div>
+                <div class="pc-input-group">
+                    <input type="range" min="0" max="100" value="30" id="range-park" oninput="updateVal('park')">
+                </div>
+            </div>
+
+            <div class="projection-box">
+                <div class="panel-title" style="font-size:1rem; color:#888;">Estimativa Próximo Jogo</div>
+                <div class="proj-row"><span>Público Estimado:</span> <span id="proj-pub">0</span></div>
+                <div class="proj-row"><span>Ocupação:</span> <span id="proj-ocup">0%</span></div>
+                <div class="proj-total"><span>Renda Prevista:</span> <span id="proj-money">R$ 0,00</span></div>
+            </div>
+
+            <button class="save-btn" onclick="salvarAlteracoes()">Salvar Alterações</button>
+        </div>
+
+    </div>
+
+    <script>
+        let estadioDados = null;
+
+        window.onload = function() {
+            // Carrega Engine e Dados
+            const game = Engine.carregarJogo();
+            if(!game) return;
+
+            document.getElementById('team-name').innerText = game.info.time;
+            
+            // Pega dados do estádio (Engine atualizada)
+            estadioDados = Engine.estadios.getEstadio();
+            
+            document.getElementById('std-name').innerText = estadioDados.nome;
+            document.getElementById('std-cap').innerText = estadioDados.cap.toLocaleString();
+
+            // Seta os inputs com os valores atuais
+            setSlider('geral', estadioDados.precos.geral);
+            setSlider('cadeiras', estadioDados.precos.cadeiras);
+            setSlider('vip', estadioDados.precos.vip);
+            setSlider('park', estadioDados.precos.estacionamento);
+
+            calcularProjecao();
+        };
+
+        function setSlider(id, val) {
+            document.getElementById('range-'+id).value = val;
+            document.getElementById('val-'+id).innerText = "R$ " + val;
+        }
+
+        function updateVal(id) {
+            const val = document.getElementById('range-'+id).value;
+            document.getElementById('val-'+id).innerText = "R$ " + val;
+            calcularProjecao();
+        }
+
+        function calcularProjecao() {
+            // Cria um objeto temporário com os preços da tela para simular
+            const tempPrecos = {
+                geral: parseInt(document.getElementById('range-geral').value),
+                cadeiras: parseInt(document.getElementById('range-cadeiras').value),
+                vip: parseInt(document.getElementById('range-vip').value),
+                estacionamento: parseInt(document.getElementById('range-park').value)
+            };
+
+            // Injeta temporariamente na engine para calcular
+            const original = estadioDados.precos;
+            estadioDados.precos = tempPrecos;
+            
+            // Simula contra um time "Padrão" para ver a média
+            const sim = Engine.estadios.calcularBilheteria("Time Médio");
+            
+            // Reverte
+            estadioDados.precos = original;
+
+            // Atualiza UI
+            document.getElementById('proj-pub').innerText = sim.publico.toLocaleString() + " pagantes";
+            const ocup = Math.round((sim.publico / estadioDados.cap) * 100);
+            document.getElementById('proj-ocup').innerText = ocup + "%";
+            
+            // Cor da ocupação
+            const elOcup = document.getElementById('proj-ocup');
+            elOcup.style.color = ocup < 30 ? '#ff4757' : (ocup > 80 ? '#00ff88' : '#fff');
+
+            document.getElementById('proj-money').innerText = sim.rendaTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function salvarAlteracoes() {
+            const novosPrecos = {
+                geral: parseInt(document.getElementById('range-geral').value),
+                cadeiras: parseInt(document.getElementById('range-cadeiras').value),
+                vip: parseInt(document.getElementById('range-vip').value),
+                estacionamento: parseInt(document.getElementById('range-park').value)
+            };
+            
+            Engine.estadios.salvarPrecos(novosPrecos);
+            alert("Preços atualizados com sucesso!");
+        }
+    </script>
+</body>
+</html>
