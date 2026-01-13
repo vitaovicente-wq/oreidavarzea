@@ -152,7 +152,7 @@
         <a class="menu-btn" href="calendario.html">📅 Calendário</a>
         <a class="menu-btn" href="classificacao.html">🏆 Classificação</a>
         <a class="menu-btn" href="estadio.html">🏟️ Estádio</a>
-        <a class="menu-btn" onclick="alert('Em breve: Mercado da Bola')">💰 Transferências</a>
+        <a class="menu-btn" href="financeiro.html">💰 Finanças</a> <a class="menu-btn" href="mensagens.html">📩 Mensagens <span id="badge-msg" class="badge">0</span></a>
         <a class="menu-btn logout" onclick="sair()">✖ Sair</a>
     </nav>
 
@@ -232,7 +232,11 @@
                 // 1. Preenche Topo
                 document.getElementById('team-name').innerText = game.info.time;
                 document.getElementById('coach-name').innerText = "Manager: " + game.info.tecnico;
-                document.getElementById('money-display').innerText = "R$ " + (game.recursos.dinheiro / 1000000).toFixed(1) + " Mi";
+                
+                // ATUALIZAÇÃO DO ORÇAMENTO (Formatação melhorada)
+                const dinheiro = game.recursos.dinheiro || 0;
+                document.getElementById('money-display').innerText = dinheiro.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                
                 document.getElementById('round-display').innerText = game.rodadaAtual;
 
                 // 2. Renderiza Próximo Jogo
@@ -240,6 +244,24 @@
                 
                 // 3. Renderiza Elenco com Atributos e Saúde
                 try { renderizarElencoPro(game); } catch(e) { console.error("Erro no elenco:", e); }
+
+                // 4. Badge de Mensagens (Opcional, se existir elemento)
+                const badge = document.getElementById('badge-msg');
+                if(badge && game.mensagens) {
+                    const naoLidas = game.mensagens.filter(m => !m.lida).length;
+                    if(naoLidas > 0) {
+                        badge.innerText = naoLidas;
+                        badge.style.display = 'inline-block';
+                        badge.style.background = '#ff4757';
+                        badge.style.color = '#fff';
+                        badge.style.fontSize = '0.7rem';
+                        badge.style.padding = '2px 6px';
+                        badge.style.borderRadius = '10px';
+                        badge.style.marginLeft = '5px';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
 
             } catch (err) {
                 alert("Erro ao carregar dashboard: " + err.message);
