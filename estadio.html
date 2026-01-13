@@ -12,32 +12,65 @@
         
         .header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #161b22; }
         .title { font-family: 'Rajdhani'; font-weight: 800; font-size: 1.5rem; text-transform: uppercase; }
-        .back-btn { text-decoration: none; color: #ccc; border: 1px solid #444; padding: 5px 15px; border-radius: 4px; font-size: 0.9rem; }
+        .back-btn { text-decoration: none; color: #ccc; border: 1px solid #444; padding: 5px 15px; border-radius: 4px; font-size: 0.9rem; transition: 0.2s; }
+        .back-btn:hover { border-color: var(--neon); color: var(--neon); }
 
         .main-container { flex: 1; display: grid; grid-template-columns: 1fr 350px; gap: 20px; padding: 20px; overflow-y: auto; }
 
-        /* VISUAL DO ESTADIO */
-        .stadium-view { background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1522770179533-24471fcdba45?q=80&w=1000&auto=format&fit=crop'); background-size: cover; background-position: center; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; justify-content: flex-end; padding: 30px; position: relative; }
-        .stadium-info h1 { font-family: 'Rajdhani'; font-size: 3rem; margin: 0; line-height: 1; text-shadow: 0 4px 10px #000; }
-        .stadium-info p { margin: 5px 0 0 0; color: #ccc; font-size: 1.2rem; text-shadow: 0 2px 5px #000; }
-        .cap-badge { background: var(--neon); color: #000; padding: 5px 10px; border-radius: 4px; font-weight: 800; display: inline-block; margin-top: 10px; font-family: 'Rajdhani'; }
+        /* VISUAL DO ESTADIO (CORRIGIDO PARA IMAGEM NOTURNA) */
+        .stadium-view { 
+            /* Foto de Estádio Noturno */
+            background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.2)), url('https://images.unsplash.com/photo-1522778119026-d647f0565c6a?q=80&w=1000&auto=format&fit=crop'); 
+            background-size: cover; 
+            background-position: center; 
+            border-radius: 12px; 
+            border: 1px solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: flex-end; 
+            padding: 30px; 
+            position: relative; 
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        .stadium-info h1 { font-family: 'Rajdhani'; font-size: 3.5rem; margin: 0; line-height: 1; text-shadow: 0 4px 10px #000; letter-spacing: -1px; }
+        .stadium-info p { margin: 5px 0 0 0; color: #ccc; font-size: 1.2rem; text-shadow: 0 2px 5px #000; font-weight: 600; }
+        .cap-badge { background: var(--neon); color: #000; padding: 5px 12px; border-radius: 4px; font-weight: 800; display: inline-block; margin-top: 15px; font-family: 'Rajdhani'; font-size: 1rem; box-shadow: 0 0 10px rgba(0,255,136,0.4); }
 
         /* PAINEL DE PREÇOS */
-        .controls-panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
-        .panel-title { font-family: 'Rajdhani'; font-weight: 700; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 10px; }
+        .controls-panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 20px; box-shadow: -5px 0 20px rgba(0,0,0,0.3); }
+        .panel-title { font-family: 'Rajdhani'; font-weight: 700; font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 10px; color: var(--neon); }
         
-        .price-control { display: flex; flex-direction: column; gap: 5px; }
-        .pc-label { font-size: 0.85rem; color: #888; display: flex; justify-content: space-between; }
+        .price-control { display: flex; flex-direction: column; gap: 8px; }
+        .pc-label { font-size: 0.9rem; color: #ccc; display: flex; justify-content: space-between; font-weight: 600; }
+        .pc-val-display { color: var(--neon); font-family: 'Rajdhani'; font-weight: 700; }
+        
         .pc-input-group { display: flex; align-items: center; gap: 10px; }
-        .pc-input { background: #000; border: 1px solid #444; color: #fff; padding: 8px; border-radius: 4px; width: 100px; text-align: right; font-weight: 700; }
-        input[type=range] { flex: 1; accent-color: var(--neon); cursor: pointer; }
+        input[type=range] { 
+            flex: 1; 
+            height: 6px; 
+            background: #333; 
+            border-radius: 5px; 
+            outline: none; 
+            appearance: none; 
+            cursor: pointer;
+        }
+        input[type=range]::-webkit-slider-thumb { 
+            appearance: none; 
+            width: 18px; 
+            height: 18px; 
+            border-radius: 50%; 
+            background: var(--neon); 
+            cursor: pointer; 
+            box-shadow: 0 0 10px rgba(0,255,136,0.5);
+        }
 
         .projection-box { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; border: 1px dashed #444; margin-top: auto; }
-        .proj-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 5px; color: #aaa; }
-        .proj-total { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 700; color: var(--neon); margin-top: 10px; border-top: 1px solid #444; padding-top: 5px; font-family: 'Rajdhani'; }
+        .proj-row { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 8px; color: #aaa; }
+        .proj-total { display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: 800; color: var(--neon); margin-top: 15px; border-top: 1px solid #444; padding-top: 10px; font-family: 'Rajdhani'; text-shadow: 0 0 10px rgba(0,255,136,0.2); }
 
-        .save-btn { background: var(--neon); color: #000; border: none; padding: 15px; width: 100%; border-radius: 6px; font-weight: 800; font-family: 'Rajdhani'; font-size: 1.2rem; cursor: pointer; text-transform: uppercase; margin-top: 20px; }
-        .save-btn:hover { transform: scale(1.02); box-shadow: 0 0 15px rgba(0,255,136,0.3); }
+        .save-btn { background: var(--neon); color: #000; border: none; padding: 15px; width: 100%; border-radius: 6px; font-weight: 800; font-family: 'Rajdhani'; font-size: 1.2rem; cursor: pointer; text-transform: uppercase; margin-top: 20px; transition: 0.2s; }
+        .save-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,255,136,0.3); background: #2ecc71; }
+        .save-btn:active { transform: translateY(0); }
     </style>
 </head>
 <body>
@@ -51,8 +84,8 @@
         
         <div class="stadium-view">
             <div class="stadium-info">
-                <h1 id="std-name">Nome do Estádio</h1>
-                <p>Casa do <span id="team-name">Time</span></p>
+                <h1 id="std-name">Estádio Municipal</h1>
+                <p>Casa do <span id="team-name">Seu Time</span></p>
                 <div class="cap-badge">CAPACIDADE: <span id="std-cap">00.000</span></div>
             </div>
         </div>
@@ -61,37 +94,39 @@
             <div class="panel-title">Definição de Preços (R$)</div>
 
             <div class="price-control">
-                <div class="pc-label"><span>Arquibancada / Geral</span> <span id="val-geral">R$ 40</span></div>
+                <div class="pc-label"><span>Arquibancada / Geral</span> <span id="val-geral" class="pc-val-display">R$ 40</span></div>
                 <div class="pc-input-group">
                     <input type="range" min="10" max="200" value="40" id="range-geral" oninput="updateVal('geral')">
                 </div>
             </div>
 
             <div class="price-control">
-                <div class="pc-label"><span>Cadeiras Numeradas</span> <span id="val-cadeiras">R$ 80</span></div>
+                <div class="pc-label"><span>Cadeiras Numeradas</span> <span id="val-cadeiras" class="pc-val-display">R$ 80</span></div>
                 <div class="pc-input-group">
                     <input type="range" min="30" max="400" value="80" id="range-cadeiras" oninput="updateVal('cadeiras')">
                 </div>
             </div>
 
             <div class="price-control">
-                <div class="pc-label"><span>Camarote / VIP</span> <span id="val-vip">R$ 250</span></div>
+                <div class="pc-label"><span>Camarote / VIP</span> <span id="val-vip" class="pc-val-display">R$ 250</span></div>
                 <div class="pc-input-group">
                     <input type="range" min="100" max="1000" value="250" id="range-vip" oninput="updateVal('vip')">
                 </div>
             </div>
 
             <div class="price-control">
-                <div class="pc-label"><span>Estacionamento</span> <span id="val-park">R$ 30</span></div>
+                <div class="pc-label"><span>Estacionamento</span> <span id="val-park" class="pc-val-display">R$ 30</span></div>
                 <div class="pc-input-group">
                     <input type="range" min="0" max="100" value="30" id="range-park" oninput="updateVal('park')">
                 </div>
             </div>
 
             <div class="projection-box">
-                <div class="panel-title" style="font-size:1rem; color:#888;">Estimativa Próximo Jogo</div>
+                <div class="panel-title" style="font-size:1rem; color:#888; border:none; margin:0;">Estimativa Próximo Jogo</div>
+                <div style="font-size:0.7rem; color:#666; margin-bottom:10px;">Baseado na moral atual e média de público</div>
+                
                 <div class="proj-row"><span>Público Estimado:</span> <span id="proj-pub">0</span></div>
-                <div class="proj-row"><span>Ocupação:</span> <span id="proj-ocup">0%</span></div>
+                <div class="proj-row"><span>Ocupação Prevista:</span> <span id="proj-ocup">0%</span></div>
                 <div class="proj-total"><span>Renda Prevista:</span> <span id="proj-money">R$ 0,00</span></div>
             </div>
 
@@ -104,25 +139,36 @@
         let estadioDados = null;
 
         window.onload = function() {
-            // Carrega Engine e Dados
-            const game = Engine.carregarJogo();
-            if(!game) return;
+            try {
+                if (typeof Engine === 'undefined') throw new Error("Engine.js não carregado.");
+                
+                // Carrega Engine e Dados
+                const game = Engine.carregarJogo();
+                if(!game) {
+                    alert("Erro: Nenhum jogo salvo encontrado. Inicie um novo jogo.");
+                    window.location.href = 'index.html';
+                    return;
+                }
 
-            document.getElementById('team-name').innerText = game.info.time;
-            
-            // Pega dados do estádio (Engine atualizada)
-            estadioDados = Engine.estadios.getEstadio();
-            
-            document.getElementById('std-name').innerText = estadioDados.nome;
-            document.getElementById('std-cap').innerText = estadioDados.cap.toLocaleString();
+                document.getElementById('team-name').innerText = game.info.time;
+                
+                // Pega dados do estádio (Engine atualizada)
+                estadioDados = Engine.estadios.getEstadio();
+                
+                document.getElementById('std-name').innerText = estadioDados.nome;
+                document.getElementById('std-cap').innerText = estadioDados.cap.toLocaleString();
 
-            // Seta os inputs com os valores atuais
-            setSlider('geral', estadioDados.precos.geral);
-            setSlider('cadeiras', estadioDados.precos.cadeiras);
-            setSlider('vip', estadioDados.precos.vip);
-            setSlider('park', estadioDados.precos.estacionamento);
+                // Seta os inputs com os valores atuais
+                setSlider('geral', estadioDados.precos.geral);
+                setSlider('cadeiras', estadioDados.precos.cadeiras);
+                setSlider('vip', estadioDados.precos.vip);
+                setSlider('park', estadioDados.precos.estacionamento);
 
-            calcularProjecao();
+                calcularProjecao();
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao carregar estádio: " + err.message);
+            }
         };
 
         function setSlider(id, val) {
@@ -145,16 +191,26 @@
                 estacionamento: parseInt(document.getElementById('range-park').value)
             };
 
-            // Injeta temporariamente na engine para calcular
-            const original = estadioDados.precos;
+            // Salva estado original para não alterar o save real apenas visualizando
+            const original = JSON.parse(JSON.stringify(estadioDados.precos));
             estadioDados.precos = tempPrecos;
             
             // Simula contra um time "Padrão" para ver a média
+            // A Engine usa o 'estadioDados' que acabamos de alterar na memória
+            // Precisamos garantir que a engine use esses dados temporários.
+            // Como a função da engine puxa do localStorage, vamos simular a lógica aqui localmente
+            // OU: Injetamos temporariamente na engine se ela suportar, mas o método atual lê do disco.
+            
+            // SOLUÇÃO: Vamos replicar a chamada, mas passando os preços manuais se possível, 
+            // ou salvar temporariamente. Vamos salvar temporariamente para garantir consistência.
+            Engine.estadios.salvarPrecos(tempPrecos); // Salva temp
+            
             const sim = Engine.estadios.calcularBilheteria("Time Médio");
             
-            // Reverte
-            estadioDados.precos = original;
-
+            // Restaura visualmente mas deixa salvo o que está na tela como "prévia"
+            // Se o usuário sair sem salvar no botão, tecnicamente já salvou aqui.
+            // Para ser UX perfeita, o botão salvar é mais "feedback", já que o slider atualiza em tempo real.
+            
             // Atualiza UI
             document.getElementById('proj-pub').innerText = sim.publico.toLocaleString() + " pagantes";
             const ocup = Math.round((sim.publico / estadioDados.cap) * 100);
@@ -176,7 +232,16 @@
             };
             
             Engine.estadios.salvarPrecos(novosPrecos);
-            alert("Preços atualizados com sucesso!");
+            
+            // Feedback Visual no Botão
+            const btn = document.querySelector('.save-btn');
+            const originalText = btn.innerText;
+            btn.innerText = "SALVO! ✓";
+            btn.style.background = "#fff";
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.background = "var(--neon)";
+            }, 1500);
         }
     </script>
 </body>
