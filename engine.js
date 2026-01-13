@@ -1,4 +1,4 @@
-// ARQUIVO: engine.js (COMPLETO V5.2 - CORREÇÃO DE INICIALIZAÇÃO FINANCEIRA)
+// ARQUIVO: engine.js (V5.3 - CORREÇÃO DEFINITIVA DO FINANCEIRO)
 
 const Engine = {
     
@@ -81,10 +81,11 @@ const Engine = {
         return saveJson ? JSON.parse(saveJson) : null;
     },
 
-    // --- 4. ATUALIZAÇÃO DA TABELA ---
+    // --- 4. ATUALIZAÇÃO DA TABELA (MODIFICADO PARA SINCRONIZAR FINANCEIRO) ---
     atualizarTabela: function(estadoJogo) {
         const tabela = estadoJogo.classificacao || estadoJogo.tabela;
 
+        // Reseta pontuação para recalcular (garante consistência)
         tabela.forEach(t => {
             t.pts = 0; t.j = 0; t.v = 0; t.e = 0; t.d = 0; t.gp = 0; t.gc = 0; t.sg = 0;
         });
@@ -99,22 +100,27 @@ const Engine = {
 
         tabela.sort((a, b) => b.pts - a.pts || b.v - a.v || b.sg - a.sg || b.gp - a.gp);
         
-        // HOOK FINANCEIRO
+        // --- HOOK FINANCEIRO INTEGRADO ---
+        // Verifica se é a rodada atual e se o jogo do player aconteceu
         const rodadaIdx = estadoJogo.rodadaAtual - 1;
         if(estadoJogo.calendario[rodadaIdx]) {
             const jogoPlayer = estadoJogo.calendario[rodadaIdx].jogos.find(j => j.mandante === estadoJogo.info.time || j.visitante === estadoJogo.info.time);
             
+            // Se o jogo foi jogado e a grana ainda não foi processada
             if (jogoPlayer && jogoPlayer.jogado && !estadoJogo.recursos.rodadaFinanceiraProcessada) {
+                
                 const isMandante = jogoPlayer.mandante === estadoJogo.info.time;
                 const adversario = isMandante ? jogoPlayer.visitante : jogoPlayer.mandante;
                 
-                this.sistema.processarRodadaFinanceira(isMandante, adversario);
-                this.sistema.gerarPropostaTransferencia();
+                // Passamos o 'estadoJogo' para a função modificar DIRETAMENTE na memória
+                this.sistema.processarRodadaFinanceira(estadoJogo, isMandante, adversario);
+                this.sistema.gerarPropostaTransferencia(); 
                 
                 estadoJogo.recursos.rodadaFinanceiraProcessada = true;
             }
         }
 
+        // SALVA TUDO DE UMA VEZ (Tabela + Financeiro)
         this.salvarJogo(estadoJogo);
         return tabela;
     },
@@ -339,8 +345,8 @@ const Engine = {
             Engine.salvarJogo(game);
         },
 
-        processarRodadaFinanceira: function(mandante, adversario) {
-            const game = Engine.carregarJogo();
+        // MODIFICADO: Agora altera o objeto 'game' que vem da memória, NÃO carrega do disco
+        processarRodadaFinanceira: function(game, mandante, adversario) {
             if (!game.financas) game.financas = { saldo: 0, historico: [] };
             
             // 1. Bilheteria (Se Mandante)
@@ -354,10 +360,13 @@ const Engine = {
 
             // 2. Salários (Fixo por rodada)
             let folhaSalarial = 0;
-            const meuTime = Engine.encontrarTime(game.info.time);
-            meuTime.elenco.forEach(j => {
-                folhaSalarial += ((j.forca || 60) * 1500); 
-            });
+            // Busca o elenco dentro do objeto 'game' que estamos manipulando
+            const meuTime = game.times.find(t => t.nome === game.info.time);
+            if(meuTime && meuTime.elenco) {
+                meuTime.elenco.forEach(j => {
+                    folhaSalarial += ((j.forca || 60) * 1500); 
+                });
+            }
             
             game.recursos.dinheiro -= folhaSalarial;
             game.financas.historico.push({ texto: `Salários da Equipe`, valor: -folhaSalarial, tipo: 'saida' });
@@ -369,7 +378,8 @@ const Engine = {
             game.recursos.dinheiro -= custoManutencao;
             game.financas.historico.push({ texto: `Manutenção Arena`, valor: -custoManutencao, tipo: 'saida' });
 
-            Engine.salvarJogo(game);
+            // NOTA: Não chamamos Engine.salvarJogo(game) aqui. 
+            // Quem chama é o 'atualizarTabela', que salva tudo de uma vez.
         },
 
         gerarPropostaTransferencia: function() {
@@ -404,11 +414,11 @@ const Engine = {
             game.recursos.dinheiro += msg.acao.valor;
             game.financas.historico.push({ texto: `Venda: ${msg.acao.nomeJog}`, valor: msg.acao.valor, tipo: 'entrada' });
 
-            const meuTime = Engine.encontrarTime(game.info.time);
-            meuTime.elenco = meuTime.elenco.filter(j => j.uid !== msg.acao.uid);
-            
+            // Atualiza no array de times
             const idxTime = game.times.findIndex(t => t.nome === game.info.time);
-            if(idxTime > -1) game.times[idxTime] = meuTime;
+            if(idxTime > -1) {
+                game.times[idxTime].elenco = game.times[idxTime].elenco.filter(j => j.uid !== msg.acao.uid);
+            }
 
             msg.acao.processada = true;
             msg.corpo += "<br><br><b>[VENDIDO]</b>";
