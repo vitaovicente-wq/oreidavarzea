@@ -1,4 +1,4 @@
-// ARQUIVO: engine.js (COMPLETO V5.0 - LISTA DE ESTÁDIOS TOTAL)
+// ARQUIVO: engine.js (COMPLETO V5.2 - CORREÇÃO DE INICIALIZAÇÃO FINANCEIRA)
 
 const Engine = {
     
@@ -28,6 +28,7 @@ const Engine = {
             pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0
         }));
 
+        // CRIAÇÃO DO ESTADO INICIAL (JÁ COM HISTÓRICO FINANCEIRO)
         const estadoDoJogo = {
             info: {
                 tecnico: localStorage.getItem('brfutebol_tecnico') || "Manager",
@@ -35,12 +36,23 @@ const Engine = {
                 escudo: localStorage.getItem('brfutebol_escudo'),
                 divisao: divisao
             },
-            recursos: { dinheiro: 5000000, moral: 100 },
+            recursos: { 
+                dinheiro: 5000000, 
+                moral: 100,
+                rodadaFinanceiraProcessada: false 
+            },
+            financas: {
+                saldo: 5000000,
+                historico: [
+                    { texto: "Investimento Inicial", valor: 5000000, tipo: "entrada" }
+                ]
+            },
             rodadaAtual: 1,
             times: timesDaLiga,
             calendario: calendarioGerado,
             classificacao: classificacaoInicial,
-            jogadoresStatus: {} 
+            jogadoresStatus: {},
+            mensagens: [] // Inicia caixa de entrada vazia
         };
 
         this.salvarJogo(estadoDoJogo);
@@ -307,7 +319,7 @@ const Engine = {
         }
     },
 
-   // --- 7. SISTEMA FINANCEIRO E MENSAGENS ---
+    // --- 7. SISTEMA FINANCEIRO E MENSAGENS ---
     sistema: {
         novaMensagem: function(titulo, corpo, tipo = 'info', acao = null) {
             const game = Engine.carregarJogo();
@@ -350,8 +362,7 @@ const Engine = {
             game.recursos.dinheiro -= folhaSalarial;
             game.financas.historico.push({ texto: `Salários da Equipe`, valor: -folhaSalarial, tipo: 'saida' });
 
-            // 3. NOVO: Manutenção do Estádio (Custo fixo baseado na capacidade)
-            // Custo estimado: R$ 5,00 por assento por jogo
+            // 3. Manutenção do Estádio
             const dadosEstadio = Engine.estadios.getEstadio();
             const custoManutencao = Math.floor(dadosEstadio.cap * 5); 
             
