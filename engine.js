@@ -1,4 +1,4 @@
-// ARQUIVO: engine.js (V5.3 - CORREÇÃO DEFINITIVA DO FINANCEIRO)
+// ARQUIVO: engine.js (V5.4 - FINANCEIRO SEGURO + PÚBLICO REALISTA)
 
 const Engine = {
     
@@ -28,7 +28,7 @@ const Engine = {
             pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0
         }));
 
-        // CRIAÇÃO DO ESTADO INICIAL (JÁ COM HISTÓRICO FINANCEIRO)
+        // CRIAÇÃO DO ESTADO INICIAL
         const estadoDoJogo = {
             info: {
                 tecnico: localStorage.getItem('brfutebol_tecnico') || "Manager",
@@ -52,7 +52,7 @@ const Engine = {
             calendario: calendarioGerado,
             classificacao: classificacaoInicial,
             jogadoresStatus: {},
-            mensagens: [] // Inicia caixa de entrada vazia
+            mensagens: []
         };
 
         this.salvarJogo(estadoDoJogo);
@@ -81,11 +81,10 @@ const Engine = {
         return saveJson ? JSON.parse(saveJson) : null;
     },
 
-    // --- 4. ATUALIZAÇÃO DA TABELA (MODIFICADO PARA SINCRONIZAR FINANCEIRO) ---
+    // --- 4. ATUALIZAÇÃO DA TABELA ---
     atualizarTabela: function(estadoJogo) {
         const tabela = estadoJogo.classificacao || estadoJogo.tabela;
 
-        // Reseta pontuação para recalcular (garante consistência)
         tabela.forEach(t => {
             t.pts = 0; t.j = 0; t.v = 0; t.e = 0; t.d = 0; t.gp = 0; t.gc = 0; t.sg = 0;
         });
@@ -100,19 +99,17 @@ const Engine = {
 
         tabela.sort((a, b) => b.pts - a.pts || b.v - a.v || b.sg - a.sg || b.gp - a.gp);
         
-        // --- HOOK FINANCEIRO INTEGRADO ---
-        // Verifica se é a rodada atual e se o jogo do player aconteceu
+        // HOOK FINANCEIRO (SINCRONIZADO)
         const rodadaIdx = estadoJogo.rodadaAtual - 1;
         if(estadoJogo.calendario[rodadaIdx]) {
             const jogoPlayer = estadoJogo.calendario[rodadaIdx].jogos.find(j => j.mandante === estadoJogo.info.time || j.visitante === estadoJogo.info.time);
             
-            // Se o jogo foi jogado e a grana ainda não foi processada
             if (jogoPlayer && jogoPlayer.jogado && !estadoJogo.recursos.rodadaFinanceiraProcessada) {
                 
                 const isMandante = jogoPlayer.mandante === estadoJogo.info.time;
                 const adversario = isMandante ? jogoPlayer.visitante : jogoPlayer.mandante;
                 
-                // Passamos o 'estadoJogo' para a função modificar DIRETAMENTE na memória
+                // Passa o objeto para edição direta na memória (evita sobrescrita)
                 this.sistema.processarRodadaFinanceira(estadoJogo, isMandante, adversario);
                 this.sistema.gerarPropostaTransferencia(); 
                 
@@ -120,7 +117,6 @@ const Engine = {
             }
         }
 
-        // SALVA TUDO DE UMA VEZ (Tabela + Financeiro)
         this.salvarJogo(estadoJogo);
         return tabela;
     },
@@ -193,11 +189,10 @@ const Engine = {
     },
 
     // =========================================================================
-    // --- 6. MÓDULO DE ESTÁDIO (LISTA COMPLETA) ---
+    // --- 6. MÓDULO DE ESTÁDIO (ATUALIZADO COM MATEMÁTICA DE PÚBLICO V2) ---
     // =========================================================================
     estadios: {
         db: {
-            // SÃO PAULO
             "Corinthians": { nome: "Neo Química Arena", cap: 49205 },
             "Palmeiras": { nome: "Allianz Parque", cap: 43713 },
             "São Paulo": { nome: "MorumBIS", cap: 66795 },
@@ -209,20 +204,14 @@ const Engine = {
             "Mirassol": { nome: "Maião", cap: 15000 },
             "Ituano": { nome: "Novelli Júnior", cap: 18560 },
             "Botafogo-SP": { nome: "Santa Cruz", cap: 29292 },
-
-            // RIO DE JANEIRO
             "Flamengo": { nome: "Maracanã", cap: 78838 },
             "Fluminense": { nome: "Maracanã", cap: 78838 },
             "Vasco": { nome: "São Januário", cap: 21880 },
             "Botafogo": { nome: "Nilton Santos", cap: 44661 },
-
-            // MINAS GERAIS
             "Atlético-MG": { nome: "Arena MRV", cap: 46000 },
             "Cruzeiro": { nome: "Mineirão", cap: 61846 },
             "América-MG": { nome: "Independência", cap: 23018 },
             "Tombense": { nome: "Almeidão", cap: 6555 },
-
-            // SUL
             "Grêmio": { nome: "Arena do Grêmio", cap: 55662 },
             "Internacional": { nome: "Beira-Rio", cap: 50842 },
             "Juventude": { nome: "Alfredo Jaconi", cap: 19924 },
@@ -234,21 +223,17 @@ const Engine = {
             "Coritiba": { nome: "Couto Pereira", cap: 40502 },
             "Operário-PR": { nome: "Germano Krüger", cap: 10632 },
             "Londrina": { nome: "Estádio do Café", cap: 30000 },
-
-            // NORDESTE
             "Bahia": { nome: "Arena Fonte Nova", cap: 47907 },
             "Vitória": { nome: "Barradão", cap: 30618 },
             "Fortaleza": { nome: "Arena Castelão", cap: 63903 },
             "Ceará": { nome: "Arena Castelão", cap: 63903 },
-            "Sport": { nome: "Arena de Pernambuco", cap: 44300 }, 
+            "Sport": { nome: "Arena de Pernambuco", cap: 44300 },
             "Náutico": { nome: "Aflitos", cap: 22856 },
             "Santa Cruz": { nome: "Arruda", cap: 60044 },
             "CRB": { nome: "Rei Pelé", cap: 17126 },
             "CSA": { nome: "Rei Pelé", cap: 17126 },
             "Sampaio Corrêa": { nome: "Castelão-MA", cap: 40149 },
             "ABC": { nome: "Frasqueirão", cap: 18000 },
-
-            // CENTRO-OESTE & NORTE
             "Cuiabá": { nome: "Arena Pantanal", cap: 44097 },
             "Atlético-GO": { nome: "Antônio Accioly", cap: 12500 },
             "Goiás": { nome: "Serrinha", cap: 14450 },
@@ -256,8 +241,6 @@ const Engine = {
             "Paysandu": { nome: "Curuzu", cap: 16200 },
             "Remo": { nome: "Baenão", cap: 13792 },
             "Amazonas": { nome: "Arena da Amazônia", cap: 44000 },
-
-            // GENÉRICO
             "Padrao": { nome: "Estádio Municipal", cap: 15000 }
         },
 
@@ -286,31 +269,42 @@ const Engine = {
             const estadio = this.getEstadio();
             const moral = game.recursos.moral || 50; 
             
-            let demandaBase = moral / 100; 
-            const grandes = ["Corinthians", "Flamengo", "Palmeiras", "São Paulo", "Vasco", "Grêmio", "Internacional", "Atlético-MG", "Cruzeiro", "Santos"];
+            // 1. BASE: Demanda não garante casa cheia só por ter moral 100
+            let demandaBase = 0.25 + (moral / 180); // Moral 100 dá ~80% de base, Moral 0 dá 25%
+
+            // 2. FATOR ADVERSÁRIO (Peso da camisa rival)
+            const grandes = ["Corinthians", "Flamengo", "Palmeiras", "São Paulo", "Vasco", "Grêmio", "Internacional", "Atlético-MG", "Cruzeiro", "Santos", "Bahia", "Fluminense", "Botafogo"];
+            let fatorRiv = 0.9;
+            if (grandes.includes(adversarioNome)) {
+                fatorRiv = 1.4; // Jogo grande explode a demanda
+            }
+
+            // 3. ALEATORIEDADE (Clima, Dia da semana, Horário)
+            // Varia entre 0.85 (chuva/segunda-feira) até 1.15 (sol/domingo)
+            let fatorClima = 0.85 + Math.random() * 0.3;
+
+            // 4. PREÇO JUSTO vs PREÇO COBRADO (Elasticidade)
+            const precoRef = { geral: 40, cadeiras: 80, vip: 250 };
             
-            if (grandes.includes(adversarioNome)) demandaBase *= 1.4; 
+            const calcularSetor = (capacidadeSetor, precoSetor, precoBase) => {
+                // Se o preço for maior que a base, a demanda cai exponencialmente
+                let relacao = precoBase / precoSetor;
+                if (relacao < 1) relacao = Math.pow(relacao, 1.3); // Penalidade por preço alto
+                
+                let ocupacao = capacidadeSetor * demandaBase * fatorRiv * fatorClima * relacao;
+                return Math.floor(Math.max(0, Math.min(ocupacao, capacidadeSetor)));
+            };
 
             const capGeral = Math.floor(estadio.cap * 0.50);
             const capCadeiras = Math.floor(estadio.cap * 0.40);
             const capVip = Math.floor(estadio.cap * 0.10);
 
-            const fatorFase = 1 + ((moral - 50) / 200);
-            const justo = { geral: 40 * fatorFase, cadeiras: 90 * fatorFase, vip: 280 * fatorFase };
-
-            const calcOcupacao = (cap, preco, ref) => {
-                let atratividade = ref / preco; 
-                let taxaOcupacao = demandaBase * atratividade;
-                taxaOcupacao *= (0.9 + Math.random() * 0.2); 
-                return Math.floor(Math.max(0, Math.min(cap * taxaOcupacao, cap)));
-            };
-
-            const pubGeral = calcOcupacao(capGeral, estadio.precos.geral, justo.geral);
-            const pubCadeiras = calcOcupacao(capCadeiras, estadio.precos.cadeiras, justo.cadeiras);
-            const pubVip = calcOcupacao(capVip, estadio.precos.vip, justo.vip);
+            const pubGeral = calcularSetor(capGeral, estadio.precos.geral, precoRef.geral);
+            const pubCadeiras = calcularSetor(capCadeiras, estadio.precos.cadeiras, precoRef.cadeiras);
+            const pubVip = calcularSetor(capVip, estadio.precos.vip, precoRef.vip);
             
             const publicoTotal = pubGeral + pubCadeiras + pubVip;
-            const carros = Math.floor(publicoTotal * 0.2);
+            const carros = Math.floor(publicoTotal * 0.22); // 22% vão de carro
             const rendaPark = carros * estadio.precos.estacionamento;
 
             const rendaIngressos = (pubGeral * estadio.precos.geral) + 
@@ -345,12 +339,13 @@ const Engine = {
             Engine.salvarJogo(game);
         },
 
-        // MODIFICADO: Agora altera o objeto 'game' que vem da memória, NÃO carrega do disco
+        // PROCESSAMENTO DIRETO (SEM LOAD/SAVE INTERNO)
         processarRodadaFinanceira: function(game, mandante, adversario) {
             if (!game.financas) game.financas = { saldo: 0, historico: [] };
             
             // 1. Bilheteria (Se Mandante)
             if (mandante) {
+                // Chama a função de cálculo atualizada
                 const bilheteria = Engine.estadios.calcularBilheteria(adversario);
                 const renda = bilheteria.rendaTotal;
                 
@@ -360,7 +355,6 @@ const Engine = {
 
             // 2. Salários (Fixo por rodada)
             let folhaSalarial = 0;
-            // Busca o elenco dentro do objeto 'game' que estamos manipulando
             const meuTime = game.times.find(t => t.nome === game.info.time);
             if(meuTime && meuTime.elenco) {
                 meuTime.elenco.forEach(j => {
@@ -377,9 +371,6 @@ const Engine = {
             
             game.recursos.dinheiro -= custoManutencao;
             game.financas.historico.push({ texto: `Manutenção Arena`, valor: -custoManutencao, tipo: 'saida' });
-
-            // NOTA: Não chamamos Engine.salvarJogo(game) aqui. 
-            // Quem chama é o 'atualizarTabela', que salva tudo de uma vez.
         },
 
         gerarPropostaTransferencia: function() {
@@ -414,7 +405,6 @@ const Engine = {
             game.recursos.dinheiro += msg.acao.valor;
             game.financas.historico.push({ texto: `Venda: ${msg.acao.nomeJog}`, valor: msg.acao.valor, tipo: 'entrada' });
 
-            // Atualiza no array de times
             const idxTime = game.times.findIndex(t => t.nome === game.info.time);
             if(idxTime > -1) {
                 game.times[idxTime].elenco = game.times[idxTime].elenco.filter(j => j.uid !== msg.acao.uid);
