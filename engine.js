@@ -1,4 +1,4 @@
-// ARQUIVO: engine.js (V5.4 - FINANCEIRO SEGURO + PÚBLICO REALISTA)
+// ARQUIVO: engine.js (V6.0 - CORREÇÃO FINANCEIRA + SISTEMA DE CALENDÁRIO)
 
 const Engine = {
     
@@ -28,13 +28,16 @@ const Engine = {
             pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0
         }));
 
-        // CRIAÇÃO DO ESTADO INICIAL
+        // --- DEFINIÇÃO DO INÍCIO DO CALENDÁRIO (01/01/2026) ---
+        const dataInicio = new Date('2026-01-01T12:00:00').getTime();
+
         const estadoDoJogo = {
             info: {
                 tecnico: localStorage.getItem('brfutebol_tecnico') || "Manager",
                 time: nomeTimeSelecionado,
                 escudo: localStorage.getItem('brfutebol_escudo'),
-                divisao: divisao
+                divisao: divisao,
+                dataInicio: dataInicio // Salva a data base para cálculos futuros
             },
             recursos: { 
                 dinheiro: 5000000, 
@@ -52,7 +55,7 @@ const Engine = {
             calendario: calendarioGerado,
             classificacao: classificacaoInicial,
             jogadoresStatus: {},
-            mensagens: []
+            mensagens: [] 
         };
 
         this.salvarJogo(estadoDoJogo);
@@ -99,7 +102,7 @@ const Engine = {
 
         tabela.sort((a, b) => b.pts - a.pts || b.v - a.v || b.sg - a.sg || b.gp - a.gp);
         
-        // HOOK FINANCEIRO (SINCRONIZADO)
+        // HOOK FINANCEIRO SINCRONIZADO
         const rodadaIdx = estadoJogo.rodadaAtual - 1;
         if(estadoJogo.calendario[rodadaIdx]) {
             const jogoPlayer = estadoJogo.calendario[rodadaIdx].jogos.find(j => j.mandante === estadoJogo.info.time || j.visitante === estadoJogo.info.time);
@@ -109,7 +112,6 @@ const Engine = {
                 const isMandante = jogoPlayer.mandante === estadoJogo.info.time;
                 const adversario = isMandante ? jogoPlayer.visitante : jogoPlayer.mandante;
                 
-                // Passa o objeto para edição direta na memória (evita sobrescrita)
                 this.sistema.processarRodadaFinanceira(estadoJogo, isMandante, adversario);
                 this.sistema.gerarPropostaTransferencia(); 
                 
@@ -188,9 +190,7 @@ const Engine = {
         return lista;
     },
 
-    // =========================================================================
-    // --- 6. MÓDULO DE ESTÁDIO (ATUALIZADO COM MATEMÁTICA DE PÚBLICO V2) ---
-    // =========================================================================
+    // --- 6. MÓDULO DE ESTÁDIO ---
     estadios: {
         db: {
             "Corinthians": { nome: "Neo Química Arena", cap: 49205 },
@@ -269,42 +269,30 @@ const Engine = {
             const estadio = this.getEstadio();
             const moral = game.recursos.moral || 50; 
             
-            // 1. BASE: Demanda não garante casa cheia só por ter moral 100
-            let demandaBase = 0.25 + (moral / 180); // Moral 100 dá ~80% de base, Moral 0 dá 25%
-
-            // 2. FATOR ADVERSÁRIO (Peso da camisa rival)
-            const grandes = ["Corinthians", "Flamengo", "Palmeiras", "São Paulo", "Vasco", "Grêmio", "Internacional", "Atlético-MG", "Cruzeiro", "Santos", "Bahia", "Fluminense", "Botafogo"];
-            let fatorRiv = 0.9;
-            if (grandes.includes(adversarioNome)) {
-                fatorRiv = 1.4; // Jogo grande explode a demanda
-            }
-
-            // 3. ALEATORIEDADE (Clima, Dia da semana, Horário)
-            // Varia entre 0.85 (chuva/segunda-feira) até 1.15 (sol/domingo)
-            let fatorClima = 0.85 + Math.random() * 0.3;
-
-            // 4. PREÇO JUSTO vs PREÇO COBRADO (Elasticidade)
-            const precoRef = { geral: 40, cadeiras: 80, vip: 250 };
-            
-            const calcularSetor = (capacidadeSetor, precoSetor, precoBase) => {
-                // Se o preço for maior que a base, a demanda cai exponencialmente
-                let relacao = precoBase / precoSetor;
-                if (relacao < 1) relacao = Math.pow(relacao, 1.3); // Penalidade por preço alto
-                
-                let ocupacao = capacidadeSetor * demandaBase * fatorRiv * fatorClima * relacao;
-                return Math.floor(Math.max(0, Math.min(ocupacao, capacidadeSetor)));
-            };
+            let demandaBase = moral / 100; 
+            const grandes = ["Corinthians", "Flamengo", "Palmeiras", "São Paulo", "Vasco", "Grêmio", "Internacional", "Atlético-MG", "Cruzeiro", "Santos"];
+            if (grandes.includes(adversarioNome)) demandaBase *= 1.4; 
 
             const capGeral = Math.floor(estadio.cap * 0.50);
             const capCadeiras = Math.floor(estadio.cap * 0.40);
             const capVip = Math.floor(estadio.cap * 0.10);
 
-            const pubGeral = calcularSetor(capGeral, estadio.precos.geral, precoRef.geral);
-            const pubCadeiras = calcularSetor(capCadeiras, estadio.precos.cadeiras, precoRef.cadeiras);
-            const pubVip = calcularSetor(capVip, estadio.precos.vip, precoRef.vip);
+            const fatorFase = 1 + ((moral - 50) / 200);
+            const justo = { geral: 40 * fatorFase, cadeiras: 90 * fatorFase, vip: 280 * fatorFase };
+
+            const calcOcupacao = (cap, preco, ref) => {
+                let atratividade = ref / preco; 
+                let taxaOcupacao = demandaBase * atratividade;
+                taxaOcupacao *= (0.9 + Math.random() * 0.2); 
+                return Math.floor(Math.max(0, Math.min(cap * taxaOcupacao, cap)));
+            };
+
+            const pubGeral = calcOcupacao(capGeral, estadio.precos.geral, justo.geral);
+            const pubCadeiras = calcOcupacao(capCadeiras, estadio.precos.cadeiras, justo.cadeiras);
+            const pubVip = calcOcupacao(capVip, estadio.precos.vip, justo.vip);
             
             const publicoTotal = pubGeral + pubCadeiras + pubVip;
-            const carros = Math.floor(publicoTotal * 0.22); // 22% vão de carro
+            const carros = Math.floor(publicoTotal * 0.2);
             const rendaPark = carros * estadio.precos.estacionamento;
 
             const rendaIngressos = (pubGeral * estadio.precos.geral) + 
@@ -339,13 +327,11 @@ const Engine = {
             Engine.salvarJogo(game);
         },
 
-        // PROCESSAMENTO DIRETO (SEM LOAD/SAVE INTERNO)
         processarRodadaFinanceira: function(game, mandante, adversario) {
             if (!game.financas) game.financas = { saldo: 0, historico: [] };
             
             // 1. Bilheteria (Se Mandante)
             if (mandante) {
-                // Chama a função de cálculo atualizada
                 const bilheteria = Engine.estadios.calcularBilheteria(adversario);
                 const renda = bilheteria.rendaTotal;
                 
@@ -374,7 +360,7 @@ const Engine = {
         },
 
         gerarPropostaTransferencia: function() {
-            const game = Engine.carregarJogo();
+            const game = Engine.carregarJogo(); // Carrega independente (novo ciclo)
             const meuTime = Engine.encontrarTime(game.info.time);
             
             if(Math.random() > 0.15) return; 
@@ -405,9 +391,9 @@ const Engine = {
             game.recursos.dinheiro += msg.acao.valor;
             game.financas.historico.push({ texto: `Venda: ${msg.acao.nomeJog}`, valor: msg.acao.valor, tipo: 'entrada' });
 
-            const idxTime = game.times.findIndex(t => t.nome === game.info.time);
-            if(idxTime > -1) {
-                game.times[idxTime].elenco = game.times[idxTime].elenco.filter(j => j.uid !== msg.acao.uid);
+            const meuTimeIdx = game.times.findIndex(t => t.nome === game.info.time);
+            if(meuTimeIdx > -1) {
+                game.times[meuTimeIdx].elenco = game.times[meuTimeIdx].elenco.filter(j => j.uid !== msg.acao.uid);
             }
 
             msg.acao.processada = true;
@@ -416,6 +402,30 @@ const Engine = {
             Engine.salvarJogo(game);
             alert(`Negócio fechado! Recebemos R$ ${msg.acao.valor.toLocaleString()}.`);
             location.reload(); 
+        }
+    },
+
+    // --- 8. NOVO SISTEMA DE DATAS (LINEAR) ---
+    data: {
+        // Função para retornar a data formatada
+        getDataAtual: function(rodada) {
+            // Tenta pegar do save, se não tiver, usa padrão
+            const game = Engine.carregarJogo();
+            const startTimestamp = (game && game.info && game.info.dataInicio) ? game.info.dataInicio : new Date('2026-01-01T12:00:00').getTime();
+            
+            // Cada rodada = +7 dias
+            // Rodada 1 = 0 dias passados
+            // Rodada 2 = 7 dias passados
+            const diasPassados = (rodada - 1) * 7;
+            const msPorDia = 86400000;
+            
+            const dataAtual = new Date(startTimestamp + (diasPassados * msPorDia));
+            
+            const dia = String(dataAtual.getDate()).padStart(2, '0');
+            const mes = String(dataAtual.getMonth() + 1).padStart(2, '0');
+            const ano = dataAtual.getFullYear();
+            
+            return `${dia}/${mes}/${ano}`;
         }
     }
 };
