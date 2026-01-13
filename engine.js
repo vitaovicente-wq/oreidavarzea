@@ -307,7 +307,7 @@ const Engine = {
         }
     },
 
-    // --- 7. SISTEMA FINANCEIRO E MENSAGENS ---
+   // --- 7. SISTEMA FINANCEIRO E MENSAGENS ---
     sistema: {
         novaMensagem: function(titulo, corpo, tipo = 'info', acao = null) {
             const game = Engine.carregarJogo();
@@ -350,6 +350,14 @@ const Engine = {
             game.recursos.dinheiro -= folhaSalarial;
             game.financas.historico.push({ texto: `Salários da Equipe`, valor: -folhaSalarial, tipo: 'saida' });
 
+            // 3. NOVO: Manutenção do Estádio (Custo fixo baseado na capacidade)
+            // Custo estimado: R$ 5,00 por assento por jogo
+            const dadosEstadio = Engine.estadios.getEstadio();
+            const custoManutencao = Math.floor(dadosEstadio.cap * 5); 
+            
+            game.recursos.dinheiro -= custoManutencao;
+            game.financas.historico.push({ texto: `Manutenção Arena`, valor: -custoManutencao, tipo: 'saida' });
+
             Engine.salvarJogo(game);
         },
 
@@ -357,7 +365,7 @@ const Engine = {
             const game = Engine.carregarJogo();
             const meuTime = Engine.encontrarTime(game.info.time);
             
-            if(Math.random() > 0.15) return; // 15% chance
+            if(Math.random() > 0.15) return; 
 
             const jogador = meuTime.elenco[Math.floor(Math.random() * meuTime.elenco.length)];
             const valorBase = (jogador.forca * 80000); 
