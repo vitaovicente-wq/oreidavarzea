@@ -43,6 +43,9 @@
         .menu-btn:hover, .menu-btn.active { background: rgba(0, 255, 136, 0.1); color: var(--neon-green); }
         .menu-btn.logout { margin-top: auto; color: var(--red); }
         .menu-btn.logout:hover { background: rgba(255, 71, 87, 0.1); }
+        
+        .badge { background: var(--red); color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; display: none; margin-left: auto; }
+        .badge.show { display: inline-block; }
 
         /* MAIN CONTENT */
         .main-content {
@@ -61,10 +64,11 @@
         .finances { display: flex; gap: 20px; }
         .stat-badge {
             background: #0d1117; padding: 8px 15px; border-radius: 6px; border: 1px solid var(--border);
-            text-align: right;
+            text-align: right; min-width: 120px;
         }
         .stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; display: block; }
         .stat-val { font-family: 'Rajdhani'; font-weight: 700; font-size: 1.2rem; color: var(--neon-green); }
+        .date-val { font-size: 0.85rem; color: #fff; font-weight: 600; margin-top: 2px; display: block; }
 
         /* MATCHDAY BANNER */
         .match-banner {
@@ -152,7 +156,8 @@
         <a class="menu-btn" href="calendario.html">📅 Calendário</a>
         <a class="menu-btn" href="classificacao.html">🏆 Classificação</a>
         <a class="menu-btn" href="estadio.html">🏟️ Estádio</a>
-        <a class="menu-btn" href="financeiro.html">💰 Finanças</a> <a class="menu-btn" href="mensagens.html">📩 Mensagens <span id="badge-msg" class="badge">0</span></a>
+        <a class="menu-btn" href="financeiro.html">💰 Finanças</a>
+        <a class="menu-btn" href="mensagens.html">📩 Mensagens <span id="badge-msg" class="badge">0</span></a>
         <a class="menu-btn logout" onclick="sair()">✖ Sair</a>
     </nav>
 
@@ -169,8 +174,9 @@
                     <span class="stat-val" id="money-display">R$ 0M</span>
                 </div>
                 <div class="stat-badge">
-                    <span class="stat-label">Rodada Atual</span>
+                    <span class="stat-label">Calendário</span>
                     <span class="stat-val" id="round-display">--</span>
+                    <span class="date-val" id="date-display">01/01/2026</span>
                 </div>
             </div>
         </div>
@@ -214,13 +220,13 @@
 
         // LISTA DE ESTÁDIOS REAIS PARA IMERSÃO
         const ESTADIOS_REAIS = {
-            "Corinthians": "Neo Química Arena", "Palmeiras": "Allianz Parque", "São Paulo": "Morumbi",
+            "Corinthians": "Neo Química Arena", "Palmeiras": "Allianz Parque", "São Paulo": "MorumBIS",
             "Santos": "Vila Belmiro", "Flamengo": "Maracanã", "Fluminense": "Maracanã",
             "Vasco": "São Januário", "Botafogo": "Nilton Santos", "Grêmio": "Arena do Grêmio",
             "Internacional": "Beira-Rio", "Atlético-MG": "Arena MRV", "Cruzeiro": "Mineirão",
             "Bahia": "Fonte Nova", "Vitória": "Barradão", "Fortaleza": "Castelão",
             "Ceará": "Castelão", "Athletico-PR": "Ligga Arena", "Coritiba": "Couto Pereira",
-            "Sport": "Ilha do Retiro", "Bragantino": "Nabi Abi Chedid"
+            "Sport": "Ilha do Retiro", "Bragantino": "Nabi Abi Chedid", "Ponte Preta": "Moisés Lucarelli"
         };
 
         window.onload = function() {
@@ -237,7 +243,12 @@
                 const dinheiro = game.recursos.dinheiro || 0;
                 document.getElementById('money-display').innerText = dinheiro.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
                 
-                document.getElementById('round-display').innerText = game.rodadaAtual;
+                document.getElementById('round-display').innerText = "Rodada " + game.rodadaAtual;
+
+                // --- DATA DO JOGO (INTEGRAÇÃO COM ENGINE V6.0) ---
+                if (Engine.data) {
+                    document.getElementById('date-display').innerText = Engine.data.getDataAtual(game.rodadaAtual);
+                }
 
                 // 2. Renderiza Próximo Jogo
                 try { renderizarMatchDay(game); } catch(e) { console.error("Erro no banner:", e); }
@@ -245,21 +256,13 @@
                 // 3. Renderiza Elenco com Atributos e Saúde
                 try { renderizarElencoPro(game); } catch(e) { console.error("Erro no elenco:", e); }
 
-                // 4. Badge de Mensagens (Opcional, se existir elemento)
+                // 4. Badge de Mensagens
                 const badge = document.getElementById('badge-msg');
                 if(badge && game.mensagens) {
                     const naoLidas = game.mensagens.filter(m => !m.lida).length;
                     if(naoLidas > 0) {
                         badge.innerText = naoLidas;
-                        badge.style.display = 'inline-block';
-                        badge.style.background = '#ff4757';
-                        badge.style.color = '#fff';
-                        badge.style.fontSize = '0.7rem';
-                        badge.style.padding = '2px 6px';
-                        badge.style.borderRadius = '10px';
-                        badge.style.marginLeft = '5px';
-                    } else {
-                        badge.style.display = 'none';
+                        badge.classList.add('show');
                     }
                 }
 
