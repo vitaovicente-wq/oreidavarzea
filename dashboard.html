@@ -326,6 +326,112 @@
             "Sport": "Ilha do Retiro", "Bragantino": "Nabi Abi Chedid", "Ponte Preta": "Moisés Lucarelli"
         };
 
+        /* --- BANCO DE DADOS DE INTERAÇÕES --- */
+        const DIALOGOS = {
+            ELOGIAR: {
+                opcoes: [
+                    { id: 'treino', texto: "Elogiar desempenho nos treinos" },
+                    { id: 'forma', texto: "Elogiar fase atual" },
+                    { id: 'lideranca', texto: "Elogiar postura de liderança" }
+                ],
+                respostas: {
+                    sucesso: [
+                        "Obrigado, chefe! Estou dando meu sangue nos treinos.",
+                        "Fico feliz que você notou. Vou continuar assim.",
+                        "É bom ser reconhecido. Isso me motiva muito!",
+                        "Estamos juntos, professor! O grupo está fechado com você.",
+                        "Agradeço a confiança. Sinto que estou na minha melhor forma.",
+                        "Valeu! O trabalho duro compensa.",
+                        "Isso é resultado do trabalho de toda a equipe técnica.",
+                        "Vou continuar focado para não deixar o ritmo cair.",
+                        "Obrigado! Estou me sentindo voando fisicamente.",
+                        "Conta comigo para o que der e vier."
+                    ],
+                    neutro: [
+                        "Obrigado.",
+                        "Ok, vou manter o ritmo.",
+                        "Tudo bem, faço meu trabalho.",
+                        "Sem problemas.",
+                        "É minha obrigação, não é?",
+                        "Certo, professor.",
+                        "Beleza.",
+                        "Seguimos trabalhando.",
+                        "Ok.",
+                        "Hum."
+                    ],
+                    falha: [ 
+                        "Sério? Não achei que treinei tão bem assim.",
+                        "Parece que você só fala isso para me agradar.",
+                        "Menos, professor. Menos.",
+                        "Não precisa de bajulação, eu sei o que faço.",
+                        "Engraçado você dizer isso logo agora que ia pedir aumento.",
+                        "Prefiro que me elogie colocando de titular.",
+                        "Não estou aqui para ouvir elogios, estou aqui para jogar.",
+                        "Hum... tá bom.",
+                        "Você diz isso para todos, né?",
+                        "Guarde os elogios para quando ganharmos o título."
+                    ]
+                }
+            },
+            COBRAR: {
+                opcoes: [
+                    { id: 'raca', texto: "Cobrar mais raça em campo" },
+                    { id: 'tatico', texto: "Cobrar disciplina tática" },
+                    { id: 'extra', texto: "Cobrar comportamento extra-campo" }
+                ],
+                respostas: {
+                    sucesso: [
+                        "Você tem razão. Vou me dedicar mais.",
+                        "Entendido. Não vai se repetir.",
+                        "Peço desculpas ao grupo. Vou melhorar.",
+                        "Pode deixar, vou comer a grama no próximo jogo.",
+                        "Fui mal mesmo. Vou focar mais.",
+                        "A mensagem foi recebida. Mudança de postura já!",
+                        "Reconheço meu erro. Vou dar a volta por cima.",
+                        "Justo. Preciso entregar mais pelo salário que ganho.",
+                        "Tá certo, professor. Vou fechar a boca e trabalhar.",
+                        "Compromisso renovado. Vou provar meu valor."
+                    ],
+                    falha: [
+                        "Você está de marcação comigo?",
+                        "Eu corro por dois nesse time! Cobre os outros!",
+                        "Não concordo. Acho que você está vendo outro jogo.",
+                        "Se não está satisfeito, me coloca na lista de transferências.",
+                        "Sempre sobra pra mim, impressionante.",
+                        "O problema não sou eu, é essa tática furada.",
+                        "Me respeita, tenho história aqui.",
+                        "Não venha levantar a voz pra mim.",
+                        "Falou o Guardiola, né?",
+                        "Ah, me erra. Vou falar com meu empresário."
+                    ]
+                }
+            },
+            PARTIDA: {
+                respostas: [
+                    "Estou sentindo que vou brocar hoje!",
+                    "Jogo difícil, mas vamos pra cima.",
+                    "A torcida vai empurrar a gente.",
+                    "Estou focado. Ninguém passa por mim.",
+                    "Se o time ajudar, eu resolvo.",
+                    "Estou ansioso, é um clássico pra mim.",
+                    "Não podemos perder pontos bobos.",
+                    "O gramado lá é horrível, mas vamos tentar.",
+                    "Estou 100% fisicamente, me deixa jogar os 90 minutos.",
+                    "Tenho um pressentimento bom.",
+                    "Eles são fortes, vamos ter que jogar fechadinho.",
+                    "Só penso na vitória.",
+                    "Vou dar a vida em campo.",
+                    "Aquele lateral deles é fraco, vou explorar ali.",
+                    "Hoje é dia de guerra!",
+                    "Estou tranquilo.",
+                    "Espero que a arbitragem não atrapalhe.",
+                    "Vamos jogar por uma bola.",
+                    "É matar ou morrer.",
+                    "Confio na sua estratégia, professor."
+                ]
+            }
+        };
+
         window.onload = function() {
             try {
                 const game = Engine.carregarJogo();
@@ -487,7 +593,7 @@
             document.getElementById('neg-age').innerText = p.idade + " anos";
             document.getElementById('neg-pos').innerText = p.pos;
             
-            // CORREÇÃO: Removemos o Math.random() e colocamos 0 como padrão
+            // Define 0 se não tiver o dado ainda
             document.getElementById('neg-games').innerText = p.jogos || 0; 
             document.getElementById('neg-goals').innerText = p.gols || 0;
 
@@ -503,10 +609,10 @@
             const chanceRecusa = Math.random();
             if (chanceRecusa < 0.15) {
                 addMsg('cpu', "Chefe, sinceramente? Não estou com cabeça para negociar agora. Vamos focar nos jogos.");
-                ('fechar');
+                showOptions('fechar');
             } else {
                 addMsg('cpu', `Olá mister. Estou disposto a ouvir sua proposta de renovação.`);
-                ('inicio');
+                showOptions('inicio');
             }
         }
         
@@ -520,99 +626,99 @@
             document.getElementById('chat-feed').scrollTop = document.getElementById('chat-feed').scrollHeight;
         }
 
-     /* --- ATUALIZAÇÃO DA FUNÇÃO SHOWOPTIONS --- */
-function showOptions(step) {
-    const area = document.getElementById('neg-controls');
-    area.innerHTML = '';
+        function showOptions(step) {
+            const area = document.getElementById('neg-controls');
+            area.innerHTML = '';
 
-    // MENU PRINCIPAL DE INTERAÇÃO
-    if (step === 'inicio') {
-        area.innerHTML = `
-            <div class="opt-grid">
-                <div class="opt-btn confirm" onclick="iniciarRenovacao()">📄 Renovar Contrato</div>
-                <div class="opt-btn" onclick="abrirMenuElogios()">👍 Elogiar Jogador</div>
-                <div class="opt-btn" onclick="abrirMenuCobranca()">😡 Cobrar Desempenho</div>
-                <div class="opt-btn" onclick="perguntarPartida()">⚽ Sobre o Próximo Jogo</div>
-                <div class="opt-btn cancel" onclick="fecharNegociacao()" style="grid-column: span 2;">Sair da Sala</div>
-            </div>
-        `;
-    } 
+            // MENU PRINCIPAL DE INTERAÇÃO
+            if (step === 'inicio') {
+                area.innerHTML = `
+                    <div class="opt-grid">
+                        <div class="opt-btn confirm" onclick="iniciarRenovacao()">📄 Renovar Contrato</div>
+                        <div class="opt-btn" onclick="abrirMenuElogios()">👍 Elogiar Jogador</div>
+                        <div class="opt-btn" onclick="abrirMenuCobranca()">😡 Cobrar Desempenho</div>
+                        <div class="opt-btn" onclick="perguntarPartida()">⚽ Sobre o Próximo Jogo</div>
+                        <div class="opt-btn cancel" onclick="fecharNegociacao()" style="grid-column: span 2;">Sair da Sala</div>
+                    </div>
+                `;
+            } else if (step === 'fechar') {
+                 area.innerHTML = `<div class="opt-btn cancel" onclick="fecharNegociacao()">Entendo. (Sair)</div>`;
+            }
 
-    // SUB-MENU: ELOGIAR
-    else if (step === 'menu_elogio') {
-        let html = '<div class="opt-grid">';
-        DIALOGOS.ELOGIAR.opcoes.forEach(opt => {
-            html += `<div class="opt-btn" onclick="executarInteracao('ELOGIAR', '${opt.id}')">${opt.texto}</div>`;
-        });
-        html += `<div class="opt-btn cancel" onclick="showOptions('inicio')">🔙 Voltar</div>`;
-        html += '</div>';
-        area.innerHTML = html;
-    }
+            // SUB-MENU: ELOGIAR
+            else if (step === 'menu_elogio') {
+                let html = '<div class="opt-grid">';
+                DIALOGOS.ELOGIAR.opcoes.forEach(opt => {
+                    html += `<div class="opt-btn" onclick="executarInteracao('ELOGIAR', '${opt.id}')">${opt.texto}</div>`;
+                });
+                html += `<div class="opt-btn cancel" onclick="showOptions('inicio')">🔙 Voltar</div>`;
+                html += '</div>';
+                area.innerHTML = html;
+            }
 
-    // SUB-MENU: COBRAR
-    else if (step === 'menu_cobranca') {
-        let html = '<div class="opt-grid">';
-        DIALOGOS.COBRAR.opcoes.forEach(opt => {
-            html += `<div class="opt-btn" onclick="executarInteracao('COBRAR', '${opt.id}')">${opt.texto}</div>`;
-        });
-        html += `<div class="opt-btn cancel" onclick="showOptions('inicio')">🔙 Voltar</div>`;
-        html += '</div>';
-        area.innerHTML = html;
-    }
+            // SUB-MENU: COBRAR
+            else if (step === 'menu_cobranca') {
+                let html = '<div class="opt-grid">';
+                DIALOGOS.COBRAR.opcoes.forEach(opt => {
+                    html += `<div class="opt-btn" onclick="executarInteracao('COBRAR', '${opt.id}')">${opt.texto}</div>`;
+                });
+                html += `<div class="opt-btn cancel" onclick="showOptions('inicio')">🔙 Voltar</div>`;
+                html += '</div>';
+                area.innerHTML = html;
+            }
 
-    // SUB-MENU: RENOVAÇÃO (CÓDIGO ANTIGO MANTIDO AQUI DENTRO)
-    else if (step === 'papel') {
-        area.innerHTML = `
-            <div class="input-group">
-                <span class="input-label">Papel no Time</span>
-                <select id="sel-role" class="neg-input">
-                    <option>Titular Absoluto</option>
-                    <option selected>Importante</option>
-                    <option>Rotação</option>
-                    <option>Reserva</option>
-                </select>
-            </div>
-            <div class="opt-btn confirm" onclick="verificarPapel()">Oferecer Papel</div>
-        `;
-    }
-    // ... (Mantenha os passos 'duracao', 'salario', 'bonus', 'fim' igual ao código anterior)
-    else if (step === 'duracao') {
-        // ... (Mesmo código anterior)
-        area.innerHTML = `
-            <div class="input-group">
-                <span class="input-label">Duração (Anos)</span>
-                <input type="range" min="1" max="5" value="${currentNeg.expectations.years}" class="range-slider" oninput="document.getElementById('val-anos').innerText = this.value + ' anos'">
-                <div id="val-anos" style="text-align:center; color:var(--neon-green); font-weight:bold; margin-top:5px;">${currentNeg.expectations.years} anos</div>
-            </div>
-            <div class="opt-btn confirm" onclick="definirDuracao()">Oferecer Duração</div>
-        `;
-    }
-    else if (step === 'salario') {
-         area.innerHTML = `
-            <div class="input-group">
-                <span class="input-label">Salário Mensal (R$)</span>
-                <input type="number" id="input-sal" class="neg-input" value="${currentNeg.expectations.salary}">
-            </div>
-            <div class="opt-btn confirm" onclick="definirSalario()">Fazer Oferta</div>
-        `;
-    }
-    else if (step === 'bonus') {
-        area.innerHTML = `
-            <div class="input-group">
-                <span class="input-label">Luvas (R$)</span>
-                <input type="number" id="input-bon" class="neg-input" value="10000">
-            </div>
-            <div class="opt-btn confirm" onclick="fecharAcordo()">Finalizar Contrato</div>
-        `;
-    }
-    else if (step === 'fim_renovacao') {
-        area.innerHTML = `<div class="opt-btn confirm" onclick="fecharNegociacao(); location.reload();">Assinar e Sair</div>`;
-    }
-    // FIM DE INTERAÇÃO SIMPLES (Volta pro menu)
-    else if (step === 'voltar_menu') {
-        area.innerHTML = `<div class="opt-btn" onclick="showOptions('inicio')">Continuar Conversando</div>`;
-    }
-}
+            // SUB-MENU: RENOVAÇÃO
+            else if (step === 'papel') {
+                area.innerHTML = `
+                    <div class="input-group">
+                        <span class="input-label">Papel no Time</span>
+                        <select id="sel-role" class="neg-input">
+                            <option>Titular Absoluto</option>
+                            <option selected>Importante</option>
+                            <option>Rotação</option>
+                            <option>Reserva</option>
+                        </select>
+                    </div>
+                    <div class="opt-btn confirm" onclick="verificarPapel()">Oferecer Papel</div>
+                `;
+            }
+            else if (step === 'duracao') {
+                area.innerHTML = `
+                    <div class="input-group">
+                        <span class="input-label">Duração (Anos)</span>
+                        <input type="range" min="1" max="5" value="${currentNeg.expectations.years}" class="range-slider" oninput="document.getElementById('val-anos').innerText = this.value + ' anos'">
+                        <div id="val-anos" style="text-align:center; color:var(--neon-green); font-weight:bold; margin-top:5px;">${currentNeg.expectations.years} anos</div>
+                    </div>
+                    <div class="opt-btn confirm" onclick="definirDuracao()">Oferecer Duração</div>
+                `;
+            }
+            else if (step === 'salario') {
+                area.innerHTML = `
+                    <div class="input-group">
+                        <span class="input-label">Salário Mensal (R$)</span>
+                        <input type="number" id="input-sal" class="neg-input" value="${currentNeg.expectations.salary}">
+                    </div>
+                    <div class="opt-btn confirm" onclick="definirSalario()">Fazer Oferta</div>
+                `;
+            }
+            else if (step === 'bonus') {
+                area.innerHTML = `
+                    <div class="input-group">
+                        <span class="input-label">Luvas (R$)</span>
+                        <input type="number" id="input-bon" class="neg-input" value="10000">
+                    </div>
+                    <div class="opt-btn confirm" onclick="fecharAcordo()">Finalizar Contrato</div>
+                `;
+            }
+            else if (step === 'fim_renovacao') {
+                area.innerHTML = `<div class="opt-btn confirm" onclick="fecharNegociacao(); location.reload();">Assinar e Sair</div>`;
+            }
+            // FIM DE INTERAÇÃO SIMPLES (Volta pro menu)
+            else if (step === 'voltar_menu') {
+                area.innerHTML = `<div class="opt-btn" onclick="showOptions('inicio')">Continuar Conversando</div>`;
+            }
+        }
+
         // --- LÓGICA DE VALIDAÇÃO ---
 
         function verificarPapel() {
@@ -626,7 +732,6 @@ function showOptions(step) {
             const nivelDesejado = niveis[currentNeg.expectations.role] || 0;
 
             setTimeout(() => {
-                // Bug corrigido: Se oferecer menos que o status, ele recusa
                 if (nivelOferta < nivelDesejado) {
                     addMsg('cpu', `Isso é um insulto. Eu sou jogador para ser ${currentNeg.expectations.role}! Se for para ser ${role}, vou embora.`);
                     addMsg('system', "O jogador encerrou a negociação ofendido.");
@@ -644,10 +749,8 @@ function showOptions(step) {
             addMsg('user', `Proponho ${anos} anos de contrato.`);
 
             setTimeout(() => {
-                // Contraproposta de Tempo
                 if (anos !== currentNeg.expectations.years) {
                     addMsg('cpu', `Não concordo. Quero um contrato de ${currentNeg.expectations.years} anos para ter estabilidade.`);
-                    // Permite tentar de novo
                     showOptions('duracao');
                 } else {
                     addMsg('cpu', "O tempo está ótimo. Agora vamos falar de salário.");
@@ -661,12 +764,10 @@ function showOptions(step) {
             currentNeg.offer.salary = val;
             addMsg('user', `Ofereço R$ ${val.toLocaleString()} mensais.`);
             
-            // Margem de negociação (aceita 10% a menos que o desejado)
             const minAceitavel = currentNeg.expectations.salary * 0.9;
 
             setTimeout(() => {
                 if (val < minAceitavel) {
-                    // Contraproposta de Salário
                     addMsg('cpu', `Muito baixo. Minha pedida é R$ ${currentNeg.expectations.salary.toLocaleString()}. Melhore essa oferta.`);
                     showOptions('salario');
                 } else {
@@ -676,9 +777,8 @@ function showOptions(step) {
             }, 1000);
         }
 
-       function fecharAcordo() {
+        function fecharAcordo() {
             const bon = parseInt(document.getElementById('input-bon').value);
-            // Formata para mostrar na mensagem
             const bonFormatado = bon.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
             
             addMsg('user', `E ofereço mais ${bonFormatado} de luvas (bônus de assinatura).`);
@@ -686,256 +786,126 @@ function showOptions(step) {
             setTimeout(() => {
                 const game = Engine.carregarJogo();
                 
-                // VERIFICAÇÃO DE ORÇAMENTO
                 if (game.recursos.dinheiro < bon) {
                     addMsg('system', "❌ ERRO: O clube não tem dinheiro suficiente em caixa para pagar essas luvas.");
-                    showOptions('fechar'); // Força a sair ou renegociar
+                    showOptions('fechar'); 
                     return;
                 }
 
                 addMsg('cpu', "Proposta aceita! Onde eu assino?");
                 
-                // SALVAR NO ENGINE
                 const meuTime = Engine.encontrarTime(game.info.time);
                 const realIdx = meuTime.elenco.findIndex(p => p.nome === currentNeg.player.nome);
                 
                 if (realIdx > -1) {
-                    // 1. Atualiza dados do jogador
                     meuTime.elenco[realIdx].salario = currentNeg.offer.salary;
                     meuTime.elenco[realIdx].papel = currentNeg.offer.role;
                     
-                    // Atualiza Data
                     const partes = Engine.data.getDataAtual(game.rodadaAtual).split('/'); 
                     const novoAno = parseInt(partes[2]) + currentNeg.offer.years;
                     meuTime.elenco[realIdx].contrato = `31/12/${novoAno}`;
                     
-                    // 2. FINANCEIRO: Desconta as luvas do caixa imediatamente
                     game.recursos.dinheiro -= bon;
 
-                    // 3. FINANCEIRO: Recalcula a folha salarial total (opcional, para manter sincronizado)
-                    // Somamos o salário de todo o elenco atualizado
-                    const novaFolha = meuTime.elenco.reduce((total, jog) => total + (jog.salario || 0), 0);
-                    // Se você tiver uma variável de controle de folha em 'recursos', atualize ela:
-                    // game.recursos.folhaSalarial = novaFolha;
-
-                    // Salva o time atualizado
                     const timeIdx = game.times.findIndex(t => t.nome === game.info.time);
                     if(timeIdx > -1) game.times[timeIdx] = meuTime;
                     
                     Engine.salvarJogo(game);
                 }
                 
-                showOptions('fim');
+                showOptions('fim_renovacao');
             }, 1000);
         }
         
-/* --- FUNÇÕES DE NAVEGAÇÃO E LÓGICA DE INTERAÇÃO --- */
+        /* --- FUNÇÕES DE NAVEGAÇÃO E LÓGICA DE INTERAÇÃO --- */
 
-function iniciarRenovacao() {
-    addMsg('user', "Quero renovar seu contrato.");
-    setTimeout(() => {
-        addMsg('cpu', "Ok. Qual papel você vê pra mim?");
-        showOptions('papel');
-    }, 800);
-}
-
-function abrirMenuElogios() { showOptions('menu_elogio'); }
-function abrirMenuCobranca() { showOptions('menu_cobranca'); }
-
-function executarInteracao(tipo, subtipo) {
-    let msgUser = "";
-    
-    // Define mensagem do usuário
-    if (tipo === 'ELOGIAR') {
-        if (subtipo === 'treino') msgUser = "Tenho gostado muito do seu empenho nos treinos.";
-        if (subtipo === 'forma') msgUser = "Você está numa fase espetacular.";
-        if (subtipo === 'lideranca') msgUser = "Sua liderança é fundamental para o grupo.";
-    } else if (tipo === 'COBRAR') {
-        if (subtipo === 'raca') msgUser = "Preciso de mais intensidade. Você está andando em campo!";
-        if (subtipo === 'tatico') msgUser = "Você não está obedecendo a tática. Atenção!";
-        if (subtipo === 'extra') msgUser = "Seu comportamento fora de campo está prejudicando o time.";
-    }
-
-    addMsg('user', msgUser);
-
-    setTimeout(() => {
-        // Lógica de Sucesso/Falha baseada no Humor e RNG
-        const humorAtual = currentNeg.player.humor || 50; // Se não tiver, assume 50
-        const rng = Math.random() * 100;
-        let resultado = 'neutro';
-
-        // ELOGIO: Maior chance de sucesso se humor > 30. Se humor muito baixo, pode achar falso.
-        if (tipo === 'ELOGIAR') {
-            if (humorAtual < 20 && rng > 50) resultado = 'falha'; // Acha falso
-            else if (rng < 70) resultado = 'sucesso';
-            else resultado = 'neutro';
-        }
-        // COBRANÇA: Difícil ter sucesso. Depende de liderança ou profissionalismo (simulado)
-        else if (tipo === 'COBRAR') {
-            if (humorAtual > 80 && rng < 60) resultado = 'sucesso'; // Aceita crítica
-            else if (rng < 40) resultado = 'sucesso';
-            else resultado = 'falha';
+        function iniciarRenovacao() {
+            addMsg('user', "Quero renovar seu contrato.");
+            setTimeout(() => {
+                addMsg('cpu', "Ok. Qual papel você vê pra mim?");
+                showOptions('papel');
+            }, 800);
         }
 
-        // Seleciona Frase do DB
-        const listaFrases = DIALOGOS[tipo].respostas[resultado];
-        const fraseFinal = listaFrases[Math.floor(Math.random() * listaFrases.length)];
+        function abrirMenuElogios() { showOptions('menu_elogio'); }
+        function abrirMenuCobranca() { showOptions('menu_cobranca'); }
 
-        addMsg('cpu', fraseFinal);
+        function executarInteracao(tipo, subtipo) {
+            let msgUser = "";
+            
+            if (tipo === 'ELOGIAR') {
+                if (subtipo === 'treino') msgUser = "Tenho gostado muito do seu empenho nos treinos.";
+                if (subtipo === 'forma') msgUser = "Você está numa fase espetacular.";
+                if (subtipo === 'lideranca') msgUser = "Sua liderança é fundamental para o grupo.";
+            } else if (tipo === 'COBRAR') {
+                if (subtipo === 'raca') msgUser = "Preciso de mais intensidade. Você está andando em campo!";
+                if (subtipo === 'tatico') msgUser = "Você não está obedecendo a tática. Atenção!";
+                if (subtipo === 'extra') msgUser = "Seu comportamento fora de campo está prejudicando o time.";
+            }
 
-        // Atualiza Humor (Gamification)
-        atualizarHumorAposInteracao(tipo, resultado);
+            addMsg('user', msgUser);
 
-        showOptions('voltar_menu');
-    }, 1000);
-}
+            setTimeout(() => {
+                const humorAtual = currentNeg.player.humor || 50; 
+                const rng = Math.random() * 100;
+                let resultado = 'neutro';
 
-function perguntarPartida() {
-    addMsg('user', "O que você espera do próximo jogo?");
-    
-    setTimeout(() => {
-        const lista = DIALOGOS.PARTIDA.respostas;
-        const frase = lista[Math.floor(Math.random() * lista.length)];
-        
-        addMsg('cpu', frase);
-        showOptions('voltar_menu');
-    }, 1000);
-}
+                if (tipo === 'ELOGIAR') {
+                    if (humorAtual < 20 && rng > 50) resultado = 'falha';
+                    else if (rng < 70) resultado = 'sucesso';
+                    else resultado = 'neutro';
+                }
+                else if (tipo === 'COBRAR') {
+                    if (humorAtual > 80 && rng < 60) resultado = 'sucesso'; 
+                    else if (rng < 40) resultado = 'sucesso';
+                    else resultado = 'falha';
+                }
 
-function atualizarHumorAposInteracao(tipo, resultado) {
-    // Carregar jogo para salvar alteração de humor
-    const game = Engine.carregarJogo();
-    const meuTime = Engine.encontrarTime(game.info.time);
-    const pIdx = meuTime.elenco.findIndex(p => p.nome === currentNeg.player.nome);
+                const listaFrases = DIALOGOS[tipo].respostas[resultado];
+                const fraseFinal = listaFrases[Math.floor(Math.random() * listaFrases.length)];
 
-    if (pIdx > -1) {
-        let p = meuTime.elenco[pIdx];
-        if (!p.humor) p.humor = 50; // Inicializa se não existir
-
-        if (tipo === 'ELOGIAR') {
-            if (resultado === 'sucesso') { p.humor = Math.min(100, p.humor + 10); addMsg('system', "Humor melhorou (+10)"); }
-            if (resultado === 'falha') { p.humor = Math.max(0, p.humor - 5); addMsg('system', "Humor piorou (-5)"); }
-        } else if (tipo === 'COBRAR') {
-            if (resultado === 'sucesso') { p.humor = Math.min(100, p.humor + 5); addMsg('system', "Jogador motivado (+5)"); }
-            if (resultado === 'falha') { p.humor = Math.max(0, p.humor - 15); addMsg('system', "Humor piorou muito (-15)"); }
+                addMsg('cpu', fraseFinal);
+                atualizarHumorAposInteracao(tipo, resultado);
+                showOptions('voltar_menu');
+            }, 1000);
         }
 
-        // Salva
-        const timeIdx = game.times.findIndex(t => t.nome === game.info.time);
-        game.times[timeIdx] = meuTime;
-        Engine.salvarJogo(game);
-        
-        // Atualiza objeto local
-        currentNeg.player.humor = p.humor;
-    }
-}
+        function perguntarPartida() {
+            addMsg('user', "O que você espera do próximo jogo?");
+            
+            setTimeout(() => {
+                const lista = DIALOGOS.PARTIDA.respostas;
+                const frase = lista[Math.floor(Math.random() * lista.length)];
+                
+                addMsg('cpu', frase);
+                showOptions('voltar_menu');
+            }, 1000);
+        }
 
-/* --- BANCO DE DADOS DE INTERAÇÕES (30+ VARIAÇÕES) --- */
-const DIALOGOS = {
-    ELOGIAR: {
-        opcoes: [
-            { id: 'treino', texto: "Elogiar desempenho nos treinos" },
-            { id: 'forma', texto: "Elogiar fase atual" },
-            { id: 'lideranca', texto: "Elogiar postura de liderança" }
-        ],
-        respostas: {
-            sucesso: [
-                "Obrigado, chefe! Estou dando meu sangue nos treinos.",
-                "Fico feliz que você notou. Vou continuar assim.",
-                "É bom ser reconhecido. Isso me motiva muito!",
-                "Estamos juntos, professor! O grupo está fechado com você.",
-                "Agradeço a confiança. Sinto que estou na minha melhor forma.",
-                "Valeu! O trabalho duro compensa.",
-                "Isso é resultado do trabalho de toda a equipe técnica.",
-                "Vou continuar focado para não deixar o ritmo cair.",
-                "Obrigado! Estou me sentindo voando fisicamente.",
-                "Conta comigo para o que der e vier."
-            ],
-            neutro: [
-                "Obrigado.",
-                "Ok, vou manter o ritmo.",
-                "Tudo bem, faço meu trabalho.",
-                "Sem problemas.",
-                "É minha obrigação, não é?",
-                "Certo, professor.",
-                "Beleza.",
-                "Seguimos trabalhando.",
-                "Ok.",
-                "Hum."
-            ],
-            falha: [ // Quando o jogador não gosta ou acha falso
-                "Sério? Não achei que treinei tão bem assim.",
-                "Parece que você só fala isso para me agradar.",
-                "Menos, professor. Menos.",
-                "Não precisa de bajulação, eu sei o que faço.",
-                "Engraçado você dizer isso logo agora que ia pedir aumento.",
-                "Prefiro que me elogie colocando de titular.",
-                "Não estou aqui para ouvir elogios, estou aqui para jogar.",
-                "Hum... tá bom.",
-                "Você diz isso para todos, né?",
-                "Guarde os elogios para quando ganharmos o título."
-            ]
+        function atualizarHumorAposInteracao(tipo, resultado) {
+            const game = Engine.carregarJogo();
+            const meuTime = Engine.encontrarTime(game.info.time);
+            const pIdx = meuTime.elenco.findIndex(p => p.nome === currentNeg.player.nome);
+
+            if (pIdx > -1) {
+                let p = meuTime.elenco[pIdx];
+                if (!p.humor) p.humor = 50; 
+
+                if (tipo === 'ELOGIAR') {
+                    if (resultado === 'sucesso') { p.humor = Math.min(100, p.humor + 10); addMsg('system', "Humor melhorou (+10)"); }
+                    if (resultado === 'falha') { p.humor = Math.max(0, p.humor - 5); addMsg('system', "Humor piorou (-5)"); }
+                } else if (tipo === 'COBRAR') {
+                    if (resultado === 'sucesso') { p.humor = Math.min(100, p.humor + 5); addMsg('system', "Jogador motivado (+5)"); }
+                    if (resultado === 'falha') { p.humor = Math.max(0, p.humor - 15); addMsg('system', "Humor piorou muito (-15)"); }
+                }
+
+                const timeIdx = game.times.findIndex(t => t.nome === game.info.time);
+                game.times[timeIdx] = meuTime;
+                Engine.salvarJogo(game);
+                
+                currentNeg.player.humor = p.humor;
+            }
         }
-    },
-    COBRAR: {
-        opcoes: [
-            { id: 'raca', texto: "Cobrar mais raça em campo" },
-            { id: 'tatico', texto: "Cobrar disciplina tática" },
-            { id: 'extra', texto: "Cobrar comportamento extra-campo" }
-        ],
-        respostas: {
-            sucesso: [ // Jogador aceita a crítica (Profissional)
-                "Você tem razão. Vou me dedicar mais.",
-                "Entendido. Não vai se repetir.",
-                "Peço desculpas ao grupo. Vou melhorar.",
-                "Pode deixar, vou comer a grama no próximo jogo.",
-                "Fui mal mesmo. Vou focar mais.",
-                "A mensagem foi recebida. Mudança de postura já!",
-                "Reconheço meu erro. Vou dar a volta por cima.",
-                "Justo. Preciso entregar mais pelo salário que ganho.",
-                "Tá certo, professor. Vou fechar a boca e trabalhar.",
-                "Compromisso renovado. Vou provar meu valor."
-            ],
-            falha: [ // Jogador se revolta (Estrelinha)
-                "Você está de marcação comigo?",
-                "Eu corro por dois nesse time! Cobre os outros!",
-                "Não concordo. Acho que você está vendo outro jogo.",
-                "Se não está satisfeito, me coloca na lista de transferências.",
-                "Sempre sobra pra mim, impressionante.",
-                "O problema não sou eu, é essa tática furada.",
-                "Me respeita, tenho história aqui.",
-                "Não venha levantar a voz pra mim.",
-                "Falou o Guardiola, né?",
-                "Ah, me erra. Vou falar com meu empresário."
-            ]
-        }
-    },
-    PARTIDA: {
-        respostas: [
-            "Estou sentindo que vou brocar hoje!",
-            "Jogo difícil, mas vamos pra cima.",
-            "A torcida vai empurrar a gente.",
-            "Estou focado. Ninguém passa por mim.",
-            "Se o time ajudar, eu resolvo.",
-            "Estou ansioso, é um clássico pra mim.",
-            "Não podemos perder pontos bobos.",
-            "O gramado lá é horrível, mas vamos tentar.",
-            "Estou 100% fisicamente, me deixa jogar os 90 minutos.",
-            "Tenho um pressentimento bom.",
-            "Eles são fortes, vamos ter que jogar fechadinho.",
-            "Só penso na vitória.",
-            "Vou dar a vida em campo.",
-            "Aquele lateral deles é fraco, vou explorar ali.",
-            "Hoje é dia de guerra!",
-            "Estou tranquilo.",
-            "Espero que a arbitragem não atrapalhe.",
-            "Vamos jogar por uma bola.",
-            "É matar ou morrer.",
-            "Confio na sua estratégia, professor."
-        ]
-    }
-};
-        
     </script>
 </body>
 </html>
