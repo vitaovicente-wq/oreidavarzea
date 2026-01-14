@@ -654,29 +654,49 @@
             }, 1000);
         }
 
-        function fecharAcordo() {
+       function fecharAcordo() {
             const bon = parseInt(document.getElementById('input-bon').value);
-            addMsg('user', `E mais R$ ${bon.toLocaleString()} de bônus.`);
+            // Formata para mostrar na mensagem
+            const bonFormatado = bon.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+            
+            addMsg('user', `E ofereço mais ${bonFormatado} de luvas (bônus de assinatura).`);
             
             setTimeout(() => {
-                addMsg('cpu', "Fechado! Onde eu assino?");
+                const game = Engine.carregarJogo();
+                
+                // VERIFICAÇÃO DE ORÇAMENTO
+                if (game.recursos.dinheiro < bon) {
+                    addMsg('system', "❌ ERRO: O clube não tem dinheiro suficiente em caixa para pagar essas luvas.");
+                    showOptions('fechar'); // Força a sair ou renegociar
+                    return;
+                }
+
+                addMsg('cpu', "Proposta aceita! Onde eu assino?");
                 
                 // SALVAR NO ENGINE
-                const game = Engine.carregarJogo();
                 const meuTime = Engine.encontrarTime(game.info.time);
-                
-                // Busca o índice correto
                 const realIdx = meuTime.elenco.findIndex(p => p.nome === currentNeg.player.nome);
                 
                 if (realIdx > -1) {
+                    // 1. Atualiza dados do jogador
                     meuTime.elenco[realIdx].salario = currentNeg.offer.salary;
                     meuTime.elenco[realIdx].papel = currentNeg.offer.role;
                     
-                    // Calcula nova data
+                    // Atualiza Data
                     const partes = Engine.data.getDataAtual(game.rodadaAtual).split('/'); 
                     const novoAno = parseInt(partes[2]) + currentNeg.offer.years;
                     meuTime.elenco[realIdx].contrato = `31/12/${novoAno}`;
                     
+                    // 2. FINANCEIRO: Desconta as luvas do caixa imediatamente
+                    game.recursos.dinheiro -= bon;
+
+                    // 3. FINANCEIRO: Recalcula a folha salarial total (opcional, para manter sincronizado)
+                    // Somamos o salário de todo o elenco atualizado
+                    const novaFolha = meuTime.elenco.reduce((total, jog) => total + (jog.salario || 0), 0);
+                    // Se você tiver uma variável de controle de folha em 'recursos', atualize ela:
+                    // game.recursos.folhaSalarial = novaFolha;
+
+                    // Salva o time atualizado
                     const timeIdx = game.times.findIndex(t => t.nome === game.info.time);
                     if(timeIdx > -1) game.times[timeIdx] = meuTime;
                     
