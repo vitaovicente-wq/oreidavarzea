@@ -86,14 +86,15 @@
 
     <nav class="sidebar">
         <div class="logo">BR<span>FUTEBOL</span></div>
-        <a class="menu-btn" href="dashboard.html">📊 Visão Geral</a>
+        <a class="menu-btn" href="painel.html">📊 Visão Geral</a>
         <a class="menu-btn" href="escalacao.html">👕 Escalação</a>
-        <a class="menu-btn" href="mercado.html">🔄 Mercado</a>
+        <a class="menu-btn active" href="mercado.html">🔄 Mercado</a>
         <a class="menu-btn" href="calendario.html">📅 Calendário</a>
         <a class="menu-btn" href="classificacao.html">🏆 Classificação</a>
         <a class="menu-btn" href="estadio.html">🏟️ Estádio</a>
         <a class="menu-btn" href="financeiro.html">💰 Finanças</a>
         <a class="menu-btn" href="mensagens.html">📩 Mensagens <span id="badge-msg" class="badge">0</span></a>
+        <a class="menu-btn logout" href="index.html">✖ Sair</a>
     </nav>
 
     <main class="main-content">
@@ -147,9 +148,16 @@
             const game = Engine.carregarJogo();
             document.getElementById('money-display').innerText = (game.recursos.dinheiro || 0).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
             
-            // Garante que as listas existam
-            if(!localStorage.getItem('brfutebol_livres')) Engine.Mercado.gerarAgentesLivres();
-            if(!localStorage.getItem('brfutebol_transferencias')) Engine.Mercado.gerarListaTransferencias(game);
+            // Garante que as listas existam e não estejam vazias
+            const livres = localStorage.getItem('brfutebol_livres');
+            if(!livres || JSON.parse(livres).length === 0) {
+                Engine.Mercado.gerarAgentesLivres();
+            }
+
+            const transfer = localStorage.getItem('brfutebol_transferencias');
+            if(!transfer || JSON.parse(transfer).length === 0) {
+                Engine.Mercado.gerarListaTransferencias(game);
+            }
         }
 
         function mudarAba(aba) {
@@ -157,7 +165,7 @@
             
             // Visual dos botões
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active'); // Nota: event.target pode falhar se chamar via JS direto, mas no onclick funciona
+            event.target.classList.add('active'); 
 
             const container = document.getElementById('lista-jogadores');
             container.innerHTML = "";
@@ -166,11 +174,11 @@
 
             if (aba === 'livres') {
                 lista = Engine.Mercado.gerarAgentesLivres();
-                if (lista.length === 0) container.innerHTML = "<p style='color:#666; text-align:center;'>Nenhum jogador livre no momento.</p>";
+                if (lista.length === 0) container.innerHTML = "<p style='color:#666; text-align:center; padding:20px;'>Nenhum jogador livre no momento.</p>";
             } else {
                 const game = Engine.carregarJogo();
                 lista = Engine.Mercado.gerarListaTransferencias(game);
-                if (lista.length === 0) container.innerHTML = "<p style='color:#666; text-align:center;'>Nenhum clube colocou jogadores à venda.</p>";
+                if (lista.length === 0) container.innerHTML = "<p style='color:#666; text-align:center; padding:20px;'>Nenhum clube colocou jogadores à venda.</p>";
             }
 
             lista.forEach(j => {
@@ -224,8 +232,6 @@
             document.getElementById('area-salario').style.display = 'block';
             
             // Sugestão de Salário
-            // Jogador Livre: Pede um pouco mais pois não tem taxa de transferência
-            // Jogador Clube: Salário base padrão
             const fator = abaAtual === 'livres' ? 0.012 : 0.009;
             const salarioSugerido = Math.floor((jogador.forca * 1800) + (jogador.valor * 0.005));
             document.getElementById('input-salario').value = salarioSugerido;
@@ -270,12 +276,12 @@
                 return;
             }
 
-            // 2. Verifica se o Salário é Aceitável (IA Simples)
-            // Expectativa mínima
+            // 2. Verifica se o Salário é Aceitável
+            // CORREÇÃO AQUI: Variavel 'expectativa' estava sendo chamada de 'expectation'
             let expectativa = (jogadorSelecionado.forca * 1500); 
             if (abaAtual === 'livres') expectativa *= 1.2; // Livres pedem mais salário
 
-            if (salarioOferta < expectation) {
+            if (salarioOferta < expectativa) {
                 alert(`O jogador recusou a oferta salarial. Ele pede no mínimo ${expectativa.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}.`);
                 return;
             }
@@ -311,7 +317,7 @@
             
             alert(`Bem-vindo, ${jogadorSelecionado.nome}!`);
             fecharModal();
-            // Recarrega a tela
+            // Recarrega a tela para atualizar o saldo e remover o jogador da lista
             carregarDados();
             mudarAba(abaAtual);
         }
