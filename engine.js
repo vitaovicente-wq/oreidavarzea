@@ -1,4 +1,4 @@
-// ARQUIVO: engine.js (V6.0 - CORREÇÃO FINANCEIRA + SISTEMA DE CALENDÁRIO)
+// ARQUIVO: engine.js (V6.1 - SISTEMA DE CONTRATOS E SALÁRIOS FIXOS)
 
 const Engine = {
     
@@ -13,13 +13,28 @@ const Engine = {
 
         let timesDaLiga = [];
         if (window.Database && window.Database.brasil && window.Database.brasil[divisao]) {
+            // Cria uma cópia profunda para garantir que editaremos o save e não o banco original
             timesDaLiga = JSON.parse(JSON.stringify(window.Database.brasil[divisao]));
         } else {
             timesDaLiga = this._gerarTimesGenericos(divisao);
         }
 
+        // --- DEFINIÇÃO DE CONTRATOS E SALÁRIOS INICIAIS ---
+        const DATA_FIM_PADRAO = "31/12/2026";
+
         timesDaLiga.forEach(t => {
             if (!t.elenco || !Array.isArray(t.elenco)) t.elenco = [];
+            
+            t.elenco.forEach(jogador => {
+                // 1. Define o contrato inicial para todos
+                jogador.contrato = DATA_FIM_PADRAO;
+
+                // 2. Calcula e fixa o salário inicial (para não flutuar se a força mudar)
+                // Fórmula: Força * 1500 (Ex: Força 80 = R$ 120.000)
+                if (!jogador.salario) {
+                    jogador.salario = (jogador.forca || 60) * 1500;
+                }
+            });
         });
 
         const calendarioGerado = CalendarioSystem.gerarCampeonato(timesDaLiga);
@@ -339,12 +354,15 @@ const Engine = {
                 game.financas.historico.push({ texto: `Bilheteria vs ${adversario}`, valor: renda, tipo: 'entrada' });
             }
 
-            // 2. Salários (Fixo por rodada)
+            // 2. Salários (Agora com suporte a valores fixos)
             let folhaSalarial = 0;
             const meuTime = game.times.find(t => t.nome === game.info.time);
+            
             if(meuTime && meuTime.elenco) {
                 meuTime.elenco.forEach(j => {
-                    folhaSalarial += ((j.forca || 60) * 1500); 
+                    // Se o jogador já tem salário fixo, usa ele. Se não, calcula pela força (fallback)
+                    const salario = j.salario || ((j.forca || 60) * 1500);
+                    folhaSalarial += salario; 
                 });
             }
             
@@ -360,7 +378,7 @@ const Engine = {
         },
 
         gerarPropostaTransferencia: function() {
-            const game = Engine.carregarJogo(); // Carrega independente (novo ciclo)
+            const game = Engine.carregarJogo();
             const meuTime = Engine.encontrarTime(game.info.time);
             
             if(Math.random() > 0.15) return; 
@@ -405,17 +423,12 @@ const Engine = {
         }
     },
 
-    // --- 8. NOVO SISTEMA DE DATAS (LINEAR) ---
+    // --- 8. SISTEMA DE DATAS (LINEAR) ---
     data: {
-        // Função para retornar a data formatada
         getDataAtual: function(rodada) {
-            // Tenta pegar do save, se não tiver, usa padrão
             const game = Engine.carregarJogo();
             const startTimestamp = (game && game.info && game.info.dataInicio) ? game.info.dataInicio : new Date('2026-01-01T12:00:00').getTime();
             
-            // Cada rodada = +7 dias
-            // Rodada 1 = 0 dias passados
-            // Rodada 2 = 7 dias passados
             const diasPassados = (rodada - 1) * 7;
             const msPorDia = 86400000;
             
