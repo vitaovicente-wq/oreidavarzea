@@ -239,7 +239,6 @@
                             <th>Nome</th>
                             <th style="width:50px; text-align:center;">OVR</th>
                             <th style="width:100px;">Contrato</th>
-                            
                             <th class="col-stat">PAC</th>
                             <th class="col-stat">SHO</th>
                             <th class="col-stat">PAS</th>
@@ -286,8 +285,6 @@
 
     <script>
         const DEFAULT_SHIELD = "https://cdn-icons-png.flaticon.com/512/53/53283.png";
-
-        // LISTA DE ESTÁDIOS REAIS PARA IMERSÃO
         const ESTADIOS_REAIS = {
             "Corinthians": "Neo Química Arena", "Palmeiras": "Allianz Parque", "São Paulo": "MorumBIS",
             "Santos": "Vila Belmiro", "Flamengo": "Maracanã", "Fluminense": "Maracanã",
@@ -300,56 +297,31 @@
 
         window.onload = function() {
             try {
-                // Carrega o save da Engine
                 const game = Engine.carregarJogo();
-                if (!game || !game.info) throw new Error("Save inválido ou inexistente.");
+                if (!game || !game.info) throw new Error("Save inválido.");
 
-                // 1. Preenche Topo
                 document.getElementById('team-name').innerText = game.info.time;
                 document.getElementById('coach-name').innerText = "Manager: " + game.info.tecnico;
-                
-                // ATUALIZAÇÃO DO ORÇAMENTO (Formatação melhorada)
                 const dinheiro = game.recursos.dinheiro || 0;
                 document.getElementById('money-display').innerText = dinheiro.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                
                 document.getElementById('round-display').innerText = "Rodada " + game.rodadaAtual;
+                if (Engine.data) document.getElementById('date-display').innerText = Engine.data.getDataAtual(game.rodadaAtual);
 
-                // --- DATA DO JOGO (INTEGRAÇÃO COM ENGINE V6.0) ---
-                if (Engine.data) {
-                    document.getElementById('date-display').innerText = Engine.data.getDataAtual(game.rodadaAtual);
-                }
+                renderizarMatchDay(game);
+                renderizarElencoPro(game);
 
-                // 2. Renderiza Próximo Jogo
-                try { renderizarMatchDay(game); } catch(e) { console.error("Erro no banner:", e); }
-                
-                // 3. Renderiza Elenco com Atributos e Saúde
-                try { renderizarElencoPro(game); } catch(e) { console.error("Erro no elenco:", e); }
-
-                // 4. Badge de Mensagens
                 const badge = document.getElementById('badge-msg');
                 if(badge && game.mensagens) {
                     const naoLidas = game.mensagens.filter(m => !m.lida).length;
-                    if(naoLidas > 0) {
-                        badge.innerText = naoLidas;
-                        badge.classList.add('show');
-                    }
+                    if(naoLidas > 0) { badge.innerText = naoLidas; badge.classList.add('show'); }
                 }
-
-            } catch (err) {
-                alert("Erro ao carregar dashboard: " + err.message);
-                window.location.href = 'index.html';
-            }
+            } catch (err) { alert("Erro: " + err.message); window.location.href = 'index.html'; }
         };
 
         function renderizarMatchDay(game) {
             const container = document.getElementById('match-banner');
             const rodadaIndex = game.rodadaAtual - 1;
-
-            if (!game.calendario || !game.calendario[rodadaIndex]) {
-                container.innerHTML = "<h2 style='margin:auto; color:#ccc'>Fim de Temporada</h2>";
-                return;
-            }
-
+            if (!game.calendario || !game.calendario[rodadaIndex]) { container.innerHTML = "<h2 style='margin:auto; color:#ccc'>Fim de Temporada</h2>"; return; }
             const jogos = game.calendario[rodadaIndex].jogos;
             const meuJogo = jogos.find(j => j.mandante === game.info.time || j.visitante === game.info.time);
 
@@ -374,30 +346,22 @@
                             <div class="team-name-big">${meuJogo.visitante}</div>
                         </div>
                     </div>`;
-            } else {
-                container.innerHTML = "<h2 style='margin:auto; color:#ccc'>Folga nesta rodada</h2>";
-            }
+            } else { container.innerHTML = "<h2 style='margin:auto; color:#ccc'>Folga nesta rodada</h2>"; }
         }
 
         function renderizarElencoPro(game) {
             const tbody = document.getElementById('squad-body');
             tbody.innerHTML = "";
-
             let meuTime = Engine.encontrarTime(game.info.time);
 
             if(game.jogadoresStatus) {
                 meuTime.elenco.forEach((j, i) => {
                     const uid = j.uid || `p_${i}`;
-                    if(game.jogadoresStatus[uid]) {
-                        j.saude = game.jogadoresStatus[uid].saude;
-                    }
+                    if(game.jogadoresStatus[uid]) j.saude = game.jogadoresStatus[uid].saude;
                 });
             }
 
-            if (!meuTime || !meuTime.elenco) {
-                tbody.innerHTML = "<tr><td colspan='11' style='text-align:center'>Sem elenco.</td></tr>";
-                return;
-            }
+            if (!meuTime || !meuTime.elenco) { tbody.innerHTML = "<tr><td colspan='11' style='text-align:center'>Sem elenco.</td></tr>"; return; }
 
             const ordem = {'GOL':1, 'ZAG':2, 'LD':3, 'LE':3, 'VOL':4, 'MEI':5, 'ATA':6};
             meuTime.elenco.sort((a,b) => (ordem[a.pos]||99) - (ordem[b.pos]||99) || b.forca - a.forca);
@@ -405,26 +369,18 @@
             meuTime.elenco.forEach((jog, idx) => {
                 const atr = garantirAtributos(jog); 
                 const saude = jog.saude !== undefined ? jog.saude : 100;
-                let colorBar = '#2ecc71'; 
-                if(saude < 80) colorBar = '#f1c40f'; 
-                if(saude < 50) colorBar = '#ff4757'; 
-                
-                let posClass = "";
-                if(jog.pos==='GOL') posClass='pos-gol';
-                else if(['ZAG','LD','LE'].includes(jog.pos)) posClass='pos-def';
-                else if(['VOL','MEI'].includes(jog.pos)) posClass='pos-mei';
-                else posClass='pos-ata';
-
+                let colorBar = saude < 50 ? '#ff4757' : (saude < 80 ? '#f1c40f' : '#2ecc71');
+                let posClass = jog.pos==='GOL'?'pos-gol':['ZAG','LD','LE'].includes(jog.pos)?'pos-def':['VOL','MEI'].includes(jog.pos)?'pos-mei':'pos-ata';
                 const fmtStat = (v) => v >= 80 ? `<span class="stat-high">${v}</span>` : (v < 60 ? `<span class="stat-low">${v}</span>` : v);
 
                 const tr = document.createElement('tr');
-                tr.onclick = () => iniciarNegociacao(idx); // TRIGGER DO MODAL
+                // CORREÇÃO: Passa o NOME em vez do ÍNDICE para evitar erro de ordenação
+                tr.onclick = () => iniciarNegociacao(jog.nome); 
                 tr.innerHTML = `
                     <td><span class="pos-badge ${posClass}">${jog.pos}</span></td>
                     <td class="col-name">${jog.nome}</td>
                     <td class="col-ovr">${jog.forca}</td>
-                    <td style="color:#aaa; font-size:0.8rem; text-align:center;">${jog.contrato || '-'}</td>
-                    
+                    <td style="color:#aaa; font-size:0.8rem; text-align:center;">${jog.contrato || '31/12/2026'}</td>
                     <td class="col-stat">${fmtStat(atr.VEL)}</td>
                     <td class="col-stat">${fmtStat(atr.FIN)}</td>
                     <td class="col-stat">${fmtStat(atr.PAS)}</td>
@@ -432,11 +388,7 @@
                     <td class="col-stat">${fmtStat(atr.DEF)}</td>
                     <td class="col-stat">${fmtStat(atr.PHY)}</td>
                     <td><span class="carac-badge">${jog.carac || '-'}</span></td>
-                    <td>
-                        <div class="condition-bar-bg" title="${saude}%">
-                            <div class="condition-bar-fill" style="width:${saude}%; background:${colorBar}"></div>
-                        </div>
-                    </td>
+                    <td><div class="condition-bar-bg" title="${saude}%"><div class="condition-bar-fill" style="width:${saude}%; background:${colorBar}"></div></div></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -455,14 +407,11 @@
             const game = Engine.carregarJogo();
             const rodadaIndex = game.rodadaAtual - 1;
             const jogo = game.calendario[rodadaIndex].jogos.find(j => j.mandante === game.info.time || j.visitante === game.info.time);
-            
             if(jogo) {
                 const adv = jogo.mandante === game.info.time ? jogo.visitante : jogo.mandante;
                 localStorage.setItem('brfutebol_oponente_atual', adv);
                 window.location.href = 'partida.html';
-            } else {
-                alert("Erro ao identificar o jogo.");
-            }
+            } else { alert("Erro ao identificar o jogo."); }
         }
 
         function sair() { if(confirm("Deseja sair para o menu inicial?")) window.location.href='index.html'; }
@@ -481,9 +430,14 @@
             "Sinto que meu ciclo aqui acabou. (Encerrar)"
         ];
 
-        function iniciarNegociacao(playerIdx) {
+        function iniciarNegociacao(nomeJogador) {
             const game = Engine.carregarJogo();
             const meuTime = Engine.encontrarTime(game.info.time);
+            // CORREÇÃO: Busca pelo NOME para garantir que pegamos o jogador certo
+            const playerIdx = meuTime.elenco.findIndex(p => p.nome === nomeJogador);
+            
+            if (playerIdx === -1) { alert("Erro ao carregar jogador."); return; }
+
             const p = meuTime.elenco[playerIdx];
             
             currentNeg = { player: p, idx: playerIdx, step: 0, offer: { salary: 0, years: 1, bonus: 0, role: 'Rotação' } };
@@ -658,20 +612,25 @@
                 const game = Engine.carregarJogo();
                 const meuTime = Engine.encontrarTime(game.info.time);
                 
-                // Atualiza o jogador no save
-                meuTime.elenco[currentNeg.idx].salario = currentNeg.offer.salary;
-                meuTime.elenco[currentNeg.idx].papel = currentNeg.offer.role;
+                // Busca o índice correto para salvar (caso a ordem do save tenha mudado)
+                const realIdx = meuTime.elenco.findIndex(p => p.nome === currentNeg.player.nome);
                 
-                // Calcula nova data (Data Atual + Anos)
-                const partes = Engine.data.getDataAtual(game.rodadaAtual).split('/'); // dd, mm, yyyy
-                const novoAno = parseInt(partes[2]) + currentNeg.offer.years;
-                meuTime.elenco[currentNeg.idx].contrato = `31/12/${novoAno}`;
-                
-                // Atualiza o time no array global e salva
-                const timeIdx = game.times.findIndex(t => t.nome === game.info.time);
-                if(timeIdx > -1) game.times[timeIdx] = meuTime;
-                
-                Engine.salvarJogo(game);
+                if (realIdx > -1) {
+                    // Atualiza o jogador no save
+                    meuTime.elenco[realIdx].salario = currentNeg.offer.salary;
+                    meuTime.elenco[realIdx].papel = currentNeg.offer.role;
+                    
+                    // Calcula nova data (Data Atual + Anos)
+                    const partes = Engine.data.getDataAtual(game.rodadaAtual).split('/'); // dd, mm, yyyy
+                    const novoAno = parseInt(partes[2]) + currentNeg.offer.years;
+                    meuTime.elenco[realIdx].contrato = `31/12/${novoAno}`;
+                    
+                    // Atualiza o time no array global e salva
+                    const timeIdx = game.times.findIndex(t => t.nome === game.info.time);
+                    if(timeIdx > -1) game.times[timeIdx] = meuTime;
+                    
+                    Engine.salvarJogo(game);
+                }
                 
                 showOptions('fim');
             }, 1000);
