@@ -253,204 +253,433 @@ const database = {
             {
                 id: "bahia", nome: "Bahia", escudo: "https://s.sde.globo.com/media/organizations/2018/03/11/bahia.svg", forca: 79, orcamento: "R$ 700 Mi", destaque: "Everton Ribeiro",
                 elenco: [
-                    { nome: "Marcos Felipe", pos: "GOL", forca: 77, idade: 29, carac: "Reflexo" },
-                    { nome: "Santiago Arias", pos: "LD", forca: 79, idade: 33, carac: "Apoio" },
-                    { nome: "Gabriel Xavier", pos: "ZAG", forca: 77, idade: 24, carac: "Velocidade" },
-                    { nome: "Kanu", pos: "ZAG", forca: 75, idade: 28, carac: "Liderança" },
-                    { nome: "Luciano Juba", pos: "LE", forca: 76, idade: 25, carac: "Chute" },
-                    { nome: "Caio Alexandre", pos: "VOL", forca: 78, idade: 26, carac: "Passe" },
-                    { nome: "Jean Lucas", pos: "VOL", forca: 77, idade: 27, carac: "Dinâmica" },
-                    { nome: "Cauly", pos: "MEI", forca: 80, idade: 29, carac: "Drible" },
-                    { nome: "Everton Ribeiro", pos: "MEI", forca: 82, idade: 36, carac: "Maestro" },
-                    { nome: "Thaciano", pos: "ATA", forca: 77, idade: 30, carac: "Polivalente" },
-                    { nome: "Lucho Rodríguez", pos: "ATA", forca: 77, idade: 22, carac: "Chute" }
+                    { nome: "João Paulo", pos: "GOL", forca: 80, idade: 31, carac: "Milagreiro" }, // Reforço (ex-Santos)
+                    { nome: "Ronaldo", pos: "GOL", forca: 74, idade: 29, carac: "Segurança" },
+                    { nome: "Gilberto", pos: "LD", forca: 76, idade: 33, carac: "Apoio" },
+                    { nome: "Luciano Juba", pos: "LE", forca: 78, idade: 26, carac: "Chute de Longe" },
+                    { nome: "Iago Borduchi", pos: "LE", forca: 77, idade: 29, carac: "Velocidade" },
+                    { nome: "Zé Guilherme", pos: "LE", forca: 70, idade: 21, carac: "Promessa" },
+                    { nome: "Gabriel Xavier", pos: "ZAG", forca: 79, idade: 24, carac: "Velocidade" },
+                    { nome: "Kanu", pos: "ZAG", forca: 77, idade: 29, carac: "Liderança" },
+                    { nome: "Ramos Mingo", pos: "ZAG", forca: 75, idade: 24, carac: "Antecipação" },
+                    { nome: "David Duarte", pos: "ZAG", forca: 74, idade: 31, carac: "Bola Aérea" },
+                    { nome: "Fred", pos: "ZAG", forca: 71, idade: 20, carac: "Força" },
+                    { nome: "Luiz Gustavo", pos: "ZAG", forca: 69, idade: 19, carac: "Técnica" },
+                    { nome: "Cauly", pos: "MEI", forca: 83, idade: 30, carac: "Mágica" },
+                    { nome: "Everton Ribeiro", pos: "MEI", forca: 80, idade: 37, carac: "Maestro" },
+                    { nome: "Jean Lucas", pos: "VOL", forca: 80, idade: 28, carac: "Box-to-Box" },
+                    { nome: "Caio Alexandre", pos: "VOL", forca: 79, idade: 27, carac: "Passe" },
+                    { nome: "Rodrigo Nestor", pos: "MEI", forca: 78, idade: 25, carac: "Visão" }, // Reforço
+                    { nome: "Acevedo", pos: "VOL", forca: 76, idade: 27, carac: "Desarme" },
+                    { nome: "Rezende", pos: "VOL", forca: 75, idade: 31, carac: "Marcação" },
+                    { nome: "Michel Araújo", pos: "MEI", forca: 75, idade: 29, carac: "Raça" },
+                    { nome: "Sidney", pos: "VOL", forca: 73, idade: 20, carac: "Dinâmica" },
+                    { nome: "Roger Gabriel", pos: "MEI", forca: 72, idade: 19, carac: "Habilidade" },
+                    { nome: "Erick", pos: "VOL", forca: 72, idade: 22, carac: "Força" },
+                    { nome: "David Martins", pos: "MEI", forca: 68, idade: 20, carac: "Promessa" },
+                    { nome: "Willian José", pos: "ATA", forca: 81, idade: 34, carac: "Pivô" },
+                    { nome: "Sanabria", pos: "ATA", forca: 80, idade: 30, carac: "Finalização" },
+                    { nome: "Ademir", pos: "ATA", forca: 77, idade: 31, carac: "Velocidade" },
+                    { nome: "Kayky", pos: "ATA", forca: 77, idade: 23, carac: "Drible" },
+                    { nome: "Erick Pulga", pos: "ATA", forca: 76, idade: 25, carac: "Agilidade" },
+                    { nome: "Ruan Pablo", pos: "ATA", forca: 72, idade: 18, carac: "Explosão" },
+                    { nome: "Dell", pos: "ATA", forca: 70, idade: 19, carac: "Finalização" },
+                    { nome: "Kauê Furquim", pos: "ATA", forca: 69, idade: 19, carac: "Velocidade" }
                 ]
             },
             {
                 id: "cruzeiro", nome: "Cruzeiro", escudo: "https://s.sde.globo.com/media/organizations/2021/02/13/cruzeiro_2021.svg", forca: 80, orcamento: "R$ 650 Mi", destaque: "Matheus Pereira",
                 elenco: [
-                    { nome: "Cássio", pos: "GOL", forca: 80, idade: 38, carac: "Segurança" },
-                    { nome: "William", pos: "LD", forca: 81, idade: 30, carac: "Cruzamento" },
-                    { nome: "Zé Ivaldo", pos: "ZAG", forca: 77, idade: 28, carac: "Força" },
-                    { nome: "João Marcelo", pos: "ZAG", forca: 76, idade: 24, carac: "Velocidade" },
-                    { nome: "Marlon", pos: "LE", forca: 78, idade: 28, carac: "Apoio" },
-                    { nome: "Lucas Romero", pos: "VOL", forca: 76, idade: 30, carac: "Raça" },
-                    { nome: "Walace", pos: "VOL", forca: 77, idade: 30, carac: "Força" },
-                    { nome: "Matheus Henrique", pos: "VOL", forca: 79, idade: 27, carac: "Dinâmica" },
-                    { nome: "Matheus Pereira", pos: "MEI", forca: 84, idade: 29, carac: "Mágica" },
-                    { nome: "Kaio Jorge", pos: "ATA", forca: 77, idade: 23, carac: "Finalização" },
-                    { nome: "Gabriel Veron", pos: "ATA", forca: 76, idade: 22, carac: "Explosão" }
+                    { nome: "Cássio", pos: "GOL", forca: 79, idade: 39, carac: "Liderança" },
+                    { nome: "Matheus Cunha", pos: "GOL", forca: 78, idade: 25, carac: "Reflexo" }, // Matheus Cunha Queiroz
+                    { nome: "Léo Aragão", pos: "GOL", forca: 72, idade: 24, carac: "Agilidade" },
+                    { nome: "Otávio Costa", pos: "GOL", forca: 68, idade: 20, carac: "Promessa" },
+                    { nome: "Marcelo", pos: "GOL", forca: 67, idade: 19, carac: "Envergadura" },
+                    { nome: "Felipe Teixeira", pos: "GOL", forca: 65, idade: 18, carac: "Base" },
+                    { nome: "William", pos: "LD", forca: 81, idade: 31, carac: "Apoio" }, // William de Azevedo Furtado
+                    { nome: "Fagner", pos: "LD", forca: 75, idade: 36, carac: "Experiência" }, // Reforço Veterano
+                    { nome: "Marlon", pos: "LE", forca: 80, idade: 29, carac: "Raça" },
+                    { nome: "Kaiki Bruno", pos: "LE", forca: 76, idade: 23, carac: "Velocidade" },
+                    { nome: "Kauã Moraes", pos: "LD", forca: 70, idade: 21, carac: "Equilíbrio" },
+                    { nome: "João Marcelo", pos: "ZAG", forca: 79, idade: 26, carac: "Antecipação" },
+                    { nome: "Lucas Villalba", pos: "ZAG", forca: 77, idade: 31, carac: "Polivalente" },
+                    { nome: "Mateo Gamarra", pos: "ZAG", forca: 78, idade: 25, carac: "Força" },
+                    { nome: "Jonathan Jesus", pos: "ZAG", forca: 74, idade: 22, carac: "Bola Aérea" },
+                    { nome: "Lucas", pos: "VOL", forca: 76, idade: 33, carac: "Passe" }, // Provável Lucas Silva
+                    { nome: "Wanderson", pos: "VOL", forca: 74, idade: 24, carac: "Marcação" },
+                    { nome: "Danilo Pepa", pos: "MEI", forca: 73, idade: 22, carac: "Técnica" },
+                    { nome: "Caíque Valdívia", pos: "MEI", forca: 72, idade: 33, carac: "Drible" },
+                    { nome: "Lulinha", pos: "MEI", forca: 71, idade: 36, carac: "Agilidade" },
+                    { nome: "Matheus Galo", pos: "VOL", forca: 69, idade: 20, carac: "Dinâmica" },
+                    { nome: "Hanry", pos: "VOL", forca: 68, idade: 19, carac: "Resistência" },
+                    { nome: "Ariel", pos: "MEI", forca: 67, idade: 20, carac: "Visão" },
+                    { nome: "Cristiano", pos: "MEI", forca: 66, idade: 21, carac: "Passe" },
+                    { nome: "Guilherme", pos: "MEI", forca: 65, idade: 18, carac: "Base" },
+                    { nome: "Bruno Nascimento", pos: "MEI", forca: 65, idade: 19, carac: "Chute" },
+                    { nome: "Kaique Kenji", pos: "ATA", forca: 76, idade: 20, carac: "Habilidade" },
+                    { nome: "Tevis Gabriel", pos: "ATA", forca: 75, idade: 20, carac: "Velocidade" },
+                    { nome: "Pablo", pos: "ATA", forca: 74, idade: 33, carac: "Finalização" },
+                    { nome: "Ruan", pos: "ATA", forca: 73, idade: 22, carac: "Força" },
+                    { nome: "Rayan Lelis", pos: "ATA", forca: 70, idade: 19, carac: "Cabeceio" },
+                    { nome: "Bruce", pos: "ATA", forca: 69, idade: 20, carac: "Explosão" },
+                    { nome: "Israel", pos: "ATA", forca: 68, idade: 19, carac: "Drible" },
+                    { nome: "Pedro Davi", pos: "ATA", forca: 67, idade: 18, carac: "Oportunista" },
+                    { nome: "Estevam", pos: "ATA", forca: 66, idade: 19, carac: "Velocidade" },
+                    { nome: "Gleniedson", pos: "ATA", forca: 65, idade: 18, carac: "Base" }
                 ]
             },
             {
                 id: "vasco", nome: "Vasco", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/3454.png", forca: 77, orcamento: "R$ 450 Mi", destaque: "Coutinho",
                 elenco: [
-                    { nome: "Léo Jardim", pos: "GOL", forca: 80, idade: 30, carac: "Milagreiro" },
-                    { nome: "Paulo Henrique", pos: "LD", forca: 75, idade: 28, carac: "Velocidade" },
-                    { nome: "João Victor", pos: "ZAG", forca: 77, idade: 26, carac: "Velocidade" },
-                    { nome: "Léo", pos: "ZAG", forca: 73, idade: 29, carac: "Passe" },
-                    { nome: "Lucas Piton", pos: "LE", forca: 78, idade: 24, carac: "Cruzamento" },
-                    { nome: "Hugo Moura", pos: "VOL", forca: 75, idade: 27, carac: "Marcação" },
-                    { nome: "Mateus Carvalho", pos: "VOL", forca: 74, idade: 23, carac: "Raça" },
-                    { nome: "Payet", pos: "MEI", forca: 80, idade: 38, carac: "Técnica" },
-                    { nome: "Philippe Coutinho", pos: "MEI", forca: 81, idade: 33, carac: "Visão" },
-                    { nome: "Vegetti", pos: "ATA", forca: 81, idade: 36, carac: "Cabeceio" },
-                    { nome: "Adson", pos: "ATA", forca: 75, idade: 24, carac: "Drible" }
+                    { nome: "Léo Jardim", pos: "GOL", forca: 81, idade: 31, carac: "Milagreiro" },
+                    { nome: "Daniel Fuzato", pos: "GOL", forca: 76, idade: 29, carac: "Segurança" },
+                    { nome: "Phillipe Gabriel", pos: "GOL", forca: 71, idade: 20, carac: "Envergadura" },
+                    { nome: "Allan", pos: "GOL", forca: 68, idade: 21, carac: "Agilidade" },
+                    { nome: "Pablo", pos: "GOL", forca: 67, idade: 22, carac: "Base" },
+                    { nome: "Lucas Piton", pos: "LE", forca: 80, idade: 25, carac: "Cruzamento" },
+                    { nome: "Puma Rodríguez", pos: "LD", forca: 77, idade: 29, carac: "Chute de Longe" },
+                    { nome: "Paulo Henrique", pos: "LD", forca: 76, idade: 30, carac: "Velocidade" },
+                    { nome: "Leandrinho", pos: "LE", forca: 74, idade: 21, carac: "Apoio" },
+                    { nome: "Paulinho", pos: "LD", forca: 71, idade: 21, carac: "Promessa" },
+                    { nome: "Robert Renan", pos: "ZAG", forca: 81, idade: 22, carac: "Passe" }, // Grande potencial
+                    { nome: "Carlos Cuesta", pos: "ZAG", forca: 79, idade: 27, carac: "Velocidade" },
+                    { nome: "Alan Saldivia", pos: "ZAG", forca: 78, idade: 24, carac: "Raça" },
+                    { nome: "José Luis Rodríguez", pos: "ZAG", forca: 75, idade: 29, carac: "Força" }, // Listado como Zagueiro
+                    { nome: "Lucas Freitas", pos: "ZAG", forca: 74, idade: 25, carac: "Antecipação" },
+                    { nome: "Lyncon", pos: "ZAG", forca: 72, idade: 21, carac: "Bola Aérea" },
+                    { nome: "Philippe Coutinho", pos: "MEI", forca: 84, idade: 34, carac: "Mágica" },
+                    { nome: "Sforza", pos: "VOL", forca: 79, idade: 24, carac: "Passe" },
+                    { nome: "Thiago Mendes", pos: "VOL", forca: 78, idade: 34, carac: "Experiência" },
+                    { nome: "Hugo Moura", pos: "VOL", forca: 76, idade: 28, carac: "Marcação" },
+                    { nome: "Maxime Dominguez", pos: "MEI", forca: 77, idade: 30, carac: "Dinâmica" },
+                    { nome: "Guilherme Estrella", pos: "MEI", forca: 76, idade: 21, carac: "Habilidade" },
+                    { nome: "Johan Rojas", pos: "MEI", forca: 75, idade: 23, carac: "Velocidade" },
+                    { nome: "JP", pos: "MEI", forca: 74, idade: 21, carac: "Visão" },
+                    { nome: "Lukas Zuccarello", pos: "MEI", forca: 70, idade: 19, carac: "Drible" },
+                    { nome: "Benjamín Garré", pos: "ATA", forca: 79, idade: 26, carac: "Drible" },
+                    { nome: "Rayan", pos: "ATA", forca: 79, idade: 20, carac: "Finalização" }, // Evoluiu muito em 2026
+                    { nome: "David", pos: "ATA", forca: 77, idade: 30, carac: "Força" },
+                    { nome: "Nuno Moreira", pos: "ATA", forca: 76, idade: 27, carac: "Agilidade" },
+                    { nome: "GB", pos: "ATA", forca: 73, idade: 21, carac: "Matador" },
+                    { nome: "Bruno Lopes", pos: "ATA", forca: 70, idade: 19, carac: "Velocidade" }
                 ]
             },
             {
                 id: "fluminense", nome: "Fluminense", escudo: "https://s.sde.globo.com/media/organizations/2018/03/11/fluminense.svg", forca: 79, orcamento: "R$ 500 Mi", destaque: "Thiago Silva",
                 elenco: [
-                    { nome: "Fábio", pos: "GOL", forca: 78, idade: 44, carac: "Experiência" },
-                    { nome: "Samuel Xavier", pos: "LD", forca: 74, idade: 35, carac: "Apoio" },
-                    { nome: "Thiago Silva", pos: "ZAG", forca: 84, idade: 40, carac: "Liderança" },
-                    { nome: "Ignácio", pos: "ZAG", forca: 75, idade: 28, carac: "Velocidade" },
-                    { nome: "Diogo Barbosa", pos: "LE", forca: 73, idade: 32, carac: "Apoio" },
-                    { nome: "Facundo Bernal", pos: "VOL", forca: 77, idade: 21, carac: "Passe" },
-                    { nome: "Martinelli", pos: "VOL", forca: 76, idade: 23, carac: "Resistência" },
-                    { nome: "Ganso", pos: "MEI", forca: 80, idade: 35, carac: "Visão" },
-                    { nome: "Jhon Arias", pos: "MEI", forca: 83, idade: 27, carac: "Drible" },
-                    { nome: "Kevin Serna", pos: "ATA", forca: 77, idade: 27, carac: "Velocidade" },
-                    { nome: "Cano", pos: "ATA", forca: 79, idade: 37, carac: "Finalização" },
-                    { nome: "Kauã Elias", pos: "ATA", forca: 76, idade: 19, carac: "Promessa" }
+                    { nome: "Fábio", pos: "GOL", forca: 78, idade: 46, carac: "Lenda" },
+                    { nome: "Marcelo Pitaluga", pos: "GOL", forca: 76, idade: 23, carac: "Reflexo" },
+                    { nome: "Vitor Eudes", pos: "GOL", forca: 73, idade: 27, carac: "Segurança" },
+                    { nome: "Guilherme Arana", pos: "LE", forca: 84, idade: 29, carac: "Apoio" },
+                    { nome: "Samuel Xavier", pos: "LD", forca: 76, idade: 36, carac: "Experiência" },
+                    { nome: "Guga", pos: "LD", forca: 77, idade: 27, carac: "Equilíbrio" },
+                    { nome: "Renê", pos: "LE", forca: 75, idade: 33, carac: "Marcação" },
+                    { nome: "Ignácio", pos: "ZAG", forca: 79, idade: 29, carac: "Antecipação" },
+                    { nome: "Juan Pablo Freytes", pos: "ZAG", forca: 77, idade: 26, carac: "Força" },
+                    { nome: "Jemmes", pos: "ZAG", forca: 73, idade: 25, carac: "Velocidade" },
+                    { nome: "Lucho Acosta", pos: "MEI", forca: 83, idade: 32, carac: "Mágica" },
+                    { nome: "Paulo Henrique Ganso", pos: "MEI", forca: 80, idade: 36, carac: "Maestro" },
+                    { nome: "Martinelli", pos: "VOL", forca: 81, idade: 24, carac: "Dinâmica" },
+                    { nome: "Facundo Bernal", pos: "VOL", forca: 79, idade: 22, carac: "Desarme" },
+                    { nome: "Otávio", pos: "VOL", forca: 78, idade: 31, carac: "Marcação" },
+                    { nome: "Nonato", pos: "VOL", forca: 76, idade: 28, carac: "Passe" },
+                    { nome: "Lima", pos: "MEI", forca: 76, idade: 30, carac: "Polivalente" },
+                    { nome: "Germán Cano", pos: "ATA", forca: 81, idade: 38, carac: "Matador" },
+                    { nome: "Soteldo", pos: "ATA", forca: 82, idade: 29, carac: "Drible" },
+                    { nome: "João Kennedy", pos: "ATA", forca: 80, idade: 24, carac: "Decisão" },
+                    { nome: "Agustín Canobbio", pos: "ATA", forca: 79, idade: 27, carac: "Velocidade" },
+                    { nome: "Kevin Serna", pos: "ATA", forca: 78, idade: 28, carac: "Habilidade" },
+                    { nome: "Keno", pos: "ATA", forca: 76, idade: 36, carac: "Drible" },
+                    { nome: "Everaldo", pos: "ATA", forca: 75, idade: 32, carac: "Raça" }
                 ]
             },
             {
                 id: "gremio", nome: "Grêmio", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/6273.png", forca: 78, orcamento: "R$ 550 Mi", destaque: "Soteldo",
                 elenco: [
-                    { nome: "Marchesín", pos: "GOL", forca: 77, idade: 37, carac: "Reflexo" },
-                    { nome: "João Pedro", pos: "LD", forca: 75, idade: 28, carac: "Apoio" },
-                    { nome: "Kannemann", pos: "ZAG", forca: 77, idade: 34, carac: "Raça" },
-                    { nome: "Jemerson", pos: "ZAG", forca: 76, idade: 32, carac: "Velocidade" },
-                    { nome: "Reinaldo", pos: "LE", forca: 75, idade: 35, carac: "Chute" },
-                    { nome: "Villasanti", pos: "VOL", forca: 80, idade: 28, carac: "Motor" },
-                    { nome: "Pepê", pos: "VOL", forca: 75, idade: 27, carac: "Passe" },
-                    { nome: "Cristaldo", pos: "MEI", forca: 79, idade: 28, carac: "Passe" },
-                    { nome: "Monsalve", pos: "MEI", forca: 77, idade: 21, carac: "Técnica" },
-                    { nome: "Soteldo", pos: "ATA", forca: 80, idade: 28, carac: "Drible" },
-                    { nome: "Braithwaite", pos: "ATA", forca: 81, idade: 34, carac: "Inteligência" }
+                    { nome: "Tiago Volpi", pos: "GOL", forca: 79, idade: 35, carac: "Reflexo" },
+                    { nome: "Gabriel Grando", pos: "GOL", forca: 75, idade: 26, carac: "Envergadura" },
+                    { nome: "Marcos Rocha", pos: "LD", forca: 74, idade: 37, carac: "Experiência" },
+                    { nome: "Wagner Leonardo", pos: "ZAG", forca: 78, idade: 26, carac: "Força" },
+                    { nome: "Walter Kannemann", pos: "ZAG", forca: 77, idade: 35, carac: "Raça" },
+                    { nome: "Fabián Balbuena", pos: "ZAG", forca: 77, idade: 34, carac: "Liderança" },
+                    { nome: "Jemerson", pos: "ZAG", forca: 76, idade: 33, carac: "Antecipação" },
+                    { nome: "Gustavo Martins", pos: "ZAG", forca: 76, idade: 23, carac: "Velocidade" },
+                    { nome: "Rodrigo Ely", pos: "ZAG", forca: 75, idade: 32, carac: "Bola Aérea" },
+                    { nome: "Erick Noriega", pos: "ZAG", forca: 74, idade: 25, carac: "Marcação" },
+                    { nome: "Viery", pos: "ZAG", forca: 71, idade: 21, carac: "Promessa" },
+                    { nome: "Gustavo Cuéllar", pos: "VOL", forca: 80, idade: 33, carac: "Desarme" },
+                    { nome: "Edenilson", pos: "VOL", forca: 76, idade: 36, carac: "Dinâmica" },
+                    { nome: "Dodi", pos: "VOL", forca: 75, idade: 30, carac: "Resistência" },
+                    { nome: "Amuzu", pos: "MEI", forca: 78, idade: 26, carac: "Velocidade" },
+                    { nome: "Riquelme", pos: "MEI", forca: 70, idade: 20, carac: "Habilidade" },
+                    { nome: "Pavon", pos: "ATA", forca: 81, idade: 30, carac: "Chute de Longe" },
+                    { nome: "Willian", pos: "ATA", forca: 78, idade: 37, carac: "Drible" },
+                    { nome: "André Henrique", pos: "ATA", forca: 74, idade: 24, carac: "Cabeceio" }
                 ]
             },
             {
                 id: "santos", nome: "Santos", escudo: "https://s.sde.globo.com/media/organizations/2018/03/12/santos.svg", forca: 81, orcamento: "R$ 600 Mi", destaque: "Neymar Jr",
                 elenco: [
-                    { nome: "João Paulo", pos: "GOL", forca: 78, idade: 29, carac: "Reflexo" },
-                    { nome: "JP Chermont", pos: "LD", forca: 75, idade: 19, carac: "Promessa" },
-                    { nome: "Gil", pos: "ZAG", forca: 76, idade: 37, carac: "Experiência" },
-                    { nome: "Jair", pos: "ZAG", forca: 76, idade: 20, carac: "Velocidade" },
-                    { nome: "Escobar", pos: "LE", forca: 74, idade: 28, carac: "Apoio" },
-                    { nome: "João Schmidt", pos: "VOL", forca: 77, idade: 31, carac: "Passe" },
-                    { nome: "Diego Pituca", pos: "VOL", forca: 77, idade: 32, carac: "Liderança" },
-                    { nome: "Giuliano", pos: "MEI", forca: 77, idade: 34, carac: "Técnica" },
-                    { nome: "Otero", pos: "MEI", forca: 75, idade: 32, carac: "Chute" },
-                    { nome: "Neymar Jr", pos: "MEI", forca: 88, idade: 34, carac: "Gênio" },
-                    { nome: "Guilherme", pos: "ATA", forca: 77, idade: 29, carac: "Drible" },
-                    { nome: "Wendel Silva", pos: "ATA", forca: 75, idade: 24, carac: "Força" }
-                ]
+                    { nome: "Gabriel Brazão", pos: "GOL", forca: 79, idade: 25, carac: "Reflexo" },
+                    { nome: "João Paulo", pos: "GOL", forca: 78, idade: 30, carac: "Milagreiro" }, // Recuperado e disputando posição
+                    { nome: "Diógenes", pos: "GOL", forca: 72, idade: 25, carac: "Envergadura" },
+                    { nome: "Mayke", pos: "LD", forca: 78, idade: 33, carac: "Vigor" }, // Contratado do Palmeiras
+                    { nome: "Igor Vinícius", pos: "LD", forca: 77, idade: 28, carac: "Velocidade" }, // Retorno definitivo
+                    { nome: "JP Chermont", pos: "LD", forca: 75, idade: 20, carac: "Promessa" },
+                    { nome: "Gonzalo Escobar", pos: "LE", forca: 76, idade: 28, carac: "Apoio" },
+                    { nome: "Souza", pos: "LE", forca: 74, idade: 19, carac: "Habilidade" },
+                    { nome: "Luan Peres", pos: "ZAG", forca: 80, idade: 31, carac: "Polivalente" },
+                    { nome: "Adonis Frías", pos: "ZAG", forca: 78, idade: 27, carac: "Antecipação" }, // Reforço gringo
+                    { nome: "Zé Ivaldo", pos: "ZAG", forca: 77, idade: 28, carac: "Força" },
+                    { nome: "Alexis Duarte", pos: "ZAG", forca: 76, idade: 25, carac: "Velocidade" },
+                    { nome: "Jair", pos: "ZAG", forca: 75, idade: 20, carac: "Técnica" },
+                    { nome: "João Basso", pos: "ZAG", forca: 74, idade: 29, carac: "Liderança" },
+                    { nome: "João Schmidt", pos: "VOL", forca: 79, idade: 32, carac: "Passe" },
+                    { nome: "Diego Pituca", pos: "VOL", forca: 78, idade: 33, carac: "Motor" },
+                    { nome: "Gabriel Menino", pos: "VOL", forca: 79, idade: 25, carac: "Chute de Longe" }, // Reforço do Galo
+                    { nome: "Willian Arão", pos: "VOL", forca: 77, idade: 33, carac: "Bola Aérea" }, // Reforço experiente
+                    { nome: "Tomás Rincón", pos: "VOL", forca: 75, idade: 38, carac: "Marcação" },
+                    { nome: "Sandry", pos: "VOL", forca: 74, idade: 23, carac: "Visão" },
+                    { nome: "Alison", pos: "VOL", forca: 72, idade: 32, carac: "Raça" },
+                    { nome: "Neymar Jr", pos: "MEI", forca: 90, idade: 34, carac: "Craque" },
+                    { nome: "Benjamín Rollheiser", pos: "MEI", forca: 80, idade: 25, carac: "Drible" }, // Aposta alta
+                    { nome: "Giuliano", pos: "MEI", forca: 76, idade: 35, carac: "Inteligência" },
+                    { nome: "Thaciano", pos: "MEI", forca: 77, idade: 30, carac: "Polivalente" },
+                    { nome: "Hernesto Caballero", pos: "MEI", forca: 76, idade: 34, carac: "Dinâmica" }, // Reforço paraguaio
+                    { nome: "Miguelito", pos: "MEI", forca: 74, idade: 21, carac: "Habilidade" },
+                    { nome: "Serginho", pos: "MEI", forca: 72, idade: 35, carac: "Composição" },
+                    { nome: "Gabigol", pos: "ATA", forca: 84, idade: 29, carac: "Decisão" }, // O Retorno do Menino da Vila
+                    { nome: "Tiquinho Soares", pos: "ATA", forca: 81, idade: 35, carac: "Pivô" }, // Reforço de peso
+                    { nome: "Guilherme", pos: "ATA", forca: 78, idade: 30, carac: "Velocidade" },
+                    { nome: "Gabriel Veron", pos: "ATA", forca: 77, idade: 23, carac: "Explosão" }, // Recuperando futebol
+                    { nome: "Billal Brahimi", pos: "ATA", forca: 76, idade: 25, carac: "Drible" }, // Reforço francês
+                    { nome: "Otero", pos: "ATA", forca: 75, idade: 33, carac: "Bola Parada" },
+                    { nome: "Julio Furch", pos: "ATA", forca: 75, idade: 36, carac: "Cabeceio" },
+                    { nome: "Pedrinho", pos: "ATA", forca: 73, idade: 26, carac: "Agilidade" },
+                    { nome: "Weslley Patati", pos: "ATA", forca: 72, idade: 22, carac: "Liso" }
+]
             },
             {
                 id: "athleticopr", nome: "Athletico-PR", escudo: "https://s.sde.globo.com/media/organizations/2026/01/07/Athletico-PR.svg", forca: 77, orcamento: "R$ 300 Mi", destaque: "Fernandinho",
                 elenco: [
-                    { nome: "Mycael", pos: "GOL", forca: 75, idade: 21, carac: "Reflexo" },
-                    { nome: "Léo Linck", pos: "GOL", forca: 73, idade: 24, carac: "Altura" },
-                    { nome: "Cuello", pos: "LD", forca: 75, idade: 25, carac: "Raça" },
-                    { nome: "Thiago Heleno", pos: "ZAG", forca: 76, idade: 36, carac: "Força" },
-                    { nome: "Gamarra", pos: "ZAG", forca: 74, idade: 24, carac: "Antecipação" },
-                    { nome: "Esquivel", pos: "LE", forca: 75, idade: 29, carac: "Marcação" },
-                    { nome: "Gabriel", pos: "VOL", forca: 75, idade: 32, carac: "Raça" },
-                    { nome: "Fernandinho", pos: "VOL", forca: 79, idade: 40, carac: "Experiência" },
-                    { nome: "Erick", pos: "VOL", forca: 76, idade: 28, carac: "Passe" },
-                    { nome: "Zapelli", pos: "MEI", forca: 77, idade: 22, carac: "Drible" },
-                    { nome: "Nikão", pos: "MEI", forca: 75, idade: 32, carac: "Chute" },
-                    { nome: "Canobbio", pos: "ATA", forca: 78, idade: 26, carac: "Velocidade" },
-                    { nome: "Mastriani", pos: "ATA", forca: 77, idade: 31, carac: "Cabeceio" },
-                    { nome: "Pablo", pos: "ATA", forca: 74, idade: 32, carac: "Finalização" }
+                    { nome: "Mycael", pos: "GOL", forca: 80, idade: 22, carac: "Pegador de Pênalti" }, // Novo titular de Seleção
+                    { nome: "Léo Linck", pos: "GOL", forca: 76, idade: 25, carac: "Reflexo" },
+                    { nome: "Gabriel Pereira", pos: "GOL", forca: 70, idade: 23, carac: "Envergadura" },
+                    { nome: "Lucas Esquivel", pos: "LE", forca: 82, idade: 24, carac: "Cruzamento" }, // Um dos melhores do país
+                    { nome: "Leo Godoy", pos: "LD", forca: 78, idade: 31, carac: "Apoio" },
+                    { nome: "Madson", pos: "LD", forca: 75, idade: 34, carac: "Bola Aérea" },
+                    { nome: "Fernando", pos: "LE", forca: 74, idade: 22, carac: "Velocidade" },
+                    { nome: "Kaique Rocha", pos: "ZAG", forca: 79, idade: 25, carac: "Velocidade" },
+                    { nome: "Mateo Gamarra", pos: "ZAG", forca: 78, idade: 25, carac: "Raça" },
+                    { nome: "Thiago Heleno", pos: "ZAG", forca: 75, idade: 37, carac: "General" }, // Última dança
+                    { nome: "Lucas Belezi", pos: "ZAG", forca: 74, idade: 23, carac: "Técnica" },
+                    { nome: "Arthur Zanella", pos: "ZAG", forca: 70, idade: 21, carac: "Promessa" },
+                    { nome: "Bruno Zapelli", pos: "MEI", forca: 83, idade: 24, carac: "Mágica" }, // A estrela do time
+                    { nome: "Erick", pos: "VOL", forca: 80, idade: 28, carac: "Elemento Surpresa" },
+                    { nome: "Christian", pos: "MEI", forca: 79, idade: 25, carac: "Chute de Longe" },
+                    { nome: "Felipinho", pos: "VOL", forca: 78, idade: 24, carac: "Dinâmica" },
+                    { nome: "Gabriel", pos: "VOL", forca: 76, idade: 24, carac: "Marcação" },
+                    { nome: "João Cruz", pos: "MEI", forca: 75, idade: 20, carac: "Visão" }, // Joia da base subindo
+                    { nome: "Dudu", pos: "MEI", forca: 73, idade: 20, carac: "Habilidade" },
+                    { nome: "Gonzalo Mastriani", pos: "ATA", forca: 79, idade: 33, carac: "Cabeceio" },
+                    { nome: "Pablo", pos: "ATA", forca: 77, idade: 34, carac: "Ídolo" },
+                    { nome: "Julimar", pos: "ATA", forca: 77, idade: 25, carac: "Força" },
+                    { nome: "Romeo Benítez", pos: "ATA", forca: 76, idade: 24, carac: "Drible" },
+                    { nome: "Lucas Di Yorio", pos: "ATA", forca: 75, idade: 29, carac: "Pivô" },
+                    { nome: "Emersonn", pos: "ATA", forca: 74, idade: 21, carac: "Finalização" },
+                    { nome: "Felipe Chibanca", pos: "ATA", forca: 71, idade: 19, carac: "Promessa" }
                 ]
             },
             {
                 id: "bragantino", nome: "Bragantino", escudo: "https://s.sde.globo.com/media/organizations/2021/06/28/bragantino.svg", forca: 76, orcamento: "R$ 350 Mi", destaque: "Cleiton",
                 elenco: [
-                    { nome: "Cleiton", pos: "GOL", forca: 79, idade: 27, carac: "Reflexo" },
-                    { nome: "Hurtado", pos: "LD", forca: 74, idade: 23, carac: "Apoio" },
-                    { nome: "Pedro Henrique", pos: "ZAG", forca: 75, idade: 29, carac: "Força" },
-                    { nome: "Luan Cândido", pos: "ZAG", forca: 76, idade: 24, carac: "Chute" },
-                    { nome: "Juninho Capixaba", pos: "LE", forca: 77, idade: 27, carac: "Velocidade" },
-                    { nome: "Jadsom", pos: "VOL", forca: 76, idade: 23, carac: "Passe" },
-                    { nome: "Lucas Evangelista", pos: "MEI", forca: 78, idade: 29, carac: "Dinâmica" },
-                    { nome: "Lincoln", pos: "MEI", forca: 74, idade: 26, carac: "Técnica" },
-                    { nome: "Mosquera", pos: "ATA", forca: 76, idade: 23, carac: "Drible" },
-                    { nome: "Eduardo Sasha", pos: "ATA", forca: 77, idade: 33, carac: "Finalização" },
-                    { nome: "Borbas", pos: "ATA", forca: 76, idade: 22, carac: "Raça" }
+                    { nome: "Cleiton", pos: "GOL", forca: 81, idade: 28, carac: "Liderança" },
+                    { nome: "Lucão", pos: "GOL", forca: 74, idade: 25, carac: "Reflexo" },
+                    { nome: "Fabrício", pos: "GOL", forca: 68, idade: 20, carac: "Promessa" },
+                    { nome: "Juninho Capixaba", pos: "LE", forca: 79, idade: 28, carac: "Vigor" },
+                    { nome: "Luan Cândido", pos: "LE", forca: 78, idade: 25, carac: "Chute" },
+                    { nome: "Nathan Mendes", pos: "LD", forca: 77, idade: 23, carac: "Força" },
+                    { nome: "Andrés Hurtado", pos: "LD", forca: 75, idade: 24, carac: "Apoio" },
+                    { nome: "Guilherme Lopes", pos: "LE", forca: 71, idade: 21, carac: "Base" },
+                    { nome: "Pedro Henrique", pos: "ZAG", forca: 78, idade: 30, carac: "Antecipação" },
+                    { nome: "Eduardo Santos", pos: "ZAG", forca: 77, idade: 28, carac: "Bola Aérea" },
+                    { nome: "Lucas Cunha", pos: "ZAG", forca: 76, idade: 29, carac: "Segurança" },
+                    { nome: "Douglas Mendes", pos: "ZAG", forca: 74, idade: 21, carac: "Velocidade" },
+                    { nome: "Gustavo Henrique", pos: "ZAG", forca: 70, idade: 20, carac: "Promessa" },
+                    { nome: "Lucas Evangelista", pos: "MEI", forca: 80, idade: 30, carac: "Dinâmica" },
+                    { nome: "Jadsom", pos: "VOL", forca: 79, idade: 24, carac: "Motor" },
+                    { nome: "Eric Ramires", pos: "VOL", forca: 78, idade: 25, carac: "Drible Curto" },
+                    { nome: "John John", pos: "MEI", forca: 78, idade: 23, carac: "Habilidade" },
+                    { nome: "Matheus Fernandes", pos: "VOL", forca: 77, idade: 27, carac: "Desarme" },
+                    { nome: "Lincoln", pos: "MEI", forca: 75, idade: 27, carac: "Chute de Longe" },
+                    { nome: "Raul", pos: "VOL", forca: 74, idade: 29, carac: "Marcação" },
+                    { nome: "Gustavinho", pos: "MEI", forca: 73, idade: 22, carac: "Visão" },
+                    { nome: "Thiago Borbas", pos: "ATA", forca: 82, idade: 23, carac: "Finalização" },
+                    { nome: "Eduardo Sasha", pos: "ATA", forca: 78, idade: 34, carac: "Inteligência" },
+                    { nome: "Henry Mosquera", pos: "ATA", forca: 77, idade: 24, carac: "Velocidade" },
+                    { nome: "Vitinho", pos: "ATA", forca: 76, idade: 26, carac: "Drible" },
+                    { nome: "Vinicinho", pos: "ATA", forca: 74, idade: 21, carac: "Explosão" },
+                    { nome: "Talisson", pos: "ATA", forca: 73, idade: 22, carac: "Raça" },
+                    { nome: "Kawê", pos: "ATA", forca: 70, idade: 20, carac: "Base" }
                 ]
             },
             {
                 id: "vitoria", nome: "Vitória", escudo: "https://s.sde.globo.com/media/organizations/2025/12/18/Vitoria_2025.svg", forca: 74, orcamento: "R$ 150 Mi", destaque: "Matheuzinho",
                 elenco: [
-                    { nome: "Lucas Arcanjo", pos: "GOL", forca: 76, idade: 26, carac: "Reflexo" },
-                    { nome: "Cáceres", pos: "LD", forca: 72, idade: 29, carac: "Marcação" },
-                    { nome: "Wagner Leonardo", pos: "ZAG", forca: 76, idade: 25, carac: "Liderança" },
-                    { nome: "Neris", pos: "ZAG", forca: 71, idade: 33, carac: "Força" },
-                    { nome: "Lucas Esteves", pos: "LE", forca: 74, idade: 25, carac: "Velocidade" },
-                    { nome: "Willian Oliveira", pos: "VOL", forca: 74, idade: 32, carac: "Cabeceio" },
-                    { nome: "Luan", pos: "VOL", forca: 73, idade: 26, carac: "Passe" },
-                    { nome: "Matheuzinho", pos: "MEI", forca: 77, idade: 27, carac: "Drible" },
-                    { nome: "Osvaldo", pos: "ATA", forca: 74, idade: 38, carac: "Cruzamento" },
-                    { nome: "Janderson", pos: "ATA", forca: 73, idade: 26, carac: "Velocidade" },
-                    { nome: "Alerrandro", pos: "ATA", forca: 75, idade: 25, carac: "Finalização" }
+                    { nome: "Lucas Arcanjo", pos: "GOL", forca: 80, idade: 28, carac: "Milagreiro" },
+                    { nome: "Muriel", pos: "GOL", forca: 74, idade: 39, carac: "Experiência" },
+                    { nome: "Alexandre Fintelman", pos: "GOL", forca: 69, idade: 24, carac: "Envergadura" },
+                    { nome: "Willean Lepo", pos: "LD", forca: 76, idade: 29, carac: "Raça" },
+                    { nome: "Raúl Cáceres", pos: "LD", forca: 74, idade: 34, carac: "Apoio" },
+                    { nome: "Lucas Esteves", pos: "LE", forca: 77, idade: 26, carac: "Velocidade" },
+                    { nome: "PK", pos: "LE", forca: 74, idade: 24, carac: "Habilidade" },
+                    { nome: "Camutanga", pos: "ZAG", forca: 76, idade: 32, carac: "Força" },
+                    { nome: "Bruno Uvini", pos: "ZAG", forca: 75, idade: 35, carac: "Bola Aérea" },
+                    { nome: "Neris", pos: "ZAG", forca: 74, idade: 34, carac: "Liderança" },
+                    { nome: "João Victor", pos: "ZAG", forca: 73, idade: 22, carac: "Antecipação" },
+                    { nome: "Reynaldo", pos: "ZAG", forca: 74, idade: 29, carac: "Canhoto" }, // Reposição na zaga
+                    { nome: "Luan Santos", pos: "VOL", forca: 78, idade: 27, carac: "Marcação" },
+                    { nome: "Willian Oliveira", pos: "VOL", forca: 77, idade: 33, carac: "Bola Aérea" },
+                    { nome: "Ricardo Ryller", pos: "VOL", forca: 75, idade: 32, carac: "Força" },
+                    { nome: "Caio Vinícius", pos: "VOL", forca: 73, idade: 27, carac: "Polivalente" },
+                    { nome: "Matheusinho", pos: "MEI", forca: 79, idade: 28, carac: "Drible Curto" },
+                    { nome: "Jean Mota", pos: "MEI", forca: 76, idade: 32, carac: "Chute de Longe" },
+                    { nome: "Pablo", pos: "MEI", forca: 72, idade: 22, carac: "Promessa" },
+                    { nome: "Alerrandro", pos: "ATA", forca: 78, idade: 26, carac: "Finalização" },
+                    { nome: "Gustavo Mosquito", pos: "ATA", forca: 77, idade: 28, carac: "Velocidade" },
+                    { nome: "Janderson", pos: "ATA", forca: 75, idade: 27, carac: "Agilidade" },
+                    { nome: "Zé Hugo", pos: "ATA", forca: 74, idade: 26, carac: "Explosão" },
+                    { nome: "Carlos Eduardo", pos: "ATA", forca: 73, idade: 29, carac: "Drible" },
+                    { nome: "Lawan", pos: "ATA", forca: 72, idade: 21, carac: "Base" },
+                    { nome: "Everaldo", pos: "ATA", forca: 74, idade: 32, carac: "Raça" } // O Everaldo ponta
                 ]
             },
             {
                 id: "mirassol", nome: "Mirassol", escudo: "https://s.sde.globo.com/media/organizations/2024/08/20/mirassol-novo-svg-71690.svg", forca: 73, orcamento: "R$ 100 Mi", destaque: "Muralha",
                 elenco: [
-                    { nome: "Alex Muralha", pos: "GOL", forca: 74, idade: 35, carac: "Experiência" },
-                    { nome: "Lucas Ramon", pos: "LD", forca: 71, idade: 31, carac: "Apoio" },
-                    { nome: "João Victor", pos: "ZAG", forca: 73, idade: 27, carac: "Força" },
-                    { nome: "Luiz Otávio", pos: "ZAG", forca: 72, idade: 32, carac: "Liderança" },
-                    { nome: "Zeca", pos: "LE", forca: 73, idade: 30, carac: "Cruzamento" },
-                    { nome: "Neto Moura", pos: "VOL", forca: 74, idade: 28, carac: "Passe" },
-                    { nome: "Danielzinho", pos: "VOL", forca: 73, idade: 30, carac: "Dinâmica" },
-                    { nome: "Gabriel", pos: "MEI", forca: 74, idade: 35, carac: "Técnica" },
-                    { nome: "Chico Kim", pos: "MEI", forca: 73, idade: 34, carac: "Drible" },
-                    { nome: "Fernandinho", pos: "ATA", forca: 72, idade: 28, carac: "Velocidade" },
-                    { nome: "Dellatorre", pos: "ATA", forca: 76, idade: 33, carac: "Finalização" }
+                    { nome: "Walter", pos: "GOL", forca: 78, idade: 38, carac: "Milagreiro" }, // O peso pesado do gol
+                    { nome: "Alex Muralha", pos: "GOL", forca: 76, idade: 36, carac: "Líder" },
+                    { nome: "Vanderlei", pos: "GOL", forca: 71, idade: 42, carac: "Experiência" },
+                    { nome: "Lucas Ramon", pos: "LD", forca: 74, idade: 32, carac: "Apoio" },
+                    { nome: "Warley", pos: "LD", forca: 72, idade: 26, carac: "Velocidade" },
+                    { nome: "Zeca", pos: "LE", forca: 75, idade: 32, carac: "Polivalente" },
+                    { nome: "Artur", pos: "LE", forca: 73, idade: 32, carac: "Equilíbrio" },
+                    { nome: "Luiz Otávio", pos: "ZAG", forca: 75, idade: 33, carac: "Liderança" },
+                    { nome: "João Victor", pos: "ZAG", forca: 74, idade: 28, carac: "Força" },
+                    { nome: "Lucas Gazal", pos: "ZAG", forca: 73, idade: 26, carac: "Bola Aérea" },
+                    { nome: "Henri", pos: "ZAG", forca: 71, idade: 24, carac: "Promessa" },
+                    { nome: "Neto Moura", pos: "VOL", forca: 76, idade: 29, carac: "Passe" },
+                    { nome: "Gabriel", pos: "VOL", forca: 75, idade: 33, carac: "Marcação" },
+                    { nome: "Yuri", pos: "VOL", forca: 74, idade: 31, carac: "Força" },
+                    { nome: "Chico Kim", pos: "MEI", forca: 76, idade: 35, carac: "Técnica" },
+                    { nome: "Isaque", pos: "MEI", forca: 74, idade: 29, carac: "Dinâmica" },
+                    { nome: "Gabriel", pos: "MEI", forca: 73, idade: 26, carac: "Habilidade" },
+                    { nome: "Dellatorre", pos: "ATA", forca: 77, idade: 34, carac: "Finalização" },
+                    { nome: "Fernandinho", pos: "ATA", forca: 75, idade: 29, carac: "Velocidade" },
+                    { nome: "Negueba", pos: "ATA", forca: 74, idade: 34, carac: "Drible" },
+                    { nome: "Iury Castilho", pos: "ATA", forca: 74, idade: 30, carac: "Raça" },
+                    { nome: "Léo Gamalho", pos: "ATA", forca: 73, idade: 40, carac: "Cabeceio" }
                 ]
             },
             {
                 id: "coritiba", nome: "Coritiba", escudo: "https://s.sde.globo.com/media/organizations/2018/03/11/coritiba.svg", forca: 73, orcamento: "R$ 65 Mi", destaque: "Robson",
                 elenco: [
-                    { nome: "Gabriel", pos: "GOL", forca: 73, idade: 32, carac: "Segurança" },
-                    { nome: "Natanael", pos: "LD", forca: 73, idade: 23, carac: "Velocidade" },
-                    { nome: "Benevenuto", pos: "ZAG", forca: 72, idade: 29, carac: "Força" },
-                    { nome: "Bruno Melo", pos: "ZAG", forca: 71, idade: 32, carac: "Bola Aérea" },
-                    { nome: "Jamerson", pos: "LE", forca: 73, idade: 26, carac: "Apoio" },
-                    { nome: "Sebastián Gómez", pos: "VOL", forca: 75, idade: 28, carac: "Passe" },
-                    { nome: "Matheus Frizzo", pos: "MEI", forca: 74, idade: 26, carac: "Chute" },
-                    { nome: "Robson", pos: "ATA", forca: 76, idade: 33, carac: "Raça" },
-                    { nome: "Figueiredo", pos: "ATA", forca: 72, idade: 23, carac: "Chute" },
-                    { nome: "Leandro Damião", pos: "ATA", forca: 72, idade: 35, carac: "Pivô" }
+                    { nome: "Pedro Morisco", pos: "GOL", forca: 78, idade: 22, carac: "Reflexo" }, // A grande realidade do gol
+                    { nome: "Gabriel Vasconcelos", pos: "GOL", forca: 75, idade: 33, carac: "Experiência" },
+                    { nome: "Jamerson", pos: "LE", forca: 76, idade: 27, carac: "Cruzamento" },
+                    { nome: "Hayner", pos: "LD", forca: 74, idade: 30, carac: "Velocidade" }, // Reforço para vaga do Natanael
+                    { nome: "Diogo Batista", pos: "LD", forca: 72, idade: 22, carac: "Apoio" },
+                    { nome: "Rodrigo Gelado", pos: "LE", forca: 73, idade: 22, carac: "Força" },
+                    { nome: "Thalisson Gabriel", pos: "ZAG", forca: 76, idade: 24, carac: "Antecipação" },
+                    { nome: "Marcelo Benevenuto", pos: "ZAG", forca: 75, idade: 30, carac: "Força" },
+                    { nome: "Bruno Viana", pos: "ZAG", forca: 74, idade: 31, carac: "Técnica" },
+                    { nome: "Maurício Antônio", pos: "ZAG", forca: 73, idade: 34, carac: "Bola Aérea" },
+                    { nome: "Sebastián Gómez", pos: "VOL", forca: 78, idade: 30, carac: "Dinâmica" },
+                    { nome: "Vini Paulista", pos: "VOL", forca: 76, idade: 25, carac: "Raça" },
+                    { nome: "Bernardo", pos: "VOL", forca: 73, idade: 21, carac: "Passe" },
+                    { nome: "Matheus Frizzo", pos: "MEI", forca: 77, idade: 27, carac: "Chute de Longe" },
+                    { nome: "Matheus Bianqui", pos: "MEI", forca: 75, idade: 28, carac: "Infiltração" },
+                    { nome: "Josué", pos: "MEI", forca: 74, idade: 23, carac: "Habilidade" },
+                    { nome: "Alef Manga", pos: "ATA", forca: 79, idade: 31, carac: "Finalização" }, // O artilheiro polêmico
+                    { nome: "Robson", pos: "ATA", forca: 77, idade: 35, carac: "Guerreiro" }, // O "Robgol" capitão
+                    { nome: "Lucas Ronier", pos: "ATA", forca: 78, idade: 21, carac: "Drible" }, // Joia da base
+                    { nome: "Figueiredo", pos: "ATA", forca: 74, idade: 24, carac: "Chute Forte" },
+                    { nome: "Wesley Pomba", pos: "ATA", forca: 73, idade: 23, carac: "Velocidade" },
+                    { nome: "Eberth", pos: "ATA", forca: 71, idade: 23, carac: "Pivô" }
                 ]
             },
             {
                 id: "chapecoense", nome: "Chapecoense", escudo: "https://s.sde.globo.com/media/organizations/2021/06/21/CHAPECOENSE-2018.svg", forca: 72, orcamento: "R$ 60 Mi", destaque: "Matheus Cavichioli",
                 elenco: [
-                    { nome: "Matheus Cavichioli", pos: "GOL", forca: 73, idade: 38, carac: "Experiência" },
-                    { nome: "Bruno Leonardo", pos: "ZAG", forca: 72, idade: 28, carac: "Liderança" },
-                    { nome: "Mancha", pos: "LE", forca: 71, idade: 24, carac: "Apoio" },
-                    { nome: "Foguinho", pos: "VOL", forca: 72, idade: 32, carac: "Raça" },
-                    { nome: "Giovanni Augusto", pos: "MEI", forca: 73, idade: 35, carac: "Passe" },
-                    { nome: "Mário Sérgio", pos: "ATA", forca: 74, idade: 28, carac: "Finalização" }
+                    { nome: "Léo Vieira", pos: "GOL", forca: 75, idade: 35, carac: "Segurança" },
+                    { nome: "Matheus Cavichioli", pos: "GOL", forca: 73, idade: 39, carac: "Liderança" },
+                    { nome: "Gabriel Gasparotto", pos: "GOL", forca: 71, idade: 32, carac: "Envergadura" },
+                    { nome: "João Paulo", pos: "GOL", forca: 68, idade: 25, carac: "Agilidade" }, // Reserva imediato
+                    { nome: "Maílton", pos: "LD", forca: 74, idade: 28, carac: "Velocidade" },
+                    { nome: "Marcelinho", pos: "LD", forca: 72, idade: 27, carac: "Apoio" },
+                    { nome: "Mancha", pos: "LE", forca: 74, idade: 25, carac: "Cruzamento" },
+                    { nome: "Kelvyn", pos: "LE", forca: 71, idade: 26, carac: "Equilíbrio" },
+                    { nome: "Thiago Henrique", pos: "LD", forca: 69, idade: 21, carac: "Base" }, // Composição
+                    { nome: "Bruno Leonardo", pos: "ZAG", forca: 76, idade: 30, carac: "Antecipação" },
+                    { nome: "Eduardo Doma", pos: "ZAG", forca: 75, idade: 27, carac: "Força" },
+                    { nome: "Rodrigo Moledo", pos: "ZAG", forca: 74, idade: 38, carac: "Experiência" },
+                    { nome: "Habraão", pos: "ZAG", forca: 73, idade: 25, carac: "Bola Aérea" },
+                    { nome: "Jhonnathan", pos: "ZAG", forca: 72, idade: 25, carac: "Velocidade" },
+                    { nome: "Dore", pos: "ZAG", forca: 70, idade: 24, carac: "Reserva" }, // Zagueiro de grupo
+                    { nome: "Foguinho", pos: "VOL", forca: 75, idade: 34, carac: "Motor" },
+                    { nome: "Auremir", pos: "VOL", forca: 74, idade: 34, carac: "Desarme" },
+                    { nome: "Bruno Vinícius", pos: "VOL", forca: 73, idade: 26, carac: "Passe" }, // Peça importante
+                    { nome: "Marcelo Freitas", pos: "VOL", forca: 72, idade: 31, carac: "Marcação" }, // Rotação
+                    { nome: "Tárik", pos: "VOL", forca: 73, idade: 33, carac: "Raça" },
+                    { nome: "Rafael Carvalheira", pos: "MEI", forca: 76, idade: 26, carac: "Criação" },
+                    { nome: "Giovanni Pavani", pos: "MEI", forca: 74, idade: 29, carac: "Dinâmica" },
+                    { nome: "Marlone", pos: "MEI", forca: 73, idade: 34, carac: "Técnica" },
+                    { nome: "Thomás Bedinelli", pos: "MEI", forca: 72, idade: 33, carac: "Chute de Longe" },
+                    { nome: "Rubens", pos: "MEI", forca: 70, idade: 22, carac: "Promessa" },
+                    { nome: "Perotti", pos: "ATA", forca: 78, idade: 28, carac: "Matador" },
+                    { nome: "Mário Sérgio", pos: "ATA", forca: 76, idade: 31, carac: "Finalização" },
+                    { nome: "Marcinho", pos: "ATA", forca: 74, idade: 30, carac: "Velocidade" },
+                    { nome: "Rômulo", pos: "ATA", forca: 73, idade: 30, carac: "Raça" },
+                    { nome: "Italo", pos: "ATA", forca: 73, idade: 24, carac: "Força" }, // Opção física
+                    { nome: "Thayllon", pos: "ATA", forca: 72, idade: 25, carac: "Drible" }, // Opção de velocidade
+                    { nome: "Cacá", pos: "ATA", forca: 69, idade: 20, carac: "Base" }
                 ]
             },
             {
                 id: "remo", nome: "Remo", escudo: "https://s.sde.globo.com/media/organizations/2021/02/25/Remo-PA.svg", forca: 71, orcamento: "R$ 55 Mi", destaque: "Pedro Vitor",
                 elenco: [
-                    { nome: "Marcelo Rangel", pos: "GOL", forca: 72, idade: 36, carac: "Reflexo" },
-                    { nome: "Ligger", pos: "ZAG", forca: 71, idade: 36, carac: "Experiência" },
-                    { nome: "Bruno Silva", pos: "VOL", forca: 72, idade: 38, carac: "Força" },
-                    { nome: "Pavani", pos: "MEI", forca: 73, idade: 28, carac: "Chute" },
-                    { nome: "Pedro Vitor", pos: "ATA", forca: 74, idade: 26, carac: "Drible" },
-                    { nome: "Ytalo", pos: "ATA", forca: 73, idade: 37, carac: "Finalização" }
-                ]
+                    { nome: "Marcelo Rangel", pos: "GOL", forca: 76, idade: 38, carac: "Milagreiro" },
+                    { nome: "Léo Lang", pos: "GOL", forca: 72, idade: 28, carac: "Agilidade" },
+                    { nome: "Victor Lube", pos: "GOL", forca: 68, idade: 23, carac: "Promessa" }, // 3º Goleiro
+                    { nome: "Vidal", pos: "LD", forca: 73, idade: 30, carac: "Força" },
+                    { nome: "Thalys", pos: "LD", forca: 71, idade: 26, carac: "Apoio" },
+                    { nome: "Raimar", pos: "LE", forca: 74, idade: 24, carac: "Velocidade" },
+                    { nome: "Sávio", pos: "LE", forca: 73, idade: 30, carac: "Equilíbrio" },
+                    { nome: "Hélder", pos: "LE", forca: 72, idade: 37, carac: "Experiência" }, // Lateral experiente para grupo
+                    { nome: "Ligger", pos: "ZAG", forca: 75, idade: 38, carac: "Liderança" },
+                    { nome: "Rafael Castro", pos: "ZAG", forca: 74, idade: 29, carac: "Antecipação" },
+                    { nome: "Bruno Bispo", pos: "ZAG", forca: 73, idade: 26, carac: "Canhoto" },
+                    { nome: "Sheldon", pos: "ZAG", forca: 73, idade: 27, carac: "Força" }, // Zagueiro rebatedor
+                    { nome: "Jonilson", pos: "ZAG", forca: 71, idade: 24, carac: "Velocidade" },
+                    { nome: "Paulinho Curuá", pos: "VOL", forca: 75, idade: 29, carac: "Raça" },
+                    { nome: "Renato Alves", pos: "VOL", forca: 73, idade: 34, carac: "Chute Forte" },
+                    { nome: "João Afonso", pos: "VOL", forca: 72, idade: 31, carac: "Bola Aérea" },
+                    { nome: "Adsson", pos: "VOL", forca: 71, idade: 25, carac: "Dinâmica" }, // Opção de rotação
+                    { nome: "Henrique Vigia", pos: "VOL", forca: 70, idade: 24, carac: "Marcação" }, // Cria da casa
+                    { nome: "Jaderson", pos: "MEI", forca: 78, idade: 26, carac: "Polivalente" },
+                    { nome: "Matheus Anjos", pos: "MEI", forca: 75, idade: 27, carac: "Visão" },
+                    { nome: "Marco Antônio", pos: "MEI", forca: 75, idade: 26, carac: "Passe" },
+                    { nome: "Soares", pos: "MEI", forca: 74, idade: 28, carac: "Dinâmica" },
+                    { nome: "Guty", pos: "MEI", forca: 69, idade: 22, carac: "Habilidade" }, // Base
+                    { nome: "Pedro Vitor", pos: "ATA", forca: 77, idade: 28, carac: "Drible" },
+                    { nome: "Ytalo", pos: "ATA", forca: 75, idade: 38, carac: "Finalização" },
+                    { nome: "Ronald", pos: "ATA", forca: 74, idade: 24, carac: "Velocidade" },
+                    { nome: "Ribamar", pos: "ATA", forca: 74, idade: 29, carac: "Força" },
+                    { nome: "Kelvin", pos: "ATA", forca: 73, idade: 32, carac: "Liso" }, // Opção de 2º tempo
+                    { nome: "Echaporã", pos: "ATA", forca: 72, idade: 26, carac: "Explosão" },
+                    { nome: "Kanu", pos: "ATA", forca: 72, idade: 23, carac: "Base" },
+                    { nome: "Felipinho", pos: "ATA", forca: 71, idade: 22, carac: "Agilidade" }
+]
             }
         ],
 
