@@ -108,7 +108,7 @@ const database = {
                 ]
             },
             {
-                id: "atleticomg", nome: "Atlético-MG", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/1045.png", forca: 82, orcamento: "R$ 700 Mi", destaque: "Hulk",
+                id: "atleticomg", nome: "Atlético-MG", escudo: "https://s.sde.globo.com/media/organizations/2018/03/10/atletico-mg.svg", forca: 82, orcamento: "R$ 700 Mi", destaque: "Hulk",
                 elenco: [
                     { nome: "Everson", pos: "GOL", forca: 79, idade: 34, carac: "Reflexo" },
                     { nome: "Saravia", pos: "LD", forca: 75, idade: 32, carac: "Velocidade" },
@@ -125,7 +125,7 @@ const database = {
                 ]
             },
             {
-                id: "internacional", nome: "Internacional", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/1966.png", forca: 83, orcamento: "R$ 600 Mi", destaque: "Alan Patrick",
+                id: "internacional", nome: "Internacional", escudo: "https://s.sde.globo.com/media/organizations/2018/03/11/internacional.svg", forca: 83, orcamento: "R$ 600 Mi", destaque: "Alan Patrick",
                 elenco: [
                     { nome: "Rochet", pos: "GOL", forca: 81, idade: 32, carac: "Liderança" },
                     { nome: "Bruno Gomes", pos: "LD", forca: 75, idade: 23, carac: "Resistência" },
@@ -141,7 +141,7 @@ const database = {
                 ]
             },
             {
-                id: "saopaulo", nome: "São Paulo", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2026.png", forca: 81, orcamento: "R$ 550 Mi", destaque: "Lucas Moura",
+                id: "saopaulo", nome: "São Paulo", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2026.pn", forca: 81, orcamento: "R$ 550 Mi", destaque: "Lucas Moura",
                 elenco: [
                     { nome: "Rafael", pos: "GOL", forca: 79, idade: 35, carac: "Segurança" },
                     { nome: "Rafinha", pos: "LD", forca: 74, idade: 39, carac: "Liderança" },
@@ -174,7 +174,7 @@ const database = {
                 ]
             },
             {
-                id: "bahia", nome: "Bahia", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/1046.png", forca: 79, orcamento: "R$ 700 Mi", destaque: "Everton Ribeiro",
+                id: "bahia", nome: "Bahia", escudo: "https://s.sde.globo.com/media/organizations/2018/03/11/bahia.svg", forca: 79, orcamento: "R$ 700 Mi", destaque: "Everton Ribeiro",
                 elenco: [
                     { nome: "Marcos Felipe", pos: "GOL", forca: 77, idade: 29, carac: "Reflexo" },
                     { nome: "Santiago Arias", pos: "LD", forca: 79, idade: 33, carac: "Apoio" },
@@ -190,7 +190,7 @@ const database = {
                 ]
             },
             {
-                id: "cruzeiro", nome: "Cruzeiro", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2030.png", forca: 80, orcamento: "R$ 650 Mi", destaque: "Matheus Pereira",
+                id: "cruzeiro", nome: "Cruzeiro", escudo: "https://s.sde.globo.com/media/organizations/2021/02/13/cruzeiro_2021.svg", forca: 80, orcamento: "R$ 650 Mi", destaque: "Matheus Pereira",
                 elenco: [
                     { nome: "Cássio", pos: "GOL", forca: 80, idade: 38, carac: "Segurança" },
                     { nome: "William", pos: "LD", forca: 81, idade: 30, carac: "Cruzamento" },
@@ -222,7 +222,7 @@ const database = {
                 ]
             },
             {
-                id: "fluminense", nome: "Fluminense", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/1961.png", forca: 79, orcamento: "R$ 500 Mi", destaque: "Thiago Silva",
+                id: "fluminense", nome: "Fluminense", escudo: "https://s.sde.globo.com/media/organizations/2018/03/11/fluminense.svg", forca: 79, orcamento: "R$ 500 Mi", destaque: "Thiago Silva",
                 elenco: [
                     { nome: "Fábio", pos: "GOL", forca: 78, idade: 44, carac: "Experiência" },
                     { nome: "Samuel Xavier", pos: "LD", forca: 74, idade: 35, carac: "Apoio" },
@@ -255,7 +255,7 @@ const database = {
                 ]
             },
             {
-                id: "santos", nome: "Santos", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2063.png", forca: 81, orcamento: "R$ 600 Mi", destaque: "Neymar Jr",
+                id: "santos", nome: "Santos", escudo: "https://s.sde.globo.com/media/organizations/2018/03/12/santos.svg", forca: 81, orcamento: "R$ 600 Mi", destaque: "Neymar Jr",
                 elenco: [
                     { nome: "João Paulo", pos: "GOL", forca: 78, idade: 29, carac: "Reflexo" },
                     { nome: "JP Chermont", pos: "LD", forca: 75, idade: 19, carac: "Promessa" },
@@ -272,7 +272,7 @@ const database = {
                 ]
             },
             {
-                id: "athleticopr", nome: "Athletico-PR", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/1967.png", forca: 77, orcamento: "R$ 300 Mi", destaque: "Fernandinho",
+                id: "athleticopr", nome: "Athletico-PR", escudo: "https://s.sde.globo.com/media/organizations/2026/01/07/Athletico-PR.svg", forca: 77, orcamento: "R$ 300 Mi", destaque: "Fernandinho",
                 elenco: [
                     { nome: "Mycael", pos: "GOL", forca: 75, idade: 21, carac: "Reflexo" },
                     { nome: "Léo Linck", pos: "GOL", forca: 73, idade: 24, carac: "Altura" },
@@ -291,7 +291,7 @@ const database = {
                 ]
             },
             {
-                id: "bragantino", nome: "Bragantino", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/10003.png", forca: 76, orcamento: "R$ 350 Mi", destaque: "Cleiton",
+                id: "bragantino", nome: "Bragantino", escudo: "https://s.sde.globo.com/media/organizations/2021/06/28/bragantino.svg", forca: 76, orcamento: "R$ 350 Mi", destaque: "Cleiton",
                 elenco: [
                     { nome: "Cleiton", pos: "GOL", forca: 79, idade: 27, carac: "Reflexo" },
                     { nome: "Hurtado", pos: "LD", forca: 74, idade: 23, carac: "Apoio" },
@@ -307,7 +307,7 @@ const database = {
                 ]
             },
             {
-                id: "vitoria", nome: "Vitória", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/3456.png", forca: 74, orcamento: "R$ 150 Mi", destaque: "Matheuzinho",
+                id: "vitoria", nome: "Vitória", escudo: "https://s.sde.globo.com/media/organizations/2025/12/18/Vitoria_2025.svg", forca: 74, orcamento: "R$ 150 Mi", destaque: "Matheuzinho",
                 elenco: [
                     { nome: "Lucas Arcanjo", pos: "GOL", forca: 76, idade: 26, carac: "Reflexo" },
                     { nome: "Cáceres", pos: "LD", forca: 72, idade: 29, carac: "Marcação" },
@@ -323,7 +323,7 @@ const database = {
                 ]
             },
             {
-                id: "mirassol", nome: "Mirassol", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/19001.png", forca: 73, orcamento: "R$ 100 Mi", destaque: "Muralha",
+                id: "mirassol", nome: "Mirassol", escudo: "https://s.sde.globo.com/media/organizations/2024/08/20/mirassol-novo-svg-71690.svg", forca: 73, orcamento: "R$ 100 Mi", destaque: "Muralha",
                 elenco: [
                     { nome: "Alex Muralha", pos: "GOL", forca: 74, idade: 35, carac: "Experiência" },
                     { nome: "Lucas Ramon", pos: "LD", forca: 71, idade: 31, carac: "Apoio" },
@@ -339,7 +339,7 @@ const database = {
                 ]
             },
             {
-                id: "coritiba", nome: "Coritiba", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/3451.png", forca: 73, orcamento: "R$ 65 Mi", destaque: "Robson",
+                id: "coritiba", nome: "Coritiba", escudo: "https://s.sde.globo.com/media/organizations/2018/03/11/coritiba.svg", forca: 73, orcamento: "R$ 65 Mi", destaque: "Robson",
                 elenco: [
                     { nome: "Gabriel", pos: "GOL", forca: 73, idade: 32, carac: "Segurança" },
                     { nome: "Natanael", pos: "LD", forca: 73, idade: 23, carac: "Velocidade" },
@@ -354,7 +354,7 @@ const database = {
                 ]
             },
             {
-                id: "chapecoense", nome: "Chapecoense", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/10007.png", forca: 72, orcamento: "R$ 60 Mi", destaque: "Matheus Cavichioli",
+                id: "chapecoense", nome: "Chapecoense", escudo: "https://s.sde.globo.com/media/organizations/2021/06/21/CHAPECOENSE-2018.svg", forca: 72, orcamento: "R$ 60 Mi", destaque: "Matheus Cavichioli",
                 elenco: [
                     { nome: "Matheus Cavichioli", pos: "GOL", forca: 73, idade: 38, carac: "Experiência" },
                     { nome: "Bruno Leonardo", pos: "ZAG", forca: 72, idade: 28, carac: "Liderança" },
@@ -365,7 +365,7 @@ const database = {
                 ]
             },
             {
-                id: "remo", nome: "Remo", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/6275.png", forca: 71, orcamento: "R$ 55 Mi", destaque: "Pedro Vitor",
+                id: "remo", nome: "Remo", escudo: "https://s.sde.globo.com/media/organizations/2021/02/25/Remo-PA.svg", forca: 71, orcamento: "R$ 55 Mi", destaque: "Pedro Vitor",
                 elenco: [
                     { nome: "Marcelo Rangel", pos: "GOL", forca: 72, idade: 36, carac: "Reflexo" },
                     { nome: "Ligger", pos: "ZAG", forca: 71, idade: 36, carac: "Experiência" },
