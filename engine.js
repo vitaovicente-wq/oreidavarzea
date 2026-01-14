@@ -1,4 +1,4 @@
-// ARQUIVO: engine.js (V6.1 - SISTEMA DE CONTRATOS E SALÁRIOS FIXOS)
+// ARQUIVO: engine.js (V7.0 - MERCADO COMPLETO + CONTRATOS)
 
 const Engine = {
     
@@ -11,9 +11,12 @@ const Engine = {
             return;
         }
 
+        // Limpa dados de mercado de saves anteriores
+        localStorage.removeItem('brfutebol_livres');
+        localStorage.removeItem('brfutebol_transferencias');
+
         let timesDaLiga = [];
         if (window.Database && window.Database.brasil && window.Database.brasil[divisao]) {
-            // Cria uma cópia profunda para garantir que editaremos o save e não o banco original
             timesDaLiga = JSON.parse(JSON.stringify(window.Database.brasil[divisao]));
         } else {
             timesDaLiga = this._gerarTimesGenericos(divisao);
@@ -25,12 +28,14 @@ const Engine = {
         timesDaLiga.forEach(t => {
             if (!t.elenco || !Array.isArray(t.elenco)) t.elenco = [];
             
-            t.elenco.forEach(jogador => {
-                // 1. Define o contrato inicial para todos
+            t.elenco.forEach((jogador, idx) => {
+                // Garante UID único para cada jogador inicial
+                if (!jogador.uid) jogador.uid = `start_${t.nome.substring(0,3)}_${idx}_${Date.now()}`;
+
+                // 1. Define o contrato inicial
                 jogador.contrato = DATA_FIM_PADRAO;
 
-                // 2. Calcula e fixa o salário inicial (para não flutuar se a força mudar)
-                // Fórmula: Força * 1500 (Ex: Força 80 = R$ 120.000)
+                // 2. Calcula e fixa o salário inicial
                 if (!jogador.salario) {
                     jogador.salario = (jogador.forca || 60) * 1500;
                 }
@@ -43,7 +48,6 @@ const Engine = {
             pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0
         }));
 
-        // --- DEFINIÇÃO DO INÍCIO DO CALENDÁRIO (01/01/2026) ---
         const dataInicio = new Date('2026-01-01T12:00:00').getTime();
 
         const estadoDoJogo = {
@@ -52,7 +56,7 @@ const Engine = {
                 time: nomeTimeSelecionado,
                 escudo: localStorage.getItem('brfutebol_escudo'),
                 divisao: divisao,
-                dataInicio: dataInicio // Salva a data base para cálculos futuros
+                dataInicio: dataInicio
             },
             recursos: { 
                 dinheiro: 5000000, 
@@ -74,6 +78,10 @@ const Engine = {
         };
 
         this.salvarJogo(estadoDoJogo);
+        
+        // Gera o mercado inicial
+        this.Mercado.gerarAgentesLivres();
+        this.Mercado.gerarListaTransferencias(estadoDoJogo);
     },
 
     // --- 2. SISTEMA DE BUSCA ---
@@ -117,7 +125,7 @@ const Engine = {
 
         tabela.sort((a, b) => b.pts - a.pts || b.v - a.v || b.sg - a.sg || b.gp - a.gp);
         
-        // HOOK FINANCEIRO SINCRONIZADO
+        // HOOK FINANCEIRO E DE MERCADO
         const rodadaIdx = estadoJogo.rodadaAtual - 1;
         if(estadoJogo.calendario[rodadaIdx]) {
             const jogoPlayer = estadoJogo.calendario[rodadaIdx].jogos.find(j => j.mandante === estadoJogo.info.time || j.visitante === estadoJogo.info.time);
@@ -127,8 +135,18 @@ const Engine = {
                 const isMandante = jogoPlayer.mandante === estadoJogo.info.time;
                 const adversario = isMandante ? jogoPlayer.visitante : jogoPlayer.mandante;
                 
+                // Processa finanças
                 this.sistema.processarRodadaFinanceira(estadoJogo, isMandante, adversario);
+                
+                // Gera ofertas PELOS seus jogadores
                 this.sistema.gerarPropostaTransferencia(); 
+                
+                // Atualiza o mercado GLOBAL (novos jogadores livres/transferências)
+                // A cada 3 rodadas, renova o mercado
+                if (estadoJogo.rodadaAtual % 3 === 0) {
+                    localStorage.removeItem('brfutebol_transferencias'); // Força gerar novos
+                    this.Mercado.gerarListaTransferencias(estadoJogo);
+                }
                 
                 estadoJogo.recursos.rodadaFinanceiraProcessada = true;
             }
@@ -214,48 +232,21 @@ const Engine = {
             "Santos": { nome: "Vila Belmiro", cap: 16068 },
             "Bragantino": { nome: "Nabi Abi Chedid", cap: 17022 },
             "Ponte Preta": { nome: "Moisés Lucarelli", cap: 17728 },
-            "Guarani": { nome: "Brinco de Ouro", cap: 29130 },
-            "Novorizontino": { nome: "Jorjão", cap: 16000 },
-            "Mirassol": { nome: "Maião", cap: 15000 },
-            "Ituano": { nome: "Novelli Júnior", cap: 18560 },
-            "Botafogo-SP": { nome: "Santa Cruz", cap: 29292 },
             "Flamengo": { nome: "Maracanã", cap: 78838 },
             "Fluminense": { nome: "Maracanã", cap: 78838 },
             "Vasco": { nome: "São Januário", cap: 21880 },
             "Botafogo": { nome: "Nilton Santos", cap: 44661 },
             "Atlético-MG": { nome: "Arena MRV", cap: 46000 },
             "Cruzeiro": { nome: "Mineirão", cap: 61846 },
-            "América-MG": { nome: "Independência", cap: 23018 },
-            "Tombense": { nome: "Almeidão", cap: 6555 },
             "Grêmio": { nome: "Arena do Grêmio", cap: 55662 },
             "Internacional": { nome: "Beira-Rio", cap: 50842 },
-            "Juventude": { nome: "Alfredo Jaconi", cap: 19924 },
-            "Criciúma": { nome: "Heriberto Hülse", cap: 19225 },
-            "Avaí": { nome: "Ressacada", cap: 17800 },
-            "Chapecoense": { nome: "Arena Condá", cap: 20089 },
-            "Brusque": { nome: "Augusto Bauer", cap: 5000 },
-            "Athletico-PR": { nome: "Ligga Arena", cap: 42372 },
-            "Coritiba": { nome: "Couto Pereira", cap: 40502 },
-            "Operário-PR": { nome: "Germano Krüger", cap: 10632 },
-            "Londrina": { nome: "Estádio do Café", cap: 30000 },
             "Bahia": { nome: "Arena Fonte Nova", cap: 47907 },
             "Vitória": { nome: "Barradão", cap: 30618 },
             "Fortaleza": { nome: "Arena Castelão", cap: 63903 },
             "Ceará": { nome: "Arena Castelão", cap: 63903 },
             "Sport": { nome: "Arena de Pernambuco", cap: 44300 },
-            "Náutico": { nome: "Aflitos", cap: 22856 },
-            "Santa Cruz": { nome: "Arruda", cap: 60044 },
-            "CRB": { nome: "Rei Pelé", cap: 17126 },
-            "CSA": { nome: "Rei Pelé", cap: 17126 },
-            "Sampaio Corrêa": { nome: "Castelão-MA", cap: 40149 },
-            "ABC": { nome: "Frasqueirão", cap: 18000 },
-            "Cuiabá": { nome: "Arena Pantanal", cap: 44097 },
-            "Atlético-GO": { nome: "Antônio Accioly", cap: 12500 },
-            "Goiás": { nome: "Serrinha", cap: 14450 },
-            "Vila Nova": { nome: "OBA", cap: 11788 },
-            "Paysandu": { nome: "Curuzu", cap: 16200 },
-            "Remo": { nome: "Baenão", cap: 13792 },
-            "Amazonas": { nome: "Arena da Amazônia", cap: 44000 },
+            "Athletico-PR": { nome: "Ligga Arena", cap: 42372 },
+            "Coritiba": { nome: "Couto Pereira", cap: 40502 },
             "Padrao": { nome: "Estádio Municipal", cap: 15000 }
         },
 
@@ -322,7 +313,92 @@ const Engine = {
         }
     },
 
-    // --- 7. SISTEMA FINANCEIRO E MENSAGENS ---
+    // --- 7. SISTEMA DE MERCADO (NOVO) ---
+    Mercado: {
+        nomes: ["Silva", "Santos", "Oliveira", "Souza", "Rodrigues", "Ferreira", "Alves", "Pereira", "Lima", "Gomes", "Costa", "Ribeiro", "Martins", "Carvalho", "Almeida", "Lopes", "Soares", "Fernandes", "Vieira"],
+        prenomes: ["João", "José", "Pedro", "Lucas", "Mateus", "Gabriel", "Rafael", "Daniel", "Thiago", "Luiz", "Paulo", "Carlos", "Marcos", "André", "Felipe", "Guilherme", "Rodrigo", "Bruno"],
+
+        // 1. Gera Jogadores Livres (Sem contrato)
+        gerarAgentesLivres: function() {
+            let livres = localStorage.getItem('brfutebol_livres');
+            if (livres) return JSON.parse(livres);
+
+            const novos = [];
+            const posicoes = ['GOL', 'ZAG', 'LD', 'LE', 'VOL', 'MEI', 'ATA'];
+
+            // Gera 15 jogadores livres aleatórios
+            for (let i = 0; i < 15; i++) {
+                const forca = Math.floor(Math.random() * 15) + 55; // Força 55-70
+                const valor = Math.pow(forca, 3) * 10; 
+                
+                novos.push({
+                    uid: 'free_' + Date.now() + i,
+                    nome: this.prenomes[Math.floor(Math.random()*this.prenomes.length)] + " " + this.nomes[Math.floor(Math.random()*this.nomes.length)],
+                    pos: posicoes[Math.floor(Math.random() * posicoes.length)],
+                    forca: forca,
+                    idade: Math.floor(Math.random() * 12) + 20,
+                    valor: 0, // Sem custo de passe
+                    salario: Math.floor(valor * 0.008),
+                    clube: null,
+                    carac: "Agente Livre"
+                });
+            }
+            localStorage.setItem('brfutebol_livres', JSON.stringify(novos));
+            return novos;
+        },
+
+        // 2. Simula outros clubes colocando jogadores à venda
+        gerarListaTransferencias: function(game) {
+            let transferencias = localStorage.getItem('brfutebol_transferencias');
+            if (transferencias) return JSON.parse(transferencias);
+
+            const lista = [];
+            // Percorre os times (exceto o do jogador)
+            game.times.forEach(time => {
+                if (time.nome !== game.info.time) {
+                    const qtdVenda = Math.floor(Math.random() * 2); // 0 ou 1 jogador por time
+                    for(let k=0; k<qtdVenda; k++) {
+                        if (time.elenco && time.elenco.length > 0) {
+                            const jogador = time.elenco[Math.floor(Math.random() * time.elenco.length)];
+                            
+                            // Regra: Não vende se for muito craque (OVR > 85) e não duplica
+                            if (!lista.find(j => j.uid === jogador.uid) && jogador.forca < 85) {
+                                // Calcula valor de mercado
+                                const valorMercado = Math.floor(Math.pow(jogador.forca, 3) * 18);
+                                
+                                lista.push({
+                                    ...jogador,
+                                    valor: valorMercado,
+                                    clube: time.nome // Identifica de onde vem
+                                });
+                            }
+                        }
+                    }
+                }
+            });
+
+            localStorage.setItem('brfutebol_transferencias', JSON.stringify(lista));
+            return lista;
+        },
+
+        removerJogador: function(uid, tipo) {
+            if (tipo === 'livre') {
+                let lista = JSON.parse(localStorage.getItem('brfutebol_livres'));
+                if(lista) {
+                    lista = lista.filter(j => j.uid !== uid);
+                    localStorage.setItem('brfutebol_livres', JSON.stringify(lista));
+                }
+            } else {
+                let lista = JSON.parse(localStorage.getItem('brfutebol_transferencias'));
+                if(lista) {
+                    lista = lista.filter(j => j.uid !== uid);
+                    localStorage.setItem('brfutebol_transferencias', JSON.stringify(lista));
+                }
+            }
+        }
+    },
+
+    // --- 8. SISTEMA FINANCEIRO E MENSAGENS ---
     sistema: {
         novaMensagem: function(titulo, corpo, tipo = 'info', acao = null) {
             const game = Engine.carregarJogo();
@@ -423,7 +499,7 @@ const Engine = {
         }
     },
 
-    // --- 8. SISTEMA DE DATAS (LINEAR) ---
+    // --- 9. SISTEMA DE DATAS (LINEAR) ---
     data: {
         getDataAtual: function(rodada) {
             const game = Engine.carregarJogo();
