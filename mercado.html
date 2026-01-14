@@ -3,275 +3,315 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRFutebol - Negociações</title>
-    <script src="database_jogadores.js"></script>
+    <title>Mercado - BRFutebol</title>
     <script src="engine.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    
     <style>
-        :root { --bg:#0d1115; --card:#1e272e; --text:#ecf0f1; --gold:#f1c40f; --green:#2ecc71; --red:#ff4757; }
-        body { font-family:'Segoe UI',sans-serif; background:var(--bg); color:var(--text); margin:0; display:grid; grid-template-rows:70px 1fr; height:100vh; overflow:hidden; }
-        
-        header { background:rgba(30,39,46,0.95); border-bottom:2px solid var(--green); display:flex; align-items:center; justify-content:space-between; padding:0 30px; }
-        .btn-back { background:#444; color:#fff; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; font-weight:bold; }
-        .caixa-display { font-size:1.1rem; font-weight:bold; color:var(--green); background:#111; padding:8px 15px; border-radius:8px; border:1px solid #333; }
-
-        main { padding:30px; max-width:1200px; margin:0 auto; width:100%; box-sizing:border-box; display:flex; flex-direction:column; gap:20px; }
-
-        .nav-bar { display:flex; gap:15px; align-items:center; }
-        select { background:#111; color:#fff; padding:10px; border:1px solid #444; border-radius:6px; font-weight:bold; text-transform:uppercase; }
-        
-        .tabs { display:flex; gap:10px; margin-left:auto; }
-        .tab-btn { background:none; border:none; color:#777; font-size:1rem; font-weight:bold; cursor:pointer; padding:10px; transition:0.2s; }
-        .tab-btn.active { color:#fff; border-bottom:3px solid var(--green); }
-
-        .clubs-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:15px; overflow-y:auto; }
-        .club-card {
-            background:var(--card); border:1px solid #333; border-radius:10px; padding:20px;
-            display:flex; flex-direction:column; align-items:center; cursor:pointer; transition:transform 0.2s;
+        :root {
+            --bg-dark: #0f1216; --sidebar-bg: #161b22; --card-bg: #1e2329; --neon-green: #00ff88;
+            --text-main: #ffffff; --text-muted: #8b949e; --border: #30363d; --gold: #f1c40f;
+            --red: #ff4757; --blue: #3498db;
         }
-        .club-card:hover { transform:translateY(-5px); border-color:var(--green); }
-        .club-logo { width:60px; height:60px; object-fit:contain; margin-bottom:10px; }
-        .club-name { font-weight:bold; font-size:1rem; text-align:center; }
 
-        .players-list { display:none; flex-direction:column; gap:10px; overflow-y:auto; }
-        .players-list.active { display:flex; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
 
+        /* Sidebar */
+        .sidebar { width: 250px; background: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .logo { font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 900; margin-bottom: 20px; color: #fff; text-transform: uppercase; }
+        .logo span { color: var(--neon-green); }
+        .menu-btn { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-weight: 600; cursor: pointer; }
+        .menu-btn:hover, .menu-btn.active { background: rgba(0, 255, 136, 0.1); color: var(--neon-green); }
+        .menu-btn.logout { margin-top: auto; color: var(--red); }
+
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+
+        /* ABAS */
+        .tabs-container { display: flex; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+        .tab-btn {
+            background: transparent; border: none; color: var(--text-muted); 
+            padding: 15px 30px; font-family: 'Rajdhani'; font-weight: 700; font-size: 1.2rem; 
+            cursor: pointer; position: relative;
+        }
+        .tab-btn.active { color: #fff; }
+        .tab-btn.active::after {
+            content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background: var(--neon-green);
+        }
+
+        /* HEADER FINANCEIRO */
+        .market-header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
+        .money-box { text-align: right; }
+        .money-val { font-family: 'Rajdhani'; font-size: 1.8rem; color: var(--neon-green); font-weight: 700; }
+
+        /* LISTAGEM */
+        .market-list { display: flex; flex-direction: column; gap: 10px; }
+        
         .player-row {
-            background:var(--card); padding:15px; border-radius:8px; border:1px solid #333;
-            display:flex; justify-content:space-between; align-items:center;
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--card-bg); padding: 15px 20px; border-radius: 8px; border: 1px solid var(--border);
+            transition: 0.2s;
         }
-        .p-info { display:flex; gap:15px; align-items:center; }
-        .p-pos { background:#333; padding:4px 8px; border-radius:4px; font-weight:bold; font-size:0.8rem; width:30px; text-align:center; }
-        .p-ovr { color:var(--gold); font-weight:900; font-size:1.1rem; }
-        .p-val { color:var(--green); font-weight:bold; font-family:monospace; }
+        .player-row:hover { border-color: var(--neon-green); transform: translateX(5px); }
 
-        .btn-action { padding:8px 15px; border-radius:5px; border:none; cursor:pointer; font-weight:bold; text-transform:uppercase; }
-        .btn-buy { background:var(--green); color:#000; }
-        .btn-sell { background:var(--red); color:#fff; }
+        .p-info { display: flex; align-items: center; gap: 20px; flex: 1; }
+        .p-ovr { font-family: 'Rajdhani'; font-weight: 900; font-size: 1.5rem; color: var(--gold); width: 40px; text-align: center; }
+        .p-pos { font-size: 0.8rem; font-weight: 800; background: #333; color: #fff; padding: 3px 8px; border-radius: 4px; }
+        .p-name { font-weight: 700; font-size: 1.1rem; }
+        .p-age { color: #888; font-size: 0.9rem; }
+        .p-club { color: var(--blue); font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 5px; }
 
-        /* MODAL */
-        #offer-modal {
-            display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-            background:rgba(0,0,0,0.9); z-index:200; align-items:center; justify-content:center;
+        .p-price { text-align: right; margin-right: 20px; }
+        .price-label { font-size: 0.7rem; color: #666; text-transform: uppercase; display: block; }
+        .price-val { font-family: 'Rajdhani'; font-weight: 700; font-size: 1.2rem; color: #fff; }
+
+        .btn-action {
+            background: transparent; border: 1px solid var(--border); color: #fff;
+            padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: 600;
+            transition: 0.2s;
         }
-        .modal-box { background:var(--card); padding:30px; border-radius:10px; width:400px; border:1px solid var(--green); text-align:center; position:relative; }
-        .modal-input { width:80%; padding:15px; font-size:1.5rem; background:#000; color:var(--green); border:1px solid #444; margin:20px 0; text-align:center; font-weight:bold; }
-        .modal-info { color:#aaa; font-size:0.9rem; margin-bottom:20px; }
+        .btn-action:hover { background: var(--neon-green); color: #000; border-color: var(--neon-green); }
+        .btn-free { border-color: var(--neon-green); color: var(--neon-green); }
+        .btn-free:hover { background: var(--neon-green); color: #000; }
 
+        /* MODAL (REUTILIZADO) */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; align-items: center; justify-content: center; }
+        .neg-container { background: #111; padding: 30px; border-radius: 10px; border: 1px solid #444; width: 500px; text-align: center; }
+        .neg-title { font-family: 'Rajdhani'; font-size: 1.8rem; margin-bottom: 20px; }
+        .btn-modal { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin: 5px; }
+        .btn-confirm { background: var(--neon-green); color: #000; }
+        .btn-cancel { background: var(--red); color: #fff; }
     </style>
 </head>
 <body>
 
-    <header>
-        <button class="btn-back" onclick="window.location.href='dashboard.html'">⬅ Dashboard</button>
-        <h2 style="margin:0;">NEGOCIAÇÕES</h2>
-        <div class="caixa-display" id="header-caixa">R$ 0</div>
-    </header>
+    <nav class="sidebar">
+        <div class="logo">BR<span>FUTEBOL</span></div>
+        <a class="menu-btn" href="painel.html">📊 Visão Geral</a>
+        <a class="menu-btn" href="escalacao.html">👕 Escalação</a>
+        <a class="menu-btn active" href="mercado.html">🔄 Mercado</a>
+        <a class="menu-btn" href="calendario.html">📅 Calendário</a>
+        <a class="menu-btn" href="financeiro.html">💰 Finanças</a>
+        <a class="menu-btn logout" href="index.html">✖ Sair</a>
+    </nav>
 
-    <main>
-        <div class="nav-bar">
-            <select id="country-select" onchange="carregarClubes()"></select>
-            <div class="tabs">
-                <button class="tab-btn active" onclick="mudarModo('comprar')">Buscar Clubes</button>
-                <button class="tab-btn" onclick="mudarModo('vender')">Meu Elenco (Vender)</button>
+    <main class="main-content">
+        
+        <div class="market-header">
+            <div>
+                <h2 style="margin:0; font-family:'Rajdhani';">Central de Transferências</h2>
+                <span style="color:#888;">Reforce seu elenco para a temporada</span>
+            </div>
+            <div class="money-box">
+                <span class="price-label">Orçamento Disponível</span>
+                <span class="money-val" id="money-display">R$ 0,00</span>
             </div>
         </div>
 
-        <div id="view-clubs" class="clubs-grid"></div>
-
-        <div id="view-squad" class="players-list">
-            <button onclick="voltarParaClubes()" style="background:#333; color:#fff; border:none; padding:10px; cursor:pointer; width:150px;">⬅ Voltar aos Clubes</button>
-            <h3 id="squad-title" style="margin:10px 0; color:var(--gold);">Jogadores</h3>
-            <div id="squad-container" style="display:flex; flex-direction:column; gap:10px;"></div>
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="mudarAba('livres')">Jogadores Livres</button>
+            <button class="tab-btn" onclick="mudarAba('clubes')">Lista de Transferências</button>
         </div>
 
-        <div id="view-sell" class="players-list"></div>
+        <div id="lista-jogadores" class="market-list">
+            </div>
+
     </main>
 
-    <div id="offer-modal">
-        <div class="modal-box">
-            <h3 id="modal-p-name">Fazer Proposta</h3>
-            <div class="modal-info">Valor de Mercado Estimado: <span id="modal-p-val" style="color:#fff;">R$ 0</span></div>
-            <input type="number" id="offer-input" class="modal-input" placeholder="Valor">
-            <div style="display:flex; gap:10px; justify-content:center;">
-                <button class="btn-action" style="background:#444; color:#fff;" onclick="fecharModal()">Cancelar</button>
-                <button class="btn-action btn-buy" onclick="confirmarProposta()">ENVIAR OFERTA</button>
+    <div id="modal-compra" class="modal-overlay">
+        <div class="neg-container">
+            <h2 class="neg-title" id="modal-titulo">Contratar Jogador</h2>
+            <p id="modal-msg" style="color:#ccc; margin-bottom:20px;">...</p>
+            
+            <div id="area-salario" style="margin-bottom:20px; display:none;">
+                <label style="color:#888; display:block; margin-bottom:5px;">Oferta Salarial Mensal (R$)</label>
+                <input type="number" id="input-salario" style="padding:10px; border-radius:5px; border:1px solid #444; background:#000; color:#fff; width:200px;">
             </div>
+
+            <button class="btn-modal btn-confirm" onclick="finalizarNegocio()">✅ Fechar Negócio</button>
+            <button class="btn-modal btn-cancel" onclick="fecharModal()">❌ Cancelar</button>
         </div>
     </div>
 
     <script>
-        let gameState, meuTime;
-        let timeAlvo = null; 
-        let jogadorAlvoId = null;
+        let abaAtual = 'livres';
+        let jogadorSelecionado = null;
 
         window.onload = function() {
-            if (typeof Engine === 'undefined') { alert("ERRO: Engine não carregado."); return; }
-            
-            // Verifica se o usuário atualizou o Engine para a versão com negociação
-            if (typeof Engine.processarProposta !== 'function') {
-                alert("ATENÇÃO: Você precisa atualizar o arquivo 'engine.js' para a versão mais recente (Passo anterior) para que as negociações funcionem!");
-            }
-
-            gameState = Engine.carregarJogo();
-            if (!gameState) { window.location.href = 'index.html'; return; }
-
-            meuTime = Engine.encontrarTime(gameState, gameState.meuTime);
-            
-            atualizarHeader();
-            popularPaises();
-            carregarClubes();
+            carregarDados();
+            mudarAba('livres');
         };
 
-        function atualizarHeader() {
-            document.getElementById('header-caixa').innerText = Engine.formatarDinheiro(meuTime.financas.caixa, meuTime.financas.moeda);
-        }
-
-        function popularPaises() {
-            const sel = document.getElementById('country-select');
-            Object.keys(gameState.mundo).forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p; opt.innerText = p.toUpperCase();
-                if(p === gameState.paisUsuario) opt.selected = true;
-                sel.appendChild(opt);
-            });
-        }
-
-        function mudarModo(modo) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelector(`[onclick="mudarModo('${modo}')"]`).classList.add('active');
-
-            if (modo === 'comprar') {
-                document.getElementById('view-clubs').style.display = 'grid';
-                document.getElementById('view-squad').classList.remove('active');
-                document.getElementById('view-sell').classList.remove('active');
-                document.getElementById('country-select').style.display = 'block';
-            } else {
-                document.getElementById('view-clubs').style.display = 'none';
-                document.getElementById('view-squad').classList.remove('active');
-                document.getElementById('country-select').style.display = 'none';
-                carregarVendas();
-                document.getElementById('view-sell').classList.add('active');
-            }
-        }
-
-        function carregarClubes() {
-            const pais = document.getElementById('country-select').value;
-            const container = document.getElementById('view-clubs');
-            container.innerHTML = '';
-            const liga = gameState.mundo[pais];
+        function carregarDados() {
+            const game = Engine.carregarJogo();
+            document.getElementById('money-display').innerText = (game.recursos.dinheiro || 0).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
             
-            liga.times.forEach(t => {
-                if (t.nome === meuTime.nome) return;
-                const card = document.createElement('div');
-                card.className = 'club-card';
-                card.onclick = () => abrirElencoAdversario(t.nome);
-                card.innerHTML = `
-                    <img src="${t.escudo}" class="club-logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/53/53283.png'">
-                    <span class="club-name">${t.nome}</span>
-                    <span style="font-size:0.8rem; color:#777;">Força: ${t.forca}</span>
-                `;
-                container.appendChild(card);
-            });
+            // Garante que as listas existam
+            if(!localStorage.getItem('brfutebol_livres')) Engine.Mercado.gerarAgentesLivres();
+            if(!localStorage.getItem('brfutebol_transferencias')) Engine.Mercado.gerarListaTransferencias(game);
         }
 
-        function abrirElencoAdversario(nomeTime) {
-            timeAlvo = Engine.encontrarTime(gameState, nomeTime);
-            document.getElementById('view-clubs').style.display = 'none';
-            document.getElementById('view-squad').classList.add('active');
-            document.getElementById('squad-title').innerText = `Elenco: ${timeAlvo.nome}`;
+        function mudarAba(aba) {
+            abaAtual = aba;
+            
+            // Visual dos botões
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active'); // Nota: event.target pode falhar se chamar via JS direto, mas no onclick funciona
 
-            const container = document.getElementById('squad-container');
-            container.innerHTML = '';
+            const container = document.getElementById('lista-jogadores');
+            container.innerHTML = "";
 
-            timeAlvo.elenco.forEach(jog => {
-                const valor = Engine.calcularValorPasse(jog);
+            let lista = [];
+
+            if (aba === 'livres') {
+                lista = Engine.Mercado.gerarAgentesLivres();
+                if (lista.length === 0) container.innerHTML = "<p style='color:#666; text-align:center;'>Nenhum jogador livre no momento.</p>";
+            } else {
+                const game = Engine.carregarJogo();
+                lista = Engine.Mercado.gerarListaTransferencias(game);
+                if (lista.length === 0) container.innerHTML = "<p style='color:#666; text-align:center;'>Nenhum clube colocou jogadores à venda.</p>";
+            }
+
+            lista.forEach(j => {
                 const div = document.createElement('div');
                 div.className = 'player-row';
-                // Passamos APENAS O ID aqui para evitar erros de sintaxe com aspas em nomes
+                
+                // Define o texto do custo
+                let custoTexto = "";
+                let botaoTexto = "";
+                let botaoClass = "";
+
+                if (aba === 'livres') {
+                    custoTexto = `<span class="price-val" style="color:#aaa;">Sem Custo</span>`;
+                    botaoTexto = "ASSINAR";
+                    botaoClass = "btn-free";
+                } else {
+                    custoTexto = `<span class="price-val">${j.valor.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</span>`;
+                    botaoTexto = "COMPRAR";
+                    botaoClass = "btn-action";
+                }
+
+                // Clube label
+                const clubeLabel = j.clube ? `🛡️ ${j.clube}` : `⚠️ Sem Clube`;
+
                 div.innerHTML = `
                     <div class="p-info">
-                        <span class="p-pos">${jog.pos}</span>
+                        <div class="p-ovr">${j.forca}</div>
                         <div>
-                            <div style="font-weight:bold;">${jog.nome}</div>
-                            <div style="font-size:0.8rem; color:#888;">${jog.idade} anos</div>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div class="p-name">${j.nome}</div>
+                                <div class="p-pos">${j.pos}</div>
+                            </div>
+                            <div class="p-age">${j.idade} anos • ${clubeLabel}</div>
                         </div>
                     </div>
-                    <div style="text-align:right;">
-                        <div class="p-ovr">${jog.forca}</div>
-                        <div class="p-val">${Engine.formatarDinheiro(valor, 'R$')}</div>
+                    <div class="p-price">
+                        <span class="price-label">${aba === 'livres' ? 'Custo do Passe' : 'Valor de Mercado'}</span>
+                        ${custoTexto}
                     </div>
-                    <button class="btn-action btn-buy" onclick="abrirModalCompra('${jog.id}')">OFERTAR</button>
+                    <button class="${botaoClass} ${botaoTexto === 'ASSINAR' ? 'btn-free' : 'btn-action'}" onclick='abrirNegociacao(${JSON.stringify(j)})'>
+                        ${botaoTexto}
+                    </button>
                 `;
                 container.appendChild(div);
             });
         }
 
-        function voltarParaClubes() {
-            document.getElementById('view-squad').classList.remove('active');
-            document.getElementById('view-clubs').style.display = 'grid';
-        }
-
-        function abrirModalCompra(id) {
-            // Busca o jogador dentro do objeto timeAlvo (mais seguro)
-            const jog = timeAlvo.elenco.find(j => j.id === id);
-            if(!jog) return alert("Erro: Jogador não encontrado.");
-
-            jogadorAlvoId = id;
-            const valorEstimado = Engine.calcularValorPasse(jog);
+        function abrirNegociacao(jogador) {
+            jogadorSelecionado = jogador;
+            document.getElementById('modal-compra').style.display = 'flex';
+            document.getElementById('area-salario').style.display = 'block';
             
-            document.getElementById('modal-p-name').innerText = `Proposta por ${jog.nome}`;
-            document.getElementById('modal-p-val').innerText = Engine.formatarDinheiro(valorEstimado, 'R$');
-            document.getElementById('offer-input').value = valorEstimado;
-            document.getElementById('offer-modal').style.display = 'flex';
+            // Sugestão de Salário
+            // Jogador Livre: Pede um pouco mais pois não tem taxa de transferência
+            // Jogador Clube: Salário base padrão
+            const fator = abaAtual === 'livres' ? 0.012 : 0.009;
+            const salarioSugerido = Math.floor((jogador.forca * 1800) + (jogador.valor * 0.005));
+            document.getElementById('input-salario').value = salarioSugerido;
+
+            if (abaAtual === 'livres') {
+                document.getElementById('modal-titulo').innerText = "Assinar Agente Livre";
+                document.getElementById('modal-msg').innerHTML = `
+                    Você está trazendo <strong>${jogador.nome}</strong> sem custos de transferência.<br>
+                    Defina o salário mensal para fechar o contrato.
+                `;
+            } else {
+                document.getElementById('modal-titulo').innerText = "Comprar Jogador";
+                document.getElementById('modal-msg').innerHTML = `
+                    Clube atual: <strong>${jogador.clube}</strong><br>
+                    Custo do Passe: <span style="color:var(--neon-green)">${jogador.valor.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</span><br>
+                    <br>
+                    Além do passe, defina o salário inicial do jogador.
+                `;
+            }
         }
 
         function fecharModal() {
-            document.getElementById('offer-modal').style.display = 'none';
+            document.getElementById('modal-compra').style.display = 'none';
+            jogadorSelecionado = null;
         }
 
-        function confirmarProposta() {
-            const valor = parseFloat(document.getElementById('offer-input').value);
-            if (!valor || valor <= 0) { alert("Valor inválido"); return; }
+        function finalizarNegocio() {
+            if (!jogadorSelecionado) return;
 
-            const resultado = Engine.processarProposta(gameState, timeAlvo.nome, jogadorAlvoId, valor);
+            const game = Engine.carregarJogo();
+            const salarioOferta = parseInt(document.getElementById('input-salario').value);
+            let custoTotal = 0;
 
-            if (resultado.sucesso) {
-                alert("✅ " + resultado.msg);
-                fecharModal();
-                atualizarHeader();
-                abrirElencoAdversario(timeAlvo.nome); // Recarrega lista
-            } else {
-                alert("❌ " + resultado.msg);
+            // 1. Verifica Custo do Passe (se for compra)
+            if (abaAtual === 'clubes') {
+                custoTotal += jogadorSelecionado.valor;
             }
-        }
 
-        function carregarVendas() {
-            const container = document.getElementById('view-sell');
-            container.innerHTML = '';
-            meuTime.elenco.forEach(jog => {
-                const valorVenda = Math.floor(Engine.calcularValorPasse(jog) * 0.85);
-                const div = document.createElement('div');
-                div.className = 'player-row';
-                div.innerHTML = `
-                    <div class="p-info">
-                        <span class="p-pos">${jog.pos}</span>
-                        <div><div>${jog.nome}</div><div style="font-size:0.8rem; color:#aaa;">Salário: ${Engine.formatarDinheiro(jog.salario, 'R$')}</div></div>
-                    </div>
-                    <div style="text-align:right; margin-right:15px;"><div style="font-size:0.7rem; color:#aaa;">Venda Imediata</div><div class="p-val" style="color:var(--gold);">${Engine.formatarDinheiro(valorVenda, 'R$')}</div></div>
-                    <button class="btn-action btn-sell" onclick="vender('${jog.id}')">VENDER</button>
-                `;
-                container.appendChild(div);
+            // Verifica se tem dinheiro
+            if (game.recursos.dinheiro < custoTotal) {
+                alert("❌ Saldo insuficiente para pagar a transferência.");
+                return;
+            }
+
+            // 2. Verifica se o Salário é Aceitável (IA Simples)
+            // Expectativa mínima
+            let expectativa = (jogadorSelecionado.forca * 1500); 
+            if (abaAtual === 'livres') expectativa *= 1.2; // Livres pedem mais salário
+
+            if (salarioOferta < expectation) {
+                alert(`O jogador recusou a oferta salarial. Ele pede no mínimo ${expectativa.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}.`);
+                return;
+            }
+
+            // SUCESSO!
+            // Desconta dinheiro
+            game.recursos.dinheiro -= custoTotal;
+
+            // Adiciona ao meu time
+            const meuTime = Engine.encontrarTime(game.info.time);
+            meuTime.elenco.push({
+                uid: jogadorSelecionado.uid,
+                nome: jogadorSelecionado.nome,
+                pos: jogadorSelecionado.pos,
+                forca: jogadorSelecionado.forca,
+                idade: jogadorSelecionado.idade,
+                salario: salarioOferta,
+                papel: "Rotação", // Padrão
+                contrato: "31/12/2028",
+                carac: jogadorSelecionado.carac || "Reforço",
+                jogos: 0, gols: 0,
+                atributos: jogadorSelecionado.atributos || { VEL: jogadorSelecionado.forca, FIN: jogadorSelecionado.forca, PAS: jogadorSelecionado.forca, DRI: jogadorSelecionado.forca, DEF: jogadorSelecionado.forca, PHY: jogadorSelecionado.forca }
             });
-        }
 
-        function vender(id) {
-            if(!confirm("Vender este jogador?")) return;
-            const res = Engine.venderJogadorUsuario(gameState, id);
-            if(res.sucesso) {
-                alert("Vendido!");
-                atualizarHeader();
-                carregarVendas();
-            }
+            // Atualiza o time no array global
+            const timeIdx = game.times.findIndex(t => t.nome === game.info.time);
+            game.times[timeIdx] = meuTime;
+
+            // Remove da lista de mercado (Livre ou Transferencia)
+            Engine.Mercado.removerJogador(jogadorSelecionado.uid, abaAtual === 'livres' ? 'livre' : 'venda');
+
+            Engine.salvarJogo(game);
+            
+            alert(`Bem-vindo, ${jogadorSelecionado.nome}!`);
+            fecharModal();
+            // Recarrega a tela
+            carregarDados();
+            mudarAba(abaAtual);
         }
     </script>
 </body>
