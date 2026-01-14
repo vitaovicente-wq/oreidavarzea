@@ -12,27 +12,35 @@
         body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text); margin: 0; padding: 20px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
-        .title { font-family: 'Rajdhani'; font-weight: 800; font-size: 2rem; text-transform: uppercase; }
+        .title-group h1 { font-family: 'Rajdhani'; font-weight: 800; font-size: 2rem; text-transform: uppercase; margin: 0; line-height: 1; }
+        .title-group span { font-size: 0.9rem; color: #888; font-weight: 600; }
+        
         .back-btn { text-decoration: none; color: #ccc; border: 1px solid #444; padding: 8px 20px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s; }
         .back-btn:hover { border-color: var(--neon); color: var(--neon); }
 
-        .dashboard { display: grid; grid-template-columns: 300px 1fr; gap: 20px; flex: 1; overflow: hidden; }
+        .dashboard { display: grid; grid-template-columns: 320px 1fr; gap: 20px; flex: 1; overflow: hidden; }
         
         /* SIDEBAR DE RESUMO */
         .summary-col { display: flex; flex-direction: column; gap: 15px; }
+        
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-        .card-label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        .card-label { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; font-weight: 700; }
         .card-value { font-family: 'Rajdhani'; font-weight: 900; font-size: 2rem; color: #fff; }
         .card-value.pos { color: var(--neon); }
         .card-value.neg { color: var(--red); }
+        .card-sub { font-size: 0.8rem; color: #666; margin-top: 5px; }
 
         .list-container { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
-        .list-header { padding: 15px; background: rgba(0,0,0,0.2); font-family: 'Rajdhani'; font-weight: 700; border-bottom: 1px solid var(--border); }
+        .list-header { padding: 15px; background: rgba(0,0,0,0.2); font-family: 'Rajdhani'; font-weight: 700; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
         .trans-list { overflow-y: auto; flex: 1; }
-        .trans-item { display: flex; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; }
-        .trans-item:last-child { border-bottom: none; }
-        .t-desc { color: #ccc; }
-        .t-val { font-weight: 700; font-family: 'Rajdhani'; }
+        .trans-list::-webkit-scrollbar { width: 5px; } .trans-list::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+        
+        .trans-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; transition: 0.2s; }
+        .trans-item:hover { background: rgba(255,255,255,0.02); }
+        .t-left { display: flex; flex-direction: column; gap: 2px; }
+        .t-desc { color: #fff; font-weight: 600; }
+        .t-type { font-size: 0.7rem; color: #666; text-transform: uppercase; }
+        .t-val { font-weight: 700; font-family: 'Rajdhani'; font-size: 1rem; }
         
         /* ÁREA DO GRÁFICO */
         .chart-col { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; }
@@ -42,26 +50,36 @@
 <body>
 
     <div class="header">
-        <div class="title">Departamento Financeiro</div>
-        <a href="dashboard.html" class="back-btn">❮ Voltar</a>
+        <div class="title-group">
+            <h1>Departamento Financeiro</h1>
+            <span id="header-date">Data: --/--/----</span>
+        </div>
+        <a href="dashboard.html" class="back-btn">❮ Voltar ao Menu</a>
     </div>
 
     <div class="dashboard">
         <div class="summary-col">
             <div class="card">
-                <div class="card-label">Saldo em Caixa</div>
+                <div class="card-label">Saldo Disponível</div>
                 <div class="card-value" id="disp-saldo">R$ 0,00</div>
+                <div class="card-sub" id="disp-status">Situação: Estável</div>
+            </div>
+
+            <div class="card" style="padding: 15px; background: rgba(255, 71, 87, 0.05); border-color: rgba(255, 71, 87, 0.2);">
+                <div class="card-label" style="color: var(--red);">Despesa Mensal (Estimada)</div>
+                <div style="font-family: 'Rajdhani'; font-weight: 700; font-size: 1.4rem; color: var(--red);" id="disp-custo-mensal">R$ 0,00</div>
+                <div class="card-sub">Salários + Manutenção (4 Jogos)</div>
             </div>
             
             <div class="list-container">
-                <div class="list-header">Últimos Lançamentos</div>
+                <div class="list-header"><span>Extrato Recente</span> <span style="font-size:0.8rem; color:#666;">Últimos 20</span></div>
                 <div class="trans-list" id="lista-transacoes">
                     </div>
             </div>
         </div>
 
         <div class="chart-col">
-            <div class="card-label">Fluxo de Caixa (Mensal)</div>
+            <div class="card-label">Fluxo de Caixa (Por Semana de Jogo)</div>
             <div class="chart-wrapper">
                 <canvas id="finChart"></canvas>
             </div>
@@ -70,116 +88,173 @@
 
     <script>
         window.onload = function() {
-            const game = Engine.carregarJogo();
-            if(!game) return;
+            try {
+                if (typeof Engine === 'undefined') throw new Error("Engine não carregada.");
+                const game = Engine.carregarJogo();
+                if(!game) { window.location.href='index.html'; return; }
 
-            // 1. ATUALIZA SALDO
-            const saldo = game.recursos.dinheiro;
-            const elSaldo = document.getElementById('disp-saldo');
-            elSaldo.innerText = saldo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-            elSaldo.className = `card-value ${saldo >= 0 ? 'pos' : 'neg'}`;
+                // 1. DATA NO CABEÇALHO
+                if(Engine.data) {
+                    document.getElementById('header-date').innerText = "Data Atual: " + Engine.data.getDataAtual(game.rodadaAtual);
+                }
 
-            // 2. LISTA DE TRANSAÇÕES
-            const lista = document.getElementById('lista-transacoes');
-            const historico = game.financas ? game.financas.historico : [];
-            
-            [...historico].reverse().forEach(t => {
-                const div = document.createElement('div');
-                div.className = 'trans-item';
-                const cor = t.tipo === 'entrada' ? 'var(--neon)' : 'var(--red)';
-                const sinal = t.tipo === 'entrada' ? '+' : '';
-                div.innerHTML = `
-                    <span class="t-desc">${t.texto}</span>
-                    <span class="t-val" style="color:${cor}">${sinal} ${t.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                `;
-                lista.appendChild(div);
-            });
+                // 2. ATUALIZA SALDO
+                const saldo = game.recursos.dinheiro;
+                const elSaldo = document.getElementById('disp-saldo');
+                elSaldo.innerText = saldo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                elSaldo.className = `card-value ${saldo >= 0 ? 'pos' : 'neg'}`;
+                
+                const elStatus = document.getElementById('disp-status');
+                if(saldo < 0) { elStatus.innerText = "Situação: CRÍTICA (Dívida)"; elStatus.style.color = "var(--red)"; }
+                else if(saldo < 1000000) { elStatus.innerText = "Situação: Alerta"; elStatus.style.color = "var(--orange)"; }
+                else { elStatus.innerText = "Situação: Saudável"; elStatus.style.color = "var(--neon)"; }
 
-            // 3. PREPARAR DADOS DO GRÁFICO (AGRUPADO POR "MÊS" = 4 RODADAS)
-            renderizarGrafico(historico);
+                // 3. CALCULA CUSTO MENSAL (Projeção)
+                // Pega salário de 1 rodada e multiplica por 4
+                let custoRodada = 0;
+                const meuTime = Engine.encontrarTime(game.info.time);
+                if(meuTime && meuTime.elenco) {
+                    meuTime.elenco.forEach(j => custoRodada += ((j.forca||60)*1500));
+                }
+                // Adiciona manutenção do estádio
+                if(Engine.estadios) {
+                    const est = Engine.estadios.getEstadio();
+                    custoRodada += Math.floor(est.cap * 5);
+                }
+                const custoMensal = custoRodada * 4;
+                document.getElementById('disp-custo-mensal').innerText = custoMensal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+                // 4. LISTA DE TRANSAÇÕES
+                const lista = document.getElementById('lista-transacoes');
+                const historico = game.financas ? game.financas.historico : [];
+                
+                // Mostra as últimas 20, invertidas
+                [...historico].reverse().slice(0, 20).forEach(t => {
+                    const div = document.createElement('div');
+                    div.className = 'trans-item';
+                    const cor = t.tipo === 'entrada' ? 'var(--neon)' : 'var(--red)';
+                    const sinal = t.tipo === 'entrada' ? '+' : '';
+                    
+                    // Ícone baseado no texto
+                    let tipoTexto = "Outros";
+                    if(t.texto.includes("Salários")) tipoTexto = "Despesa Operacional";
+                    else if(t.texto.includes("Manutenção")) tipoTexto = "Infraestrutura";
+                    else if(t.texto.includes("Bilheteria")) tipoTexto = "Receita de Jogo";
+                    else if(t.texto.includes("Investimento")) tipoTexto = "Aporte";
+                    else if(t.texto.includes("Venda")) tipoTexto = "Transferência";
+
+                    div.innerHTML = `
+                        <div class="t-left">
+                            <span class="t-desc">${t.texto}</span>
+                            <span class="t-type">${tipoTexto}</span>
+                        </div>
+                        <span class="t-val" style="color:${cor}">${sinal} ${t.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
+                    `;
+                    lista.appendChild(div);
+                });
+
+                // 5. GRÁFICO COM DATAS
+                renderizarGrafico(historico, game.rodadaAtual);
+
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao carregar finanças.");
+            }
         };
 
-        function renderizarGrafico(historico) {
-            // Agrupa dados
-            const meses = {};
+        function renderizarGrafico(historico, rodadaAtual) {
+            // Processa os dados para agrupar por "Rodada/Semana"
+            // Como o histórico não salva o ID da rodada em versões antigas, vamos inferir:
+            // Cada vez que aparece "Salários", consideramos que fechou uma semana.
             
+            let labels = [];
+            let receitas = [];
+            let despesas = [];
+            
+            let tempRec = 0;
+            let tempDesp = 0;
+            
+            // O histórico está cronológico (antigo -> novo) no array original? Sim, push adiciona no final.
+            // Vamos iterar.
+            
+            let contadorSemanas = 0;
+            // Se tiver poucos dados, cria labels fixos
+            let hasData = false;
+
             historico.forEach(h => {
-                // Se o histórico não tiver 'rodada', assume 1.
-                // Simulamos Mês: Rodada 1-4 = Mês 1, 5-8 = Mês 2, etc.
-                // Como o objeto histórico original não salvava rodada, vamos inferir pela ordem ou adicionar suporte futuro.
-                // Para simplificar, vamos agrupar sequencialmente em blocos de 4 lançamentos de cada tipo ou usar um índice simulado.
-                // MELHOR: Vamos considerar que cada 5 lançamentos representam um período se não tiver data.
-                
-                // Mas, para ficar perfeito com a engine nova, vamos assumir que o jogo avança.
-                // Vamos criar uma lógica simples: Agrupar por "Rodada" se disponível, ou sequencial.
-                
-                let label = "Atual";
-                // Lógica simples para demonstração visual imediata
-                // Pega os últimos lançamentos e categoriza
+                if(h.tipo === 'entrada') tempRec += h.valor;
+                else tempDesp += Math.abs(h.valor);
+
+                // Gatilho de fim de semana: Pagamento de Salário
+                if(h.texto.includes("Salários")) {
+                    contadorSemanas++;
+                    hasData = true;
+                    
+                    // Gera Label de Data usando a Engine
+                    // Se estamos processando a semana 1, pegamos a data da rodada 1
+                    let dataLabel = `Semana ${contadorSemanas}`;
+                    if(Engine.data) {
+                        // Pega a data correspondente àquela rodada passada
+                        let dataStr = Engine.data.getDataAtual(contadorSemanas); 
+                        // Formata para "07/Jan"
+                        let partes = dataStr.split('/');
+                        let meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+                        dataLabel = `${partes[0]}/${meses[parseInt(partes[1])-1]}`;
+                    }
+
+                    labels.push(dataLabel);
+                    receitas.push(tempRec);
+                    despesas.push(tempDesp);
+                    
+                    // Zera acumuladores para a próxima semana
+                    tempRec = 0; 
+                    tempDesp = 0;
+                }
             });
 
-            // Como o histórico pode ser antigo e sem data, vamos criar datasets baseados nos tipos
-            // Para o gráfico ficar bonito agora, vamos somar tudo por CATEGORIA.
-            
-            let receitaTotal = 0;
-            let gastoSalario = 0;
-            let gastoManutencao = 0;
-
-            // Simula evolução temporal (acumulado)
-            let labels = [];
-            let dataRec = [];
-            let dataSal = [];
-            let dataMan = [];
-            
-            // Vamos pegar as últimas 10 "rodadas financeiras" (onde houve pagamento de salário)
-            let salariosP = historico.filter(h => h.texto.includes("Salários"));
-            
-            // Se tiver pouco dado, cria fictício pro gráfico não ficar vazio
-            if(salariosP.length < 2) {
-                labels = ["Mês 1", "Mês 2 (Proj)"];
-                dataRec = [0, 0]; 
-                dataSal = [0, 0];
-                dataMan = [0, 0];
-            } else {
-                // Monta timeline baseada nos pagamentos de salário (que ocorrem 1x por rodada)
-                salariosP.forEach((s, i) => {
-                    labels.push(`Rodada ${i+1}`);
-                    dataSal.push(Math.abs(s.valor));
-                    
-                    // Tenta achar manutenção próxima desse salário
-                    // (Lógica aproximada para visualização)
-                    dataMan.push(Math.random() * 50000); // Placeholder até a engine gerar dados reais
-                    dataRec.push(Math.random() * 500000); // Placeholder
-                });
+            // Se ainda não teve fechamento de semana (novo jogo), mostra vazio
+            if(!hasData) {
+                labels = ["Início"];
+                receitas = [historico[0]?.valor || 0];
+                despesas = [0];
             }
 
-            // REFAZENDO A LÓGICA PARA DADOS REAIS DA ENGINE ATUALIZADA
-            // O gráfico vai mostrar as últimas entradas reais
-            const chartData = processarDadosReais(historico);
-
             const ctx = document.getElementById('finChart').getContext('2d');
+            
+            // Gradiente para Receitas
+            let gradGreen = ctx.createLinearGradient(0, 0, 0, 400);
+            gradGreen.addColorStop(0, 'rgba(0, 255, 136, 0.5)');
+            gradGreen.addColorStop(1, 'rgba(0, 255, 136, 0.0)');
+
+            // Gradiente para Despesas
+            let gradRed = ctx.createLinearGradient(0, 0, 0, 400);
+            gradRed.addColorStop(0, 'rgba(255, 71, 87, 0.5)');
+            gradRed.addColorStop(1, 'rgba(255, 71, 87, 0.0)');
+
             new Chart(ctx, {
-                type: 'bar',
+                type: 'line',
                 data: {
-                    labels: chartData.labels,
+                    labels: labels,
                     datasets: [
                         {
-                            label: 'Receitas (Bilheteria/Vendas)',
-                            data: chartData.receitas,
-                            backgroundColor: '#00ff88',
-                            borderRadius: 4
+                            label: 'Receitas Totais',
+                            data: receitas,
+                            borderColor: '#00ff88',
+                            backgroundColor: gradGreen,
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true,
+                            pointBackgroundColor: '#00ff88'
                         },
                         {
-                            label: 'Despesa: Salários',
-                            data: chartData.salarios,
-                            backgroundColor: '#ff4757',
-                            borderRadius: 4
-                        },
-                        {
-                            label: 'Despesa: Manutenção Arena',
-                            data: chartData.manutencao,
-                            backgroundColor: '#ff9f43', // Laranja
-                            borderRadius: 4
+                            label: 'Despesas Totais',
+                            data: despesas,
+                            borderColor: '#ff4757',
+                            backgroundColor: gradRed,
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true,
+                            pointBackgroundColor: '#ff4757'
                         }
                     ]
                 },
@@ -187,64 +262,40 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { labels: { color: '#fff' } }
+                        legend: { labels: { color: '#ccc', font: {family:'Inter'} } },
+                        tooltip: { 
+                            mode: 'index', 
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) { label += ': '; }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
                     },
                     scales: {
                         y: { 
                             beginAtZero: true, 
                             grid: { color: '#333' },
-                            ticks: { color: '#888' } 
+                            ticks: { color: '#888', callback: function(value) { return 'R$ ' + (value/1000000).toFixed(1) + 'M'; } } 
                         },
                         x: { 
                             grid: { display: false },
-                            ticks: { color: '#fff' }
+                            ticks: { color: '#ccc', font: {family:'Rajdhani', weight:'bold'} }
                         }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
                     }
                 }
             });
-        }
-
-        function processarDadosReais(historico) {
-            let labels = [];
-            let receitas = [];
-            let salarios = [];
-            let manutencao = [];
-
-            // Agrupa por índice sequencial de eventos de "fechamento de caixa"
-            // Vamos varrer o histórico. Toda vez que acharmos "Salários", fechamos um bloco (uma rodada)
-            
-            let tempRec = 0;
-            let tempSal = 0;
-            let tempMan = 0;
-            let rodadaCount = 1;
-
-            // Inverter para processar do antigo pro novo
-            const histCronologico = [...historico]; 
-
-            histCronologico.forEach(h => {
-                if(h.tipo === 'entrada') tempRec += h.valor;
-                if(h.texto.includes("Salários")) tempSal += Math.abs(h.valor);
-                if(h.texto.includes("Manutenção")) tempMan += Math.abs(h.valor);
-
-                // Gatilho: Se pagou salário, fecha a coluna do gráfico
-                if(h.texto.includes("Salários")) {
-                    labels.push(`Rod ${rodadaCount}`);
-                    receitas.push(tempRec);
-                    salarios.push(tempSal);
-                    manutencao.push(tempMan);
-                    
-                    // Reseta para proxima
-                    tempRec = 0; tempSal = 0; tempMan = 0;
-                    rodadaCount++;
-                }
-            });
-
-            // Se não tiver dados suficientes, cria um dummy inicial zerado
-            if(labels.length === 0) {
-                return { labels: ["Início"], receitas: [0], salarios: [0], manutencao: [0] };
-            }
-
-            return { labels, receitas, salarios, manutencao };
         }
     </script>
 </body>
