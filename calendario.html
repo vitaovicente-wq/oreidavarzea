@@ -52,7 +52,10 @@
             background: var(--card-bg); padding: 15px 30px; border-radius: 12px;
             border: 1px solid var(--border); box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
-        .round-title { font-family: 'Rajdhani'; font-size: 2rem; font-weight: 800; text-transform: uppercase; color: #fff; letter-spacing: 1px; }
+        .round-info-center { text-align: center; }
+        .round-title { font-family: 'Rajdhani'; font-size: 2rem; font-weight: 800; text-transform: uppercase; color: #fff; letter-spacing: 1px; line-height: 1; }
+        .round-date { font-size: 0.9rem; color: var(--neon-green); font-weight: 600; letter-spacing: 1px; margin-top: 5px; font-family: 'Rajdhani'; }
+        
         .nav-btn {
             background: #0d1117; border: 1px solid var(--border); color: #fff;
             padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 700;
@@ -148,7 +151,9 @@
         <a class="menu-btn" href="escalacao.html">👕 Escalação</a>
         <a class="menu-btn active">📅 Calendário</a>
         <a class="menu-btn" href="classificacao.html">🏆 Classificação</a>
-        <a class="menu-btn" onclick="alert('Em breve')">💰 Transferências</a>
+        <a class="menu-btn" href="estadio.html">🏟️ Estádio</a>
+        <a class="menu-btn" href="financeiro.html">💰 Finanças</a> 
+        <a class="menu-btn" href="mensagens.html">📩 Mensagens</a>
         <a class="menu-btn logout" onclick="sair()">✖ Sair</a>
     </nav>
 
@@ -156,7 +161,9 @@
         
         <div class="round-nav">
             <button class="nav-btn" onclick="mudarRodada(-1)">❮ Anterior</button>
-            <div class="round-title" id="round-display">Rodada 1</div>
+            <div class="round-info-center">
+                <div class="round-title" id="round-display">Rodada 1</div>
+                <div class="round-date" id="round-date-display">01/01/2026</div> </div>
             <button class="nav-btn" onclick="mudarRodada(1)">Próxima ❯</button>
         </div>
 
@@ -225,6 +232,12 @@
 
         function renderizarRodada() {
             document.getElementById('round-display').innerText = `RODADA ${rodadaVisualizada}`;
+            
+            // --- ATUALIZAÇÃO DA DATA NO CALENDÁRIO ---
+            if(Engine.data) {
+                document.getElementById('round-date-display').innerText = Engine.data.getDataAtual(rodadaVisualizada);
+            }
+
             const container = document.getElementById('match-container');
             container.innerHTML = '';
 
