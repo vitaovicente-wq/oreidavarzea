@@ -145,18 +145,27 @@
         .condition-bar-bg { width: 100%; height: 6px; background: #333; border-radius: 3px; overflow: hidden; }
         .condition-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
 
-        /* --- MODAL DE NEGOCIAÇÃO --- */
+        /* --- MODAL DE NEGOCIAÇÃO (ATUALIZADO) --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 2000; display: none; align-items: center; justify-content: center; }
-        .neg-card { width: 900px; height: 650px; background: #121519; border: 1px solid #444; border-radius: 12px; display: flex; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .neg-card { width: 900px; height: 600px; background: #121519; border: 1px solid #444; border-radius: 12px; display: flex; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
         
-        /* Lateral Esquerda (Info do Jogador) */
-        .neg-sidebar { width: 280px; background: #161b22; border-right: 1px solid #333; padding: 25px; display: flex; flex-direction: column; gap: 20px; }
-        .neg-photo-area { text-align: center; }
-        .neg-photo-ph { width: 120px; height: 120px; background: #222; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #555; border: 2px solid var(--neon-green); }
-        .neg-p-name { font-family: 'Rajdhani'; font-weight: 800; font-size: 1.5rem; color: #fff; margin-bottom: 5px; }
-        .neg-p-ovr { font-family: 'Rajdhani'; font-weight: 900; font-size: 2rem; color: var(--gold); }
-        .neg-info-row { display: flex; justify-content: space-between; font-size: 0.9rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; color: #aaa; }
-        .neg-info-val { color: #fff; font-weight: 700; }
+        /* Lateral Esquerda (Info do Jogador) - VISUAL NOVO */
+        .neg-sidebar { width: 260px; background: #161b22; border-right: 1px solid #333; padding: 30px 20px; display: flex; flex-direction: column; gap: 25px; }
+        
+        .neg-header-info { border-bottom: 1px solid #333; padding-bottom: 20px; }
+        .neg-p-name { font-family: 'Rajdhani'; font-weight: 800; font-size: 2rem; color: #fff; line-height: 1; margin-bottom: 5px; }
+        .neg-p-details { font-size: 0.9rem; color: #888; display: flex; gap: 10px; align-items: center; }
+        .neg-pos-tag { background: #333; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
+        .neg-ovr-box { font-family: 'Rajdhani'; font-weight: 900; font-size: 2.5rem; color: var(--gold); margin-top: 10px; }
+
+        .neg-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
+        .neg-stat-item { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 6px; text-align: center; border: 1px solid #333; }
+        .neg-stat-label { display: block; font-size: 0.7rem; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+        .neg-stat-val { display: block; font-family: 'Rajdhani'; font-weight: 700; font-size: 1.4rem; color: #fff; }
+
+        .neg-contract-info { font-size: 0.85rem; color: #888; background: #111; padding: 15px; border-radius: 8px; border: 1px solid #333; }
+        .neg-contract-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+        .neg-contract-val { color: var(--neon-green); font-weight: 600; }
 
         /* Área Direita (Chat) */
         .neg-chat-area { flex: 1; display: flex; flex-direction: column; background: #0f1216; }
@@ -168,6 +177,7 @@
         .msg { max-width: 80%; padding: 12px 18px; border-radius: 12px; font-size: 0.95rem; line-height: 1.4; animation: popIn 0.3s ease; }
         .msg.cpu { align-self: flex-start; background: var(--msg-cpu); border-bottom-left-radius: 2px; border: 1px solid #333; color: #ddd; }
         .msg.user { align-self: flex-end; background: var(--msg-user); border-bottom-right-radius: 2px; color: #fff; font-weight: 600; }
+        .msg.system { align-self: center; background: rgba(255,255,255,0.05); color: #aaa; font-size: 0.8rem; padding: 5px 15px; border-radius: 20px; }
         @keyframes popIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .neg-controls { padding: 20px; border-top: 1px solid #333; background: #161b22; min-height: 120px; display: flex; flex-direction: column; justify-content: center; }
@@ -259,20 +269,41 @@
     <div id="neg-modal" class="modal-overlay">
         <div class="neg-card">
             <div class="neg-sidebar">
-                <div class="neg-photo-area">
-                    <div class="neg-photo-ph" id="neg-pic">👤</div>
-                    <div class="neg-p-name" id="neg-name">Nome</div>
-                    <div class="neg-p-ovr" id="neg-ovr">00</div>
+                <div class="neg-header-info">
+                    <div class="neg-p-name" id="neg-name">Nome Jogador</div>
+                    <div class="neg-p-details">
+                        <span class="neg-pos-tag" id="neg-pos">POS</span>
+                        <span id="neg-age">00 anos</span>
+                    </div>
+                    <div class="neg-ovr-box" id="neg-ovr">00</div>
                 </div>
-                <div class="neg-info-row"><span>Idade:</span> <span class="neg-info-val" id="neg-age">00</span></div>
-                <div class="neg-info-row"><span>Posição:</span> <span class="neg-info-val" id="neg-pos">POS</span></div>
-                <div class="neg-info-row"><span>Salário Atual:</span> <span class="neg-info-val" id="neg-sal">R$ 0</span></div>
-                <div class="neg-info-row"><span>Fim Contrato:</span> <span class="neg-info-val" id="neg-end">00/00/0000</span></div>
-                <div class="neg-info-row"><span>Humor:</span> <span class="neg-info-val" style="color:var(--neon-green)">Normal</span></div>
+
+                <div class="neg-stats-grid">
+                    <div class="neg-stat-item">
+                        <span class="neg-stat-label">Jogos</span>
+                        <span class="neg-stat-val" id="neg-games">0</span>
+                    </div>
+                    <div class="neg-stat-item">
+                        <span class="neg-stat-label">Gols</span>
+                        <span class="neg-stat-val" id="neg-goals">0</span>
+                    </div>
+                </div>
+
+                <div class="neg-contract-info">
+                    <div class="neg-contract-row">
+                        <span>Salário Atual:</span>
+                        <span class="neg-contract-val" id="neg-sal">R$ 0</span>
+                    </div>
+                    <div class="neg-contract-row">
+                        <span>Término:</span>
+                        <span class="neg-contract-val" id="neg-end">00/00/0000</span>
+                    </div>
+                </div>
             </div>
+            
             <div class="neg-chat-area">
                 <div class="neg-header">
-                    <span>Sala de Reunião</span>
+                    <span>Mesa de Negociação</span>
                     <button class="neg-close-btn" onclick="fecharNegociacao()">✕</button>
                 </div>
                 <div class="chat-feed" id="chat-feed">
@@ -374,7 +405,6 @@
                 const fmtStat = (v) => v >= 80 ? `<span class="stat-high">${v}</span>` : (v < 60 ? `<span class="stat-low">${v}</span>` : v);
 
                 const tr = document.createElement('tr');
-                // CORREÇÃO: Passa o NOME em vez do ÍNDICE para evitar erro de ordenação
                 tr.onclick = () => iniciarNegociacao(jog.nome); 
                 tr.innerHTML = `
                     <td><span class="pos-badge ${posClass}">${jog.pos}</span></td>
@@ -416,51 +446,69 @@
 
         function sair() { if(confirm("Deseja sair para o menu inicial?")) window.location.href='index.html'; }
 
-        /* --- SISTEMA DE NEGOCIAÇÃO V1.0 --- */
-        let currentNeg = { player: null, idx: -1, step: 0, offer: {} };
-
-        const REAÇOES_INICIAIS = [
-            "Gosto muito do clube, vamos renovar sim!",
-            "Estou feliz aqui, podemos conversar.",
-            "Depende da proposta, tenho sondagens.",
-            "Não sei se é o momento, mas vou ouvir.",
-            "Quero uma valorização salarial justa.",
-            "Só fico se tiver garantia de titularidade.",
-            "Meu agente vai analisar a oferta.",
-            "Sinto que meu ciclo aqui acabou. (Encerrar)"
-        ];
+        /* --- SISTEMA DE NEGOCIAÇÃO V2.0 (Corrigido e Aprimorado) --- */
+        let currentNeg = { 
+            player: null, 
+            idx: -1, 
+            expectations: {}, // O que o jogador quer
+            offer: {} 
+        };
 
         function iniciarNegociacao(nomeJogador) {
             const game = Engine.carregarJogo();
             const meuTime = Engine.encontrarTime(game.info.time);
-            // CORREÇÃO: Busca pelo NOME para garantir que pegamos o jogador certo
             const playerIdx = meuTime.elenco.findIndex(p => p.nome === nomeJogador);
             
             if (playerIdx === -1) { alert("Erro ao carregar jogador."); return; }
 
             const p = meuTime.elenco[playerIdx];
-            
-            currentNeg = { player: p, idx: playerIdx, step: 0, offer: { salary: 0, years: 1, bonus: 0, role: 'Rotação' } };
 
-            // Preenche Sidebar
+            // Define Expectativas do Jogador (IA Simples)
+            const baseSalario = (p.forca || 60) * 1600;
+            const salarioDesejado = Math.floor(baseSalario * 1.2); // Quer 20% de aumento
+            let papelDesejado = 'Rotação';
+            if (p.forca > 84) papelDesejado = 'Titular Absoluto';
+            else if (p.forca > 78) papelDesejado = 'Importante';
+
+            currentNeg = { 
+                player: p, 
+                idx: playerIdx,
+                expectations: {
+                    salary: salarioDesejado,
+                    years: 2 + Math.floor(Math.random() * 2), // Quer 2 ou 3 anos
+                    role: papelDesejado
+                },
+                offer: { salary: 0, years: 1, bonus: 0, role: '' } 
+            };
+
+            // Preenche UI
             document.getElementById('neg-name').innerText = p.nome;
             document.getElementById('neg-ovr').innerText = p.forca;
-            document.getElementById('neg-age').innerText = p.idade;
+            document.getElementById('neg-age').innerText = p.idade + " anos";
             document.getElementById('neg-pos').innerText = p.pos;
             
-            const salAtual = p.salario || ((p.forca||60)*1500);
+            // Dados Mockados de Jogos/Gols (Se não existir no save)
+            // Futuramente puxar de p.stats.jogos se existir
+            document.getElementById('neg-games').innerText = p.jogos || Math.floor(Math.random() * 20); 
+            document.getElementById('neg-goals').innerText = p.gols || (p.pos === 'GOL' ? 0 : Math.floor(Math.random() * 5));
+
+            const salAtual = p.salario || baseSalario;
             document.getElementById('neg-sal').innerText = salAtual.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
             document.getElementById('neg-end').innerText = p.contrato || "31/12/2026";
 
             // Limpa Chat
-            const feed = document.getElementById('chat-feed');
-            feed.innerHTML = '';
-            
+            document.getElementById('chat-feed').innerHTML = '';
             document.getElementById('neg-modal').style.display = 'flex';
             
-            // Passo 1: Início
-            addMsg('cpu', `Olá mister. Você queria falar sobre meu contrato?`);
-            showOptions('inicio');
+            // Lógica de Recusa Inicial (Chance de 15% de não querer negociar)
+            const chanceRecusa = Math.random();
+            if (chanceRecusa < 0.15) {
+                addMsg('cpu', "Chefe, sinceramente? Não estou com cabeça para negociar agora. Vamos focar nos jogos.");
+                showOptions('fechar');
+            } else {
+                addMsg('cpu', `Olá mister. Estou disposto a ouvir sua proposta de renovação.`);
+                showOptions('inicio');
+            }
         }
 
         function fecharNegociacao() { document.getElementById('neg-modal').style.display = 'none'; }
@@ -477,124 +525,130 @@
             const area = document.getElementById('neg-controls');
             area.innerHTML = '';
 
-            if (step === 'inicio') {
+            if (step === 'fechar') {
+                area.innerHTML = `<div class="opt-btn cancel" onclick="fecharNegociacao()">Entendo. (Sair)</div>`;
+            }
+            else if (step === 'inicio') {
                 area.innerHTML = `
                     <div class="opt-grid">
-                        <div class="opt-btn" onclick="responder(0)">Quero renovar seu contrato.</div>
-                        <div class="opt-btn" onclick="responder(1)">Só queria ver como você está. (Sair)</div>
+                        <div class="opt-btn confirm" onclick="iniciarConversa()">Vamos renovar o contrato.</div>
+                        <div class="opt-btn" onclick="fecharNegociacao()">Mudei de ideia. (Sair)</div>
                     </div>
                 `;
             } 
             else if (step === 'papel') {
                 area.innerHTML = `
                     <div class="input-group">
-                        <span class="input-label">Qual será meu papel no time?</span>
+                        <span class="input-label">Papel no Time</span>
                         <select id="sel-role" class="neg-input">
                             <option>Titular Absoluto</option>
                             <option selected>Importante</option>
-                            <option>Rotação de Elenco</option>
+                            <option>Rotação</option>
                             <option>Reserva</option>
-                            <option>Promessa</option>
                         </select>
                     </div>
-                    <div class="opt-btn confirm" onclick="definirPapel()">Confirmar Papel</div>
+                    <div class="opt-btn confirm" onclick="verificarPapel()">Oferecer Papel</div>
                 `;
             }
             else if (step === 'duracao') {
                 area.innerHTML = `
                     <div class="input-group">
-                        <span class="input-label">Duração do Novo Contrato (Anos)</span>
-                        <input type="range" min="1" max="5" value="2" class="range-slider" oninput="document.getElementById('val-anos').innerText = this.value + ' anos'">
-                        <div id="val-anos" style="text-align:center; color:var(--neon-green); font-weight:bold; margin-top:5px;">2 anos</div>
+                        <span class="input-label">Duração (Anos)</span>
+                        <input type="range" min="1" max="5" value="${currentNeg.expectations.years}" class="range-slider" oninput="document.getElementById('val-anos').innerText = this.value + ' anos'">
+                        <div id="val-anos" style="text-align:center; color:var(--neon-green); font-weight:bold; margin-top:5px;">${currentNeg.expectations.years} anos</div>
                     </div>
                     <div class="opt-btn confirm" onclick="definirDuracao()">Oferecer Duração</div>
                 `;
             }
             else if (step === 'salario') {
-                // Sugestão baseada na força
-                const base = (currentNeg.player.forca * 1600); 
                 area.innerHTML = `
                     <div class="input-group">
-                        <span class="input-label">Salário por Jogo (R$)</span>
-                        <input type="number" id="input-sal" class="neg-input" value="${base}">
+                        <span class="input-label">Salário Mensal (R$)</span>
+                        <input type="number" id="input-sal" class="neg-input" value="${currentNeg.expectations.salary}">
                     </div>
-                    <div class="opt-btn confirm" onclick="definirSalario()">Fazer Proposta Final</div>
+                    <div class="opt-btn confirm" onclick="definirSalario()">Fazer Oferta</div>
                 `;
             }
             else if (step === 'bonus') {
-                // Lógica de bônus dependendo da posição
-                const isDef = ['GOL','ZAG','LD','LE'].includes(currentNeg.player.pos);
-                const labelBonus = isDef ? "Bônus por Jogo sem Sofrer Gol" : "Bônus por Gol Marcado";
                 area.innerHTML = `
                     <div class="input-group">
-                        <span class="input-label">${labelBonus} (R$)</span>
-                        <input type="number" id="input-bon" class="neg-input" value="5000">
+                        <span class="input-label">Bônus por Meta (R$)</span>
+                        <input type="number" id="input-bon" class="neg-input" value="10000">
                     </div>
-                    <div class="opt-btn confirm" onclick="fecharAcordo()">Enviar Proposta Completa</div>
+                    <div class="opt-btn confirm" onclick="fecharAcordo()">Finalizar Contrato</div>
                 `;
             }
             else if (step === 'fim') {
-                area.innerHTML = `<div class="opt-btn confirm" onclick="fecharNegociacao(); location.reload();">Fechar e Salvar</div>`;
+                area.innerHTML = `<div class="opt-btn confirm" onclick="fecharNegociacao(); location.reload();">Assinar e Sair</div>`;
             }
         }
 
-        function responder(opt) {
-            if(opt === 1) { fecharNegociacao(); return; }
-            addMsg('user', "Queremos estender seu vínculo com o clube.");
-            
+        function iniciarConversa() {
+            addMsg('user', "Quero que você continue conosco.");
             setTimeout(() => {
-                // IA Simples: Randomiza a reação inicial
-                const reactionIdx = Math.floor(Math.random() * REAÇOES_INICIAIS.length);
-                const reaction = REAÇOES_INICIAIS[reactionIdx];
-                addMsg('cpu', reaction);
-
-                if (reaction.includes("Encerrar")) {
-                    setTimeout(() => { addMsg('user', "Entendo. Boa sorte no futuro."); fecharNegociacao(); }, 2000);
-                } else {
-                    currentNeg.step = 1;
-                    setTimeout(() => { 
-                        addMsg('cpu', "Primeiro, qual você vê sendo meu papel no elenco?");
-                        showOptions('papel');
-                    }, 1000);
-                }
+                addMsg('cpu', "Fico feliz. Qual você vê sendo meu papel no elenco?");
+                showOptions('papel');
             }, 800);
         }
 
-        function definirPapel() {
+        // --- LÓGICA DE VALIDAÇÃO ---
+
+        function verificarPapel() {
             const role = document.getElementById('sel-role').value;
             currentNeg.offer.role = role;
             addMsg('user', `Vejo você como ${role}.`);
+
+            // Sistema de Hierarquia
+            const niveis = { "Titular Absoluto": 4, "Importante": 3, "Rotação": 2, "Reserva": 1 };
+            const nivelOferta = niveis[role] || 0;
+            const nivelDesejado = niveis[currentNeg.expectations.role] || 0;
+
             setTimeout(() => {
-                addMsg('cpu', "Ok. E por quanto tempo seria o contrato?");
-                showOptions('duracao');
-            }, 800);
+                // Bug corrigido: Se oferecer menos que o status, ele recusa
+                if (nivelOferta < nivelDesejado) {
+                    addMsg('cpu', `Isso é um insulto. Eu sou jogador para ser ${currentNeg.expectations.role}! Se for para ser ${role}, vou embora.`);
+                    addMsg('system', "O jogador encerrou a negociação ofendido.");
+                    showOptions('fechar');
+                } else {
+                    addMsg('cpu', "Certo, concordo com essa função. E o tempo de contrato?");
+                    showOptions('duracao');
+                }
+            }, 1000);
         }
 
         function definirDuracao() {
-            const anos = document.querySelector('.range-slider').value;
-            currentNeg.offer.years = parseInt(anos);
-            addMsg('user', `Proponho um contrato de ${anos} anos.`);
+            const anos = parseInt(document.querySelector('.range-slider').value);
+            currentNeg.offer.years = anos;
+            addMsg('user', `Proponho ${anos} anos de contrato.`);
+
             setTimeout(() => {
-                addMsg('cpu', "Certo. Agora vamos falar de números. Qual o salário base?");
-                showOptions('salario');
-            }, 800);
+                // Contraproposta de Tempo
+                if (anos !== currentNeg.expectations.years) {
+                    addMsg('cpu', `Não concordo. Quero um contrato de ${currentNeg.expectations.years} anos para ter estabilidade.`);
+                    // Permite tentar de novo
+                    showOptions('duracao');
+                } else {
+                    addMsg('cpu', "O tempo está ótimo. Agora vamos falar de salário.");
+                    showOptions('salario');
+                }
+            }, 1000);
         }
 
         function definirSalario() {
             const val = parseInt(document.getElementById('input-sal').value);
             currentNeg.offer.salary = val;
-            addMsg('user', `Ofereço R$ ${val.toLocaleString()} por jogo.`);
+            addMsg('user', `Ofereço R$ ${val.toLocaleString()} mensais.`);
             
-            // Verifica se o valor é aceitável (Base: Força * 1500)
-            const minAceitavel = (currentNeg.player.forca * 1400); 
-            
+            // Margem de negociação (aceita 10% a menos que o desejado)
+            const minAceitavel = currentNeg.expectations.salary * 0.9;
+
             setTimeout(() => {
                 if (val < minAceitavel) {
-                    addMsg('cpu', `Isso é muito pouco. Eu esperava pelo menos R$ ${minAceitavel.toLocaleString()}.`);
-                    // Chance de contraproposta ou recusa
-                    showOptions('salario'); // Deixa tentar de novo
+                    // Contraproposta de Salário
+                    addMsg('cpu', `Muito baixo. Minha pedida é R$ ${currentNeg.expectations.salary.toLocaleString()}. Melhore essa oferta.`);
+                    showOptions('salario');
                 } else {
-                    addMsg('cpu', "O valor base me agrada. E quanto aos bônus de desempenho?");
+                    addMsg('cpu', "Os números agradam. Vamos fechar os bônus?");
                     showOptions('bonus');
                 }
             }, 1000);
@@ -602,30 +656,27 @@
 
         function fecharAcordo() {
             const bon = parseInt(document.getElementById('input-bon').value);
-            currentNeg.offer.bonus = bon;
-            addMsg('user', `Mais R$ ${bon.toLocaleString()} de bônus por meta atingida.`);
+            addMsg('user', `E mais R$ ${bon.toLocaleString()} de bônus.`);
             
             setTimeout(() => {
-                addMsg('cpu', "Temos um acordo! Onde eu assino?");
+                addMsg('cpu', "Fechado! Onde eu assino?");
                 
                 // SALVAR NO ENGINE
                 const game = Engine.carregarJogo();
                 const meuTime = Engine.encontrarTime(game.info.time);
                 
-                // Busca o índice correto para salvar (caso a ordem do save tenha mudado)
+                // Busca o índice correto
                 const realIdx = meuTime.elenco.findIndex(p => p.nome === currentNeg.player.nome);
                 
                 if (realIdx > -1) {
-                    // Atualiza o jogador no save
                     meuTime.elenco[realIdx].salario = currentNeg.offer.salary;
                     meuTime.elenco[realIdx].papel = currentNeg.offer.role;
                     
-                    // Calcula nova data (Data Atual + Anos)
-                    const partes = Engine.data.getDataAtual(game.rodadaAtual).split('/'); // dd, mm, yyyy
+                    // Calcula nova data
+                    const partes = Engine.data.getDataAtual(game.rodadaAtual).split('/'); 
                     const novoAno = parseInt(partes[2]) + currentNeg.offer.years;
                     meuTime.elenco[realIdx].contrato = `31/12/${novoAno}`;
                     
-                    // Atualiza o time no array global e salva
                     const timeIdx = game.times.findIndex(t => t.nome === game.info.time);
                     if(timeIdx > -1) game.times[timeIdx] = meuTime;
                     
@@ -635,7 +686,6 @@
                 showOptions('fim');
             }, 1000);
         }
-
     </script>
 </body>
 </html>
