@@ -6,23 +6,41 @@ const database = {
         // --- SÉRIE A (ELITE 2026) ---
         serieA: [
             {
-                id: "botafogo", nome: "Botafogo", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/585.png", forca: 86, orcamento: "R$ 950 Mi", destaque: "Luiz Henrique",
+                id: "botafogo", nome: "Botafogo", escudo: "https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/6086.png&scale=crop&cquality=40&location=origin&w=64&h=64", forca: 86, orcamento: "R$ 950 Mi", destaque: "Luiz Henrique",
                 elenco: [
-                    { nome: "John", pos: "GOL", forca: 80, idade: 29, carac: "Reflexo" },
-                    { nome: "Vitinho", pos: "LD", forca: 76, idade: 25, carac: "Apoio" },
-                    { nome: "Bastos", pos: "ZAG", forca: 79, idade: 33, carac: "Antecipação" },
-                    { nome: "Barboza", pos: "ZAG", forca: 80, idade: 30, carac: "Liderança" },
-                    { nome: "Alex Telles", pos: "LE", forca: 81, idade: 32, carac: "Cruzamento" },
-                    { nome: "Gregore", pos: "VOL", forca: 79, idade: 31, carac: "Desarme" },
-                    { nome: "Marlon Freitas", pos: "VOL", forca: 80, idade: 30, carac: "Passe" },
-                    { nome: "Thiago Almada", pos: "MEI", forca: 84, idade: 23, carac: "Drible" },
-                    { nome: "Savarino", pos: "ATA", forca: 81, idade: 28, carac: "Visão" },
-                    { nome: "Luiz Henrique", pos: "ATA", forca: 85, idade: 24, carac: "Habilidade" },
-                    { nome: "Igor Jesus", pos: "ATA", forca: 82, idade: 24, carac: "Pivô" },
-                    { nome: "Tiquinho Soares", pos: "ATA", forca: 79, idade: 34, carac: "Finalização" },
-                    { nome: "Júnior Santos", pos: "ATA", forca: 78, idade: 30, carac: "Força" },
-                    { nome: "Matheus Martins", pos: "ATA", forca: 77, idade: 22, carac: "Drible" }
-                ]
+             [
+            { nome: "John", pos: "GOL", forca: 81, idade: 30, carac: "Reflexo" },
+            { nome: "Gatito Fernández", pos: "GOL", forca: 76, idade: 38, carac: "Liderança" },
+            { nome: "Raul", pos: "GOL", forca: 74, idade: 29, carac: "Segurança" },
+            { nome: "Vitinho", pos: "LD", forca: 78, idade: 26, carac: "Velocidade" },
+            { nome: "Mateo Ponte", pos: "LD", forca: 76, idade: 23, carac: "Cruzamento" },
+            { nome: "Bastos", pos: "ZAG", forca: 80, idade: 34, carac: "Antecipação" },
+            { nome: "Alexander Barboza", pos: "ZAG", forca: 81, idade: 31, carac: "Liderança" },
+            { nome: "Lucas Halter", pos: "ZAG", forca: 77, idade: 26, carac: "Força" },
+            { nome: "Jefferson Maciel", pos: "ZAG", forca: 70, idade: 22, carac: "Velocidade" },
+            { nome: "Alex Telles", pos: "LE", forca: 82, idade: 33, carac: "Cruzamento" },
+            { nome: "Cuiabano", pos: "LE", forca: 79, idade: 23, carac: "Arrancada" },
+            { nome: "Hugo", pos: "LE", forca: 75, idade: 24, carac: "Apoio" },
+            { nome: "Marçal", pos: "LE", forca: 76, idade: 37, carac: "Defesa" },
+            { nome: "Gregore", pos: "VOL", forca: 80, idade: 32, carac: "Desarme" },
+            { nome: "Marlon Freitas", pos: "VOL", forca: 81, idade: 31, carac: "Passe" },
+            { nome: "Allan", pos: "VOL", forca: 79, idade: 35, carac: "Visão" },
+            { nome: "Danilo Barbosa", pos: "VOL", forca: 77, idade: 30, carac: "Infiltração" },
+            { nome: "Tchê Tchê", pos: "VOL", forca: 77, idade: 33, carac: "Resistência" },
+            { nome: "Kauê", pos: "VOL", forca: 73, idade: 23, carac: "Agilidade" },
+            { nome: "Thiago Almada", pos: "MEI", forca: 85, idade: 24, carac: "Drible" },
+            { nome: "Eduardo", pos: "MEI", forca: 76, idade: 36, carac: "Finalização" },
+            { nome: "Luiz Henrique", pos: "ATA", forca: 86, idade: 25, carac: "Habilidade" },
+            { nome: "Savarino", pos: "ATA", forca: 83, idade: 29, carac: "Visão" },
+            { nome: "Igor Jesus", pos: "ATA", forca: 83, idade: 25, carac: "Pivô" },
+            { nome: "Tiquinho Soares", pos: "ATA", forca: 79, idade: 35, carac: "Finalização" },
+            { nome: "Júnior Santos", pos: "ATA", forca: 78, idade: 31, carac: "Explosão" },
+            { nome: "Matheus Martins", pos: "ATA", forca: 79, idade: 22, carac: "Agilidade" },
+            { nome: "Jeffinho", pos: "ATA", forca: 78, idade: 26, carac: "Drible" },
+            { nome: "Matheus Nascimento", pos: "ATA", forca: 74, idade: 22, carac: "Técnica" },
+            { nome: "Yarlen", pos: "ATA", forca: 70, idade: 20, carac: "Drible" },
+            { nome: "Sapata", pos: "ATA", forca: 69, idade: 23, carac: "Chute" }
+              ]
             },
             {
                 id: "palmeiras", nome: "Palmeiras", escudo: "https://a.espncdn.com/i/teamlogos/soccer/500/2029.png", forca: 85, orcamento: "R$ 1 Bi", destaque: "Estêvão",
