@@ -198,6 +198,8 @@
                             <th style="width:50px; text-align:center;">Pos</th>
                             <th>Nome</th>
                             <th style="width:50px; text-align:center;">OVR</th>
+                            <th style="width:100px;">Contrato</th>
+                            
                             <th class="col-stat">PAC</th>
                             <th class="col-stat">SHO</th>
                             <th class="col-stat">PAS</th>
@@ -276,21 +278,17 @@
             const container = document.getElementById('match-banner');
             const rodadaIndex = game.rodadaAtual - 1;
 
-            // Se acabou o campeonato
             if (!game.calendario || !game.calendario[rodadaIndex]) {
                 container.innerHTML = "<h2 style='margin:auto; color:#ccc'>Fim de Temporada</h2>";
                 return;
             }
 
-            // Acha o jogo do meu time na rodada atual
             const jogos = game.calendario[rodadaIndex].jogos;
             const meuJogo = jogos.find(j => j.mandante === game.info.time || j.visitante === game.info.time);
 
             if (meuJogo) {
                 const mandanteObj = Engine.encontrarTime(meuJogo.mandante) || { escudo: DEFAULT_SHIELD };
                 const visitanteObj = Engine.encontrarTime(meuJogo.visitante) || { escudo: DEFAULT_SHIELD };
-
-                // Define nome do estádio
                 let nomeEstadio = ESTADIOS_REAIS[meuJogo.mandante] || "Estádio Municipal";
 
                 container.innerHTML = `
@@ -320,7 +318,6 @@
 
             let meuTime = Engine.encontrarTime(game.info.time);
 
-            // IMPORTANTE: Atualiza a saúde dos jogadores baseada no que foi salvo na partida
             if(game.jogadoresStatus) {
                 meuTime.elenco.forEach((j, i) => {
                     const uid = j.uid || `p_${i}`;
@@ -335,21 +332,16 @@
                 return;
             }
 
-            // Ordenação por Posição: GOL -> DEF -> MEI -> ATA
             const ordem = {'GOL':1, 'ZAG':2, 'LD':3, 'LE':3, 'VOL':4, 'MEI':5, 'ATA':6};
             meuTime.elenco.sort((a,b) => (ordem[a.pos]||99) - (ordem[b.pos]||99) || b.forca - a.forca);
 
             meuTime.elenco.forEach(jog => {
-                // Gera atributos se não tiver (para saves antigos ou times genéricos)
                 const atr = garantirAtributos(jog); 
-                
-                // Define cor da barra de saúde
                 const saude = jog.saude !== undefined ? jog.saude : 100;
-                let colorBar = '#2ecc71'; // Verde
-                if(saude < 80) colorBar = '#f1c40f'; // Amarelo
-                if(saude < 50) colorBar = '#ff4757'; // Vermelho
+                let colorBar = '#2ecc71'; 
+                if(saude < 80) colorBar = '#f1c40f'; 
+                if(saude < 50) colorBar = '#ff4757'; 
                 
-                // Cor da Posição
                 let posClass = "";
                 if(jog.pos==='GOL') posClass='pos-gol';
                 else if(['ZAG','LD','LE'].includes(jog.pos)) posClass='pos-def';
@@ -363,6 +355,8 @@
                     <td><span class="pos-badge ${posClass}">${jog.pos}</span></td>
                     <td class="col-name">${jog.nome}</td>
                     <td class="col-ovr">${jog.forca}</td>
+                    <td style="color:#aaa; font-size:0.8rem; text-align:center;">${jog.contrato || '-'}</td>
+                    
                     <td class="col-stat">${fmtStat(atr.VEL)}</td>
                     <td class="col-stat">${fmtStat(atr.FIN)}</td>
                     <td class="col-stat">${fmtStat(atr.PAS)}</td>
@@ -380,19 +374,16 @@
             });
         }
 
-        // Função auxiliar para gerar atributos baseados na Força Geral (OVR)
         function garantirAtributos(jog) {
             if(jog.atributos && jog.atributos.VEL) return jog.atributos;
             const b = jog.forca || 60;
-            // Gera baseado na posição
             if(jog.pos === 'GOL') return { VEL:b, FIN:b-10, PAS:b-5, DRI:b-10, DEF:b+5, PHY:b };
             if(jog.pos === 'ATA') return { VEL:b+2, FIN:b+5, PAS:b-5, DRI:b+2, DEF:b-20, PHY:b };
             if(jog.pos === 'ZAG') return { VEL:b-5, FIN:b-15, PAS:b-5, DRI:b-10, DEF:b+5, PHY:b+5 };
-            return { VEL:b, FIN:b-5, PAS:b+2, DRI:b, DEF:b, PHY:b }; // Meias
+            return { VEL:b, FIN:b-5, PAS:b+2, DRI:b, DEF:b, PHY:b }; 
         }
 
         function irParaEstadio() {
-            // Salva quem é o oponente no LocalStorage para a partida ler
             const game = Engine.carregarJogo();
             const rodadaIndex = game.rodadaAtual - 1;
             const jogo = game.calendario[rodadaIndex].jogos.find(j => j.mandante === game.info.time || j.visitante === game.info.time);
