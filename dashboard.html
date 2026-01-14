@@ -463,9 +463,9 @@
 
             const p = meuTime.elenco[playerIdx];
 
-            // Define Expectativas do Jogador (IA Simples)
+            // Define Expectativas do Jogador
             const baseSalario = (p.forca || 60) * 1600;
-            const salarioDesejado = Math.floor(baseSalario * 1.2); // Quer 20% de aumento
+            const salarioDesejado = Math.floor(baseSalario * 1.2); 
             let papelDesejado = 'Rotação';
             if (p.forca > 84) papelDesejado = 'Titular Absoluto';
             else if (p.forca > 78) papelDesejado = 'Importante';
@@ -475,7 +475,7 @@
                 idx: playerIdx,
                 expectations: {
                     salary: salarioDesejado,
-                    years: 2 + Math.floor(Math.random() * 2), // Quer 2 ou 3 anos
+                    years: 2 + Math.floor(Math.random() * 2),
                     role: papelDesejado
                 },
                 offer: { salary: 0, years: 1, bonus: 0, role: '' } 
@@ -487,20 +487,19 @@
             document.getElementById('neg-age').innerText = p.idade + " anos";
             document.getElementById('neg-pos').innerText = p.pos;
             
-            // Dados Mockados de Jogos/Gols (Se não existir no save)
-            // Futuramente puxar de p.stats.jogos se existir
-            document.getElementById('neg-games').innerText = p.jogos || Math.floor(Math.random() * 20); 
-            document.getElementById('neg-goals').innerText = p.gols || (p.pos === 'GOL' ? 0 : Math.floor(Math.random() * 5));
+            // CORREÇÃO: Removemos o Math.random() e colocamos 0 como padrão
+            document.getElementById('neg-games').innerText = p.jogos || 0; 
+            document.getElementById('neg-goals').innerText = p.gols || 0;
 
             const salAtual = p.salario || baseSalario;
             document.getElementById('neg-sal').innerText = salAtual.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
             document.getElementById('neg-end').innerText = p.contrato || "31/12/2026";
 
-            // Limpa Chat
+            // Limpa Chat e mostra o Modal
             document.getElementById('chat-feed').innerHTML = '';
             document.getElementById('neg-modal').style.display = 'flex';
             
-            // Lógica de Recusa Inicial (Chance de 15% de não querer negociar)
+            // Lógica de Recusa Inicial
             const chanceRecusa = Math.random();
             if (chanceRecusa < 0.15) {
                 addMsg('cpu', "Chefe, sinceramente? Não estou com cabeça para negociar agora. Vamos focar nos jogos.");
@@ -510,7 +509,7 @@
                 showOptions('inicio');
             }
         }
-
+        
         function fecharNegociacao() { document.getElementById('neg-modal').style.display = 'none'; }
 
         function addMsg(who, text) {
