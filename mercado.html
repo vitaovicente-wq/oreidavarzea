@@ -135,57 +135,89 @@
         </div>
     </div>
 
-    <script>
+  <script>
         let abaAtual = 'livres';
         let jogadorSelecionado = null;
 
         window.onload = function() {
+            // 1. VERIFICAÇÃO DE SEGURANÇA DO ENGINE
+            if (!Engine || !Engine.Mercado) {
+                alert("ERRO CRÍTICO: O arquivo 'engine.js' parece desatualizado ou não carregou.\n\nTente limpar o cache do navegador (CTRL + F5).");
+                return;
+            }
+
+            const game = Engine.carregarJogo();
+            if (!game) {
+                alert("Nenhum jogo salvo encontrado. Inicie um Novo Jogo.");
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('money-display').innerText = (game.recursos.dinheiro || 0).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+            
+            // 2. FORÇAR GERAÇÃO DE DADOS (RESET DE DEBUG)
+            // Se as listas não existirem no localStorage, cria agora.
+            if(!localStorage.getItem('brfutebol_livres')) {
+                console.log("Gerando Agentes Livres...");
+                Engine.Mercado.gerarAgentesLivres();
+            }
+            
+            if(!localStorage.getItem('brfutebol_transferencias')) {
+                console.log("Gerando Lista de Transferências...");
+                Engine.Mercado.gerarListaTransferencias(game);
+            }
+
+            // 3. Renderiza a tela
             carregarDados();
             mudarAba('livres');
         };
 
         function carregarDados() {
+            // Garante atualização visual
             const game = Engine.carregarJogo();
             document.getElementById('money-display').innerText = (game.recursos.dinheiro || 0).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
-            
-            // Garante que as listas existam e não estejam vazias
-            const livres = localStorage.getItem('brfutebol_livres');
-            if(!livres || JSON.parse(livres).length === 0) {
-                Engine.Mercado.gerarAgentesLivres();
-            }
-
-            const transfer = localStorage.getItem('brfutebol_transferencias');
-            if(!transfer || JSON.parse(transfer).length === 0) {
-                Engine.Mercado.gerarListaTransferencias(game);
-            }
         }
 
         function mudarAba(aba) {
             abaAtual = aba;
             
-            // Visual dos botões
+            // Atualiza botões
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active'); 
+            // Procura o botão certo para ativar (gambiarra visual segura)
+            const botoes = document.querySelectorAll('.tab-btn');
+            if(aba === 'livres') botoes[0].classList.add('active');
+            else botoes[1].classList.add('active');
 
             const container = document.getElementById('lista-jogadores');
             container.innerHTML = "";
 
             let lista = [];
 
+            // Pega dados frescos do localStorage
             if (aba === 'livres') {
-                lista = Engine.Mercado.gerarAgentesLivres();
-                if (lista.length === 0) container.innerHTML = "<p style='color:#666; text-align:center; padding:20px;'>Nenhum jogador livre no momento.</p>";
+                const dados = localStorage.getItem('brfutebol_livres');
+                lista = dados ? JSON.parse(dados) : [];
             } else {
-                const game = Engine.carregarJogo();
-                lista = Engine.Mercado.gerarListaTransferencias(game);
-                if (lista.length === 0) container.innerHTML = "<p style='color:#666; text-align:center; padding:20px;'>Nenhum clube colocou jogadores à venda.</p>";
+                const dados = localStorage.getItem('brfutebol_transferencias');
+                lista = dados ? JSON.parse(dados) : [];
+            }
+
+            // Se ainda estiver vazio (erro grave), avisa
+            if (lista.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align:center; padding:30px; color:#666;">
+                        <p>A lista está vazia.</p>
+                        <button onclick="resetarMercado()" style="padding:10px; background:var(--neon-green); border:none; cursor:pointer; font-weight:bold;">
+                            ⚠️ Forçar Geração de Jogadores
+                        </button>
+                    </div>`;
+                return;
             }
 
             lista.forEach(j => {
                 const div = document.createElement('div');
                 div.className = 'player-row';
                 
-                // Define o texto do custo
                 let custoTexto = "";
                 let botaoTexto = "";
                 let botaoClass = "";
@@ -200,7 +232,6 @@
                     botaoClass = "btn-action";
                 }
 
-                // Clube label
                 const clubeLabel = j.clube ? `🛡️ ${j.clube}` : `⚠️ Sem Clube`;
 
                 div.innerHTML = `
@@ -218,7 +249,7 @@
                         <span class="price-label">${aba === 'livres' ? 'Custo do Passe' : 'Valor de Mercado'}</span>
                         ${custoTexto}
                     </div>
-                    <button class="${botaoClass} ${botaoTexto === 'ASSINAR' ? 'btn-free' : 'btn-action'}" onclick='abrirNegociacao(${JSON.stringify(j)})'>
+                    <button class="${botaoClass}" onclick='abrirNegociacao(${JSON.stringify(j)})'>
                         ${botaoTexto}
                     </button>
                 `;
@@ -226,30 +257,30 @@
             });
         }
 
+        // --- FUNÇÃO DE EMERGÊNCIA ---
+        function resetarMercado() {
+            localStorage.removeItem('brfutebol_livres');
+            localStorage.removeItem('brfutebol_transferencias');
+            alert("Mercado resetado! Recarregando...");
+            location.reload();
+        }
+
+        // --- NEGOCIAÇÃO (CÓDIGO ANTERIOR MANTIDO) ---
         function abrirNegociacao(jogador) {
             jogadorSelecionado = jogador;
             document.getElementById('modal-compra').style.display = 'flex';
             document.getElementById('area-salario').style.display = 'block';
             
-            // Sugestão de Salário
             const fator = abaAtual === 'livres' ? 0.012 : 0.009;
             const salarioSugerido = Math.floor((jogador.forca * 1800) + (jogador.valor * 0.005));
             document.getElementById('input-salario').value = salarioSugerido;
 
             if (abaAtual === 'livres') {
                 document.getElementById('modal-titulo').innerText = "Assinar Agente Livre";
-                document.getElementById('modal-msg').innerHTML = `
-                    Você está trazendo <strong>${jogador.nome}</strong> sem custos de transferência.<br>
-                    Defina o salário mensal para fechar o contrato.
-                `;
+                document.getElementById('modal-msg').innerHTML = `Trazer <strong>${jogador.nome}</strong> sem custos de transferência.<br>Defina o salário:`;
             } else {
                 document.getElementById('modal-titulo').innerText = "Comprar Jogador";
-                document.getElementById('modal-msg').innerHTML = `
-                    Clube atual: <strong>${jogador.clube}</strong><br>
-                    Custo do Passe: <span style="color:var(--neon-green)">${jogador.valor.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</span><br>
-                    <br>
-                    Além do passe, defina o salário inicial do jogador.
-                `;
+                document.getElementById('modal-msg').innerHTML = `Clube: <strong>${jogador.clube}</strong><br>Passe: <span style="color:var(--neon-green)">${jogador.valor.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</span>`;
             }
         }
 
@@ -260,37 +291,25 @@
 
         function finalizarNegocio() {
             if (!jogadorSelecionado) return;
-
             const game = Engine.carregarJogo();
             const salarioOferta = parseInt(document.getElementById('input-salario').value);
             let custoTotal = 0;
 
-            // 1. Verifica Custo do Passe (se for compra)
-            if (abaAtual === 'clubes') {
-                custoTotal += jogadorSelecionado.valor;
-            }
+            if (abaAtual === 'clubes') custoTotal += jogadorSelecionado.valor;
 
-            // Verifica se tem dinheiro
             if (game.recursos.dinheiro < custoTotal) {
-                alert("❌ Saldo insuficiente para pagar a transferência.");
-                return;
+                alert("❌ Saldo insuficiente."); return;
             }
 
-            // 2. Verifica se o Salário é Aceitável
-            // CORREÇÃO AQUI: Variavel 'expectativa' estava sendo chamada de 'expectation'
             let expectativa = (jogadorSelecionado.forca * 1500); 
-            if (abaAtual === 'livres') expectativa *= 1.2; // Livres pedem mais salário
+            if (abaAtual === 'livres') expectativa *= 1.2;
 
             if (salarioOferta < expectativa) {
-                alert(`O jogador recusou a oferta salarial. Ele pede no mínimo ${expectativa.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}.`);
+                alert(`O jogador pede no mínimo ${expectativa.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}.`);
                 return;
             }
 
-            // SUCESSO!
-            // Desconta dinheiro
             game.recursos.dinheiro -= custoTotal;
-
-            // Adiciona ao meu time
             const meuTime = Engine.encontrarTime(game.info.time);
             meuTime.elenco.push({
                 uid: jogadorSelecionado.uid,
@@ -299,25 +318,21 @@
                 forca: jogadorSelecionado.forca,
                 idade: jogadorSelecionado.idade,
                 salario: salarioOferta,
-                papel: "Rotação", // Padrão
+                papel: "Rotação",
                 contrato: "31/12/2028",
                 carac: jogadorSelecionado.carac || "Reforço",
                 jogos: 0, gols: 0,
                 atributos: jogadorSelecionado.atributos || { VEL: jogadorSelecionado.forca, FIN: jogadorSelecionado.forca, PAS: jogadorSelecionado.forca, DRI: jogadorSelecionado.forca, DEF: jogadorSelecionado.forca, PHY: jogadorSelecionado.forca }
             });
 
-            // Atualiza o time no array global
             const timeIdx = game.times.findIndex(t => t.nome === game.info.time);
             game.times[timeIdx] = meuTime;
 
-            // Remove da lista de mercado (Livre ou Transferencia)
             Engine.Mercado.removerJogador(jogadorSelecionado.uid, abaAtual === 'livres' ? 'livre' : 'venda');
-
             Engine.salvarJogo(game);
             
             alert(`Bem-vindo, ${jogadorSelecionado.nome}!`);
             fecharModal();
-            // Recarrega a tela para atualizar o saldo e remover o jogador da lista
             carregarDados();
             mudarAba(abaAtual);
         }
