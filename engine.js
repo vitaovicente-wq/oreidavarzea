@@ -1,4 +1,15 @@
-// ARQUIVO: engine.js (V9.0 - VERSÃO DEFINITIVA)
+Desculpe por isso! O erro aconteceu porque na Versão 9.0 eu acabei trazendo de volta duas linhas de código antigas (`gerarAgentesLivres` e `gerarListaTransferencias`) que nós tínhamos removido na Versão 7.0 para deixar o mercado "Realista" (começando vazio).
+
+Como essas funções não existem mais dentro do objeto `Mercado`, o jogo trava ao tentar iniciar.
+
+Aqui está o **`engine.js` Corrigido (V9.1)**. Eu removi as chamadas problemáticas e mantive todo o sistema novo de Patrocínios e Finanças.
+
+### Arquivo: `engine.js` (Corrigido)
+
+Copie e substitua o seu arquivo atual.
+
+```javascript
+// ARQUIVO: engine.js (V9.1 - CORREÇÃO DE INICIALIZAÇÃO)
 
 const Engine = {
     
@@ -11,7 +22,7 @@ const Engine = {
             return;
         }
 
-        // Reset do Mercado
+        // Reset do Mercado (Começa vazio para ser realista)
         localStorage.setItem('brfutebol_livres', '[]');
         localStorage.setItem('brfutebol_transferencias', '[]');
 
@@ -52,11 +63,10 @@ const Engine = {
                 dataInicio: dataInicio
             },
             recursos: { 
-                dinheiro: 2000000, // Começa baixo para forçar patrocínio
+                dinheiro: 2000000, 
                 moral: 100,
                 rodadaFinanceiraProcessada: false 
             },
-            // NOVO: Objeto para guardar contratos assinados
             contratos: { patrocinio: null, tv: null },
             financas: {
                 saldo: 2000000,
@@ -72,9 +82,8 @@ const Engine = {
 
         this.salvarJogo(estadoDoJogo);
 
-        // GERA O MUNDO INICIAL
-        this.Mercado.gerarAgentesLivres();
-        this.Mercado.gerarListaTransferencias(estadoDoJogo);
+        // --- CORREÇÃO: REMOVIDAS CHAMADAS ANTIGAS QUE DAVAM ERRO ---
+        // O mercado agora é populado gradualmente via 'atualizarTabela' ou eventos.
         
         // ENVIA OS E-MAILS INICIAIS
         this.Contratos.enviarBoasVindas(estadoDoJogo);
@@ -82,7 +91,7 @@ const Engine = {
         this.Contratos.gerarOfertasTV(estadoDoJogo);
     },
 
-    // --- 2. SISTEMA DE CONTRATOS (NOVO) ---
+    // --- 2. SISTEMA DE CONTRATOS ---
     Contratos: {
         empresas: ["Hyper", "Ultra", "Neo", "Global", "Royal", "King", "Super", "Mega", "Iron", "Alpha"],
         setores: ["Bet", "Bank", "Motors", "Energy", "Foods", "Tech", "Airlines", "Beer", "Seguros", "Pharma"],
@@ -100,11 +109,8 @@ const Engine = {
             const baseValue = 350000; 
             const propostas = [];
             
-            // 1. Conservadora
             propostas.push({ id: 1, empresa: this.empresas[0] + " " + this.setores[0], mensal: baseValue * 1.5, luvas: baseValue * 5, bonusTitulo: baseValue * 10, duracao: 12, estilo: "Estabilidade" });
-            // 2. Agressiva (Cash agora)
             propostas.push({ id: 2, empresa: this.empresas[1] + " " + this.setores[1], mensal: baseValue * 0.8, luvas: baseValue * 20, bonusTitulo: baseValue * 5, duracao: 24, estilo: "Injeção de Caixa" });
-            // 3. Performance
             propostas.push({ id: 3, empresa: this.empresas[2] + " " + this.setores[2], mensal: baseValue, luvas: baseValue * 8, bonusTitulo: baseValue * 40, duracao: 12, estilo: "Foco em Títulos" });
 
             let html = "Recebemos 3 propostas para o master. Escolha com sabedoria:<br><br>";
@@ -190,7 +196,6 @@ const Engine = {
         });
         tabela.sort((a, b) => b.pts - a.pts || b.v - a.v || b.sg - a.sg || b.gp - a.gp);
         
-        // HOOK FINANCEIRO
         const rodadaIdx = estadoJogo.rodadaAtual - 1;
         if(estadoJogo.calendario[rodadaIdx]) {
             const jogoPlayer = estadoJogo.calendario[rodadaIdx].jogos.find(j => j.mandante === estadoJogo.info.time || j.visitante === estadoJogo.info.time);
@@ -199,12 +204,9 @@ const Engine = {
                 const adversario = isMandante ? jogoPlayer.visitante : jogoPlayer.mandante;
                 
                 this.sistema.processarRodadaFinanceira(estadoJogo, isMandante, adversario);
-                
-                // Movimenta Mercado
                 this.sistema.gerarPropostaTransferencia(); 
                 this.Mercado.atualizarListaTransferencias(estadoJogo); 
                 this.Mercado.simularDispensasCPU(estadoJogo);       
-                
                 estadoJogo.recursos.rodadaFinanceiraProcessada = true;
             }
         }
@@ -225,7 +227,7 @@ const Engine = {
         else { timeCasa.e++; timeCasa.pts++; timeFora.e++; timeFora.pts++; }
     },
 
-    // --- 6. SIMULAÇÃO CPU E DADOS GERAIS ---
+    // --- 6. SIMULAÇÃO CPU ---
     simularJogoCPU: function(jogo) {
         jogo.jogado = true;
         jogo.placarCasa = Math.floor(Math.random() * 3);
@@ -256,6 +258,7 @@ const Engine = {
         return lista;
     },
 
+    // --- 7. ESTÁDIO ---
     estadios: {
         db: { "Padrao": { nome: "Estádio Municipal", cap: 15000 }, "Corinthians": { nome: "Neo Química Arena", cap: 49000 }, "Flamengo": { nome: "Maracanã", cap: 78000 } },
         getEstadio: function() {
@@ -272,12 +275,12 @@ const Engine = {
             let demandaBase = moral / 100; 
             const capGeral = Math.floor(estadio.cap * 0.50);
             const pubGeral = Math.floor(Math.min(capGeral, capGeral * demandaBase));
-            const renda = pubGeral * estadio.precos.geral; // Simplificado para economizar espaço
+            const renda = pubGeral * estadio.precos.geral; 
             return { publico: pubGeral, rendaTotal: renda };
         }
     },
 
-    // --- 7. SISTEMA DE MERCADO ---
+    // --- 8. MERCADO ---
     Mercado: {
         getAgentesLivres: function() { return JSON.parse(localStorage.getItem('brfutebol_livres') || '[]'); },
         getListaTransferencias: function() { return JSON.parse(localStorage.getItem('brfutebol_transferencias') || '[]'); },
@@ -288,7 +291,6 @@ const Engine = {
             let postura = 'neutra';
             if (jogador.forca > 80) { valorBase *= 1.3; postura = 'dura'; } 
             else if (necessidade > 70) { valorBase *= 0.85; postura = 'flexivel'; }
-            
             const alvosTroca = meuTime.elenco.filter(j => j.pos === jogador.pos).slice(0, 3);
             return { valorPedido: Math.floor(valorBase), aceitaEmprestimo: jogador.forca < 75, aceitaTroca: true, postura, paciencia: 4, alvosTroca };
         },
@@ -335,7 +337,7 @@ const Engine = {
         }
     },
 
-    // --- 8. SISTEMA FINANCEIRO E MENSAGENS ---
+    // --- 9. MENSAGENS E FINANÇAS ---
     sistema: {
         novaMensagem: function(titulo, corpo, tipo = 'info', acao = null) {
             const game = Engine.carregarJogo();
@@ -347,16 +349,13 @@ const Engine = {
         processarRodadaFinanceira: function(game, mandante, adversario) {
             if (!game.financas) game.financas = { saldo: 0, historico: [] };
             
-            // 1. Bilheteria
             if (mandante) {
                 const bilheteria = Engine.estadios.calcularBilheteria(adversario);
                 game.recursos.dinheiro += bilheteria.rendaTotal;
                 game.financas.historico.push({ texto: `Bilheteria vs ${adversario}`, valor: bilheteria.rendaTotal, tipo: 'entrada' });
             }
 
-            // 2. Pagamento Mensal (A cada 4 rodadas - "Mês")
             if (game.rodadaAtual % 4 === 0) {
-                // Patrocínios e TV
                 if (game.contratos && game.contratos.patrocinio) {
                     const val = game.contratos.patrocinio.mensal;
                     game.recursos.dinheiro += val;
@@ -368,23 +367,19 @@ const Engine = {
                     game.financas.historico.push({ texto: `Cota de TV`, valor: val, tipo: 'entrada' });
                 }
 
-                // Salários
                 let folha = 0;
                 const meuTime = game.times.find(t => t.nome === game.info.time);
                 if(meuTime && meuTime.elenco) meuTime.elenco.forEach(j => folha += j.salario);
-                
                 game.recursos.dinheiro -= folha;
                 game.financas.historico.push({ texto: `Folha Salarial`, valor: -folha, tipo: 'saida' });
             }
 
-            // 3. Custos Fixos por jogo
             const custo = 50000; 
             game.recursos.dinheiro -= custo;
             game.financas.historico.push({ texto: `Custos Jogo`, valor: -custo, tipo: 'saida' });
         },
 
         gerarPropostaTransferencia: function() {
-            // (Simplificado)
             const game = Engine.carregarJogo();
             if(Math.random() > 0.15) return;
             const meuTime = Engine.encontrarTime(game.info.time);
@@ -395,12 +390,11 @@ const Engine = {
         },
         
         aceitarVenda: function(msgId) {
-            // (Logica de venda)
             const game = Engine.carregarJogo();
             const msg = game.mensagens.find(m => m.id === msgId);
             if(msg && !msg.acao.processada) {
                 game.recursos.dinheiro += msg.acao.valor;
-                // Remover do time... (simplificado)
+                // Lógica de remoção do jogador aqui...
                 msg.acao.processada = true;
                 Engine.salvarJogo(game);
                 alert("Vendido!");
@@ -410,9 +404,10 @@ const Engine = {
 
     data: {
         getDataAtual: function(rodada) {
-            // Retorna data formatada
             return `Rodada ${rodada}`;
         }
     }
 };
 window.Engine = Engine;
+
+```
