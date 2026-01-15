@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caixa de Entrada - BRFutebol</title>
+    <script src="engine.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --bg-dark: #0f1216; --sidebar-bg: #161b22; --card-bg: #1e2329; --neon-green: #00ff88; --text-main: #ffffff; --text-muted: #8b949e; --border: #30363d; --red: #ff4757; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        .sidebar { width: 250px; background: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .logo { font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 900; margin-bottom: 20px; color: #fff; text-transform: uppercase; }
+        .logo span { color: var(--neon-green); }
+        .menu-btn { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-weight: 600; cursor: pointer; }
+        .menu-btn:hover, .menu-btn.active { background: rgba(0, 255, 136, 0.1); color: var(--neon-green); }
+        .menu-btn.logout { margin-top: auto; color: var(--red); }
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+
+        /* Estilos de Mensagem */
+        .msg-list { display: flex; flex-direction: column; gap: 10px; }
+        .msg-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; cursor: pointer; transition: 0.2s; }
+        .msg-item:hover { border-color: var(--neon-green); }
+        .msg-item.unread { border-left: 4px solid var(--neon-green); background: #262c33; }
+        
+        .msg-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .msg-title { font-weight: 700; font-size: 1.1rem; }
+        .msg-date { font-size: 0.8rem; color: #888; }
+        
+        .msg-body { font-size: 0.95rem; color: #ccc; line-height: 1.5; display: none; margin-top: 15px; border-top: 1px solid #333; padding-top: 15px; }
+        .msg-item.open .msg-body { display: block; }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo">BR<span>FUTEBOL</span></div>
+        <a class="menu-btn" href="painel.html">📊 Visão Geral</a>
+        <a class="menu-btn" href="escalacao.html">👕 Escalação</a>
+        <a class="menu-btn" href="mercado.html">🔄 Mercado</a>
+        <a class="menu-btn" href="calendario.html">📅 Calendário</a>
+        <a class="menu-btn" href="classificacao.html">🏆 Classificação</a>
+        <a class="menu-btn" href="estadio.html">🏟️ Estádio</a>
+        <a class="menu-btn" href="financeiro.html">💰 Finanças</a>
+        <a class="menu-btn active" href="mensagens.html">📩 Mensagens <span id="badge-msg"></span></a>
+        <a class="menu-btn logout" href="index.html">✖ Sair</a>
+    </nav>
+
+    <main class="main-content">
+        <h2 style="font-family:'Rajdhani'">Caixa de Entrada</h2>
+        <div id="lista-mensagens" class="msg-list"></div>
+    </main>
+
+    <script>
+        window.onload = function() {
+            const game = Engine.carregarJogo();
+            const container = document.getElementById('lista-mensagens');
+            
+            if(!game.mensagens || game.mensagens.length === 0) {
+                container.innerHTML = "<p style='color:#666'>Nenhuma mensagem.</p>";
+                return;
+            }
+
+            game.mensagens.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = `msg-item ${msg.lida ? '' : 'unread'}`;
+                
+                div.innerHTML = `
+                    <div class="msg-header" onclick="lerMensagem(${msg.id}, this)">
+                        <div class="msg-title">${msg.titulo}</div>
+                        <div class="msg-date">Rodada ${msg.rodada}</div>
+                    </div>
+                    <div class="msg-body">${msg.corpo}</div>
+                `;
+                container.appendChild(div);
+            });
+        };
+
+        function lerMensagem(id, element) {
+            const parent = element.parentElement;
+            parent.classList.toggle('open');
+            parent.classList.remove('unread');
+
+            // Marca como lida no save
+            const game = Engine.carregarJogo();
+            const msg = game.mensagens.find(m => m.id === id);
+            if(msg && !msg.lida) {
+                msg.lida = true;
+                Engine.salvarJogo(game);
+            }
+        }
+    </script>
+</body>
+</html>
