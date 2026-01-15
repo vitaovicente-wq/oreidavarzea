@@ -1,15 +1,4 @@
-Desculpe por isso! O erro aconteceu porque na Versão 9.0 eu acabei trazendo de volta duas linhas de código antigas (`gerarAgentesLivres` e `gerarListaTransferencias`) que nós tínhamos removido na Versão 7.0 para deixar o mercado "Realista" (começando vazio).
-
-Como essas funções não existem mais dentro do objeto `Mercado`, o jogo trava ao tentar iniciar.
-
-Aqui está o **`engine.js` Corrigido (V9.1)**. Eu removi as chamadas problemáticas e mantive todo o sistema novo de Patrocínios e Finanças.
-
-### Arquivo: `engine.js` (Corrigido)
-
-Copie e substitua o seu arquivo atual.
-
-```javascript
-// ARQUIVO: engine.js (V9.1 - CORREÇÃO DE INICIALIZAÇÃO)
+// ARQUIVO: engine.js (V9.2 - CORREÇÃO DE ERRO FATAL)
 
 const Engine = {
     
@@ -22,10 +11,11 @@ const Engine = {
             return;
         }
 
-        // Reset do Mercado (Começa vazio para ser realista)
+        // 1. Limpa o mercado antigo (Começa vazio - Realista)
         localStorage.setItem('brfutebol_livres', '[]');
         localStorage.setItem('brfutebol_transferencias', '[]');
 
+        // 2. Carrega Times
         let timesDaLiga = [];
         if (window.Database && window.Database.brasil && window.Database.brasil[divisao]) {
             timesDaLiga = JSON.parse(JSON.stringify(window.Database.brasil[divisao]));
@@ -33,7 +23,7 @@ const Engine = {
             timesDaLiga = this._gerarTimesGenericos(divisao);
         }
 
-        // Setup Inicial dos Jogadores
+        // 3. Configura Jogadores Iniciais
         const DATA_FIM_PADRAO = "31/12/2026";
         timesDaLiga.forEach(t => {
             if (!t.elenco || !Array.isArray(t.elenco)) t.elenco = [];
@@ -46,6 +36,7 @@ const Engine = {
             });
         });
 
+        // 4. Gera Calendário e Tabela
         const calendarioGerado = CalendarioSystem.gerarCampeonato(timesDaLiga);
         const classificacaoInicial = timesDaLiga.map(t => ({
             nome: t.nome, escudo: t.escudo || null,
@@ -54,6 +45,7 @@ const Engine = {
 
         const dataInicio = new Date('2026-01-01T12:00:00').getTime();
 
+        // 5. Cria o Estado Inicial do Save
         const estadoDoJogo = {
             info: {
                 tecnico: localStorage.getItem('brfutebol_tecnico') || "Manager",
@@ -82,13 +74,13 @@ const Engine = {
 
         this.salvarJogo(estadoDoJogo);
 
-        // --- CORREÇÃO: REMOVIDAS CHAMADAS ANTIGAS QUE DAVAM ERRO ---
-        // O mercado agora é populado gradualmente via 'atualizarTabela' ou eventos.
-        
-        // ENVIA OS E-MAILS INICIAIS
+        // 6. GERA OS EMAILS INICIAIS (SEM CHAMAR FUNÇÕES ANTIGAS DE MERCADO)
         this.Contratos.enviarBoasVindas(estadoDoJogo);
         this.Contratos.gerarOfertasPatrocinio(estadoDoJogo);
         this.Contratos.gerarOfertasTV(estadoDoJogo);
+        
+        // Redirecionamento (opcional, o index.html costuma fazer isso)
+        // window.location.href = 'painel.html';
     },
 
     // --- 2. SISTEMA DE CONTRATOS ---
@@ -349,13 +341,16 @@ const Engine = {
         processarRodadaFinanceira: function(game, mandante, adversario) {
             if (!game.financas) game.financas = { saldo: 0, historico: [] };
             
+            // 1. Bilheteria
             if (mandante) {
                 const bilheteria = Engine.estadios.calcularBilheteria(adversario);
                 game.recursos.dinheiro += bilheteria.rendaTotal;
                 game.financas.historico.push({ texto: `Bilheteria vs ${adversario}`, valor: bilheteria.rendaTotal, tipo: 'entrada' });
             }
 
+            // 2. Pagamento Mensal (A cada 4 rodadas - "Mês")
             if (game.rodadaAtual % 4 === 0) {
+                // Patrocínios e TV
                 if (game.contratos && game.contratos.patrocinio) {
                     const val = game.contratos.patrocinio.mensal;
                     game.recursos.dinheiro += val;
@@ -367,13 +362,16 @@ const Engine = {
                     game.financas.historico.push({ texto: `Cota de TV`, valor: val, tipo: 'entrada' });
                 }
 
+                // Salários
                 let folha = 0;
                 const meuTime = game.times.find(t => t.nome === game.info.time);
                 if(meuTime && meuTime.elenco) meuTime.elenco.forEach(j => folha += j.salario);
+                
                 game.recursos.dinheiro -= folha;
                 game.financas.historico.push({ texto: `Folha Salarial`, valor: -folha, tipo: 'saida' });
             }
 
+            // 3. Custos Fixos por jogo
             const custo = 50000; 
             game.recursos.dinheiro -= custo;
             game.financas.historico.push({ texto: `Custos Jogo`, valor: -custo, tipo: 'saida' });
@@ -394,7 +392,7 @@ const Engine = {
             const msg = game.mensagens.find(m => m.id === msgId);
             if(msg && !msg.acao.processada) {
                 game.recursos.dinheiro += msg.acao.valor;
-                // Lógica de remoção do jogador aqui...
+                // Remover do time... (simplificado)
                 msg.acao.processada = true;
                 Engine.salvarJogo(game);
                 alert("Vendido!");
@@ -409,5 +407,3 @@ const Engine = {
     }
 };
 window.Engine = Engine;
-
-```
