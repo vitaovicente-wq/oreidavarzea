@@ -313,91 +313,100 @@ const Engine = {
         }
     },
 
-    // --- 7. SISTEMA DE MERCADO (NOVO) ---
+  // --- 7. SISTEMA DE MERCADO (REALISTA) ---
     Mercado: {
-        nomes: ["Silva", "Santos", "Oliveira", "Souza", "Rodrigues", "Ferreira", "Alves", "Pereira", "Lima", "Gomes", "Costa", "Ribeiro", "Martins", "Carvalho", "Almeida", "Lopes", "Soares", "Fernandes", "Vieira"],
-        prenomes: ["João", "José", "Pedro", "Lucas", "Mateus", "Gabriel", "Rafael", "Daniel", "Thiago", "Luiz", "Paulo", "Carlos", "Marcos", "André", "Felipe", "Guilherme", "Rodrigo", "Bruno"],
-
-        // 1. Gera Jogadores Livres (Sem contrato)
-        gerarAgentesLivres: function() {
-            let livres = localStorage.getItem('brfutebol_livres');
-            if (livres) return JSON.parse(livres);
-
-            const novos = [];
-            const posicoes = ['GOL', 'ZAG', 'LD', 'LE', 'VOL', 'MEI', 'ATA'];
-
-            // Gera 15 jogadores livres aleatórios
-            for (let i = 0; i < 15; i++) {
-                const forca = Math.floor(Math.random() * 15) + 55; // Força 55-70
-                const valor = Math.pow(forca, 3) * 10; 
-                
-                novos.push({
-                    uid: 'free_' + Date.now() + i,
-                    nome: this.prenomes[Math.floor(Math.random()*this.prenomes.length)] + " " + this.nomes[Math.floor(Math.random()*this.nomes.length)],
-                    pos: posicoes[Math.floor(Math.random() * posicoes.length)],
-                    forca: forca,
-                    idade: Math.floor(Math.random() * 12) + 20,
-                    valor: 0, // Sem custo de passe
-                    salario: Math.floor(valor * 0.008),
-                    clube: null,
-                    carac: "Agente Livre"
-                });
-            }
-            localStorage.setItem('brfutebol_livres', JSON.stringify(novos));
-            return novos;
+        // Retorna a lista de livres (sem gerar nada falso)
+        getAgentesLivres: function() {
+            const livres = localStorage.getItem('brfutebol_livres');
+            return livres ? JSON.parse(livres) : [];
         },
 
-        // 2. Simula outros clubes colocando jogadores à venda
-        gerarListaTransferencias: function(game) {
-            let transferencias = localStorage.getItem('brfutebol_transferencias');
-            if (transferencias) return JSON.parse(transferencias);
+        // Retorna a lista de transferências (Venda de jogadores sob contrato)
+        getListaTransferencias: function() {
+            const transferencias = localStorage.getItem('brfutebol_transferencias');
+            return transferencias ? JSON.parse(transferencias) : [];
+        },
 
-            const lista = [];
-            // Percorre os times (exceto o do jogador)
-            game.times.forEach(time => {
-                if (time.nome !== game.info.time) {
-                    const qtdVenda = Math.floor(Math.random() * 2); // 0 ou 1 jogador por time
-                    for(let k=0; k<qtdVenda; k++) {
-                        if (time.elenco && time.elenco.length > 0) {
-                            const jogador = time.elenco[Math.floor(Math.random() * time.elenco.length)];
-                            
-                            // Regra: Não vende se for muito craque (OVR > 85) e não duplica
-                            if (!lista.find(j => j.uid === jogador.uid) && jogador.forca < 85) {
-                                // Calcula valor de mercado
-                                const valorMercado = Math.floor(Math.pow(jogador.forca, 3) * 18);
-                                
-                                lista.push({
-                                    ...jogador,
-                                    valor: valorMercado,
-                                    clube: time.nome // Identifica de onde vem
-                                });
-                            }
-                        }
+        // Lógica: Times da CPU colocam jogadores à venda (Com Passe)
+        atualizarListaTransferencias: function(game) {
+            let lista = this.getListaTransferencias();
+            
+            // Chance de adicionar novos jogadores à venda
+            if(Math.random() > 0.7) { // 30% de chance por rodada
+                const timesCPU = game.times.filter(t => t.nome !== game.info.time);
+                const timeAleatorio = timesCPU[Math.floor(Math.random() * timesCPU.length)];
+                
+                if(timeAleatorio && timeAleatorio.elenco.length > 18) {
+                    const jogador = timeAleatorio.elenco[Math.floor(Math.random() * timeAleatorio.elenco.length)];
+                    
+                    // Só põe à venda se não estiver lá e não for o craque do time
+                    if (!lista.find(j => j.uid === jogador.uid) && jogador.forca < 85) {
+                        const valorMercado = Math.floor(Math.pow(jogador.forca, 3) * 18);
+                        lista.push({ ...jogador, valor: valorMercado, clube: timeAleatorio.nome });
                     }
                 }
-            });
+            }
+            
+            // Remove alguns antigos para a lista não ficar gigante
+            if (lista.length > 20) lista.shift();
 
             localStorage.setItem('brfutebol_transferencias', JSON.stringify(lista));
-            return lista;
+        },
+
+        // Lógica: Times da CPU demitem jogadores (Vão para Livres)
+        simularDispensasCPU: function(game) {
+            let livres = this.getAgentesLivres();
+            
+            // Chance pequena de dispensa (Times não demitem toda hora)
+            if (Math.random() > 0.85) { // 15% de chance a cada atualização
+                const timesCPU = game.times.filter(t => t.nome !== game.info.time);
+                const timeAleatorio = timesCPU[Math.floor(Math.random() * timesCPU.length)];
+
+                // Critério de dispensa: Elenco inchado ou jogador fraco
+                if (timeAleatorio && timeAleatorio.elenco.length > 22) {
+                    // Pega os jogadores mais fracos do time
+                    const candidatos = timeAleatorio.elenco.filter(j => j.forca < 70);
+                    
+                    if (candidatos.length > 0) {
+                        const dispensado = candidatos[Math.floor(Math.random() * candidatos.length)];
+                        
+                        // Remove do time original
+                        timeAleatorio.elenco = timeAleatorio.elenco.filter(j => j.uid !== dispensado.uid);
+                        
+                        // Adiciona na lista de Livres (Custo zero)
+                        livres.push({
+                            ...dispensado,
+                            valor: 0,
+                            clube: null,
+                            carac: "Dispensado" // Marca histórica
+                        });
+
+                        // Envia notificação para o usuário (Opcional, para dar vida ao mundo)
+                        Engine.sistema.novaMensagem(
+                            "Jogador Dispensado",
+                            `O ${timeAleatorio.nome} rescindiu contrato com ${dispensado.nome}. Ele está livre no mercado.`,
+                            'info'
+                        );
+                    }
+                }
+            }
+            
+            localStorage.setItem('brfutebol_livres', JSON.stringify(livres));
         },
 
         removerJogador: function(uid, tipo) {
             if (tipo === 'livre') {
-                let lista = JSON.parse(localStorage.getItem('brfutebol_livres'));
-                if(lista) {
-                    lista = lista.filter(j => j.uid !== uid);
-                    localStorage.setItem('brfutebol_livres', JSON.stringify(lista));
-                }
+                let lista = this.getAgentesLivres();
+                lista = lista.filter(j => j.uid !== uid);
+                localStorage.setItem('brfutebol_livres', JSON.stringify(lista));
             } else {
-                let lista = JSON.parse(localStorage.getItem('brfutebol_transferencias'));
-                if(lista) {
-                    lista = lista.filter(j => j.uid !== uid);
-                    localStorage.setItem('brfutebol_transferencias', JSON.stringify(lista));
-                }
+                let lista = this.getListaTransferencias();
+                lista = lista.filter(j => j.uid !== uid);
+                localStorage.setItem('brfutebol_transferencias', JSON.stringify(lista));
             }
         }
     },
-
+    
     // --- 8. SISTEMA FINANCEIRO E MENSAGENS ---
     sistema: {
         novaMensagem: function(titulo, corpo, tipo = 'info', acao = null) {
