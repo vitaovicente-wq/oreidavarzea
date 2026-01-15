@@ -1,4 +1,4 @@
-// ARQUIVO: engine.js (V7.2 - CORREÇÃO CRÍTICA DE INICIALIZAÇÃO)
+// ARQUIVO: engine.js (V8.0 - COMPLETO COM NEGOCIAÇÃO DE CLUBES)
 
 const Engine = {
     
@@ -11,7 +11,7 @@ const Engine = {
             return;
         }
 
-        // --- CORREÇÃO: INICIALIZA MERCADO VAZIO (REALISTA) ---
+        // --- RESET DO MERCADO (REALISTA) ---
         localStorage.setItem('brfutebol_livres', '[]');
         localStorage.setItem('brfutebol_transferencias', '[]');
 
@@ -29,16 +29,14 @@ const Engine = {
             if (!t.elenco || !Array.isArray(t.elenco)) t.elenco = [];
             
             t.elenco.forEach((jogador, idx) => {
-                // Garante UID único para cada jogador inicial
                 if (!jogador.uid) jogador.uid = `start_${t.nome.substring(0,3)}_${idx}_${Date.now()}`;
-
-                // 1. Define o contrato inicial
                 jogador.contrato = DATA_FIM_PADRAO;
-
-                // 2. Calcula e fixa o salário inicial
                 if (!jogador.salario) {
                     jogador.salario = (jogador.forca || 60) * 1500;
                 }
+                // Garante que todo jogador tenha stats zerados no inicio
+                jogador.jogos = 0;
+                jogador.gols = 0;
             });
         });
 
@@ -78,8 +76,6 @@ const Engine = {
         };
 
         this.salvarJogo(estadoDoJogo);
-        
-        // FIM DA INICIALIZAÇÃO (Sem chamar geradores antigos)
     },
 
     // --- 2. SISTEMA DE BUSCA ---
@@ -140,8 +136,8 @@ const Engine = {
                 this.sistema.gerarPropostaTransferencia(); 
                 
                 // --- MOVIMENTAÇÃO DO MERCADO DA CPU ---
-                this.Mercado.atualizarListaTransferencias(estadoJogo); // Põe gente a venda
-                this.Mercado.simularDispensasCPU(estadoJogo);       // Demite gente (cria livres)
+                this.Mercado.atualizarListaTransferencias(estadoJogo); 
+                this.Mercado.simularDispensasCPU(estadoJogo);       
                 
                 estadoJogo.recursos.rodadaFinanceiraProcessada = true;
             }
@@ -198,6 +194,10 @@ const Engine = {
             const pool = artilheiros.length > 0 ? artilheiros : timeObj.elenco;
             const sorteado = pool[Math.floor(Math.random() * pool.length)];
             nomeJog = sorteado.nome;
+            
+            // Atualiza stats do jogador no save (simulado)
+            // Nota: Isso exigiria carregar o save, encontrar o jogador e salvar de novo. 
+            // Para performance, em simulação de CPU massiva, geralmente só atualizamos tabela.
         } else {
             nomeJog = "Camisa " + (Math.floor(Math.random() * 10) + 2);
         }
@@ -308,7 +308,7 @@ const Engine = {
         }
     },
 
-    // --- 7. SISTEMA DE MERCADO (REALISTA) ---
+    // --- 7. SISTEMA DE MERCADO (REALISTA + NEGOCIAÇÃO DE CLUBES) ---
     Mercado: {
         getAgentesLivres: function() {
             const livres = localStorage.getItem('brfutebol_livres');
@@ -320,11 +320,46 @@ const Engine = {
             return transferencias ? JSON.parse(transferencias) : [];
         },
 
-        // Lógica: Times da CPU colocam jogadores à venda (Com Passe)
+        // --- NOVA FUNÇÃO: Avalia proposta de transferência (IA do Clube Vendedor) ---
+        avaliarTransferencia: function(jogador, meuTime) {
+            // Necessidade Financeira Aleatória (0 a 100)
+            const necessidadeFinanceira = Math.floor(Math.random() * 100);
+            
+            let valorBase = jogador.valor;
+            let postura = 'neutra';
+            
+            // Se for craque, valoriza e endurece
+            if (jogador.forca > 80) {
+                valorBase *= 1.3;
+                postura = 'dura';
+            } 
+            // Se o clube precisa de grana, facilita
+            else if (necessidadeFinanceira > 70) {
+                valorBase *= 0.85;
+                postura = 'flexivel';
+            }
+
+            // Seleciona jogadores do meu time que eles poderiam querer (Troca)
+            // IA: Busca jogadores da mesma posição ou mais jovens com potencial
+            const alvosTroca = meuTime.elenco.filter(j => 
+                (j.pos === jogador.pos && j.forca >= jogador.forca - 5) || 
+                (j.idade < 23 && j.forca > 70)
+            ).slice(0, 3); // Pega top 3 opções
+
+            return {
+                valorPedido: Math.floor(valorBase),
+                aceitaEmprestimo: jogador.forca < 75 || necessidadeFinanceira > 80,
+                aceitaTroca: true,
+                postura: postura,
+                paciencia: 4, // 4 rodadas de negociação
+                alvosTroca: alvosTroca
+            };
+        },
+
         atualizarListaTransferencias: function(game) {
             let lista = this.getListaTransferencias();
             
-            if(Math.random() > 0.7) { // 30% de chance por rodada
+            if(Math.random() > 0.7) { 
                 const timesCPU = game.times.filter(t => t.nome !== game.info.time);
                 const timeAleatorio = timesCPU[Math.floor(Math.random() * timesCPU.length)];
                 
@@ -337,12 +372,10 @@ const Engine = {
                     }
                 }
             }
-            
             if (lista.length > 20) lista.shift();
             localStorage.setItem('brfutebol_transferencias', JSON.stringify(lista));
         },
 
-        // Lógica: Times da CPU demitem jogadores (Vão para Livres)
         simularDispensasCPU: function(game) {
             let livres = this.getAgentesLivres();
             
@@ -355,7 +388,6 @@ const Engine = {
                     
                     if (candidatos.length > 0) {
                         const dispensado = candidatos[Math.floor(Math.random() * candidatos.length)];
-                        
                         timeAleatorio.elenco = timeAleatorio.elenco.filter(j => j.uid !== dispensado.uid);
                         
                         livres.push({
@@ -373,7 +405,6 @@ const Engine = {
                     }
                 }
             }
-            
             localStorage.setItem('brfutebol_livres', JSON.stringify(livres));
         },
 
@@ -416,7 +447,6 @@ const Engine = {
             if (mandante) {
                 const bilheteria = Engine.estadios.calcularBilheteria(adversario);
                 const renda = bilheteria.rendaTotal;
-                
                 game.recursos.dinheiro += renda;
                 game.financas.historico.push({ texto: `Bilheteria vs ${adversario}`, valor: renda, tipo: 'entrada' });
             }
