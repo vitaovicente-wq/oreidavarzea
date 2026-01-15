@@ -1,4 +1,4 @@
-// ARQUIVO: engine.js (V10.2 - CORREÇÃO DE SINTAXE E INICIALIZAÇÃO)
+// ARQUIVO: engine.js (V10.3 - CORREÇÃO DE SOBRESCRITA DE MENSAGENS)
 
 const Engine = {
     
@@ -11,11 +11,9 @@ const Engine = {
             return;
         }
 
-        // 1. Limpa o mercado antigo (Começa vazio - Realista)
         localStorage.setItem('brfutebol_livres', '[]');
         localStorage.setItem('brfutebol_transferencias', '[]');
 
-        // 2. Carrega Times
         let timesDaLiga = [];
         if (window.Database && window.Database.brasil && window.Database.brasil[divisao]) {
             timesDaLiga = JSON.parse(JSON.stringify(window.Database.brasil[divisao]));
@@ -23,7 +21,6 @@ const Engine = {
             timesDaLiga = this._gerarTimesGenericos(divisao);
         }
 
-        // 3. Configura Jogadores Iniciais
         const DATA_FIM_PADRAO = "31/12/2026";
         timesDaLiga.forEach(t => {
             if (!t.elenco || !Array.isArray(t.elenco)) t.elenco = [];
@@ -36,14 +33,12 @@ const Engine = {
             });
         });
 
-        // 4. Gera Calendário e Tabela
         const calendarioGerado = CalendarioSystem.gerarCampeonato(timesDaLiga);
         const classificacaoInicial = timesDaLiga.map(t => ({
             nome: t.nome, escudo: t.escudo || null,
             pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0
         }));
 
-        // --- CÁLCULO DE ORÇAMENTO BASEADO NO OVR ---
         const meuTimeTemp = timesDaLiga.find(t => t.nome === nomeTimeSelecionado);
         let somaOvr = 0;
         if(meuTimeTemp && meuTimeTemp.elenco.length > 0) {
@@ -60,7 +55,6 @@ const Engine = {
 
         const dataInicio = new Date('2026-01-01T12:00:00').getTime();
 
-        // 5. Cria o Estado Inicial do Save
         const estadoDoJogo = {
             info: {
                 tecnico: localStorage.getItem('brfutebol_tecnico') || "Manager",
@@ -89,12 +83,10 @@ const Engine = {
         };
 
         this.salvarJogo(estadoDoJogo);
-
-        // 6. GERA APENAS O E-MAIL DE BOAS VINDAS
         this.Contratos.enviarBoasVindas(estadoDoJogo);
     },
 
-    // --- 2. SISTEMA DE CONTRATOS E MENSAGENS AVANÇADO ---
+    // --- 2. SISTEMA DE CONTRATOS (CORRIGIDO) ---
     Contratos: {
         enviarBoasVindas: function(game) {
             const corpo = `
@@ -116,7 +108,8 @@ const Engine = {
         },
 
         liberarOfertasPatrocinio: function() {
-            const game = Engine.carregarJogo();
+            // CORREÇÃO CRÍTICA: Carrega jogo fresco
+            let game = Engine.carregarJogo();
             if(game.flags.patroEnviado) return;
 
             const baseVal = Math.floor(game.recursos.dinheiro * 0.15); 
@@ -125,7 +118,6 @@ const Engine = {
             const p2 = { id: 2, empresa: "BetWin365", mensal: Math.floor(baseVal * 0.7), luvas: Math.floor(baseVal * 8), bonusTitulo: Math.floor(baseVal * 20), duracao: 24, desc: "Luvas altíssimas agora. Mensal baixo." };
             const p3 = { id: 3, empresa: "NeoTech Systems", mensal: Math.floor(baseVal), luvas: Math.floor(baseVal * 4), bonusTitulo: Math.floor(baseVal * 8), duracao: 12, desc: "Proposta equilibrada." };
 
-            // Importante: .replace(/"/g, '&quot;') evita quebra de HTML
             const strP1 = JSON.stringify(p1).replace(/"/g, '&quot;');
             const strP2 = JSON.stringify(p2).replace(/"/g, '&quot;');
             const strP3 = JSON.stringify(p3).replace(/"/g, '&quot;');
@@ -168,12 +160,16 @@ const Engine = {
             `;
 
             Engine.sistema.novaMensagem("URGENTE: Definição de Patrocínio Master", html, 'patrocinio_oferta');
+            
+            // CORREÇÃO CRÍTICA: Recarrega o jogo APÓS a nova mensagem ter sido salva para não sobrescrever
+            game = Engine.carregarJogo(); 
             game.flags.patroEnviado = true;
             Engine.salvarJogo(game);
         },
 
         liberarOfertasTV: function() {
-            const game = Engine.carregarJogo();
+            // CORREÇÃO CRÍTICA
+            let game = Engine.carregarJogo();
             if(game.flags.tvEnviado) return;
 
             const baseCota = Math.floor(game.recursos.dinheiro * 0.10);
@@ -207,6 +203,9 @@ const Engine = {
             `;
 
             Engine.sistema.novaMensagem("Direitos de Transmissão: Propostas", html, 'tv_oferta');
+            
+            // CORREÇÃO CRÍTICA
+            game = Engine.carregarJogo();
             game.flags.tvEnviado = true;
             Engine.salvarJogo(game);
         },
@@ -422,7 +421,7 @@ const Engine = {
         }
     },
 
-    // --- 9. MENSAGENS E FINANÇAS ---
+    // --- 9. SISTEMA FINANCEIRO E MENSAGENS ---
     sistema: {
         novaMensagem: function(titulo, corpo, tipo = 'info', acao = null) {
             const game = Engine.carregarJogo();
@@ -434,16 +433,13 @@ const Engine = {
         processarRodadaFinanceira: function(game, mandante, adversario) {
             if (!game.financas) game.financas = { saldo: 0, historico: [] };
             
-            // 1. Bilheteria
             if (mandante) {
                 const bilheteria = Engine.estadios.calcularBilheteria(adversario);
                 game.recursos.dinheiro += bilheteria.rendaTotal;
                 game.financas.historico.push({ texto: `Bilheteria vs ${adversario}`, valor: bilheteria.rendaTotal, tipo: 'entrada' });
             }
 
-            // 2. Pagamento Mensal (A cada 4 rodadas - "Mês")
             if (game.rodadaAtual % 4 === 0) {
-                // Patrocínios e TV
                 if (game.contratos && game.contratos.patrocinio) {
                     const val = game.contratos.patrocinio.mensal;
                     game.recursos.dinheiro += val;
@@ -455,7 +451,6 @@ const Engine = {
                     game.financas.historico.push({ texto: `Cota de TV`, valor: val, tipo: 'entrada' });
                 }
 
-                // Salários
                 let folha = 0;
                 const meuTime = game.times.find(t => t.nome === game.info.time);
                 if(meuTime && meuTime.elenco) meuTime.elenco.forEach(j => folha += j.salario);
@@ -464,7 +459,6 @@ const Engine = {
                 game.financas.historico.push({ texto: `Folha Salarial`, valor: -folha, tipo: 'saida' });
             }
 
-            // 3. Custos Fixos por jogo
             const custo = 50000; 
             game.recursos.dinheiro -= custo;
             game.financas.historico.push({ texto: `Custos Jogo`, valor: -custo, tipo: 'saida' });
@@ -485,7 +479,6 @@ const Engine = {
             const msg = game.mensagens.find(m => m.id === msgId);
             if(msg && !msg.acao.processada) {
                 game.recursos.dinheiro += msg.acao.valor;
-                // Remover do time... (simplificado)
                 msg.acao.processada = true;
                 Engine.salvarJogo(game);
                 alert("Vendido!");
