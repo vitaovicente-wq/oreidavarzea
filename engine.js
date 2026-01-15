@@ -125,7 +125,7 @@ const Engine = {
 
         tabela.sort((a, b) => b.pts - a.pts || b.v - a.v || b.sg - a.sg || b.gp - a.gp);
         
-        // HOOK FINANCEIRO E DE MERCADO
+      // HOOK FINANCEIRO E DE MERCADO
         const rodadaIdx = estadoJogo.rodadaAtual - 1;
         if(estadoJogo.calendario[rodadaIdx]) {
             const jogoPlayer = estadoJogo.calendario[rodadaIdx].jogos.find(j => j.mandante === estadoJogo.info.time || j.visitante === estadoJogo.info.time);
@@ -138,15 +138,12 @@ const Engine = {
                 // Processa finanças
                 this.sistema.processarRodadaFinanceira(estadoJogo, isMandante, adversario);
                 
-                // Gera ofertas PELOS seus jogadores
+                // Gera ofertas PELOS seus jogadores (Outros times querendo comprar os seus)
                 this.sistema.gerarPropostaTransferencia(); 
                 
-                // Atualiza o mercado GLOBAL (novos jogadores livres/transferências)
-                // A cada 3 rodadas, renova o mercado
-                if (estadoJogo.rodadaAtual % 3 === 0) {
-                    localStorage.removeItem('brfutebol_transferencias'); // Força gerar novos
-                    this.Mercado.gerarListaTransferencias(estadoJogo);
-                }
+                // --- MOVIMENTAÇÃO DO MERCADO DA CPU ---
+                this.Mercado.atualizarListaTransferencias(estadoJogo); // Põe gente a venda
+                this.Mercado.simularDispensasCPU(estadoJogo);       // Demite gente (cria livres)
                 
                 estadoJogo.recursos.rodadaFinanceiraProcessada = true;
             }
