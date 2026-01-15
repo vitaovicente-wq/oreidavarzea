@@ -11,7 +11,7 @@
         :root {
             --bg-dark: #0f1216; --sidebar-bg: #161b22; --card-bg: #1e2329; --neon-green: #00ff88;
             --text-main: #ffffff; --text-muted: #8b949e; --border: #30363d; --gold: #f1c40f;
-            --red: #ff4757; --blue: #3498db; --purple: #9b59b6;
+            --red: #ff4757; --blue: #3498db; --msg-user: #238636; --msg-cpu: #21262d;
         }
 
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
@@ -26,65 +26,92 @@
 
         .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
 
-        /* MARKET UI */
-        .market-header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
-        .money-val { font-family: 'Rajdhani'; font-size: 1.8rem; color: var(--neon-green); font-weight: 700; }
-        
-        .tabs-container { display: flex; gap: 10px; border-bottom: 1px solid var(--border); }
-        .tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 15px 30px; font-family: 'Rajdhani'; font-weight: 700; font-size: 1.2rem; cursor: pointer; position: relative; }
+        /* ABAS */
+        .tabs-container { display: flex; gap: 10px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+        .tab-btn {
+            background: transparent; border: none; color: var(--text-muted); 
+            padding: 15px 30px; font-family: 'Rajdhani'; font-weight: 700; font-size: 1.2rem; 
+            cursor: pointer; position: relative;
+        }
         .tab-btn.active { color: #fff; }
-        .tab-btn.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background: var(--neon-green); }
+        .tab-btn.active::after {
+            content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 3px; background: var(--neon-green);
+        }
 
+        /* HEADER FINANCEIRO */
+        .market-header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border); }
+        .money-box { text-align: right; }
+        .money-val { font-family: 'Rajdhani'; font-size: 1.8rem; color: var(--neon-green); font-weight: 700; }
+
+        /* LISTAGEM */
         .market-list { display: flex; flex-direction: column; gap: 10px; }
-        .player-row { display: flex; align-items: center; justify-content: space-between; background: var(--card-bg); padding: 15px 20px; border-radius: 8px; border: 1px solid var(--border); transition: 0.2s; }
-        .player-row:hover { border-color: var(--neon-green); transform: translateX(5px); }
         
+        .player-row {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--card-bg); padding: 15px 20px; border-radius: 8px; border: 1px solid var(--border);
+            transition: 0.2s;
+        }
+        .player-row:hover { border-color: var(--neon-green); transform: translateX(5px); }
+
         .p-info { display: flex; align-items: center; gap: 20px; flex: 1; }
         .p-ovr { font-family: 'Rajdhani'; font-weight: 900; font-size: 1.5rem; color: var(--gold); width: 40px; text-align: center; }
         .p-pos { font-size: 0.8rem; font-weight: 800; background: #333; color: #fff; padding: 3px 8px; border-radius: 4px; }
         .p-name { font-weight: 700; font-size: 1.1rem; }
-        .p-club { color: var(--blue); font-size: 0.9rem; font-weight: 600; }
+        .p-age { color: #888; font-size: 0.9rem; }
+        .p-club { color: var(--blue); font-size: 0.9rem; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+
         .p-price { text-align: right; margin-right: 20px; }
+        .price-label { font-size: 0.7rem; color: #666; text-transform: uppercase; display: block; }
         .price-val { font-family: 'Rajdhani'; font-weight: 700; font-size: 1.2rem; color: #fff; }
 
-        .btn-action { background: transparent; border: 1px solid var(--border); color: #fff; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .btn-action {
+            background: transparent; border: 1px solid var(--border); color: #fff;
+            padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: 600;
+            transition: 0.2s;
+        }
         .btn-action:hover { background: var(--neon-green); color: #000; border-color: var(--neon-green); }
         .btn-free { border-color: var(--neon-green); color: var(--neon-green); }
         .btn-free:hover { background: var(--neon-green); color: #000; }
 
-        /* --- MODAL DE NEGOCIAÇÃO ENTRE CLUBES (NOVO) --- */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; }
-        .club-neg-card { width: 900px; height: 600px; background: #161b22; border: 1px solid #444; border-radius: 12px; display: flex; overflow: hidden; box-shadow: 0 0 60px rgba(0,0,0,0.8); }
+        /* --- MODAL DE NEGOCIAÇÃO IMERSIVO --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 2000; display: none; align-items: center; justify-content: center; }
+        .neg-card { width: 950px; height: 650px; background: #121519; border: 1px solid #444; border-radius: 12px; display: flex; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
         
-        .club-left { width: 300px; background: #0f1216; padding: 25px; border-right: 1px solid #333; display: flex; flex-direction: column; }
-        .club-right { flex: 1; padding: 25px; display: flex; flex-direction: column; }
-
-        .neg-header-club { text-align: center; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 20px; }
-        .club-shield-ph { font-size: 3rem; margin-bottom: 10px; }
-        .club-name-ph { font-family: 'Rajdhani'; font-weight: 800; font-size: 1.5rem; }
-        .neg-response-box { background: #1e2329; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-top: auto; min-height: 100px; font-style: italic; color: #ccc; }
+        /* Lateral Esquerda (Info do Jogador) */
+        .neg-sidebar { width: 300px; background: #161b22; border-right: 1px solid #333; padding: 30px 20px; display: flex; flex-direction: column; gap: 20px; }
+        .neg-header-info { border-bottom: 1px solid #333; padding-bottom: 20px; }
+        .neg-p-name { font-family: 'Rajdhani'; font-weight: 800; font-size: 2rem; color: #fff; line-height: 1; margin-bottom: 5px; }
+        .neg-p-details { font-size: 0.9rem; color: #888; display: flex; gap: 10px; align-items: center; }
+        .neg-pos-tag { background: #333; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
+        .neg-ovr-box { font-family: 'Rajdhani'; font-weight: 900; font-size: 2.5rem; color: var(--gold); margin-top: 10px; }
         
-        .offer-form { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        .form-label { display: block; font-size: 0.8rem; color: #888; text-transform: uppercase; margin-bottom: 5px; }
-        .form-input { width: 100%; padding: 10px; background: #0d1117; border: 1px solid #444; color: #fff; border-radius: 4px; box-sizing: border-box; }
-        .form-select { width: 100%; padding: 10px; background: #0d1117; border: 1px solid #444; color: #fff; border-radius: 4px; }
+        .neg-status-box { padding: 10px 15px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid #333; font-size: 0.9rem; color: #aaa; }
+        .neg-status-label { display: block; font-size: 0.7rem; text-transform: uppercase; color: #666; margin-bottom: 5px; }
+        .neg-status-val { font-weight: bold; color: #fff; }
 
-        .percent-slider { width: 100%; accent-color: var(--neon-green); }
-        .percent-val { text-align: right; color: var(--neon-green); font-weight: bold; }
+        /* Área Direita (Chat) */
+        .neg-chat-area { flex: 1; display: flex; flex-direction: column; background: #0f1216; }
+        .neg-header { padding: 15px 25px; border-bottom: 1px solid #333; background: #161b22; font-family: 'Rajdhani'; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        .neg-close-btn { background: none; border: none; color: #666; font-size: 1.2rem; cursor: pointer; }
+        .neg-close-btn:hover { color: #fff; }
 
-        .btn-offer { width: 100%; padding: 15px; background: var(--blue); color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 1.1rem; margin-top: 10px; }
-        .btn-offer:hover { background: #2980b9; }
-        .btn-cancel { width: 100%; padding: 15px; background: transparent; border: 1px solid #444; color: #ccc; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .chat-feed { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+        .msg { max-width: 80%; padding: 12px 18px; border-radius: 12px; font-size: 0.95rem; line-height: 1.4; animation: popIn 0.3s ease; }
+        .msg.cpu { align-self: flex-start; background: var(--msg-cpu); border-bottom-left-radius: 2px; border: 1px solid #333; color: #ddd; }
+        .msg.user { align-self: flex-end; background: var(--msg-user); border-bottom-right-radius: 2px; color: #fff; font-weight: 600; }
+        .msg.system { align-self: center; background: rgba(255,255,255,0.05); color: #aaa; font-size: 0.8rem; padding: 5px 15px; border-radius: 20px; }
+        @keyframes popIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- MODAL DE JOGADOR (REUTILIZADO V2) --- */
-        #neg-modal .neg-card { background: #121519; }
-        /* (CSS do chat do jogador mantido igual ao anterior, omitido aqui para economizar espaço, mas necessário) */
-        .chat-feed { height: 300px; overflow-y: auto; background: #0f1216; padding: 15px; margin-bottom: 15px; border: 1px solid #333; border-radius: 8px; }
-        .msg { padding: 10px 15px; margin-bottom: 10px; border-radius: 8px; max-width: 80%; }
-        .msg.cpu { background: #21262d; align-self: flex-start; color: #ddd; }
-        .msg.user { background: #238636; align-self: flex-end; margin-left: auto; color: #fff; }
-        .neg-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .neg-controls { padding: 20px; border-top: 1px solid #333; background: #161b22; min-height: 120px; display: flex; flex-direction: column; justify-content: center; }
+        .opt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .opt-btn { background: #222; border: 1px solid #444; color: #ccc; padding: 12px; border-radius: 6px; cursor: pointer; font-family: 'Inter'; font-size: 0.9rem; transition: 0.2s; text-align: left; }
+        .opt-btn:hover { background: #333; border-color: #666; color: #fff; }
+        .opt-btn.confirm { background: var(--neon-green); color: #000; border-color: var(--neon-green); font-weight: 700; text-align: center; }
+        .opt-btn.cancel { background: var(--red); color: #fff; border-color: var(--red); font-weight: 700; text-align: center; }
+
+        .input-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+        .neg-input { background: #000; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 4px; font-family: 'Rajdhani'; font-size: 1.1rem; }
+        .range-slider { width: 100%; cursor: pointer; accent-color: var(--neon-green); }
     </style>
 </head>
 <body>
@@ -98,125 +125,89 @@
         <a class="menu-btn" href="classificacao.html">🏆 Classificação</a>
         <a class="menu-btn" href="estadio.html">🏟️ Estádio</a>
         <a class="menu-btn" href="financeiro.html">💰 Finanças</a>
-        <a class="menu-btn" href="mensagens.html">📩 Mensagens</a>
+        <a class="menu-btn" href="mensagens.html">📩 Mensagens <span id="badge-msg" class="badge">0</span></a>
         <a class="menu-btn logout" href="index.html">✖ Sair</a>
     </nav>
 
     <main class="main-content">
+        
         <div class="market-header">
             <div>
-                <h2 style="margin:0; font-family:'Rajdhani';">Mercado da Bola</h2>
-                <span style="color:#888;">Temporada 2026</span>
+                <h2 style="margin:0; font-family:'Rajdhani';">Central de Transferências</h2>
+                <span style="color:#888;">Reforce seu elenco para a temporada</span>
             </div>
             <div class="money-box">
-                <span style="font-size:0.8rem; color:#888;">CAIXA DISPONÍVEL</span><br>
+                <span class="price-label">Orçamento Disponível</span>
                 <span class="money-val" id="money-display">R$ 0,00</span>
             </div>
         </div>
 
         <div class="tabs-container">
-            <button class="tab-btn active" onclick="mudarAba('livres')">Agentes Livres</button>
-            <button class="tab-btn" onclick="mudarAba('clubes')">Transferências</button>
+            <button class="tab-btn active" onclick="mudarAba('livres')">Jogadores Livres</button>
+            <button class="tab-btn" onclick="mudarAba('clubes')">Lista de Transferências</button>
         </div>
 
-        <div id="lista-jogadores" class="market-list"></div>
+        <div id="lista-jogadores" class="market-list">
+            </div>
+
     </main>
 
-    <div id="modal-clube" class="modal-overlay">
-        <div class="club-neg-card">
-            <div class="club-left">
-                <div class="neg-header-club">
-                    <div class="club-shield-ph">🛡️</div>
-                    <div class="club-name-ph" id="club-target-name">Nome do Clube</div>
-                    <div style="color:var(--gold); font-size:0.9rem; margin-top:5px;">Dono do Passe</div>
-                </div>
-                
-                <div style="margin-top:20px;">
-                    <div style="font-size:0.8rem; color:#888;">JOGADOR ALVO</div>
-                    <div style="font-size:1.2rem; font-weight:bold;" id="club-player-name">Nome Jogador</div>
-                    <div style="font-size:0.9rem; color:var(--neon-green);" id="club-player-val">Valor: R$ 0</div>
+    <div id="neg-modal" class="modal-overlay">
+        <div class="neg-card">
+            <div class="neg-sidebar">
+                <div class="neg-header-info">
+                    <div class="neg-p-name" id="neg-name">Nome Jogador</div>
+                    <div class="neg-p-details">
+                        <span class="neg-pos-tag" id="neg-pos">POS</span>
+                        <span id="neg-age">00 anos</span>
+                    </div>
+                    <div class="neg-ovr-box" id="neg-ovr">00</div>
                 </div>
 
-                <div class="neg-response-box" id="club-response">
-                    "Estamos dispostos a ouvir propostas, mas não vamos facilitar."
+                <div class="neg-status-box">
+                    <span class="neg-status-label">Último Clube</span>
+                    <span class="neg-status-val" id="neg-last-club">---</span>
+                </div>
+
+                <div style="display:flex; gap:10px;">
+                    <div class="neg-status-box" style="flex:1;">
+                        <span class="neg-status-label">Jogos</span>
+                        <span class="neg-status-val" id="neg-stats-jogos">0</span>
+                    </div>
+                    <div class="neg-status-box" style="flex:1;">
+                        <span class="neg-status-label">Gols</span>
+                        <span class="neg-status-val" id="neg-stats-gols">0</span>
+                    </div>
+                </div>
+                
+                <div class="neg-status-box" style="margin-top:auto;">
+                    <span class="neg-status-label">Humor na Negociação</span>
+                    <span class="neg-status-val" id="neg-patience-display" style="color:var(--neon-green)">😊 Interessado</span>
                 </div>
             </div>
-
-            <div class="club-right">
-                <h3 style="margin-top:0; border-bottom:1px solid #333; padding-bottom:10px;">Configurar Proposta</h3>
-                
-                <div class="offer-form">
-                    <div class="form-group">
-                        <label class="form-label">Modalidade</label>
-                        <select id="input-tipo" class="form-select" onchange="toggleEmprestimo()">
-                            <option value="compra">Compra Definitiva</option>
-                            <option value="emprestimo">Empréstimo (1 Ano)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Direitos Econômicos (%)</label>
-                        <input type="range" id="input-percent" class="percent-slider" min="50" max="100" value="100" step="10" oninput="atualizarPercent(this.value)">
-                        <div class="percent-val" id="percent-display">100%</div>
-                    </div>
+            
+            <div class="neg-chat-area">
+                <div class="neg-header">
+                    <span>Mesa de Negociação</span>
+                    <button class="neg-close-btn" onclick="fecharNegociacao()">✕</button>
                 </div>
-
-                <div class="offer-form">
-                    <div class="form-group">
-                        <label class="form-label">Valor de Entrada (R$)</label>
-                        <input type="number" id="input-entrada" class="form-input">
+                <div class="chat-feed" id="chat-feed">
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Parcelas Restantes</label>
-                        <select id="input-parcelas" class="form-select">
-                            <option value="0">À Vista (0x)</option>
-                            <option value="6">6x Mensais</option>
-                            <option value="12">12x Mensais</option>
-                        </select>
+                <div class="neg-controls" id="neg-controls">
                     </div>
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">Incluir Jogador na Troca (Opcional)</label>
-                    <select id="input-troca" class="form-select">
-                        <option value="">Nenhum</option>
-                        </select>
-                </div>
-
-                <div style="margin-top:auto;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.9rem;">
-                        <span>Total da Proposta:</span>
-                        <span id="total-proposta" style="color:var(--blue); font-weight:bold;">R$ 0</span>
-                    </div>
-                    <button class="btn-offer" onclick="fazerOfertaClube()">ENVIAR PROPOSTA AO CLUBE</button>
-                    <button class="btn-cancel" onclick="fecharModalClube()">CANCELAR</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-jogador" class="modal-overlay">
-        <div class="club-neg-card" style="height:500px; background:#111;">
-            <div style="padding:30px; width:100%; display:flex; flex-direction:column;">
-                <h2 style="text-align:center;">Negociação de Contrato</h2>
-                <p style="text-align:center; color:#888;">O clube aceitou! Agora acerte os salários com <strong id="neg-player-name">--</strong>.</p>
-                
-                <div class="chat-feed" id="chat-feed"></div>
-                
-                <div class="neg-controls">
-                    <input type="number" id="input-salario-final" class="form-input" placeholder="Salário Mensal (R$)">
-                    <button class="btn-action" style="background:var(--neon-green); color:#000;" onclick="finalizarTudo()">ASSINAR CONTRATO</button>
-                </div>
             </div>
         </div>
     </div>
 
     <script>
         let abaAtual = 'livres';
-        let negociacaoAtual = { 
-            jogadorAlvo: null, 
-            dadosClube: null, 
-            tentativas: 3,
-            valorMinimo: 0 
+        // Variável de controle de negociação
+        let currentNeg = { 
+            player: null, 
+            expectations: {}, 
+            offer: {},
+            patience: 3, // Sistema de 3 strikes
+            maxPatience: 3
         };
 
         window.onload = function() {
@@ -228,16 +219,8 @@
             const game = Engine.carregarJogo();
             document.getElementById('money-display').innerText = (game.recursos.dinheiro || 0).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
             
-            // Popula select de troca com jogadores do meu time
-            const meuTime = Engine.encontrarTime(game.info.time);
-            const selectTroca = document.getElementById('input-troca');
-            selectTroca.innerHTML = '<option value="">Nenhum</option>';
-            meuTime.elenco.forEach(j => {
-                const opt = document.createElement('option');
-                opt.value = j.uid;
-                opt.innerText = `${j.pos} - ${j.nome} (OVR ${j.forca})`;
-                selectTroca.appendChild(opt);
-            });
+            if(!localStorage.getItem('brfutebol_livres')) localStorage.setItem('brfutebol_livres', '[]');
+            if(!localStorage.getItem('brfutebol_transferencias')) localStorage.setItem('brfutebol_transferencias', '[]');
         }
 
         function mudarAba(aba) {
@@ -254,7 +237,7 @@
             else lista = Engine.Mercado.getListaTransferencias();
 
             if (lista.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding:40px; color:#666;"><h3>Lista Vazia.</h3></div>`;
+                container.innerHTML = `<div style="text-align:center; padding:40px; color:#666;"><h3>Nenhum jogador encontrado.</h3></div>`;
                 return;
             }
 
@@ -262,9 +245,21 @@
                 const div = document.createElement('div');
                 div.className = 'player-row';
                 
-                let custoTexto = aba === 'livres' ? `<span style="color:var(--neon-green)">Sem Custo</span>` : `<span class="price-val">${j.valor.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</span>`;
-                let btnText = aba === 'livres' ? "ASSINAR" : "NEGOCIAR";
-                let btnFunc = aba === 'livres' ? `iniciarNegociacaoJogador('${j.uid}')` : `iniciarNegociacaoClube('${j.uid}')`;
+                let custoTexto = "";
+                let botaoTexto = "";
+                let botaoClass = "";
+
+                if (aba === 'livres') {
+                    custoTexto = `<span class="price-val" style="color:var(--neon-green);">Grátis</span>`;
+                    botaoTexto = "NEGOCIAR";
+                    botaoClass = "btn-free";
+                } else {
+                    custoTexto = `<span class="price-val">${j.valor.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</span>`;
+                    botaoTexto = "COMPRAR";
+                    botaoClass = "btn-action";
+                }
+
+                const clubeLabel = j.clube ? `🛡️ ${j.clube}` : `⚠️ Sem Clube`;
 
                 div.innerHTML = `
                     <div class="p-info">
@@ -274,206 +269,300 @@
                                 <div class="p-name">${j.nome}</div>
                                 <div class="p-pos">${j.pos}</div>
                             </div>
-                            <div class="p-club">${j.clube || 'Sem Clube'} • ${j.idade} anos</div>
+                            <div class="p-age">${j.idade} anos • ${clubeLabel}</div>
                         </div>
                     </div>
-                    <div class="p-price">${custoTexto}</div>
-                    <button class="btn-action" onclick="${btnFunc}">${btnText}</button>
+                    <div class="p-price">
+                        <span class="price-label">${aba === 'livres' ? 'Passe' : 'Valor'}</span>
+                        ${custoTexto}
+                    </div>
+                    <button class="${botaoClass}" onclick='verificarCompra(${JSON.stringify(j)})'>
+                        ${botaoTexto}
+                    </button>
                 `;
                 container.appendChild(div);
             });
         }
 
-        // --- FASE 1: CLUBE ---
-
-        function iniciarNegociacaoClube(uid) {
+        function verificarCompra(jogador) {
             const game = Engine.carregarJogo();
-            const lista = Engine.Mercado.getListaTransferencias();
-            const jogador = lista.find(j => j.uid === uid);
-            const meuTime = Engine.encontrarTime(game.info.time);
+            if (abaAtual === 'clubes') {
+                if (game.recursos.dinheiro < jogador.valor) {
+                    alert(`❌ Saldo insuficiente. O clube pede R$ ${jogador.valor.toLocaleString()}.`);
+                    return;
+                }
+                if(confirm(`Pagar R$ ${jogador.valor.toLocaleString()} ao ${jogador.clube} para negociar com ${jogador.nome}?`)) {
+                    game.recursos.dinheiro -= jogador.valor;
+                    Engine.salvarJogo(game);
+                    document.getElementById('money-display').innerText = game.recursos.dinheiro.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+                    abrirModalNegociacao(jogador);
+                }
+            } else {
+                abrirModalNegociacao(jogador);
+            }
+        }
 
-            if (!jogador) return;
+        // --- SISTEMA DE CHAT E LÓGICA DE NEGOCIAÇÃO ---
 
-            // Gera dados da negociação (IA do Clube)
-            const dadosIA = Engine.Mercado.avaliarTransferencia(jogador, meuTime);
+        function abrirModalNegociacao(jogador) {
+            // Definição de Expectativas
+            const fatorSalario = abaAtual === 'livres' ? 1700 : 1500;
+            const salarioDesejado = Math.floor((jogador.forca * fatorSalario));
             
-            negociacaoAtual = {
-                jogadorAlvo: jogador,
-                dadosClube: dadosIA,
-                tentativas: 3
+            // Luvas: Pelo menos 2x o salário se for livre, 1x se for compra
+            const luvasDesejadas = abaAtual === 'livres' ? (salarioDesejado * 2) : salarioDesejado;
+
+            currentNeg = { 
+                player: jogador, 
+                expectations: {
+                    salary: salarioDesejado,
+                    bonus: luvasDesejadas,
+                    years: 2,
+                    role: jogador.forca > 80 ? 'Titular Absoluto' : 'Rotação'
+                },
+                offer: {},
+                patience: 3, // Reseta paciência
+                maxPatience: 3
             };
 
-            // Preenche Modal
-            document.getElementById('club-target-name').innerText = jogador.clube;
-            document.getElementById('club-player-name').innerText = jogador.nome;
-            document.getElementById('club-player-val').innerText = "Valor Estimado: " + jogador.valor.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-            document.getElementById('input-entrada').value = jogador.valor; // Sugestão inicial
-            document.getElementById('club-response').innerText = "Diretor Esportivo: 'Estamos dispostos a ouvir propostas, mas não vamos facilitar a saída de um atleta nosso.'";
-            document.getElementById('club-response').style.color = "#ccc";
-
-            document.getElementById('modal-clube').style.display = 'flex';
-        }
-
-        function atualizarPercent(val) {
-            document.getElementById('percent-display').innerText = val + "%";
-        }
-
-        function toggleEmprestimo() {
-            const tipo = document.getElementById('input-tipo').value;
-            const inputPercent = document.getElementById('input-percent');
+            // Preenche UI Lateral com NOVOS DADOS
+            document.getElementById('neg-name').innerText = jogador.nome;
+            document.getElementById('neg-ovr').innerText = jogador.forca;
+            document.getElementById('neg-age').innerText = jogador.idade + " anos";
+            document.getElementById('neg-pos').innerText = jogador.pos;
             
-            if (tipo === 'emprestimo') {
-                inputPercent.value = 100;
-                inputPercent.disabled = true;
-                document.getElementById('percent-display').innerText = "100% (Temporário)";
+            // Novos Campos
+            document.getElementById('neg-last-club').innerText = jogador.clube || "Sem Clube";
+            document.getElementById('neg-stats-jogos').innerText = jogador.jogos || 0;
+            document.getElementById('neg-stats-gols').innerText = jogador.gols || 0;
+            
+            updatePatienceUI();
+
+            document.getElementById('chat-feed').innerHTML = '';
+            document.getElementById('neg-modal').style.display = 'flex';
+
+            if (abaAtual === 'livres') {
+                addMsg('cpu', `Estou livre no mercado e analisando propostas. O que seu clube tem a oferecer?`);
             } else {
-                inputPercent.disabled = false;
+                addMsg('cpu', `Fiquei sabendo que vocês pagaram minha multa. Vamos discutir meu contrato pessoal.`);
             }
+            
+            showOptions('papel');
         }
 
-        function fazerOfertaClube() {
-            const entrada = parseFloat(document.getElementById('input-entrada').value);
-            const parcelas = parseInt(document.getElementById('input-parcelas').value);
-            const percentual = parseInt(document.getElementById('input-percent').value);
-            const trocaUid = document.getElementById('input-troca').value;
-            const tipo = document.getElementById('input-tipo').value;
+        function updatePatienceUI() {
+            const p = currentNeg.patience;
+            const el = document.getElementById('neg-patience-display');
+            if(p === 3) { el.innerText = "😊 Interessado"; el.style.color = "var(--neon-green)"; }
+            else if(p === 2) { el.innerText = "😐 Neutro"; el.style.color = "yellow"; }
+            else if(p === 1) { el.innerText = "😠 Irritado"; el.style.color = "orange"; }
+            else { el.innerText = "🤬 Furioso"; el.style.color = "var(--red)"; }
+        }
 
-            const responseBox = document.getElementById('club-response');
-            const jogador = negociacaoAtual.jogadorAlvo;
-            const ia = negociacaoAtual.dadosClube;
+        function fecharNegociacao() {
+            document.getElementById('neg-modal').style.display = 'none';
+        }
 
-            // 1. Validação de Dinheiro
-            const game = Engine.carregarJogo();
-            if (entrada > game.recursos.dinheiro) {
-                responseBox.innerText = "Financeiro: 'Não temos esse valor em caixa para a entrada.'";
-                responseBox.style.color = "var(--red)";
+        function addMsg(who, text) {
+            const d = document.createElement('div');
+            d.className = `msg ${who}`;
+            d.innerText = text;
+            const feed = document.getElementById('chat-feed');
+            feed.appendChild(d);
+            feed.scrollTop = feed.scrollHeight;
+        }
+
+        function showOptions(step) {
+            const area = document.getElementById('neg-controls');
+            area.innerHTML = '';
+
+            if (currentNeg.patience <= 0) {
+                // Se acabou a paciência, encerra
+                addMsg('system', 'O jogador encerrou as negociações.');
+                area.innerHTML = `<div class="opt-btn cancel" onclick="fecharNegociacao()">Sair</div>`;
                 return;
             }
 
-            // 2. Cálculo do Valor Total da Proposta
-            let valorTotalOferta = entrada;
-            
-            // Juros simples em parcelas (só para cálculo de valor percebido pelo clube vendedor)
-            // Clube prefere à vista. Parcelado vale menos na "visão" deles.
-            if (parcelas > 0) valorTotalOferta *= 0.95; 
-
-            // Valor do Jogador de Troca
-            if (trocaUid) {
-                const meuTime = Engine.encontrarTime(game.info.time);
-                const jogadorTroca = meuTime.elenco.find(j => j.uid === trocaUid);
-                if (jogadorTroca) {
-                    const valorTroca = Math.floor(Math.pow(jogadorTroca.forca, 3) * 15);
-                    valorTotalOferta += valorTroca;
-                }
-            }
-
-            // Ajuste pelo percentual (Se comprar 50%, oferta vale como se fosse 100% pro calculo comparativo)
-            const valorComparativo = valorTotalOferta * (100 / percentual);
-
-            // 3. IA Decide
-            negociacaoAtual.tentativas--;
-
-            if (tipo === 'emprestimo' && !ia.aceitaEmprestimo) {
-                responseBox.innerText = "Diretor: 'Não temos interesse em emprestar este atleta. Apenas venda definitiva.'";
-                responseBox.style.color = "orange";
+            if (step === 'papel') {
+                area.innerHTML = `
+                    <div class="input-group"><span class="input-label">Papel no Time</span>
+                    <select id="sel-role" class="neg-input">
+                        <option>Titular Absoluto</option><option selected>Importante</option><option>Rotação</option><option>Reserva</option>
+                    </select></div>
+                    <div class="opt-btn confirm" onclick="verificarPapel()">Confirmar Papel</div>`;
             } 
-            else if (percentual < 50) {
-                responseBox.innerText = "Diretor: 'Vender menos de 50% dos direitos não faz sentido para nós.'";
-                responseBox.style.color = "orange";
+            else if (step === 'duracao') {
+                area.innerHTML = `
+                    <div class="input-group"><span class="input-label">Anos de Contrato</span>
+                    <input type="range" min="1" max="5" value="2" class="range-slider" oninput="this.nextElementSibling.innerText = this.value + ' anos'">
+                    <div style="text-align:center; color:var(--neon-green)">2 anos</div></div>
+                    <div class="opt-btn confirm" onclick="definirDuracao()">Oferecer Duração</div>`;
+            } 
+            else if (step === 'salario') {
+                area.innerHTML = `
+                    <div class="input-group"><span class="input-label">Salário Mensal (R$)</span>
+                    <input type="number" id="input-sal" class="neg-input" value="${currentNeg.expectations.salary}" min="0"></div>
+                    <div class="opt-btn confirm" onclick="definirSalario()">Fazer Oferta</div>`;
+            } 
+            else if (step === 'luvas') {
+                area.innerHTML = `
+                    <div class="input-group"><span class="input-label">Luvas (Bônus de Assinatura)</span>
+                    <input type="number" id="input-bon" class="neg-input" value="${currentNeg.expectations.bonus}" min="0"></div>
+                    <div class="opt-btn confirm" onclick="fecharAcordo()">Finalizar Contrato</div>`;
             }
-            else if (valorComparativo >= ia.valorPedido * 0.95) {
-                // SUCESSO!
-                responseBox.innerText = "Diretor: 'A proposta atende nossas expectativas. O clube aceita a negociação.'";
-                responseBox.style.color = "var(--neon-green)";
+            else if (step === 'fim') {
+                area.innerHTML = `<div class="opt-btn confirm" onclick="concluirNegocio()">Assinar e Fechar</div>`;
+            }
+        }
+
+        // --- LÓGICA DE INTELIGÊNCIA ---
+
+        function diminuirPaciencia(qtd, motivo) {
+            currentNeg.patience -= qtd;
+            updatePatienceUI();
+            
+            if (currentNeg.patience <= 0) {
                 setTimeout(() => {
-                    fecharModalClube();
-                    iniciarNegociacaoJogador(jogador.uid, true); // true = vindo de clube
-                }, 1500);
-                return;
-            } 
-            else {
-                // RECUSA
-                if (negociacaoAtual.tentativas <= 0) {
-                    responseBox.innerText = "Diretor: 'Nossas posições estão muito distantes. Encerramos as conversas por aqui.'";
-                    responseBox.style.color = "var(--red)";
-                    setTimeout(fecharModalClube, 2000);
-                } else {
-                    // Contraproposta ou Dica
-                    let dica = "";
-                    if (valorComparativo < ia.valorPedido * 0.6) dica = "Essa oferta é ofensiva.";
-                    else if (valorComparativo < ia.valorPedido * 0.8) dica = "Precisam melhorar consideravelmente os valores.";
-                    else dica = "Estamos quase lá, façam um esforço.";
-
-                    // Se eles querem troca
-                    if (ia.alvosTroca.length > 0 && Math.random() > 0.5) {
-                        dica += ` Tivemos interesse no atleta ${ia.alvosTroca[0].nome}.`;
-                    }
-
-                    responseBox.innerText = `Diretor: 'Recusado. ${dica} (Restam ${negociacaoAtual.tentativas} tentativas)'`;
-                    responseBox.style.color = "yellow";
-                }
+                    addMsg('cpu', `Chega! ${motivo} Não vou assinar com vocês.`);
+                    showOptions('bloqueado');
+                }, 800);
+                return true; // Encerrou
             }
+            return false; // Continua
         }
 
-        function fecharModalClube() {
-            document.getElementById('modal-clube').style.display = 'none';
-        }
-
-        // --- FASE 2: JOGADOR (SIMPLIFICADA) ---
-        // Aqui chamamos o modal antigo (chat) ou simplificamos para fechar a compra
-        
-        function iniciarNegociacaoJogador(uid, vindoDeClube = false) {
-            const lista = vindoDeClube ? Engine.Mercado.getListaTransferencias() : Engine.Mercado.getAgentesLivres();
-            const jogador = lista.find(j => j.uid === uid);
+        function verificarPapel() {
+            const role = document.getElementById('sel-role').value;
+            currentNeg.offer.role = role;
+            addMsg('user', `Você chega para ser ${role}.`);
             
-            negociacaoAtual.jogadorAlvo = jogador;
+            const niveis = { "Titular Absoluto": 4, "Importante": 3, "Rotação": 2, "Reserva": 1 };
             
-            // Abre modal de contrato
-            document.getElementById('neg-player-name').innerText = jogador.nome;
-            document.getElementById('chat-feed').innerHTML = '<div class="msg cpu">Olá. Fico feliz com o interesse. Quanto vocês pagam?</div>';
-            document.getElementById('modal-jogador').style.display = 'flex';
+            setTimeout(() => {
+                if (niveis[role] < niveis[currentNeg.expectations.role]) {
+                    // Oferta ruim de papel
+                    addMsg('cpu', `Isso é um insulto. Sou jogador para ser ${currentNeg.expectations.role}.`);
+                    if(!diminuirPaciencia(1, "Não me valorizaram.")) {
+                        addMsg('system', 'Jogador insatisfeito. Tente novamente.');
+                        showOptions('papel'); 
+                    }
+                } else {
+                    addMsg('cpu', "Ok, concordo com essa função. E o tempo de contrato?");
+                    showOptions('duracao');
+                }
+            }, 800);
         }
 
-        function finalizarTudo() {
-            const salario = parseFloat(document.getElementById('input-salario-final').value);
-            const jogador = negociacaoAtual.jogadorAlvo;
+        function definirDuracao() {
+            const anos = parseInt(document.querySelector('.range-slider').value);
+            currentNeg.offer.years = anos;
+            addMsg('user', `${anos} anos de contrato.`);
+            setTimeout(() => { addMsg('cpu', "O tempo está bom. Agora vamos falar de salário."); showOptions('salario'); }, 800);
+        }
+
+        function definirSalario() {
+            const sal = parseInt(document.getElementById('input-sal').value);
+            currentNeg.offer.salary = sal;
+            addMsg('user', `Ofereço R$ ${sal.toLocaleString()} mensais.`);
+            
+            // CORREÇÃO: Bloqueia valor negativo ou zero
+            if (sal <= 0) {
+                setTimeout(() => {
+                    addMsg('cpu', "Você está de brincadeira? Salário zero? Adeus.");
+                    diminuirPaciencia(3, "Falta de respeito."); // Mata a negociação
+                }, 800);
+                return;
+            }
+
+            const min = currentNeg.expectations.salary * 0.9; // Aceita 90%
+            const veryLow = currentNeg.expectations.salary * 0.5; // Ofensa se for < 50%
+
+            setTimeout(() => {
+                if (sal < veryLow) {
+                    addMsg('cpu', `Isso é uma esmola? Eu pedi R$ ${currentNeg.expectations.salary.toLocaleString()}.`);
+                    diminuirPaciencia(2, "Oferta ridícula.");
+                    if(currentNeg.patience > 0) showOptions('salario');
+                }
+                else if (sal < min) {
+                    addMsg('cpu', `Ainda é pouco. Quero pelo menos R$ ${currentNeg.expectations.salary.toLocaleString()}. Melhore.`);
+                    diminuirPaciencia(1, "Estamos longe nos valores.");
+                    if(currentNeg.patience > 0) showOptions('salario');
+                } 
+                else {
+                    addMsg('cpu', "O salário agrada. E quanto às luvas (bônus de assinatura)?");
+                    showOptions('luvas');
+                }
+            }, 800);
+        }
+
+        function fecharAcordo() {
+            const bon = parseInt(document.getElementById('input-bon').value);
+            currentNeg.offer.bonus = bon;
+            addMsg('user', `Pagamos R$ ${bon.toLocaleString()} de luvas na assinatura.`);
+
+            // CORREÇÃO: Bloqueia valor negativo
+            if (bon < 0) {
+                setTimeout(() => {
+                    addMsg('cpu', "Luvas negativas? Isso é roubo. Tchau.");
+                    diminuirPaciencia(3, "Tentativa de fraude.");
+                }, 800);
+                return;
+            }
+
+            const minLuvas = currentNeg.expectations.bonus * 0.8; // Aceita 80% do pedido
+
+            setTimeout(() => {
+                const game = Engine.carregarJogo();
+                if (game.recursos.dinheiro < bon) {
+                    addMsg('system', '❌ O clube não tem caixa para pagar essas luvas.');
+                    showOptions('luvas');
+                    return;
+                }
+
+                if (bon < minLuvas) {
+                    addMsg('cpu', `O valor das luvas está muito baixo. Preciso de pelo menos R$ ${currentNeg.expectations.bonus.toLocaleString()} para assinar.`);
+                    diminuirPaciencia(1, "Não chegamos num acordo financeiro.");
+                    if(currentNeg.patience > 0) showOptions('luvas');
+                } else {
+                    addMsg('cpu', "Fechado! Onde eu assino?");
+                    showOptions('fim');
+                }
+            }, 800);
+        }
+
+        function concluirNegocio() {
             const game = Engine.carregarJogo();
             const meuTime = Engine.encontrarTime(game.info.time);
+            const jogador = currentNeg.player;
 
-            // Validações básicas de dinheiro já foram feitas na fase do clube ou aqui
-            if (!salario || salario < (jogador.forca * 1000)) {
-                alert("O jogador recusou o salário.");
-                return;
-            }
+            game.recursos.dinheiro -= currentNeg.offer.bonus;
 
-            // Desconta a Entrada (Se veio de clube)
-            if (abaAtual === 'clubes') {
-                const entrada = parseFloat(document.getElementById('input-entrada').value);
-                game.recursos.dinheiro -= entrada;
-            }
-
-            // Adiciona Jogador
             meuTime.elenco.push({
-                ...jogador,
-                salario: salario,
-                contrato: "31/12/2028",
-                carac: "Contratado"
+                uid: jogador.uid,
+                nome: jogador.nome,
+                pos: jogador.pos,
+                forca: jogador.forca,
+                idade: jogador.idade,
+                salario: currentNeg.offer.salary,
+                papel: currentNeg.offer.role,
+                contrato: `31/12/${2026 + currentNeg.offer.years}`,
+                carac: jogador.carac || "Reforço",
+                jogos: jogador.jogos || 0, 
+                gols: jogador.gols || 0,
+                atributos: jogador.atributos || { VEL: jogador.forca, FIN: jogador.forca, PAS: jogador.forca, DRI: jogador.forca, DEF: jogador.forca, PHY: jogador.forca }
             });
 
-            // Remove do Mercado
-            Engine.Mercado.removerJogador(jogador.uid, abaAtual === 'livres' ? 'livre' : 'venda');
-
-            // Salva
             const timeIdx = game.times.findIndex(t => t.nome === game.info.time);
             game.times[timeIdx] = meuTime;
-            Engine.salvarJogo(game);
 
-            alert("Contratação Finalizada!");
-            document.getElementById('modal-jogador').style.display = 'none';
+            Engine.Mercado.removerJogador(jogador.uid, abaAtual === 'livres' ? 'livre' : 'venda');
+            Engine.salvarJogo(game);
+            
+            alert(`Bem-vindo, ${jogador.nome}!`);
+            fecharNegociacao();
             carregarDados();
             mudarAba(abaAtual);
         }
-
     </script>
 </body>
 </html>
