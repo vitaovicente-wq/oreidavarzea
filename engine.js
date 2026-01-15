@@ -1,126 +1,518 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Caixa de Entrada - BRFutebol</title>
-    <script src="engine.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root { --bg-dark: #0f1216; --sidebar-bg: #161b22; --card-bg: #1e2329; --neon-green: #00ff88; --text-main: #ffffff; --text-muted: #8b949e; --border: #30363d; --red: #ff4757; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 250px; background: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .logo { font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 900; margin-bottom: 20px; color: #fff; text-transform: uppercase; }
-        .logo span { color: var(--neon-green); }
-        .menu-btn { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-weight: 600; cursor: pointer; }
-        .menu-btn:hover, .menu-btn.active { background: rgba(0, 255, 136, 0.1); color: var(--neon-green); }
-        .menu-btn.logout { margin-top: auto; color: var(--red); }
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
-        
-        /* Mensagens */
-        .msg-list { display: flex; flex-direction: column; gap: 10px; }
-        .msg-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; cursor: pointer; transition: 0.2s; }
-        .msg-item:hover { border-color: var(--neon-green); transform: translateX(5px); }
-        .msg-item.unread { border-left: 4px solid var(--neon-green); background: #262c33; }
-        .msg-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .msg-title { font-weight: 700; font-size: 1.1rem; color: #fff; }
-        .msg-date { font-size: 0.8rem; color: #888; }
-        .msg-type { font-size: 0.7rem; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: #333; margin-left: 10px; }
-        .msg-body { font-size: 0.95rem; color: #ddd; line-height: 1.6; display: none; margin-top: 15px; border-top: 1px solid #444; padding-top: 15px; }
-        .msg-item.open .msg-body { display: block; }
-        
-        .btn-email { background: #3498db; color: #fff; border: none; padding: 10px 15px; cursor: pointer; width: 100%; margin-top: 10px; border-radius: 4px; font-weight: bold; }
-        .btn-email:hover { background: #2980b9; }
-    </style>
-</head>
-<body>
-    <nav class="sidebar">
-        <div class="logo">BR<span>FUTEBOL</span></div>
-        <a class="menu-btn" href="painel.html">📊 Visão Geral</a>
-        <a class="menu-btn" href="escalacao.html">👕 Escalação</a>
-        <a class="menu-btn" href="mercado.html">🔄 Mercado</a>
-        <a class="menu-btn" href="calendario.html">📅 Calendário</a>
-        <a class="menu-btn" href="classificacao.html">🏆 Classificação</a>
-        <a class="menu-btn" href="estadio.html">🏟️ Estádio</a>
-        <a class="menu-btn" href="financeiro.html">💰 Finanças</a>
-        <a class="menu-btn active" href="mensagens.html">📩 Mensagens <span id="badge-msg"></span></a>
-        <a class="menu-btn logout" href="index.html">✖ Sair</a>
-    </nav>
+// ARQUIVO: engine.js (V10.1 - CORREÇÃO FINAL DE INICIALIZAÇÃO)
 
-    <main class="main-content">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="font-family:'Rajdhani'; margin:0;">Caixa de Entrada</h2>
-            <button onclick="location.reload()" style="background:none; border:1px solid #444; color:#888; padding:5px 10px; cursor:pointer; border-radius:4px;">🔄 Atualizar</button>
-        </div>
-        <div id="lista-mensagens" class="msg-list"></div>
-    </main>
+const Engine = {
+    
+    // --- 1. INICIALIZAÇÃO DO JOGO ---
+    novoJogo: function(pais, divisao, nomeTimeSelecionado) {
+        console.log(`⚽ Iniciando: ${nomeTimeSelecionado}`);
 
-    <script>
-        window.onload = function() {
-            const game = Engine.carregarJogo();
-            const container = document.getElementById('lista-mensagens');
-            container.innerHTML = "";
+        if (typeof CalendarioSystem === 'undefined') {
+            alert("ERRO: calendario.js não carregado.");
+            return;
+        }
 
-            if(!game.mensagens || game.mensagens.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding:40px; color:#666;"><h3>Caixa de Entrada Vazia</h3></div>`;
-                return;
-            }
+        // 1. Limpa o mercado antigo (Começa vazio - Realista)
+        localStorage.setItem('brfutebol_livres', '[]');
+        localStorage.setItem('brfutebol_transferencias', '[]');
 
-            game.mensagens.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = `msg-item ${msg.lida ? '' : 'unread'}`;
-                
-                // Badge de tipo (opcional, ajuda a identificar)
-                let typeLabel = "";
-                if(msg.tipo === 'patrocinio_oferta') typeLabel = `<span class="msg-type" style="color:#3498db">Comercial</span>`;
-                if(msg.tipo === 'tv_oferta') typeLabel = `<span class="msg-type" style="color:#f1c40f">Mídia</span>`;
-                if(msg.tipo === 'boas_vindas') typeLabel = `<span class="msg-type" style="color:#e74c3c">Diretoria</span>`;
+        // 2. Carrega Times
+        let timesDaLiga = [];
+        if (window.Database && window.Database.brasil && window.Database.brasil[divisao]) {
+            timesDaLiga = JSON.parse(JSON.stringify(window.Database.brasil[divisao]));
+        } else {
+            timesDaLiga = this._gerarTimesGenericos(divisao);
+        }
 
-                div.innerHTML = `
-                    <div class="msg-header" onclick='lerMensagem(${JSON.stringify(msg).replace(/'/g, "&apos;")}, this)'>
-                        <div><span class="msg-title">${msg.titulo}</span> ${typeLabel}</div>
-                        <div class="msg-date">Rodada ${msg.rodada}</div>
-                    </div>
-                    <div class="msg-body">${msg.corpo}</div>
-                `;
-                container.appendChild(div);
+        // 3. Configura Jogadores Iniciais
+        const DATA_FIM_PADRAO = "31/12/2026";
+        timesDaLiga.forEach(t => {
+            if (!t.elenco || !Array.isArray(t.elenco)) t.elenco = [];
+            t.elenco.forEach((jogador, idx) => {
+                if (!jogador.uid) jogador.uid = `start_${t.nome.substring(0,3)}_${idx}_${Date.now()}`;
+                jogador.contrato = DATA_FIM_PADRAO;
+                if (!jogador.salario) jogador.salario = (jogador.forca || 60) * 1500;
+                jogador.jogos = 0;
+                jogador.gols = 0;
             });
+        });
+
+        // 4. Gera Calendário e Tabela
+        const calendarioGerado = CalendarioSystem.gerarCampeonato(timesDaLiga);
+        const classificacaoInicial = timesDaLiga.map(t => ({
+            nome: t.nome, escudo: t.escudo || null,
+            pts: 0, j: 0, v: 0, e: 0, d: 0, gp: 0, gc: 0, sg: 0
+        }));
+
+        // --- CÁLCULO DE ORÇAMENTO BASEADO NO OVR ---
+        const meuTimeTemp = timesDaLiga.find(t => t.nome === nomeTimeSelecionado);
+        let somaOvr = 0;
+        if(meuTimeTemp && meuTimeTemp.elenco.length > 0) {
+            meuTimeTemp.elenco.forEach(j => somaOvr += j.forca);
+        }
+        const mediaOvr = meuTimeTemp.elenco.length > 0 ? Math.floor(somaOvr / meuTimeTemp.elenco.length) : 60;
+        
+        let orcamentoInicial = 2000000;
+        if (mediaOvr > 90) orcamentoInicial = 10000000;
+        else if (mediaOvr > 80) orcamentoInicial = 8000000;
+        else if (mediaOvr > 70) orcamentoInicial = 5000000;
+        else if (mediaOvr > 65) orcamentoInicial = 3000000;
+        else orcamentoInicial = 2000000;
+
+        const dataInicio = new Date('2026-01-01T12:00:00').getTime();
+
+        // 5. Cria o Estado Inicial do Save
+        const estadoDoJogo = {
+            info: {
+                tecnico: localStorage.getItem('brfutebol_tecnico') || "Manager",
+                time: nomeTimeSelecionado,
+                escudo: localStorage.getItem('brfutebol_escudo'),
+                divisao: divisao,
+                dataInicio: dataInicio
+            },
+            recursos: { 
+                dinheiro: orcamentoInicial, 
+                moral: 100,
+                rodadaFinanceiraProcessada: false 
+            },
+            contratos: { patrocinio: null, tv: null },
+            flags: { boasVindasLida: false, patroEnviado: false, tvEnviado: false },
+            financas: {
+                saldo: orcamentoInicial,
+                historico: [{ texto: "Aporte da Diretoria", valor: orcamentoInicial, tipo: "entrada" }]
+            },
+            rodadaAtual: 1,
+            times: timesDaLiga,
+            calendario: calendarioGerado,
+            classificacao: classificacaoInicial,
+            jogadoresStatus: {},
+            mensagens: [] 
         };
 
-        function lerMensagem(msg, element) {
-            const parent = element.parentElement;
-            
-            // Lógica de Acordeão (Fecha outros, abre este)
-            const wasOpen = parent.classList.contains('open');
-            document.querySelectorAll('.msg-item').forEach(m => m.classList.remove('open'));
-            
-            if(!wasOpen) {
-                parent.classList.add('open');
-                parent.classList.remove('unread');
+        this.salvarJogo(estadoDoJogo);
 
-                const game = Engine.carregarJogo();
-                const targetMsg = game.mensagens.find(m => m.id === msg.id);
-                
-                if(targetMsg && !targetMsg.lida) {
-                    targetMsg.lida = true;
-                    // Salva que leu
-                    Engine.salvarJogo(game);
+        // 6. GERA APENAS O E-MAIL DE BOAS VINDAS (CORRIGIDO: REMOVIDAS FUNÇÕES ANTIGAS)
+        this.Contratos.enviarBoasVindas(estadoDoJogo);
+        
+        // Redirecionamento (Opcional, o index.html costuma fazer isso)
+        // window.location.href = 'painel.html';
+    },
+
+    // --- 2. SISTEMA DE CONTRATOS E MENSAGENS AVANÇADO ---
+    Contratos: {
+        enviarBoasVindas: function(game) {
+            const corpo = `
+                <div style="font-family:'Georgia', serif; color:#ddd;">
+                    <p>Prezado(a) <b>${game.info.tecnico}</b>,</p>
+                    <p>É com grande expectativa que assino sua contratação. O Conselho Deliberativo aprovou seu nome, mas saiba que a paciência por aqui é curta.</p>
+                    <p>Liberamos um aporte inicial de <b>${game.recursos.dinheiro.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</b>. Use com sabedoria. Não haverá mais dinheiro se você gastar tudo em bagres.</p>
+                    <p><b>Suas prioridades imediatas (Checklist):</b></p>
+                    <ul style="background:#222; padding:15px; border-left:3px solid #f1c40f;">
+                        <li>☐ Analisar as propostas de Patrocínio Master (Essenciais para pagar salários).</li>
+                        <li>☐ Fechar os Direitos de TV (Importante para fluxo de caixa).</li>
+                        <li>☐ Avaliar o elenco atual e dispensar quem não serve.</li>
+                    </ul>
+                    <p>Assim que você terminar de ler este memorando, mandarei meu diretor comercial apresentar as ofertas de patrocínio que estão na mesa.</p>
+                    <p>Atenciosamente,<br><i>O Presidente</i></p>
+                </div>
+            `;
+            Engine.sistema.novaMensagem("Memorando Oficial #001: Início dos Trabalhos", corpo, 'boas_vindas');
+        },
+
+        liberarOfertasPatrocinio: function() {
+            const game = Engine.carregarJogo();
+            if(game.flags.patroEnviado) return;
+
+            const baseVal = Math.floor(game.recursos.dinheiro * 0.15); 
+            
+            const p1 = { 
+                id: 1, empresa: "Banco Nacional", mensal: baseVal * 1.2, luvas: baseVal * 2, bonusTitulo: baseVal * 5, duracao: 12, 
+                desc: "Pagamento mensal alto e garantido. Pouco bônus por performance. Ideal para pagar contas em dia."
+            };
+            const p2 = { 
+                id: 2, empresa: "BetWin365", mensal: baseVal * 0.7, luvas: baseVal * 8, bonusTitulo: baseVal * 20, duracao: 24, 
+                desc: "Luvas altíssimas agora (bom para contratar já). Mensal baixo. Bônus gigante se for campeão."
+            };
+            const p3 = { 
+                id: 3, empresa: "NeoTech Systems", mensal: baseVal, luvas: baseVal * 4, bonusTitulo: baseVal * 8, duracao: 12, 
+                desc: "Uma proposta equilibrada. Exigem classificação para competições internacionais."
+            };
+
+            let html = `
+                <div style="font-family:'Georgia', serif;">
+                    <p>Chefe, consegui três reuniões. A situação é a seguinte: precisamos decidir <b>hoje</b> quem estampará nossa camisa.</p>
+                    <p>Analise o que é mais importante para o clube agora: Dinheiro na mão para contratações (Luvas) ou segurança para pagar salários (Mensal)?</p>
+                    <hr style="border-color:#444">
                     
-                    // --- GATILHO DE FLUXO (AQUI ESTÁ A MÁGICA) ---
-                    // Se leu "Boas Vindas", libera o Patrocínio
-                    if(msg.tipo === 'boas_vindas') {
-                        Engine.Contratos.liberarOfertasPatrocinio();
-                        setTimeout(() => location.reload(), 1500); // Recarrega para mostrar o novo email
-                    }
-                    // Se leu "Patrocínio", libera a TV (depois de um delay maior pra simular tempo)
-                    else if(msg.tipo === 'patrocinio_oferta') {
-                        // Só libera TV se já tiver assinado? Não, vamos liberar a proposta logo.
-                        Engine.Contratos.liberarOfertasTV();
-                        // Não recarrega automatico aqui pra dar tempo de assinar o patrocínio primeiro
+                    <div style="background:#1a1a1a; padding:15px; border-radius:5px; margin-bottom:15px; border-left:4px solid #3498db;">
+                        <h3 style="margin:0; color:#3498db;">Opção A: ${p1.empresa}</h3>
+                        <p style="font-size:0.9rem; color:#aaa; margin-top:5px;"><i>"${p1.desc}"</i></p>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0;">
+                            <div>💰 Mensal: <b>R$ ${p1.mensal.toLocaleString()}</b></div>
+                            <div>📝 Luvas: <b>R$ ${p1.luvas.toLocaleString()}</b></div>
+                            <div style="grid-column: span 2;">🏆 Bônus Título: R$ ${p1.bonusTitulo.toLocaleString()}</div>
+                        </div>
+                        <button onclick='Engine.Contratos.assinarPatrocinio(${JSON.stringify(p1)}, this)' class="btn-email">Assinar com ${p1.empresa}</button>
+                    </div>
+
+                    <div style="background:#1a1a1a; padding:15px; border-radius:5px; margin-bottom:15px; border-left:4px solid #e74c3c;">
+                        <h3 style="margin:0; color:#e74c3c;">Opção B: ${p2.empresa}</h3>
+                        <p style="font-size:0.9rem; color:#aaa; margin-top:5px;"><i>"${p2.desc}"</i></p>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0;">
+                            <div>💰 Mensal: R$ ${p2.mensal.toLocaleString()}</div>
+                            <div>📝 Luvas: <b style="color:#00ff88">R$ ${p2.luvas.toLocaleString()}</b></div>
+                            <div style="grid-column: span 2;">🏆 Bônus Título: <b style="color:#f1c40f">R$ ${p2.bonusTitulo.toLocaleString()}</b></div>
+                        </div>
+                        <button onclick='Engine.Contratos.assinarPatrocinio(${JSON.stringify(p2)}, this)' class="btn-email">Assinar com ${p2.empresa}</button>
+                    </div>
+
+                    <div style="background:#1a1a1a; padding:15px; border-radius:5px; border-left:4px solid #9b59b6;">
+                        <h3 style="margin:0; color:#9b59b6;">Opção C: ${p3.empresa}</h3>
+                        <p style="font-size:0.9rem; color:#aaa; margin-top:5px;"><i>"${p3.desc}"</i></p>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0;">
+                            <div>💰 Mensal: R$ ${p3.mensal.toLocaleString()}</div>
+                            <div>📝 Luvas: R$ ${p3.luvas.toLocaleString()}</div>
+                            <div style="grid-column: span 2;">🏆 Bônus Título: R$ ${p3.bonusTitulo.toLocaleString()}</div>
+                        </div>
+                        <button onclick='Engine.Contratos.assinarPatrocinio(${JSON.stringify(p3)}, this)' class="btn-email">Assinar com ${p3.empresa}</button>
+                    </div>
+                </div>
+            `;
+
+            Engine.sistema.novaMensagem("URGENTE: Definição de Patrocínio Master", html, 'patrocinio_oferta');
+            
+            game.flags.patroEnviado = true;
+            Engine.salvarJogo(game);
+        },
+
+        liberarOfertasTV: function() {
+            const game = Engine.carregarJogo();
+            if(game.flags.tvEnviado) return;
+
+            const baseCota = Math.floor(game.recursos.dinheiro * 0.10);
+
+            const t1 = { id: 'tv1', emissora: "Rede Nacional", fixo: baseCota * 1.5, porJogo: 0, desc: "Tradicional. Paga um valor fixo alto mensalmente, independente se o jogo passa na TV ou não." };
+            const t2 = { id: 'tv2', emissora: "StreamSports+", fixo: baseCota * 0.5, porJogo: baseCota * 0.3, desc: "Moderna. Fixo baixo, mas paga muito por jogo transmitido. Se o time for bem e tiver audiência, rende o dobro." };
+
+            let html = `
+                <div style="font-family:'Georgia', serif;">
+                    <p>Ótimo, patrocínio resolvido. Agora a briga é com as TVs. Temos duas propostas na mesa.</p>
+                    <p>A Rede Nacional quer exclusividade com cota fixa. A StreamSports quer pagar por performance e audiência.</p>
+                    <hr style="border-color:#444">
+
+                    <div style="background:#1a1a1a; padding:15px; margin-bottom:15px; border-radius:5px;">
+                        <strong style="color:#f1c40f; font-size:1.1rem;">📺 ${t1.emissora}</strong>
+                        <p style="font-size:0.9rem; color:#aaa;">${t1.desc}</p>
+                        <ul style="list-style:none; padding:0;">
+                            <li>• Cota Fixa Mensal: <b>R$ ${t1.fixo.toLocaleString()}</b></li>
+                            <li>• Variável por Jogo: R$ 0</li>
+                        </ul>
+                        <button onclick='Engine.Contratos.assinarTV(${JSON.stringify(t1)}, this)' class="btn-email">Fechar com Rede Nacional</button>
+                    </div>
+
+                    <div style="background:#1a1a1a; padding:15px; border-radius:5px;">
+                        <strong style="color:#00a8ff; font-size:1.1rem;">📱 ${t2.emissora}</strong>
+                        <p style="font-size:0.9rem; color:#aaa;">${t2.desc}</p>
+                        <ul style="list-style:none; padding:0;">
+                            <li>• Cota Fixa Mensal: R$ ${t2.fixo.toLocaleString()}</li>
+                            <li>• Variável por Jogo: <b>R$ ${t2.porJogo.toLocaleString()}</b></li>
+                        </ul>
+                        <button onclick='Engine.Contratos.assinarTV(${JSON.stringify(t2)}, this)' class="btn-email">Fechar com StreamSports</button>
+                    </div>
+                </div>
+            `;
+
+            Engine.sistema.novaMensagem("Direitos de Transmissão: Propostas", html, 'tv_oferta');
+            
+            game.flags.tvEnviado = true;
+            Engine.salvarJogo(game);
+        },
+
+        assinarPatrocinio: function(proposta, btnElement) {
+            const game = Engine.carregarJogo();
+            if(game.contratos.patrocinio) { alert("Já assinado!"); return; }
+            
+            game.contratos.patrocinio = proposta;
+            game.recursos.dinheiro += proposta.luvas;
+            game.financas.historico.push({ texto: `Luvas (${proposta.empresa})`, valor: proposta.luvas, tipo: 'entrada' });
+            
+            Engine.salvarJogo(game);
+            
+            const pai = btnElement.parentElement.parentElement;
+            pai.innerHTML = `<div style="padding:20px; text-align:center; background:#111; color:#00ff88; border:1px solid #00ff88;">
+                <h3>✅ CONTRATO ASSINADO</h3>
+                <p>A <b>${proposta.empresa}</b> é nossa nova parceira!</p>
+                <p>Recebemos R$ ${proposta.luvas.toLocaleString()} de luvas.</p>
+            </div>`;
+            
+            alert(`Parceria fechada! O financeiro já acusou o recebimento das luvas.`);
+        },
+
+        assinarTV: function(proposta, btnElement) {
+            const game = Engine.carregarJogo();
+            if(game.contratos.tv) { alert("Já assinado!"); return; }
+            
+            game.contratos.tv = proposta;
+            Engine.salvarJogo(game);
+            
+            const pai = btnElement.parentElement.parentElement;
+            pai.innerHTML = `<div style="padding:20px; text-align:center; background:#111; color:#f1c40f; border:1px solid #f1c40f;">
+                <h3>✅ DIREITOS VENDIDOS</h3>
+                <p>Transmissões exclusivas na <b>${proposta.emissora}</b>.</p>
+            </div>`;
+            
+            alert(`Contrato de TV assinado com sucesso.`);
+        }
+    },
+
+    // --- 3. SISTEMA DE BUSCA ---
+    encontrarTime: function(nomeTime) {
+        const save = this.carregarJogo();
+        if (!save || !save.times) return { nome: nomeTime, forca: 0, elenco: [] };
+        return save.times.find(t => t.nome === nomeTime) || { nome: nomeTime, forca: 0, elenco: [] };
+    },
+
+    getMeuTime: function() {
+        const save = this.carregarJogo();
+        if (!save) return null;
+        return this.encontrarTime(save.info.time);
+    },
+
+    // --- 4. SAVE / LOAD ---
+    salvarJogo: function(estado) {
+        localStorage.setItem('brfutebol_save', JSON.stringify(estado));
+    },
+
+    carregarJogo: function() {
+        const saveJson = localStorage.getItem('brfutebol_save');
+        return saveJson ? JSON.parse(saveJson) : null;
+    },
+
+    // --- 5. ATUALIZAÇÃO DA TABELA E FINANCEIRO ---
+    atualizarTabela: function(estadoJogo) {
+        const tabela = estadoJogo.classificacao || estadoJogo.tabela;
+        tabela.forEach(t => { t.pts=0; t.j=0; t.v=0; t.e=0; t.d=0; t.gp=0; t.gc=0; t.sg=0; });
+
+        estadoJogo.calendario.forEach(rodada => {
+            rodada.jogos.forEach(jogo => { if (jogo.jogado) this._computarJogoNaTabela(tabela, jogo); });
+        });
+        tabela.sort((a, b) => b.pts - a.pts || b.v - a.v || b.sg - a.sg || b.gp - a.gp);
+        
+        const rodadaIdx = estadoJogo.rodadaAtual - 1;
+        if(estadoJogo.calendario[rodadaIdx]) {
+            const jogoPlayer = estadoJogo.calendario[rodadaIdx].jogos.find(j => j.mandante === estadoJogo.info.time || j.visitante === estadoJogo.info.time);
+            if (jogoPlayer && jogoPlayer.jogado && !estadoJogo.recursos.rodadaFinanceiraProcessada) {
+                const isMandante = jogoPlayer.mandante === estadoJogo.info.time;
+                const adversario = isMandante ? jogoPlayer.visitante : jogoPlayer.mandante;
+                
+                this.sistema.processarRodadaFinanceira(estadoJogo, isMandante, adversario);
+                this.sistema.gerarPropostaTransferencia(); 
+                this.Mercado.atualizarListaTransferencias(estadoJogo); 
+                this.Mercado.simularDispensasCPU(estadoJogo);       
+                estadoJogo.recursos.rodadaFinanceiraProcessada = true;
+            }
+        }
+        this.salvarJogo(estadoJogo);
+        return tabela;
+    },
+
+    _computarJogoNaTabela: function(tabela, jogo) {
+        const timeCasa = tabela.find(t => t.nome === jogo.mandante);
+        const timeFora = tabela.find(t => t.nome === jogo.visitante);
+        if (!timeCasa || !timeFora) return;
+        const gc = parseInt(jogo.placarCasa);
+        const gf = parseInt(jogo.placarFora);
+        timeCasa.j++; timeCasa.gp+=gc; timeCasa.gc+=gf; timeCasa.sg = timeCasa.gp - timeCasa.gc;
+        timeFora.j++; timeFora.gp+=gf; timeFora.gc+=gc; timeFora.sg = timeFora.gp - timeFora.gc;
+        if (gc > gf) { timeCasa.v++; timeCasa.pts+=3; timeFora.d++; }
+        else if (gf > gc) { timeFora.v++; timeFora.pts+=3; timeCasa.d++; }
+        else { timeCasa.e++; timeCasa.pts++; timeFora.e++; timeFora.pts++; }
+    },
+
+    // --- 6. SIMULAÇÃO CPU ---
+    simularJogoCPU: function(jogo) {
+        jogo.jogado = true;
+        jogo.placarCasa = Math.floor(Math.random() * 3);
+        jogo.placarFora = Math.floor(Math.random() * 2);
+        if(Math.random() > 0.6) jogo.placarCasa++;
+        if(Math.random() > 0.7) jogo.placarFora++;
+        jogo.eventos = []; 
+        const timeCasa = this.encontrarTime(jogo.mandante);
+        for(let i=0; i<jogo.placarCasa; i++) jogo.eventos.push(this._gerarGolSimulado(timeCasa, jogo.mandante));
+        const timeFora = this.encontrarTime(jogo.visitante);
+        for(let i=0; i<jogo.placarFora; i++) jogo.eventos.push(this._gerarGolSimulado(timeFora, jogo.visitante));
+        jogo.eventos.sort((a,b) => a.min - b.min);
+    },
+
+    _gerarGolSimulado: function(timeObj, nomeTime) {
+        let nomeJog = "Atacante";
+        if(timeObj.elenco && timeObj.elenco.length > 0) {
+            const pool = timeObj.elenco.filter(j => j.pos !== 'GOL');
+            const sorteado = (pool.length>0 ? pool : timeObj.elenco)[Math.floor(Math.random() * (pool.length>0 ? pool.length : timeObj.elenco.length))];
+            nomeJog = sorteado.nome;
+        } else { nomeJog = "Camisa " + (Math.floor(Math.random() * 10) + 2); }
+        return { min: Math.floor(Math.random() * 90) + 1, time: nomeTime, jogador: nomeJog, tipo: 'gol' };
+    },
+
+    _gerarTimesGenericos: function(div) {
+        let lista = [];
+        for (let i = 1; i <= 20; i++) lista.push({ nome: `Time ${i}`, forca: 50, elenco: [] });
+        return lista;
+    },
+
+    // --- 7. ESTÁDIO ---
+    estadios: {
+        db: { "Padrao": { nome: "Estádio Municipal", cap: 15000 }, "Corinthians": { nome: "Neo Química Arena", cap: 49000 }, "Flamengo": { nome: "Maracanã", cap: 78000 } },
+        getEstadio: function() {
+            const game = Engine.carregarJogo();
+            const timeNome = game.info.time;
+            const dadosBase = this.db[timeNome] || this.db["Padrao"];
+            const config = game.estadio || { precos: { geral: 40, cadeiras: 80, vip: 250, estacionamento: 30 }, manutencao: 100 };
+            return { ...dadosBase, ...config };
+        },
+        calcularBilheteria: function(adversarioNome) {
+            const game = Engine.carregarJogo();
+            const estadio = this.getEstadio();
+            const moral = game.recursos.moral || 50; 
+            let demandaBase = moral / 100; 
+            const capGeral = Math.floor(estadio.cap * 0.50);
+            const pubGeral = Math.floor(Math.min(capGeral, capGeral * demandaBase));
+            const renda = pubGeral * estadio.precos.geral; 
+            return { publico: pubGeral, rendaTotal: renda };
+        }
+    },
+
+    // --- 8. MERCADO ---
+    Mercado: {
+        getAgentesLivres: function() { return JSON.parse(localStorage.getItem('brfutebol_livres') || '[]'); },
+        getListaTransferencias: function() { return JSON.parse(localStorage.getItem('brfutebol_transferencias') || '[]'); },
+        
+        avaliarTransferencia: function(jogador, meuTime) {
+            const necessidade = Math.floor(Math.random() * 100);
+            let valorBase = jogador.valor;
+            let postura = 'neutra';
+            if (jogador.forca > 80) { valorBase *= 1.3; postura = 'dura'; } 
+            else if (necessidade > 70) { valorBase *= 0.85; postura = 'flexivel'; }
+            const alvosTroca = meuTime.elenco.filter(j => j.pos === jogador.pos).slice(0, 3);
+            return { valorPedido: Math.floor(valorBase), aceitaEmprestimo: jogador.forca < 75, aceitaTroca: true, postura, paciencia: 4, alvosTroca };
+        },
+
+        atualizarListaTransferencias: function(game) {
+            let lista = this.getListaTransferencias();
+            if(Math.random() > 0.7) { 
+                const timesCPU = game.times.filter(t => t.nome !== game.info.time);
+                const timeAleatorio = timesCPU[Math.floor(Math.random() * timesCPU.length)];
+                if(timeAleatorio && timeAleatorio.elenco.length > 18) {
+                    const jogador = timeAleatorio.elenco[Math.floor(Math.random() * timeAleatorio.elenco.length)];
+                    if (!lista.find(j => j.uid === jogador.uid) && jogador.forca < 85) {
+                        const valorMercado = Math.floor(Math.pow(jogador.forca, 3) * 18);
+                        lista.push({ ...jogador, valor: valorMercado, clube: timeAleatorio.nome });
                     }
                 }
             }
+            if (lista.length > 20) lista.shift();
+            localStorage.setItem('brfutebol_transferencias', JSON.stringify(lista));
+        },
+
+        simularDispensasCPU: function(game) {
+            let livres = this.getAgentesLivres();
+            if (Math.random() > 0.85) { 
+                const timesCPU = game.times.filter(t => t.nome !== game.info.time);
+                const timeAleatorio = timesCPU[Math.floor(Math.random() * timesCPU.length)];
+                if (timeAleatorio && timeAleatorio.elenco.length > 22) {
+                    const candidatos = timeAleatorio.elenco.filter(j => j.forca < 70);
+                    if (candidatos.length > 0) {
+                        const dispensado = candidatos[Math.floor(Math.random() * candidatos.length)];
+                        timeAleatorio.elenco = timeAleatorio.elenco.filter(j => j.uid !== dispensado.uid);
+                        livres.push({ ...dispensado, valor: 0, clube: null, carac: "Dispensado" });
+                        Engine.sistema.novaMensagem("Jogador Dispensado", `O ${timeAleatorio.nome} rescindiu com ${dispensado.nome}.`, 'info');
+                    }
+                }
+            }
+            localStorage.setItem('brfutebol_livres', JSON.stringify(livres));
+        },
+
+        removerJogador: function(uid, tipo) {
+            let lista = tipo === 'livre' ? this.getAgentesLivres() : this.getListaTransferencias();
+            lista = lista.filter(j => j.uid !== uid);
+            localStorage.setItem(tipo === 'livre' ? 'brfutebol_livres' : 'brfutebol_transferencias', JSON.stringify(lista));
         }
-    </script>
-</body>
-</html>
+    },
+
+    // --- 9. MENSAGENS E FINANÇAS ---
+    sistema: {
+        novaMensagem: function(titulo, corpo, tipo = 'info', acao = null) {
+            const game = Engine.carregarJogo();
+            if (!game.mensagens) game.mensagens = [];
+            game.mensagens.unshift({ id: Date.now(), rodada: game.rodadaAtual, titulo, corpo, tipo, lida: false, acao });
+            Engine.salvarJogo(game);
+        },
+
+        processarRodadaFinanceira: function(game, mandante, adversario) {
+            if (!game.financas) game.financas = { saldo: 0, historico: [] };
+            
+            // 1. Bilheteria
+            if (mandante) {
+                const bilheteria = Engine.estadios.calcularBilheteria(adversario);
+                game.recursos.dinheiro += bilheteria.rendaTotal;
+                game.financas.historico.push({ texto: `Bilheteria vs ${adversario}`, valor: bilheteria.rendaTotal, tipo: 'entrada' });
+            }
+
+            // 2. Pagamento Mensal (A cada 4 rodadas - "Mês")
+            if (game.rodadaAtual % 4 === 0) {
+                // Patrocínios e TV
+                if (game.contratos && game.contratos.patrocinio) {
+                    const val = game.contratos.patrocinio.mensal;
+                    game.recursos.dinheiro += val;
+                    game.financas.historico.push({ texto: `Patrocínio Master`, valor: val, tipo: 'entrada' });
+                }
+                if (game.contratos && game.contratos.tv) {
+                    const val = game.contratos.tv.fixo;
+                    game.recursos.dinheiro += val;
+                    game.financas.historico.push({ texto: `Cota de TV`, valor: val, tipo: 'entrada' });
+                }
+
+                // Salários
+                let folha = 0;
+                const meuTime = game.times.find(t => t.nome === game.info.time);
+                if(meuTime && meuTime.elenco) meuTime.elenco.forEach(j => folha += j.salario);
+                
+                game.recursos.dinheiro -= folha;
+                game.financas.historico.push({ texto: `Folha Salarial`, valor: -folha, tipo: 'saida' });
+            }
+
+            // 3. Custos Fixos por jogo
+            const custo = 50000; 
+            game.recursos.dinheiro -= custo;
+            game.financas.historico.push({ texto: `Custos Jogo`, valor: -custo, tipo: 'saida' });
+        },
+
+        gerarPropostaTransferencia: function() {
+            const game = Engine.carregarJogo();
+            if(Math.random() > 0.15) return;
+            const meuTime = Engine.encontrarTime(game.info.time);
+            if(meuTime.elenco.length > 0) {
+                const jog = meuTime.elenco[Math.floor(Math.random()*meuTime.elenco.length)];
+                Engine.sistema.novaMensagem("Proposta", `Oferta por ${jog.nome}`, 'proposta', { uid: jog.uid, valor: jog.forca * 80000 });
+            }
+        },
+        
+        aceitarVenda: function(msgId) {
+            const game = Engine.carregarJogo();
+            const msg = game.mensagens.find(m => m.id === msgId);
+            if(msg && !msg.acao.processada) {
+                game.recursos.dinheiro += msg.acao.valor;
+                // Remover do time... (simplificado)
+                msg.acao.processada = true;
+                Engine.salvarJogo(game);
+                alert("Vendido!");
+            }
+        }
+    },
+
+    data: {
+        getDataAtual: function(rodada) {
+            return `Rodada ${rodada}`;
+        }
+    }
+};
+window.Engine = Engine;
