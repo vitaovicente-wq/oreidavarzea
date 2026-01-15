@@ -10,6 +10,7 @@
     <style>
         :root { --bg-dark: #0f1216; --sidebar-bg: #161b22; --card-bg: #1e2329; --neon-green: #00ff88; --text-main: #ffffff; --text-muted: #8b949e; --border: #30363d; --red: #ff4757; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
         .sidebar { width: 250px; background: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
         .logo { font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 900; margin-bottom: 20px; color: #fff; text-transform: uppercase; }
         .logo span { color: var(--neon-green); }
@@ -20,16 +21,27 @@
 
         /* Estilos de Mensagem */
         .msg-list { display: flex; flex-direction: column; gap: 10px; }
-        .msg-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; cursor: pointer; transition: 0.2s; }
-        .msg-item:hover { border-color: var(--neon-green); }
+        .msg-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; cursor: pointer; transition: 0.2s; position: relative; }
+        .msg-item:hover { border-color: var(--neon-green); transform: translateX(5px); }
         .msg-item.unread { border-left: 4px solid var(--neon-green); background: #262c33; }
         
-        .msg-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .msg-title { font-weight: 700; font-size: 1.1rem; }
+        .msg-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .msg-title { font-weight: 700; font-size: 1.1rem; color: #fff; }
         .msg-date { font-size: 0.8rem; color: #888; }
+        .msg-type { font-size: 0.7rem; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: #333; margin-left: 10px; }
         
-        .msg-body { font-size: 0.95rem; color: #ccc; line-height: 1.5; display: none; margin-top: 15px; border-top: 1px solid #333; padding-top: 15px; }
+        .msg-body { font-size: 0.95rem; color: #ddd; line-height: 1.6; display: none; margin-top: 15px; border-top: 1px solid #444; padding-top: 15px; animation: fadeIn 0.3s; }
         .msg-item.open .msg-body { display: block; }
+
+        /* Botão dentro do e-mail */
+        .btn-email { background: #3498db; color: #fff; border: none; padding: 10px 15px; cursor: pointer; width: 100%; margin-top: 10px; border-radius: 4px; font-weight: bold; transition:0.2s; }
+        .btn-email:hover { background: #2980b9; transform: scale(1.02); }
+
+        /* Animação de chegada */
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .new-msg { animation: slideIn 0.5s ease forwards; border-color: var(--neon-green); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -48,47 +60,107 @@
     </nav>
 
     <main class="main-content">
-        <h2 style="font-family:'Rajdhani'">Caixa de Entrada</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="font-family:'Rajdhani'; margin:0;">Caixa de Entrada</h2>
+            <div id="status-box" style="font-size:0.9rem; color:#aaa;"></div>
+        </div>
         <div id="lista-mensagens" class="msg-list"></div>
     </main>
 
     <script>
         window.onload = function() {
+            renderizarMensagens();
+        };
+
+        function renderizarMensagens() {
             const game = Engine.carregarJogo();
             const container = document.getElementById('lista-mensagens');
-            
+            container.innerHTML = "";
+
             if(!game.mensagens || game.mensagens.length === 0) {
-                container.innerHTML = "<p style='color:#666'>Nenhuma mensagem.</p>";
+                container.innerHTML = `<div style="text-align:center; padding:40px; color:#666;"><h3>Caixa de Entrada Vazia</h3></div>`;
                 return;
             }
 
             game.mensagens.forEach(msg => {
                 const div = document.createElement('div');
                 div.className = `msg-item ${msg.lida ? '' : 'unread'}`;
+                // ID único para facilitar manipulação
+                div.id = `msg-${msg.id}`; 
                 
+                // Badge de tipo
+                let typeLabel = "";
+                if(msg.tipo === 'patrocinio_oferta') typeLabel = `<span class="msg-type" style="color:#3498db">Comercial</span>`;
+                if(msg.tipo === 'tv_oferta') typeLabel = `<span class="msg-type" style="color:#f1c40f">Mídia</span>`;
+                if(msg.tipo === 'boas_vindas') typeLabel = `<span class="msg-type" style="color:#e74c3c">Diretoria</span>`;
+
                 div.innerHTML = `
-                    <div class="msg-header" onclick="lerMensagem(${msg.id}, this)">
-                        <div class="msg-title">${msg.titulo}</div>
+                    <div class="msg-header" onclick="lerMensagem(${msg.id})">
+                        <div><span class="msg-title">${msg.titulo}</span> ${typeLabel}</div>
                         <div class="msg-date">Rodada ${msg.rodada}</div>
                     </div>
                     <div class="msg-body">${msg.corpo}</div>
                 `;
                 container.appendChild(div);
             });
-        };
+        }
 
-        function lerMensagem(id, element) {
-            const parent = element.parentElement;
-            parent.classList.toggle('open');
-            parent.classList.remove('unread');
-
-            // Marca como lida no save
+        function lerMensagem(id) {
             const game = Engine.carregarJogo();
             const msg = game.mensagens.find(m => m.id === id);
-            if(msg && !msg.lida) {
-                msg.lida = true;
-                Engine.salvarJogo(game);
+            if (!msg) return;
+
+            // UI: Abre/Fecha
+            const divMsg = document.getElementById(`msg-${id}`);
+            const wasOpen = divMsg.classList.contains('open');
+            
+            // Fecha outros
+            document.querySelectorAll('.msg-item').forEach(m => m.classList.remove('open'));
+
+            if (!wasOpen) {
+                divMsg.classList.add('open');
+                divMsg.classList.remove('unread');
+
+                // LÓGICA DE GATILHO (TRIGGER)
+                if (!msg.lida) {
+                    msg.lida = true;
+                    // Salva o estado de lida
+                    Engine.salvarJogo(game);
+                    
+                    // Verifica se deve liberar nova mensagem
+                    let novaMsgGerada = false;
+
+                    if (msg.tipo === 'boas_vindas') {
+                        Engine.Contratos.liberarOfertasPatrocinio();
+                        novaMsgGerada = true;
+                        notificar("Novo e-mail: Propostas de Patrocínio");
+                    } 
+                    else if (msg.tipo === 'patrocinio_oferta') {
+                        // Só libera TV se já escolheu o patrocínio? 
+                        // Melhor liberar ao ler para manter o fluxo rápido
+                        Engine.Contratos.liberarOfertasTV();
+                        novaMsgGerada = true;
+                        notificar("Novo e-mail: Direitos de TV");
+                    }
+
+                    if (novaMsgGerada) {
+                        // Recarrega a lista para mostrar a nova mensagem no topo
+                        setTimeout(() => {
+                            renderizarMensagens();
+                            // Mantém a mensagem atual aberta após re-renderizar
+                            const novaDiv = document.getElementById(`msg-${id}`);
+                            if(novaDiv) novaDiv.classList.add('open');
+                        }, 800);
+                    }
+                }
             }
+        }
+
+        function notificar(texto) {
+            const box = document.getElementById('status-box');
+            box.innerText = texto;
+            box.style.color = "var(--neon-green)";
+            setTimeout(() => { box.innerText = ""; }, 3000);
         }
     </script>
 </body>
