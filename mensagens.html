@@ -21,25 +21,22 @@
 
         /* Estilos de Mensagem */
         .msg-list { display: flex; flex-direction: column; gap: 10px; }
-        .msg-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; cursor: pointer; transition: 0.2s; position: relative; }
-        .msg-item:hover { border-color: var(--neon-green); transform: translateX(5px); }
+        .msg-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: 0.2s; }
+        .msg-item:hover { border-color: var(--neon-green); }
         .msg-item.unread { border-left: 4px solid var(--neon-green); background: #262c33; }
         
-        .msg-header { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .msg-header { padding: 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
         .msg-title { font-weight: 700; font-size: 1.1rem; color: #fff; }
-        .msg-date { font-size: 0.8rem; color: #888; }
-        .msg-type { font-size: 0.7rem; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: #333; margin-left: 10px; }
+        .msg-meta { font-size: 0.8rem; color: #888; display: flex; align-items: center; gap: 10px; }
+        .msg-type { font-size: 0.7rem; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: #333; }
         
-        .msg-body { font-size: 0.95rem; color: #ddd; line-height: 1.6; display: none; margin-top: 15px; border-top: 1px solid #444; padding-top: 15px; animation: fadeIn 0.3s; }
+        .msg-body { padding: 0 20px 20px 20px; font-size: 0.95rem; color: #ddd; line-height: 1.6; display: none; border-top: 1px solid #444; margin-top: 0; padding-top: 20px; animation: fadeIn 0.3s; }
         .msg-item.open .msg-body { display: block; }
+        .msg-item.open { background: #222; border-color: #555; }
 
         /* Botão dentro do e-mail */
-        .btn-email { background: #3498db; color: #fff; border: none; padding: 10px 15px; cursor: pointer; width: 100%; margin-top: 10px; border-radius: 4px; font-weight: bold; transition:0.2s; }
-        .btn-email:hover { background: #2980b9; transform: scale(1.02); }
-
-        /* Animação de chegada */
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        .new-msg { animation: slideIn 0.5s ease forwards; border-color: var(--neon-green); }
+        .btn-email { background: #3498db; color: #fff; border: none; padding: 12px 15px; cursor: pointer; width: 100%; margin-top: 15px; border-radius: 4px; font-weight: bold; transition:0.2s; font-size: 1rem; }
+        .btn-email:hover { background: #2980b9; transform: translateY(-2px); }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
@@ -48,7 +45,7 @@
 
     <nav class="sidebar">
         <div class="logo">BR<span>FUTEBOL</span></div>
-        <a class="menu-btn" href="painel.html">📊 Visão Geral</a>
+        <a class="menu-btn" href="dashboard.html">📊 Visão Geral</a>
         <a class="menu-btn" href="escalacao.html">👕 Escalação</a>
         <a class="menu-btn" href="mercado.html">🔄 Mercado</a>
         <a class="menu-btn" href="calendario.html">📅 Calendário</a>
@@ -69,6 +66,11 @@
 
     <script>
         window.onload = function() {
+            // Verifica se o engine carregou
+            if(typeof Engine === 'undefined') {
+                document.getElementById('lista-mensagens').innerHTML = "<p>Erro: Engine não carregado.</p>";
+                return;
+            }
             renderizarMensagens();
         };
 
@@ -83,76 +85,102 @@
             }
 
             game.mensagens.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = `msg-item ${msg.lida ? '' : 'unread'}`;
-                // ID único para facilitar manipulação
-                div.id = `msg-${msg.id}`; 
-                
-                // Badge de tipo
-                let typeLabel = "";
-                if(msg.tipo === 'patrocinio_oferta') typeLabel = `<span class="msg-type" style="color:#3498db">Comercial</span>`;
-                if(msg.tipo === 'tv_oferta') typeLabel = `<span class="msg-type" style="color:#f1c40f">Mídia</span>`;
-                if(msg.tipo === 'boas_vindas') typeLabel = `<span class="msg-type" style="color:#e74c3c">Diretoria</span>`;
+                // Criação segura de elementos DOM (evita bugs de aspas no HTML)
+                const divItem = document.createElement('div');
+                divItem.className = `msg-item ${msg.lida ? '' : 'unread'}`;
+                divItem.id = `msg-${msg.id}`; // ID para manipular
 
-                div.innerHTML = `
-                    <div class="msg-header" onclick="lerMensagem(${msg.id})">
-                        <div><span class="msg-title">${msg.titulo}</span> ${typeLabel}</div>
-                        <div class="msg-date">Rodada ${msg.rodada}</div>
+                // Header (Título e Data)
+                const divHeader = document.createElement('div');
+                divHeader.className = 'msg-header';
+                
+                // Configura badges de cor
+                let corBadge = '#333';
+                let nomeBadge = 'Geral';
+                if(msg.tipo === 'boas_vindas') { corBadge = '#e74c3c'; nomeBadge = 'Diretoria'; }
+                if(msg.tipo === 'patrocinio_oferta') { corBadge = '#3498db'; nomeBadge = 'Comercial'; }
+                if(msg.tipo === 'tv_oferta') { corBadge = '#f1c40f'; nomeBadge = 'Mídia'; }
+                if(msg.tipo === 'dm') { corBadge = '#ff7675'; nomeBadge = 'DM'; }
+                if(msg.tipo === 'negociacao') { corBadge = '#00b894'; nomeBadge = 'Mercado'; }
+
+                divHeader.innerHTML = `
+                    <div class="msg-title">${msg.titulo}</div>
+                    <div class="msg-meta">
+                        <span class="msg-type" style="background:${corBadge}; color:#fff;">${nomeBadge}</span>
+                        <span>Rodada ${msg.rodada}</span>
                     </div>
-                    <div class="msg-body">${msg.corpo}</div>
                 `;
-                container.appendChild(div);
+
+                // Corpo da mensagem
+                const divBody = document.createElement('div');
+                divBody.className = 'msg-body';
+                divBody.innerHTML = msg.corpo; // Insere o HTML rico gerado pelo Engine
+
+                // Evento de Clique Seguro
+                divHeader.onclick = function() {
+                    abrirMensagem(msg.id, divItem);
+                };
+
+                divItem.appendChild(divHeader);
+                divItem.appendChild(divBody);
+                container.appendChild(divItem);
             });
         }
 
-        function lerMensagem(id) {
+        function abrirMensagem(id, divItem) {
+            // Fecha todos os outros
+            document.querySelectorAll('.msg-item').forEach(item => {
+                if(item !== divItem) item.classList.remove('open');
+            });
+
+            // Alterna o atual
+            const estavaAberto = divItem.classList.contains('open');
+            if(estavaAberto) {
+                divItem.classList.remove('open');
+            } else {
+                divItem.classList.add('open');
+                divItem.classList.remove('unread');
+                processarLeitura(id);
+            }
+        }
+
+        function processarLeitura(id) {
             const game = Engine.carregarJogo();
-            const msg = game.mensagens.find(m => m.id === id);
-            if (!msg) return;
-
-            // UI: Abre/Fecha
-            const divMsg = document.getElementById(`msg-${id}`);
-            const wasOpen = divMsg.classList.contains('open');
+            // Compara IDs como string para garantir
+            const msg = game.mensagens.find(m => String(m.id) === String(id));
             
-            // Fecha outros
-            document.querySelectorAll('.msg-item').forEach(m => m.classList.remove('open'));
+            if(msg && !msg.lida) {
+                msg.lida = true;
+                
+                // LÓGICA DE GATILHOS (SEQUÊNCIA DE MENSAGENS)
+                let novidade = false;
 
-            if (!wasOpen) {
-                divMsg.classList.add('open');
-                divMsg.classList.remove('unread');
-
-                // LÓGICA DE GATILHO (TRIGGER)
-                if (!msg.lida) {
-                    msg.lida = true;
-                    // Salva o estado de lida
-                    Engine.salvarJogo(game);
-                    
-                    // Verifica se deve liberar nova mensagem
-                    let novaMsgGerada = false;
-
-                    if (msg.tipo === 'boas_vindas') {
-                        Engine.Contratos.liberarOfertasPatrocinio();
-                        novaMsgGerada = true;
-                        notificar("Novo e-mail: Propostas de Patrocínio");
-                    } 
-                    else if (msg.tipo === 'patrocinio_oferta') {
-                        // Só libera TV se já escolheu o patrocínio? 
-                        // Melhor liberar ao ler para manter o fluxo rápido
-                        Engine.Contratos.liberarOfertasTV();
-                        novaMsgGerada = true;
-                        notificar("Novo e-mail: Direitos de TV");
-                    }
-
-                    if (novaMsgGerada) {
-                        // Recarrega a lista para mostrar a nova mensagem no topo
-                        setTimeout(() => {
-                            renderizarMensagens();
-                            // Mantém a mensagem atual aberta após re-renderizar
-                            const novaDiv = document.getElementById(`msg-${id}`);
-                            if(novaDiv) novaDiv.classList.add('open');
-                        }, 800);
-                    }
+                if (msg.tipo === 'boas_vindas') {
+                    Engine.Contratos.liberarOfertasPatrocinio();
+                    novidade = true;
+                    notificar("Nova proposta comercial recebida!");
+                } 
+                else if (msg.tipo === 'patrocinio_oferta') {
+                    Engine.Contratos.liberarOfertasTV();
+                    novidade = true;
+                    notificar("Emissoras de TV entraram em contato!");
                 }
+
+                // Salva antes de recarregar
+                Engine.salvarJogo(game);
+
+                if (novidade) {
+                    // Pequeno delay para dar tempo de ler o título novo
+                    setTimeout(() => {
+                        renderizarMensagens();
+                        // Reabre a mensagem que estava lendo
+                        const novaDiv = document.getElementById(`msg-${id}`);
+                        if(novaDiv) novaDiv.classList.add('open');
+                    }, 1000);
+                }
+            } else {
+                // Apenas salva que leu se não tiver gatilho
+                Engine.salvarJogo(game);
             }
         }
 
@@ -160,7 +188,7 @@
             const box = document.getElementById('status-box');
             box.innerText = texto;
             box.style.color = "var(--neon-green)";
-            setTimeout(() => { box.innerText = ""; }, 3000);
+            setTimeout(() => { box.innerText = ""; }, 4000);
         }
     </script>
 </body>
