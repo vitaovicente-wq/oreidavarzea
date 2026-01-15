@@ -75,17 +75,17 @@
 
         /* --- MODAL DE NEGOCIAÇÃO IMERSIVO --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 2000; display: none; align-items: center; justify-content: center; }
-        .neg-card { width: 900px; height: 600px; background: #121519; border: 1px solid #444; border-radius: 12px; display: flex; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .neg-card { width: 950px; height: 650px; background: #121519; border: 1px solid #444; border-radius: 12px; display: flex; overflow: hidden; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
         
         /* Lateral Esquerda (Info do Jogador) */
-        .neg-sidebar { width: 260px; background: #161b22; border-right: 1px solid #333; padding: 30px 20px; display: flex; flex-direction: column; gap: 25px; }
+        .neg-sidebar { width: 300px; background: #161b22; border-right: 1px solid #333; padding: 30px 20px; display: flex; flex-direction: column; gap: 20px; }
         .neg-header-info { border-bottom: 1px solid #333; padding-bottom: 20px; }
         .neg-p-name { font-family: 'Rajdhani'; font-weight: 800; font-size: 2rem; color: #fff; line-height: 1; margin-bottom: 5px; }
         .neg-p-details { font-size: 0.9rem; color: #888; display: flex; gap: 10px; align-items: center; }
         .neg-pos-tag { background: #333; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.8rem; }
         .neg-ovr-box { font-family: 'Rajdhani'; font-weight: 900; font-size: 2.5rem; color: var(--gold); margin-top: 10px; }
         
-        .neg-status-box { padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid #333; font-size: 0.9rem; color: #aaa; }
+        .neg-status-box { padding: 10px 15px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid #333; font-size: 0.9rem; color: #aaa; }
         .neg-status-label { display: block; font-size: 0.7rem; text-transform: uppercase; color: #666; margin-bottom: 5px; }
         .neg-status-val { font-weight: bold; color: #fff; }
 
@@ -109,9 +109,7 @@
         .opt-btn.confirm { background: var(--neon-green); color: #000; border-color: var(--neon-green); font-weight: 700; text-align: center; }
         .opt-btn.cancel { background: var(--red); color: #fff; border-color: var(--red); font-weight: 700; text-align: center; }
 
-        /* Inputs */
         .input-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
-        .input-label { font-size: 0.8rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
         .neg-input { background: #000; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 4px; font-family: 'Rajdhani'; font-size: 1.1rem; }
         .range-slider { width: 100%; cursor: pointer; accent-color: var(--neon-green); }
     </style>
@@ -167,13 +165,24 @@
                 </div>
 
                 <div class="neg-status-box">
-                    <span class="neg-status-label">Situação Atual</span>
-                    <span class="neg-status-val" id="neg-status-desc">Agente Livre</span>
+                    <span class="neg-status-label">Último Clube</span>
+                    <span class="neg-status-val" id="neg-last-club">---</span>
+                </div>
+
+                <div style="display:flex; gap:10px;">
+                    <div class="neg-status-box" style="flex:1;">
+                        <span class="neg-status-label">Jogos</span>
+                        <span class="neg-status-val" id="neg-stats-jogos">0</span>
+                    </div>
+                    <div class="neg-status-box" style="flex:1;">
+                        <span class="neg-status-label">Gols</span>
+                        <span class="neg-status-val" id="neg-stats-gols">0</span>
+                    </div>
                 </div>
                 
-                <div class="neg-status-box" style="margin-top:10px;">
-                    <span class="neg-status-label">Valor de Referência</span>
-                    <span class="neg-status-val" id="neg-val-ref" style="color:var(--gold)">R$ 0</span>
+                <div class="neg-status-box" style="margin-top:auto;">
+                    <span class="neg-status-label">Humor na Negociação</span>
+                    <span class="neg-status-val" id="neg-patience-display" style="color:var(--neon-green)">😊 Interessado</span>
                 </div>
             </div>
             
@@ -192,7 +201,14 @@
 
     <script>
         let abaAtual = 'livres';
-        let currentNeg = { player: null, expectations: {}, offer: {} };
+        // Variável de controle de negociação
+        let currentNeg = { 
+            player: null, 
+            expectations: {}, 
+            offer: {},
+            patience: 3, // Sistema de 3 strikes
+            maxPatience: 3
+        };
 
         window.onload = function() {
             carregarDados();
@@ -203,14 +219,8 @@
             const game = Engine.carregarJogo();
             document.getElementById('money-display').innerText = (game.recursos.dinheiro || 0).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
             
-            if(!localStorage.getItem('brfutebol_livres')) {
-                // Se não existir, cria vazio (realista)
-                localStorage.setItem('brfutebol_livres', '[]');
-            }
-            if(!localStorage.getItem('brfutebol_transferencias')) {
-                // Se não existir, cria vazio (realista)
-                localStorage.setItem('brfutebol_transferencias', '[]');
-            }
+            if(!localStorage.getItem('brfutebol_livres')) localStorage.setItem('brfutebol_livres', '[]');
+            if(!localStorage.getItem('brfutebol_transferencias')) localStorage.setItem('brfutebol_transferencias', '[]');
         }
 
         function mudarAba(aba) {
@@ -276,72 +286,77 @@
 
         function verificarCompra(jogador) {
             const game = Engine.carregarJogo();
-            
-            // 1. SE FOR DE CLUBE: Verifica se tem dinheiro para o passe
             if (abaAtual === 'clubes') {
                 if (game.recursos.dinheiro < jogador.valor) {
                     alert(`❌ Saldo insuficiente. O clube pede R$ ${jogador.valor.toLocaleString()}.`);
                     return;
                 }
                 if(confirm(`Pagar R$ ${jogador.valor.toLocaleString()} ao ${jogador.clube} para negociar com ${jogador.nome}?`)) {
-                    // Desconta o dinheiro do passe
                     game.recursos.dinheiro -= jogador.valor;
                     Engine.salvarJogo(game);
                     document.getElementById('money-display').innerText = game.recursos.dinheiro.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
-                    
-                    // Inicia negociação
                     abrirModalNegociacao(jogador);
                 }
             } else {
-                // SE FOR LIVRE: Vai direto negociar luvas e salário
                 abrirModalNegociacao(jogador);
             }
         }
 
-        // --- SISTEMA DE CHAT ---
+        // --- SISTEMA DE CHAT E LÓGICA DE NEGOCIAÇÃO ---
 
         function abrirModalNegociacao(jogador) {
-            const game = Engine.carregarJogo();
-            
             // Definição de Expectativas
-            // Jogador Livre: Pede salário maior (já que não tem passe)
             const fatorSalario = abaAtual === 'livres' ? 1700 : 1500;
             const salarioDesejado = Math.floor((jogador.forca * fatorSalario));
             
-            // Luvas (Signing Bonus)
-            const luvasDesejadas = abaAtual === 'livres' ? (salarioDesejado * 3) : (salarioDesejado * 1.5);
+            // Luvas: Pelo menos 2x o salário se for livre, 1x se for compra
+            const luvasDesejadas = abaAtual === 'livres' ? (salarioDesejado * 2) : salarioDesejado;
 
             currentNeg = { 
                 player: jogador, 
                 expectations: {
                     salary: salarioDesejado,
                     bonus: luvasDesejadas,
-                    years: 2, // Padrão
+                    years: 2,
                     role: jogador.forca > 80 ? 'Titular Absoluto' : 'Rotação'
                 },
-                offer: {} 
+                offer: {},
+                patience: 3, // Reseta paciência
+                maxPatience: 3
             };
 
-            // Preenche UI Lateral
+            // Preenche UI Lateral com NOVOS DADOS
             document.getElementById('neg-name').innerText = jogador.nome;
             document.getElementById('neg-ovr').innerText = jogador.forca;
             document.getElementById('neg-age').innerText = jogador.idade + " anos";
             document.getElementById('neg-pos').innerText = jogador.pos;
-            document.getElementById('neg-status-desc').innerText = abaAtual === 'livres' ? "Agente Livre" : "Contrato em vigor";
-            document.getElementById('neg-val-ref').innerText = salarioDesejado.toLocaleString('pt-BR', {style:'currency', currency:'BRL'}) + "/mês (Est.)";
+            
+            // Novos Campos
+            document.getElementById('neg-last-club').innerText = jogador.clube || "Sem Clube";
+            document.getElementById('neg-stats-jogos').innerText = jogador.jogos || 0;
+            document.getElementById('neg-stats-gols').innerText = jogador.gols || 0;
+            
+            updatePatienceUI();
 
-            // Limpa e Abre
             document.getElementById('chat-feed').innerHTML = '';
             document.getElementById('neg-modal').style.display = 'flex';
 
-            // Primeira Mensagem
             if (abaAtual === 'livres') {
-                addMsg('cpu', `Olá. Estou analisando propostas. O que seu clube tem a oferecer?`);
+                addMsg('cpu', `Estou livre no mercado e analisando propostas. O que seu clube tem a oferecer?`);
             } else {
                 addMsg('cpu', `Fiquei sabendo que vocês pagaram minha multa. Vamos discutir meu contrato pessoal.`);
             }
             
             showOptions('papel');
+        }
+
+        function updatePatienceUI() {
+            const p = currentNeg.patience;
+            const el = document.getElementById('neg-patience-display');
+            if(p === 3) { el.innerText = "😊 Interessado"; el.style.color = "var(--neon-green)"; }
+            else if(p === 2) { el.innerText = "😐 Neutro"; el.style.color = "yellow"; }
+            else if(p === 1) { el.innerText = "😠 Irritado"; el.style.color = "orange"; }
+            else { el.innerText = "🤬 Furioso"; el.style.color = "var(--red)"; }
         }
 
         function fecharNegociacao() {
@@ -361,6 +376,13 @@
             const area = document.getElementById('neg-controls');
             area.innerHTML = '';
 
+            if (currentNeg.patience <= 0) {
+                // Se acabou a paciência, encerra
+                addMsg('system', 'O jogador encerrou as negociações.');
+                area.innerHTML = `<div class="opt-btn cancel" onclick="fecharNegociacao()">Sair</div>`;
+                return;
+            }
+
             if (step === 'papel') {
                 area.innerHTML = `
                     <div class="input-group"><span class="input-label">Papel no Time</span>
@@ -379,41 +401,56 @@
             else if (step === 'salario') {
                 area.innerHTML = `
                     <div class="input-group"><span class="input-label">Salário Mensal (R$)</span>
-                    <input type="number" id="input-sal" class="neg-input" value="${currentNeg.expectations.salary}"></div>
+                    <input type="number" id="input-sal" class="neg-input" value="${currentNeg.expectations.salary}" min="0"></div>
                     <div class="opt-btn confirm" onclick="definirSalario()">Fazer Oferta</div>`;
             } 
             else if (step === 'luvas') {
                 area.innerHTML = `
                     <div class="input-group"><span class="input-label">Luvas (Bônus de Assinatura)</span>
-                    <input type="number" id="input-bon" class="neg-input" value="${currentNeg.expectations.bonus}"></div>
-                    <div class="opt-btn confirm" onclick="fecharAcordo()">Finalizar Contratação</div>`;
+                    <input type="number" id="input-bon" class="neg-input" value="${currentNeg.expectations.bonus}" min="0"></div>
+                    <div class="opt-btn confirm" onclick="fecharAcordo()">Finalizar Contrato</div>`;
             }
             else if (step === 'fim') {
                 area.innerHTML = `<div class="opt-btn confirm" onclick="concluirNegocio()">Assinar e Fechar</div>`;
             }
-            else if (step === 'falha') {
-                area.innerHTML = `<div class="opt-btn cancel" onclick="fecharNegociacao()">Sair</div>`;
-            }
         }
 
-        // --- FLUXO DE CONVERSA ---
+        // --- LÓGICA DE INTELIGÊNCIA ---
+
+        function diminuirPaciencia(qtd, motivo) {
+            currentNeg.patience -= qtd;
+            updatePatienceUI();
+            
+            if (currentNeg.patience <= 0) {
+                setTimeout(() => {
+                    addMsg('cpu', `Chega! ${motivo} Não vou assinar com vocês.`);
+                    showOptions('bloqueado');
+                }, 800);
+                return true; // Encerrou
+            }
+            return false; // Continua
+        }
 
         function verificarPapel() {
             const role = document.getElementById('sel-role').value;
             currentNeg.offer.role = role;
             addMsg('user', `Você chega para ser ${role}.`);
             
-            // Validação Simples
             const niveis = { "Titular Absoluto": 4, "Importante": 3, "Rotação": 2, "Reserva": 1 };
-            if (niveis[role] < niveis[currentNeg.expectations.role]) {
-                setTimeout(() => { 
-                    addMsg('cpu', `Não aceito ser ${role}. Tenho futebol para mais.`); 
-                    addMsg('system', 'Negociação encerrada.');
-                    showOptions('falha');
-                }, 800);
-            } else {
-                setTimeout(() => { addMsg('cpu', "Ok, concordo com essa função. E o tempo de contrato?"); showOptions('duracao'); }, 800);
-            }
+            
+            setTimeout(() => {
+                if (niveis[role] < niveis[currentNeg.expectations.role]) {
+                    // Oferta ruim de papel
+                    addMsg('cpu', `Isso é um insulto. Sou jogador para ser ${currentNeg.expectations.role}.`);
+                    if(!diminuirPaciencia(1, "Não me valorizaram.")) {
+                        addMsg('system', 'Jogador insatisfeito. Tente novamente.');
+                        showOptions('papel'); 
+                    }
+                } else {
+                    addMsg('cpu', "Ok, concordo com essa função. E o tempo de contrato?");
+                    showOptions('duracao');
+                }
+            }, 800);
         }
 
         function definirDuracao() {
@@ -428,13 +465,30 @@
             currentNeg.offer.salary = sal;
             addMsg('user', `Ofereço R$ ${sal.toLocaleString()} mensais.`);
             
-            const min = currentNeg.expectations.salary * 0.9; // Aceita 90% do pedido
+            // CORREÇÃO: Bloqueia valor negativo ou zero
+            if (sal <= 0) {
+                setTimeout(() => {
+                    addMsg('cpu', "Você está de brincadeira? Salário zero? Adeus.");
+                    diminuirPaciencia(3, "Falta de respeito."); // Mata a negociação
+                }, 800);
+                return;
+            }
+
+            const min = currentNeg.expectations.salary * 0.9; // Aceita 90%
+            const veryLow = currentNeg.expectations.salary * 0.5; // Ofensa se for < 50%
 
             setTimeout(() => {
-                if (sal < min) {
-                    addMsg('cpu', `Muito pouco. Quero pelo menos R$ ${currentNeg.expectations.salary.toLocaleString()}.`);
-                    showOptions('salario'); // Deixa tentar de novo
-                } else {
+                if (sal < veryLow) {
+                    addMsg('cpu', `Isso é uma esmola? Eu pedi R$ ${currentNeg.expectations.salary.toLocaleString()}.`);
+                    diminuirPaciencia(2, "Oferta ridícula.");
+                    if(currentNeg.patience > 0) showOptions('salario');
+                }
+                else if (sal < min) {
+                    addMsg('cpu', `Ainda é pouco. Quero pelo menos R$ ${currentNeg.expectations.salary.toLocaleString()}. Melhore.`);
+                    diminuirPaciencia(1, "Estamos longe nos valores.");
+                    if(currentNeg.patience > 0) showOptions('salario');
+                } 
+                else {
                     addMsg('cpu', "O salário agrada. E quanto às luvas (bônus de assinatura)?");
                     showOptions('luvas');
                 }
@@ -446,16 +500,33 @@
             currentNeg.offer.bonus = bon;
             addMsg('user', `Pagamos R$ ${bon.toLocaleString()} de luvas na assinatura.`);
 
+            // CORREÇÃO: Bloqueia valor negativo
+            if (bon < 0) {
+                setTimeout(() => {
+                    addMsg('cpu', "Luvas negativas? Isso é roubo. Tchau.");
+                    diminuirPaciencia(3, "Tentativa de fraude.");
+                }, 800);
+                return;
+            }
+
+            const minLuvas = currentNeg.expectations.bonus * 0.8; // Aceita 80% do pedido
+
             setTimeout(() => {
                 const game = Engine.carregarJogo();
                 if (game.recursos.dinheiro < bon) {
                     addMsg('system', '❌ O clube não tem caixa para pagar essas luvas.');
-                    showOptions('falha');
+                    showOptions('luvas');
                     return;
                 }
 
-                addMsg('cpu', "Fechado! Onde eu assino?");
-                showOptions('fim');
+                if (bon < minLuvas) {
+                    addMsg('cpu', `O valor das luvas está muito baixo. Preciso de pelo menos R$ ${currentNeg.expectations.bonus.toLocaleString()} para assinar.`);
+                    diminuirPaciencia(1, "Não chegamos num acordo financeiro.");
+                    if(currentNeg.patience > 0) showOptions('luvas');
+                } else {
+                    addMsg('cpu', "Fechado! Onde eu assino?");
+                    showOptions('fim');
+                }
             }, 800);
         }
 
@@ -464,10 +535,8 @@
             const meuTime = Engine.encontrarTime(game.info.time);
             const jogador = currentNeg.player;
 
-            // 1. Paga as Luvas
             game.recursos.dinheiro -= currentNeg.offer.bonus;
 
-            // 2. Adiciona ao Elenco
             meuTime.elenco.push({
                 uid: jogador.uid,
                 nome: jogador.nome,
@@ -478,17 +547,15 @@
                 papel: currentNeg.offer.role,
                 contrato: `31/12/${2026 + currentNeg.offer.years}`,
                 carac: jogador.carac || "Reforço",
-                jogos: 0, gols: 0,
+                jogos: jogador.jogos || 0, 
+                gols: jogador.gols || 0,
                 atributos: jogador.atributos || { VEL: jogador.forca, FIN: jogador.forca, PAS: jogador.forca, DRI: jogador.forca, DEF: jogador.forca, PHY: jogador.forca }
             });
 
-            // 3. Salva Time
             const timeIdx = game.times.findIndex(t => t.nome === game.info.time);
             game.times[timeIdx] = meuTime;
 
-            // 4. Remove do Mercado
             Engine.Mercado.removerJogador(jogador.uid, abaAtual === 'livres' ? 'livre' : 'venda');
-
             Engine.salvarJogo(game);
             
             alert(`Bem-vindo, ${jogador.nome}!`);
