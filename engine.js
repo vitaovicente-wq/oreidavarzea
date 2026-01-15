@@ -1,4 +1,4 @@
-// ARQUIVO: engine.js (V7.0 - MERCADO COMPLETO + CONTRATOS)
+// ARQUIVO: engine.js (V7.2 - CORREÇÃO CRÍTICA DE INICIALIZAÇÃO)
 
 const Engine = {
     
@@ -11,9 +11,9 @@ const Engine = {
             return;
         }
 
-        // Limpa dados de mercado de saves anteriores
-        localStorage.removeItem('brfutebol_livres');
-        localStorage.removeItem('brfutebol_transferencias');
+        // --- CORREÇÃO: INICIALIZA MERCADO VAZIO (REALISTA) ---
+        localStorage.setItem('brfutebol_livres', '[]');
+        localStorage.setItem('brfutebol_transferencias', '[]');
 
         let timesDaLiga = [];
         if (window.Database && window.Database.brasil && window.Database.brasil[divisao]) {
@@ -79,9 +79,7 @@ const Engine = {
 
         this.salvarJogo(estadoDoJogo);
         
-        // Gera o mercado inicial
-        this.Mercado.gerarAgentesLivres();
-        this.Mercado.gerarListaTransferencias(estadoDoJogo);
+        // FIM DA INICIALIZAÇÃO (Sem chamar geradores antigos)
     },
 
     // --- 2. SISTEMA DE BUSCA ---
@@ -125,7 +123,7 @@ const Engine = {
 
         tabela.sort((a, b) => b.pts - a.pts || b.v - a.v || b.sg - a.sg || b.gp - a.gp);
         
-      // HOOK FINANCEIRO E DE MERCADO
+        // HOOK FINANCEIRO E DE MERCADO
         const rodadaIdx = estadoJogo.rodadaAtual - 1;
         if(estadoJogo.calendario[rodadaIdx]) {
             const jogoPlayer = estadoJogo.calendario[rodadaIdx].jogos.find(j => j.mandante === estadoJogo.info.time || j.visitante === estadoJogo.info.time);
@@ -138,7 +136,7 @@ const Engine = {
                 // Processa finanças
                 this.sistema.processarRodadaFinanceira(estadoJogo, isMandante, adversario);
                 
-                // Gera ofertas PELOS seus jogadores (Outros times querendo comprar os seus)
+                // Gera ofertas PELOS seus jogadores
                 this.sistema.gerarPropostaTransferencia(); 
                 
                 // --- MOVIMENTAÇÃO DO MERCADO DA CPU ---
@@ -310,15 +308,13 @@ const Engine = {
         }
     },
 
-  // --- 7. SISTEMA DE MERCADO (REALISTA) ---
+    // --- 7. SISTEMA DE MERCADO (REALISTA) ---
     Mercado: {
-        // Retorna a lista de livres (sem gerar nada falso)
         getAgentesLivres: function() {
             const livres = localStorage.getItem('brfutebol_livres');
             return livres ? JSON.parse(livres) : [];
         },
 
-        // Retorna a lista de transferências (Venda de jogadores sob contrato)
         getListaTransferencias: function() {
             const transferencias = localStorage.getItem('brfutebol_transferencias');
             return transferencias ? JSON.parse(transferencias) : [];
@@ -328,7 +324,6 @@ const Engine = {
         atualizarListaTransferencias: function(game) {
             let lista = this.getListaTransferencias();
             
-            // Chance de adicionar novos jogadores à venda
             if(Math.random() > 0.7) { // 30% de chance por rodada
                 const timesCPU = game.times.filter(t => t.nome !== game.info.time);
                 const timeAleatorio = timesCPU[Math.floor(Math.random() * timesCPU.length)];
@@ -336,7 +331,6 @@ const Engine = {
                 if(timeAleatorio && timeAleatorio.elenco.length > 18) {
                     const jogador = timeAleatorio.elenco[Math.floor(Math.random() * timeAleatorio.elenco.length)];
                     
-                    // Só põe à venda se não estiver lá e não for o craque do time
                     if (!lista.find(j => j.uid === jogador.uid) && jogador.forca < 85) {
                         const valorMercado = Math.floor(Math.pow(jogador.forca, 3) * 18);
                         lista.push({ ...jogador, valor: valorMercado, clube: timeAleatorio.nome });
@@ -344,9 +338,7 @@ const Engine = {
                 }
             }
             
-            // Remove alguns antigos para a lista não ficar gigante
             if (lista.length > 20) lista.shift();
-
             localStorage.setItem('brfutebol_transferencias', JSON.stringify(lista));
         },
 
@@ -354,31 +346,25 @@ const Engine = {
         simularDispensasCPU: function(game) {
             let livres = this.getAgentesLivres();
             
-            // Chance pequena de dispensa (Times não demitem toda hora)
-            if (Math.random() > 0.85) { // 15% de chance a cada atualização
+            if (Math.random() > 0.85) { 
                 const timesCPU = game.times.filter(t => t.nome !== game.info.time);
                 const timeAleatorio = timesCPU[Math.floor(Math.random() * timesCPU.length)];
 
-                // Critério de dispensa: Elenco inchado ou jogador fraco
                 if (timeAleatorio && timeAleatorio.elenco.length > 22) {
-                    // Pega os jogadores mais fracos do time
                     const candidatos = timeAleatorio.elenco.filter(j => j.forca < 70);
                     
                     if (candidatos.length > 0) {
                         const dispensado = candidatos[Math.floor(Math.random() * candidatos.length)];
                         
-                        // Remove do time original
                         timeAleatorio.elenco = timeAleatorio.elenco.filter(j => j.uid !== dispensado.uid);
                         
-                        // Adiciona na lista de Livres (Custo zero)
                         livres.push({
                             ...dispensado,
                             valor: 0,
                             clube: null,
-                            carac: "Dispensado" // Marca histórica
+                            carac: "Dispensado"
                         });
 
-                        // Envia notificação para o usuário (Opcional, para dar vida ao mundo)
                         Engine.sistema.novaMensagem(
                             "Jogador Dispensado",
                             `O ${timeAleatorio.nome} rescindiu contrato com ${dispensado.nome}. Ele está livre no mercado.`,
@@ -403,7 +389,7 @@ const Engine = {
             }
         }
     },
-    
+
     // --- 8. SISTEMA FINANCEIRO E MENSAGENS ---
     sistema: {
         novaMensagem: function(titulo, corpo, tipo = 'info', acao = null) {
@@ -427,7 +413,6 @@ const Engine = {
         processarRodadaFinanceira: function(game, mandante, adversario) {
             if (!game.financas) game.financas = { saldo: 0, historico: [] };
             
-            // 1. Bilheteria (Se Mandante)
             if (mandante) {
                 const bilheteria = Engine.estadios.calcularBilheteria(adversario);
                 const renda = bilheteria.rendaTotal;
@@ -436,13 +421,11 @@ const Engine = {
                 game.financas.historico.push({ texto: `Bilheteria vs ${adversario}`, valor: renda, tipo: 'entrada' });
             }
 
-            // 2. Salários (Agora com suporte a valores fixos)
             let folhaSalarial = 0;
             const meuTime = game.times.find(t => t.nome === game.info.time);
             
             if(meuTime && meuTime.elenco) {
                 meuTime.elenco.forEach(j => {
-                    // Se o jogador já tem salário fixo, usa ele. Se não, calcula pela força (fallback)
                     const salario = j.salario || ((j.forca || 60) * 1500);
                     folhaSalarial += salario; 
                 });
@@ -451,7 +434,6 @@ const Engine = {
             game.recursos.dinheiro -= folhaSalarial;
             game.financas.historico.push({ texto: `Salários da Equipe`, valor: -folhaSalarial, tipo: 'saida' });
 
-            // 3. Manutenção do Estádio
             const dadosEstadio = Engine.estadios.getEstadio();
             const custoManutencao = Math.floor(dadosEstadio.cap * 5); 
             
