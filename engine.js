@@ -1,4 +1,4 @@
-// ARQUIVO: engine.js (V10.1 - CORREÇÃO FINAL DE INICIALIZAÇÃO)
+// ARQUIVO: engine.js (V10.2 - CORREÇÃO DE SINTAXE E INICIALIZAÇÃO)
 
 const Engine = {
     
@@ -90,11 +90,8 @@ const Engine = {
 
         this.salvarJogo(estadoDoJogo);
 
-        // 6. GERA APENAS O E-MAIL DE BOAS VINDAS (CORRIGIDO: REMOVIDAS FUNÇÕES ANTIGAS)
+        // 6. GERA APENAS O E-MAIL DE BOAS VINDAS
         this.Contratos.enviarBoasVindas(estadoDoJogo);
-        
-        // Redirecionamento (Opcional, o index.html costuma fazer isso)
-        // window.location.href = 'painel.html';
     },
 
     // --- 2. SISTEMA DE CONTRATOS E MENSAGENS AVANÇADO ---
@@ -104,14 +101,14 @@ const Engine = {
                 <div style="font-family:'Georgia', serif; color:#ddd;">
                     <p>Prezado(a) <b>${game.info.tecnico}</b>,</p>
                     <p>É com grande expectativa que assino sua contratação. O Conselho Deliberativo aprovou seu nome, mas saiba que a paciência por aqui é curta.</p>
-                    <p>Liberamos um aporte inicial de <b>${game.recursos.dinheiro.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</b>. Use com sabedoria. Não haverá mais dinheiro se você gastar tudo em bagres.</p>
+                    <p>Liberamos um aporte inicial de <b>${game.recursos.dinheiro.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}</b>. Use com sabedoria.</p>
                     <p><b>Suas prioridades imediatas (Checklist):</b></p>
                     <ul style="background:#222; padding:15px; border-left:3px solid #f1c40f;">
-                        <li>☐ Analisar as propostas de Patrocínio Master (Essenciais para pagar salários).</li>
-                        <li>☐ Fechar os Direitos de TV (Importante para fluxo de caixa).</li>
-                        <li>☐ Avaliar o elenco atual e dispensar quem não serve.</li>
+                        <li>☐ Analisar as propostas de Patrocínio Master.</li>
+                        <li>☐ Fechar os Direitos de TV.</li>
+                        <li>☐ Avaliar o elenco atual.</li>
                     </ul>
-                    <p>Assim que você terminar de ler este memorando, mandarei meu diretor comercial apresentar as ofertas de patrocínio que estão na mesa.</p>
+                    <p>Assim que você terminar de ler este memorando, mandarei meu diretor comercial apresentar as ofertas de patrocínio.</p>
                     <p>Atenciosamente,<br><i>O Presidente</i></p>
                 </div>
             `;
@@ -124,62 +121,53 @@ const Engine = {
 
             const baseVal = Math.floor(game.recursos.dinheiro * 0.15); 
             
-            const p1 = { 
-                id: 1, empresa: "Banco Nacional", mensal: baseVal * 1.2, luvas: baseVal * 2, bonusTitulo: baseVal * 5, duracao: 12, 
-                desc: "Pagamento mensal alto e garantido. Pouco bônus por performance. Ideal para pagar contas em dia."
-            };
-            const p2 = { 
-                id: 2, empresa: "BetWin365", mensal: baseVal * 0.7, luvas: baseVal * 8, bonusTitulo: baseVal * 20, duracao: 24, 
-                desc: "Luvas altíssimas agora (bom para contratar já). Mensal baixo. Bônus gigante se for campeão."
-            };
-            const p3 = { 
-                id: 3, empresa: "NeoTech Systems", mensal: baseVal, luvas: baseVal * 4, bonusTitulo: baseVal * 8, duracao: 12, 
-                desc: "Uma proposta equilibrada. Exigem classificação para competições internacionais."
-            };
+            const p1 = { id: 1, empresa: "Banco Nacional", mensal: Math.floor(baseVal * 1.2), luvas: Math.floor(baseVal * 2), bonusTitulo: Math.floor(baseVal * 5), duracao: 12, desc: "Pagamento mensal alto e garantido." };
+            const p2 = { id: 2, empresa: "BetWin365", mensal: Math.floor(baseVal * 0.7), luvas: Math.floor(baseVal * 8), bonusTitulo: Math.floor(baseVal * 20), duracao: 24, desc: "Luvas altíssimas agora. Mensal baixo." };
+            const p3 = { id: 3, empresa: "NeoTech Systems", mensal: Math.floor(baseVal), luvas: Math.floor(baseVal * 4), bonusTitulo: Math.floor(baseVal * 8), duracao: 12, desc: "Proposta equilibrada." };
+
+            // Importante: .replace(/"/g, '&quot;') evita quebra de HTML
+            const strP1 = JSON.stringify(p1).replace(/"/g, '&quot;');
+            const strP2 = JSON.stringify(p2).replace(/"/g, '&quot;');
+            const strP3 = JSON.stringify(p3).replace(/"/g, '&quot;');
 
             let html = `
                 <div style="font-family:'Georgia', serif;">
-                    <p>Chefe, consegui três reuniões. A situação é a seguinte: precisamos decidir <b>hoje</b> quem estampará nossa camisa.</p>
-                    <p>Analise o que é mais importante para o clube agora: Dinheiro na mão para contratações (Luvas) ou segurança para pagar salários (Mensal)?</p>
+                    <p>Chefe, consegui três reuniões. Precisamos decidir <b>hoje</b> quem estampará nossa camisa.</p>
                     <hr style="border-color:#444">
                     
                     <div style="background:#1a1a1a; padding:15px; border-radius:5px; margin-bottom:15px; border-left:4px solid #3498db;">
                         <h3 style="margin:0; color:#3498db;">Opção A: ${p1.empresa}</h3>
                         <p style="font-size:0.9rem; color:#aaa; margin-top:5px;"><i>"${p1.desc}"</i></p>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0;">
+                        <div style="margin:10px 0;">
                             <div>💰 Mensal: <b>R$ ${p1.mensal.toLocaleString()}</b></div>
                             <div>📝 Luvas: <b>R$ ${p1.luvas.toLocaleString()}</b></div>
-                            <div style="grid-column: span 2;">🏆 Bônus Título: R$ ${p1.bonusTitulo.toLocaleString()}</div>
                         </div>
-                        <button onclick='Engine.Contratos.assinarPatrocinio(${JSON.stringify(p1)}, this)' class="btn-email">Assinar com ${p1.empresa}</button>
+                        <button onclick="Engine.Contratos.assinarPatrocinio(${strP1}, this)" class="btn-email">Assinar com ${p1.empresa}</button>
                     </div>
 
                     <div style="background:#1a1a1a; padding:15px; border-radius:5px; margin-bottom:15px; border-left:4px solid #e74c3c;">
                         <h3 style="margin:0; color:#e74c3c;">Opção B: ${p2.empresa}</h3>
                         <p style="font-size:0.9rem; color:#aaa; margin-top:5px;"><i>"${p2.desc}"</i></p>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0;">
+                        <div style="margin:10px 0;">
                             <div>💰 Mensal: R$ ${p2.mensal.toLocaleString()}</div>
                             <div>📝 Luvas: <b style="color:#00ff88">R$ ${p2.luvas.toLocaleString()}</b></div>
-                            <div style="grid-column: span 2;">🏆 Bônus Título: <b style="color:#f1c40f">R$ ${p2.bonusTitulo.toLocaleString()}</b></div>
                         </div>
-                        <button onclick='Engine.Contratos.assinarPatrocinio(${JSON.stringify(p2)}, this)' class="btn-email">Assinar com ${p2.empresa}</button>
+                        <button onclick="Engine.Contratos.assinarPatrocinio(${strP2}, this)" class="btn-email">Assinar com ${p2.empresa}</button>
                     </div>
 
                     <div style="background:#1a1a1a; padding:15px; border-radius:5px; border-left:4px solid #9b59b6;">
                         <h3 style="margin:0; color:#9b59b6;">Opção C: ${p3.empresa}</h3>
                         <p style="font-size:0.9rem; color:#aaa; margin-top:5px;"><i>"${p3.desc}"</i></p>
-                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:10px 0;">
+                        <div style="margin:10px 0;">
                             <div>💰 Mensal: R$ ${p3.mensal.toLocaleString()}</div>
                             <div>📝 Luvas: R$ ${p3.luvas.toLocaleString()}</div>
-                            <div style="grid-column: span 2;">🏆 Bônus Título: R$ ${p3.bonusTitulo.toLocaleString()}</div>
                         </div>
-                        <button onclick='Engine.Contratos.assinarPatrocinio(${JSON.stringify(p3)}, this)' class="btn-email">Assinar com ${p3.empresa}</button>
+                        <button onclick="Engine.Contratos.assinarPatrocinio(${strP3}, this)" class="btn-email">Assinar com ${p3.empresa}</button>
                     </div>
                 </div>
             `;
 
             Engine.sistema.novaMensagem("URGENTE: Definição de Patrocínio Master", html, 'patrocinio_oferta');
-            
             game.flags.patroEnviado = true;
             Engine.salvarJogo(game);
         },
@@ -190,39 +178,35 @@ const Engine = {
 
             const baseCota = Math.floor(game.recursos.dinheiro * 0.10);
 
-            const t1 = { id: 'tv1', emissora: "Rede Nacional", fixo: baseCota * 1.5, porJogo: 0, desc: "Tradicional. Paga um valor fixo alto mensalmente, independente se o jogo passa na TV ou não." };
-            const t2 = { id: 'tv2', emissora: "StreamSports+", fixo: baseCota * 0.5, porJogo: baseCota * 0.3, desc: "Moderna. Fixo baixo, mas paga muito por jogo transmitido. Se o time for bem e tiver audiência, rende o dobro." };
+            const t1 = { id: 'tv1', emissora: "Rede Nacional", fixo: Math.floor(baseCota * 1.5), porJogo: 0, desc: "Cota Fixa Alta" };
+            const t2 = { id: 'tv2', emissora: "StreamSports+", fixo: Math.floor(baseCota * 0.5), porJogo: Math.floor(baseCota * 0.3), desc: "Variável por jogo" };
+
+            const strT1 = JSON.stringify(t1).replace(/"/g, '&quot;');
+            const strT2 = JSON.stringify(t2).replace(/"/g, '&quot;');
 
             let html = `
                 <div style="font-family:'Georgia', serif;">
-                    <p>Ótimo, patrocínio resolvido. Agora a briga é com as TVs. Temos duas propostas na mesa.</p>
-                    <p>A Rede Nacional quer exclusividade com cota fixa. A StreamSports quer pagar por performance e audiência.</p>
+                    <p>Patrocínio resolvido. Agora a briga é com as TVs.</p>
                     <hr style="border-color:#444">
 
                     <div style="background:#1a1a1a; padding:15px; margin-bottom:15px; border-radius:5px;">
                         <strong style="color:#f1c40f; font-size:1.1rem;">📺 ${t1.emissora}</strong>
                         <p style="font-size:0.9rem; color:#aaa;">${t1.desc}</p>
-                        <ul style="list-style:none; padding:0;">
-                            <li>• Cota Fixa Mensal: <b>R$ ${t1.fixo.toLocaleString()}</b></li>
-                            <li>• Variável por Jogo: R$ 0</li>
-                        </ul>
-                        <button onclick='Engine.Contratos.assinarTV(${JSON.stringify(t1)}, this)' class="btn-email">Fechar com Rede Nacional</button>
+                        <div>• Cota Fixa Mensal: <b>R$ ${t1.fixo.toLocaleString()}</b></div>
+                        <button onclick="Engine.Contratos.assinarTV(${strT1}, this)" class="btn-email">Fechar com Rede Nacional</button>
                     </div>
 
                     <div style="background:#1a1a1a; padding:15px; border-radius:5px;">
                         <strong style="color:#00a8ff; font-size:1.1rem;">📱 ${t2.emissora}</strong>
                         <p style="font-size:0.9rem; color:#aaa;">${t2.desc}</p>
-                        <ul style="list-style:none; padding:0;">
-                            <li>• Cota Fixa Mensal: R$ ${t2.fixo.toLocaleString()}</li>
-                            <li>• Variável por Jogo: <b>R$ ${t2.porJogo.toLocaleString()}</b></li>
-                        </ul>
-                        <button onclick='Engine.Contratos.assinarTV(${JSON.stringify(t2)}, this)' class="btn-email">Fechar com StreamSports</button>
+                        <div>• Cota Fixa: R$ ${t2.fixo.toLocaleString()}</div>
+                        <div>• Por Jogo: <b>R$ ${t2.porJogo.toLocaleString()}</b></div>
+                        <button onclick="Engine.Contratos.assinarTV(${strT2}, this)" class="btn-email">Fechar com StreamSports</button>
                     </div>
                 </div>
             `;
 
             Engine.sistema.novaMensagem("Direitos de Transmissão: Propostas", html, 'tv_oferta');
-            
             game.flags.tvEnviado = true;
             Engine.salvarJogo(game);
         },
@@ -244,7 +228,7 @@ const Engine = {
                 <p>Recebemos R$ ${proposta.luvas.toLocaleString()} de luvas.</p>
             </div>`;
             
-            alert(`Parceria fechada! O financeiro já acusou o recebimento das luvas.`);
+            alert(`Parceria fechada!`);
         },
 
         assinarTV: function(proposta, btnElement) {
@@ -260,7 +244,7 @@ const Engine = {
                 <p>Transmissões exclusivas na <b>${proposta.emissora}</b>.</p>
             </div>`;
             
-            alert(`Contrato de TV assinado com sucesso.`);
+            alert(`Contrato de TV assinado.`);
         }
     },
 
@@ -287,7 +271,7 @@ const Engine = {
         return saveJson ? JSON.parse(saveJson) : null;
     },
 
-    // --- 5. ATUALIZAÇÃO DA TABELA E FINANCEIRO ---
+    // --- 5. ATUALIZAÇÃO DA TABELA ---
     atualizarTabela: function(estadoJogo) {
         const tabela = estadoJogo.classificacao || estadoJogo.tabela;
         tabela.forEach(t => { t.pts=0; t.j=0; t.v=0; t.e=0; t.d=0; t.gp=0; t.gc=0; t.sg=0; });
@@ -438,7 +422,7 @@ const Engine = {
         }
     },
 
-    // --- 9. MENSAGENS E FINANÇAS ---
+    // --- 9. SISTEMA FINANCEIRO E MENSAGENS ---
     sistema: {
         novaMensagem: function(titulo, corpo, tipo = 'info', acao = null) {
             const game = Engine.carregarJogo();
@@ -450,16 +434,13 @@ const Engine = {
         processarRodadaFinanceira: function(game, mandante, adversario) {
             if (!game.financas) game.financas = { saldo: 0, historico: [] };
             
-            // 1. Bilheteria
             if (mandante) {
                 const bilheteria = Engine.estadios.calcularBilheteria(adversario);
                 game.recursos.dinheiro += bilheteria.rendaTotal;
                 game.financas.historico.push({ texto: `Bilheteria vs ${adversario}`, valor: bilheteria.rendaTotal, tipo: 'entrada' });
             }
 
-            // 2. Pagamento Mensal (A cada 4 rodadas - "Mês")
             if (game.rodadaAtual % 4 === 0) {
-                // Patrocínios e TV
                 if (game.contratos && game.contratos.patrocinio) {
                     const val = game.contratos.patrocinio.mensal;
                     game.recursos.dinheiro += val;
@@ -471,7 +452,6 @@ const Engine = {
                     game.financas.historico.push({ texto: `Cota de TV`, valor: val, tipo: 'entrada' });
                 }
 
-                // Salários
                 let folha = 0;
                 const meuTime = game.times.find(t => t.nome === game.info.time);
                 if(meuTime && meuTime.elenco) meuTime.elenco.forEach(j => folha += j.salario);
@@ -480,7 +460,6 @@ const Engine = {
                 game.financas.historico.push({ texto: `Folha Salarial`, valor: -folha, tipo: 'saida' });
             }
 
-            // 3. Custos Fixos por jogo
             const custo = 50000; 
             game.recursos.dinheiro -= custo;
             game.financas.historico.push({ texto: `Custos Jogo`, valor: -custo, tipo: 'saida' });
@@ -501,7 +480,6 @@ const Engine = {
             const msg = game.mensagens.find(m => m.id === msgId);
             if(msg && !msg.acao.processada) {
                 game.recursos.dinheiro += msg.acao.valor;
-                // Remover do time... (simplificado)
                 msg.acao.processada = true;
                 Engine.salvarJogo(game);
                 alert("Vendido!");
