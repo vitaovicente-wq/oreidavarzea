@@ -422,7 +422,7 @@ const Engine = {
         }
     },
 
-    // --- 9. SISTEMA FINANCEIRO E MENSAGENS ---
+    // --- 9. MENSAGENS E FINANÇAS ---
     sistema: {
         novaMensagem: function(titulo, corpo, tipo = 'info', acao = null) {
             const game = Engine.carregarJogo();
@@ -434,13 +434,16 @@ const Engine = {
         processarRodadaFinanceira: function(game, mandante, adversario) {
             if (!game.financas) game.financas = { saldo: 0, historico: [] };
             
+            // 1. Bilheteria
             if (mandante) {
                 const bilheteria = Engine.estadios.calcularBilheteria(adversario);
                 game.recursos.dinheiro += bilheteria.rendaTotal;
                 game.financas.historico.push({ texto: `Bilheteria vs ${adversario}`, valor: bilheteria.rendaTotal, tipo: 'entrada' });
             }
 
+            // 2. Pagamento Mensal (A cada 4 rodadas - "Mês")
             if (game.rodadaAtual % 4 === 0) {
+                // Patrocínios e TV
                 if (game.contratos && game.contratos.patrocinio) {
                     const val = game.contratos.patrocinio.mensal;
                     game.recursos.dinheiro += val;
@@ -452,6 +455,7 @@ const Engine = {
                     game.financas.historico.push({ texto: `Cota de TV`, valor: val, tipo: 'entrada' });
                 }
 
+                // Salários
                 let folha = 0;
                 const meuTime = game.times.find(t => t.nome === game.info.time);
                 if(meuTime && meuTime.elenco) meuTime.elenco.forEach(j => folha += j.salario);
@@ -460,6 +464,7 @@ const Engine = {
                 game.financas.historico.push({ texto: `Folha Salarial`, valor: -folha, tipo: 'saida' });
             }
 
+            // 3. Custos Fixos por jogo
             const custo = 50000; 
             game.recursos.dinheiro -= custo;
             game.financas.historico.push({ texto: `Custos Jogo`, valor: -custo, tipo: 'saida' });
@@ -480,6 +485,7 @@ const Engine = {
             const msg = game.mensagens.find(m => m.id === msgId);
             if(msg && !msg.acao.processada) {
                 game.recursos.dinheiro += msg.acao.valor;
+                // Remover do time... (simplificado)
                 msg.acao.processada = true;
                 Engine.salvarJogo(game);
                 alert("Vendido!");
