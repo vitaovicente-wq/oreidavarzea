@@ -1,192 +1,244 @@
-// ARQUIVO: engine-contratos.js
-// Responsável por: Contratos, Negociações e Travas de Segurança
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caixa de Entrada - BRFutebol</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
-Engine.Contratos = {
-    _processando: false, // Trava de segurança contra cliques duplos
+    <script src="database.js"></script>
+    <script src="calendario.js"></script>
+    <script src="engine-core.js"></script>     
+    <script src="engine-match.js"></script>    
+    <script src="engine-mercado.js"></script>  
+    <script src="engine-contratos.js"></script>
+    <script src="engine-eventos.js"></script>
 
-    // --- 1. MENSAGEM INICIAL ---
-    enviarBoasVindas: function(game) {
-        const meuTime = game.times.find(t => t.nome === game.info.time);
-        const elenco = meuTime.elenco || [];
-        let destaque = "o elenco";
+    <style>
+        :root { 
+            --bg-dark: #0f1216; 
+            --sidebar-bg: #161b22; 
+            --card-bg: #1e2329; 
+            --neon-green: #00ff88; 
+            --text-main: #ffffff; 
+            --text-muted: #8b949e; 
+            --border: #30363d; 
+            --red: #ff4757; 
+        }
         
-        if(elenco.length > 0) {
-            const craque = elenco.reduce((p, c) => (p.forca > c.forca) ? p : c);
-            destaque = craque.nome;
+        * { box-sizing: border-box; }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-dark); 
+            color: var(--text-main); 
+            margin: 0; 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden; 
         }
-
-        const div = game.info.divisao;
-        let msgTitulo = "Metas da Temporada";
-        let msgTexto = "Precisamos organizar a casa.";
-
-        if(div === 'serieA') {
-            msgTitulo = "Planejamento de Elite";
-            msgTexto = `Estamos na vitrine. A torcida exige que <b>${destaque}</b> lidere o time rumo às vitórias. Evite o Z4 a todo custo.`;
-        } else {
-            msgTitulo = "Projeto Acesso";
-            msgTexto = `Nossa realidade hoje é dura, mas o objetivo é subir. Use <b>${destaque}</b> como referência técnica.`;
-        }
-
-        const html = `
-            <div class="email-container">
-                <div style="border-bottom:1px solid #444; margin-bottom:10px; padding-bottom:10px;">
-                    <div style="font-size:0.8rem; color:#888;">DE: PRESIDÊNCIA</div>
-                    <div style="font-size:1.1rem; font-weight:bold; color:#fff;">${msgTitulo}</div>
-                </div>
-                <p>${msgTexto}</p>
-                <div style="background:#222; padding:10px; border-left:3px solid #f1c40f; margin:15px 0;">
-                    <ul style="margin:0; padding-left:15px; color:#ccc;">
-                        <li>💰 <b>Finanças:</b> Defina Patrocínio e TV hoje.</li>
-                        <li>🏆 <b>Campo:</b> Cumpra a expectativa da diretoria.</li>
-                    </ul>
-                </div>
-                <p>O Diretor Comercial enviará as propostas a seguir.</p>
-            </div>
-        `;
-
-        if(!game.mensagens) game.mensagens = [];
-        game.mensagens.unshift({ id: Date.now(), rodada: 1, remetente: "Presidência", titulo: "Memorando Oficial #001", corpo: html, tipo: 'boas_vindas', lida: false });
-        Engine.salvarJogo(game);
-    },
-
-    // --- 2. PATROCÍNIOS ---
-    liberarOfertasPatrocinio: function() {
-        const game = Engine.carregarJogo();
-        if(game.flags.patroEnviado) return;
-
-        const base = Math.floor(game.recursos.dinheiro * 0.18);
-        const props = [
-            {id:1, nome:"Banco Nacional", mensal:base*1.2, luvas:base*1.5, bonus:0, duracao:38, desc:"Seguro. Mensal alto, zero bônus.", tipo:"financeiro"},
-            {id:2, nome:"BetWin365", mensal:base*0.8, luvas:base*5.0, bonus:base*10.0, duracao:38, desc:"Risco. Bônus alto por título.", tipo:"bet"},
-            {id:3, nome:"NeoTech AI", mensal:base*0.5, luvas:base*2.0, bonus:base*25.0, duracao:38, desc:"Performance pura.", tipo:"tech"},
-            {id:4, nome:"EnergiaBR", mensal:base*1.1, luvas:base*0.5, bonus:base*2.0, duracao:76, desc:"Longo Prazo (2 Anos).", tipo:"estatal"},
-            {id:5, nome:"MegaLoja", mensal:base*0.7, luvas:base*8.0, bonus:base*1.0, duracao:19, desc:"Emergência. Luvas altas, contrato curto.", tipo:"varejo"},
-            {id:6, nome:"BitMarket", mensal:base*1.3, luvas:base*3.0, bonus:base*5.0, duracao:38, desc:"Volátil. Valores altos.", tipo:"crypto"},
-            {id:7, nome:"FlyHigh", mensal:base*1.0, luvas:base*2.0, bonus:base*8.0, duracao:38, desc:"Prestígio Internacional.", tipo:"aereo"}
-        ];
-
-        let html = `<p>Escolha o Master. Cuidado com a duração.</p><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:10px;">`;
         
-        props.forEach(p => {
-            let cor = p.tipo==='bet'?'#e74c3c':(p.tipo==='financeiro'?'#2ecc71':'#444');
-            html += `
-            <div style="background:#1a1d21; border-top:3px solid ${cor}; padding:10px; border-radius:5px;">
-                <div style="font-weight:bold;">${p.nome}</div>
-                <div style="font-size:0.8rem; color:#aaa; margin-bottom:5px;">${p.duracao} Rodadas</div>
-                <div style="font-size:0.8rem;">Luvas: <span style="color:#2ecc71">R$ ${(p.luvas/1000000).toFixed(1)}M</span></div>
-                <div style="font-size:0.8rem;">Mensal: <span>R$ ${(p.mensal/1000000).toFixed(1)}M</span></div>
-                <button onclick='Engine.Contratos.assinarPatrocinio(${JSON.stringify(p)}, this)' class="btn-action" style="width:100%; margin-top:10px; background:${cor}; color:#fff; border:none; padding:8px; cursor:pointer;">ASSINAR</button>
-            </div>`;
-        });
-        html += `</div>`;
+        /* SIDEBAR */
+        .sidebar { width: 250px; background: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .logo { font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 900; margin-bottom: 20px; color: #fff; text-transform: uppercase; }
+        .logo span { color: var(--neon-green); }
+        .menu-btn { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .menu-btn:hover, .menu-btn.active { background: rgba(0, 255, 136, 0.1); color: var(--neon-green); }
+        .menu-btn.logout { margin-top: auto; color: var(--red); }
 
-        Engine.Sistema.novaMensagem("Propostas de Patrocínio", html, 'patrocinio_oferta', "Comercial");
-        const g2 = Engine.carregarJogo(); g2.flags.patroEnviado = true; Engine.salvarJogo(g2);
-    },
+        /* ÁREA PRINCIPAL */
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+        .header-title { display: flex; justify-content: space-between; align-items: center; }
+        .header-title h2 { font-family:'Rajdhani'; margin:0; font-size: 2rem; }
 
-    // --- 3. TV ---
-    liberarOfertasTV: function() {
-        const game = Engine.carregarJogo();
-        if(game.flags.tvEnviado) return;
-
-        const base = Math.floor(game.recursos.dinheiro * 0.12);
-        const tvs = [
-            {id:'t1', emissora:"Rede Nacional", fixo:base*2.0, jogo:0, duracao:38, desc:"Aberta. Fixo Garantido."},
-            {id:'t2', emissora:"Cabo Sports", fixo:base*1.0, jogo:base*0.3, duracao:38, desc:"Fechada. Híbrido."},
-            {id:'t3', emissora:"StreamMax", fixo:base*0.2, jogo:base*1.0, duracao:38, desc:"Digital. Ganha por jogo."},
-            {id:'t4', emissora:"Global", fixo:base*1.3, jogo:base*0.1, duracao:76, desc:"Internacional. 2 Anos."}
-        ];
-
-        let html = `<p>Direitos de Transmissão:</p><div style="display:flex; flex-direction:column; gap:10px;">`;
-        tvs.forEach(t => {
-            html += `
-            <div style="background:#222; padding:10px; border-left:4px solid #fff; display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <div style="font-weight:bold;">${t.emissora}</div>
-                    <div style="font-size:0.8rem;">Fixo: R$ ${(t.fixo/1000000).toFixed(1)}M | Por Jogo: R$ ${(t.jogo/1000000).toFixed(2)}M</div>
-                </div>
-                <button onclick='Engine.Contratos.assinarTV(${JSON.stringify(t)}, this)' class="btn-action" style="padding:5px 15px; cursor:pointer;">Assinar</button>
-            </div>`;
-        });
-        html += `</div>`;
-
-        Engine.Sistema.novaMensagem("Propostas de TV", html, 'tv_oferta', "Jurídico");
-        const g2 = Engine.carregarJogo(); g2.flags.tvEnviado = true; Engine.salvarJogo(g2);
-    },
-
-    // --- AÇÕES COM TRAVA E FEEDBACK ---
-    assinarPatrocinio: function(p, btn) {
-        if(this._processando) return; // Trava física
-        this._processando = true;
-
-        const g = Engine.carregarJogo();
-        if(g.contratos.patrocinio) { 
-            alert("Erro: Você já possui um patrocinador ativo.");
-            this._processando = false;
-            return; 
-        }
-
-        // Salva
-        g.contratos.patrocinio = p;
-        g.recursos.dinheiro += p.luvas;
-        g.financas.historico.push({texto:`Luvas (${p.nome})`, valor:p.luvas, tipo:'entrada'});
-        Engine.salvarJogo(g);
-
-        // Feedback Visual no HTML
-        const container = btn.closest('.email-container') || btn.parentElement.parentElement;
-        container.innerHTML = `
-            <div style="background:#2ecc71; color:#fff; padding:20px; text-align:center; border-radius:8px;">
-                <h3 style="margin:0;">✅ CONTRATO ASSINADO!</h3>
-                <p>Parceria fechada com <b>${p.nome}</b>.</p>
-                <p>Luvas de <b>R$ ${p.luvas.toLocaleString()}</b> creditadas.</p>
-            </div>
-        `;
+        /* LISTA DE MENSAGENS */
+        .msg-list { display: flex; flex-direction: column; gap: 10px; }
+        .msg-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: 0.2s; }
+        .msg-item:hover { border-color: #555; }
         
-        this._processando = false;
-    },
+        /* Estado Não Lido */
+        .msg-item.unread { border-left: 4px solid var(--neon-green); background: #262c33; }
+        .msg-item.unread .msg-title { color: #fff; }
+        .msg-item.unread .msg-header { font-weight: bold; }
 
-    assinarTV: function(t, btn) {
-        if(this._processando) return;
-        this._processando = true;
+        /* Cabeçalho da Mensagem (Clicável) */
+        .msg-header { padding: 15px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .msg-info { display: flex; flex-direction: column; gap: 2px; }
+        .msg-sender { font-size: 0.75rem; color: var(--neon-green); text-transform: uppercase; letter-spacing: 1px; }
+        .msg-title { font-size: 1.1rem; color: #ddd; transition: 0.2s; }
+        .msg-meta { font-size: 0.8rem; color: #666; background: #111; padding: 4px 8px; border-radius: 4px; }
 
-        const g = Engine.carregarJogo();
-        if(g.contratos.tv) { 
-            alert("Erro: Contrato de TV já ativo.");
-            this._processando = false;
-            return; 
+        /* Corpo da Mensagem (Conteúdo Rico) */
+        .msg-body { 
+            padding: 25px; 
+            background: #121519; 
+            display: none; 
+            border-top: 1px solid #333; 
+            animation: fadeIn 0.3s ease;
+            color: #ccc;
+            line-height: 1.6;
+        }
+        .msg-item.open .msg-body { display: block; }
+        .msg-item.open { border-color: var(--neon-green); background: #1e2329; }
+
+        /* --- ESTILOS ESPECÍFICOS PARA O CONTEÚDO DOS E-MAILS (HTML GERADO PELA ENGINE) --- */
+        .email-container { font-family: 'Georgia', serif; }
+        .btn-action { 
+            font-family: 'Rajdhani', sans-serif; 
+            text-transform: uppercase; 
+            transition: transform 0.2s, opacity 0.2s; 
+        }
+        .btn-action:hover:not(:disabled) { transform: scale(1.02); filter: brightness(1.1); }
+        .btn-action:disabled { cursor: not-allowed; filter: grayscale(1); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f1216; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <div class="logo">BR<span>FUTEBOL</span></div>
+        <a class="menu-btn" href="dashboard.html">📊 Visão Geral</a>
+        <a class="menu-btn" href="escalacao.html">👕 Escalação</a>
+        <a class="menu-btn" href="mercado.html">🔄 Mercado</a>
+        <a class="menu-btn" href="calendario.html">📅 Calendário</a>
+        <a class="menu-btn" href="classificacao.html">🏆 Classificação</a>
+        <a class="menu-btn" href="estadio.html">🏟️ Estádio</a>
+        <a class="menu-btn" href="financeiro.html">💰 Finanças</a>
+        <a class="menu-btn active" href="mensagens.html">📩 Mensagens <span id="badge-msg"></span></a>
+        <a class="menu-btn logout" href="index.html" onclick="localStorage.clear()">✖ Sair</a>
+    </nav>
+
+    <main class="main-content">
+        <div class="header-title">
+            <h2>Caixa de Entrada</h2>
+            <div id="status-feed" style="font-size:0.9rem; color:var(--neon-green); height:20px;"></div>
+        </div>
+        
+        <div id="lista-mensagens" class="msg-list">
+            </div>
+    </main>
+
+    <script>
+        window.onload = function() {
+            if(typeof Engine === 'undefined') {
+                document.getElementById('lista-mensagens').innerHTML = "<div style='padding:20px; color:red;'>Erro: Engine não carregada. Verifique os arquivos JS.</div>";
+                return;
+            }
+            renderizar();
+        };
+
+        function renderizar() {
+            const game = Engine.carregarJogo();
+            const container = document.getElementById('lista-mensagens');
+            container.innerHTML = "";
+
+            if(!game || !game.mensagens || game.mensagens.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding:60px; color:#444; border:2px dashed #333; border-radius:10px;">
+                    <h3 style="margin:0;">Nenhuma mensagem</h3>
+                    <p>Sua caixa de entrada está vazia.</p>
+                </div>`;
+                return;
+            }
+
+            // Ordena por ID decrescente (mais recentes primeiro)
+            const msgs = game.mensagens.sort((a,b) => b.id - a.id);
+
+            msgs.forEach(msg => {
+                const item = document.createElement('div');
+                item.className = `msg-item ${msg.lida ? '' : 'unread'}`;
+                item.id = `msg-${msg.id}`; // ID único para o DOM
+
+                // Badge do Tipo
+                let tipoLabel = "Geral";
+                if(msg.tipo === 'boas_vindas') tipoLabel = "Diretoria";
+                if(msg.tipo === 'patrocinio_oferta') tipoLabel = "Comercial";
+                if(msg.tipo === 'tv_oferta') tipoLabel = "Jurídico";
+                if(msg.tipo === 'dm') tipoLabel = "Médico";
+                if(msg.tipo === 'negociacao') tipoLabel = "Mercado";
+
+                item.innerHTML = `
+                    <div class="msg-header" onclick="lerMensagem(${msg.id})">
+                        <div class="msg-info">
+                            <div class="msg-sender">${msg.remetente || tipoLabel}</div>
+                            <div class="msg-title">${msg.titulo}</div>
+                        </div>
+                        <div class="msg-meta">Rodada ${msg.rodada}</div>
+                    </div>
+                    <div class="msg-body">${msg.corpo}</div>
+                `;
+                container.appendChild(item);
+            });
         }
 
-        g.contratos.tv = t;
-        Engine.salvarJogo(g);
-
-        const container = btn.closest('.email-container') || btn.parentElement.parentElement;
-        container.innerHTML = `
-            <div style="background:#2ecc71; color:#fff; padding:20px; text-align:center; border-radius:8px;">
-                <h3 style="margin:0;">✅ DIREITOS VENDIDOS!</h3>
-                <p>Transmissão exclusiva: <b>${t.emissora}</b>.</p>
-                <p>Duração: ${t.duracao} Rodadas.</p>
-            </div>
-        `;
-
-        this._processando = false;
-    },
-
-    processarVencimentos: function(game) {
-        // Lógica de vencimento mantida (igual à anterior)
-        // ... (código resumido pois já está no V14 e funciona)
-        if(game.contratos.patrocinio) {
-            game.contratos.patrocinio.duracao--;
-            if(game.contratos.patrocinio.duracao <= 0) {
-                Engine.Sistema.novaMensagem("Fim de Contrato", `Acabou o contrato com ${game.contratos.patrocinio.nome}.`, "info", "Jurídico");
-                game.contratos.patrocinio = null; game.flags.patroEnviado = false; Engine.salvarJogo(game);
+        function lerMensagem(id) {
+            const el = document.getElementById(`msg-${id}`);
+            const wasOpen = el.classList.contains('open');
+            
+            // Fecha todas as outras para focar na atual
+            document.querySelectorAll('.msg-item').forEach(div => div.classList.remove('open'));
+            
+            if(!wasOpen) {
+                // Abre a mensagem clicada
+                el.classList.add('open');
+                el.classList.remove('unread');
+                
+                // Processa a leitura no backend (Engine)
+                const game = Engine.carregarJogo();
+                const msgIndex = game.mensagens.findIndex(m => m.id == id);
+                
+                if(msgIndex !== -1 && !game.mensagens[msgIndex].lida) {
+                    game.mensagens[msgIndex].lida = true;
+                    Engine.salvarJogo(game);
+                    
+                    // Verifica Gatilhos de Eventos (Narrativa Sequencial)
+                    verificarGatilhos(game.mensagens[msgIndex]);
+                }
             }
         }
-        if(game.contratos.tv) {
-            game.contratos.tv.duracao--;
-            if(game.contratos.tv.duracao <= 0) {
-                Engine.Sistema.novaMensagem("Fim de Contrato", `Acabou o contrato com ${game.contratos.tv.emissora}.`, "info", "Jurídico");
-                game.contratos.tv = null; game.flags.tvEnviado = false; Engine.salvarJogo(game);
+
+        function verificarGatilhos(msg) {
+            // Lógica para liberar a próxima mensagem da sequência
+            let novidade = false;
+
+            if (msg.tipo === 'boas_vindas') {
+                if(Engine.Contratos && Engine.Contratos.liberarOfertasPatrocinio) {
+                    Engine.Contratos.liberarOfertasPatrocinio();
+                    novidade = true;
+                    notificar("Novas propostas comerciais recebidas.");
+                }
+            } 
+            else if (msg.tipo === 'patrocinio_oferta') {
+                if(Engine.Contratos && Engine.Contratos.liberarOfertasTV) {
+                    Engine.Contratos.liberarOfertasTV();
+                    novidade = true;
+                    notificar("Emissoras de TV entraram em contato.");
+                }
+            }
+
+            if (novidade) {
+                // Atualiza a lista após um pequeno delay para dar sensação de "chegando e-mail"
+                setTimeout(() => {
+                    renderizar();
+                    // Reabre a mensagem que o usuário estava lendo para não perder o foco
+                    const current = document.getElementById(`msg-${msg.id}`);
+                    if(current) current.classList.add('open');
+                }, 1500);
             }
         }
-    }
-};
+
+        function notificar(texto) {
+            const box = document.getElementById('status-feed');
+            box.innerText = "🔔 " + texto;
+            setTimeout(() => { box.innerText = ""; }, 4000);
+        }
+    </script>
+</body>
+</html>
