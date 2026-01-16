@@ -2,18 +2,41 @@
 // Responsável por: Inicialização, Save/Load e Loop Principal
 
 window.Engine = {
-    salvarJogo: function(estado) { localStorage.setItem('brfutebol_save', JSON.stringify(estado)); },
-    carregarJogo: function() { const s = localStorage.getItem('brfutebol_save'); return s ? JSON.parse(s) : null; },
-    encontrarTime: function(nome) { const s = this.carregarJogo(); if (!s) return { nome: nome, elenco: [] }; return s.times.find(t => t.nome === nome) || {nome, elenco:[]}; },
-    getMeuTime: function() { const s = this.carregarJogo(); return s ? this.encontrarTime(s.info.time) : null; },
+    // --- SAVE & LOAD ---
+    salvarJogo: function(estado) { 
+        localStorage.setItem('brfutebol_save', JSON.stringify(estado)); 
+    },
+    
+    carregarJogo: function() { 
+        const s = localStorage.getItem('brfutebol_save'); 
+        return s ? JSON.parse(s) : null; 
+    },
+    
+    encontrarTime: function(nome) { 
+        const s = this.carregarJogo(); 
+        if (!s) return { nome: nome, elenco: [] };
+        return s.times.find(t => t.nome === nome) || {nome, elenco:[]}; 
+    },
+    
+    getMeuTime: function() { 
+        const s = this.carregarJogo(); 
+        return s ? this.encontrarTime(s.info.time) : null; 
+    },
 
+    // --- INICIALIZAÇÃO DO NOVO JOGO ---
     novoJogo: function(pais, divisao, nomeTimeSelecionado) {
         console.log(`⚽ Iniciando Core: ${nomeTimeSelecionado}`);
-        if (typeof CalendarioSystem === 'undefined') { alert("ERRO: calendario.js ausente."); return; }
+        
+        if (typeof CalendarioSystem === 'undefined') { 
+            alert("ERRO CRÍTICO: calendario.js não carregado."); 
+            return; 
+        }
 
+        // Limpa dados antigos
         localStorage.setItem('brfutebol_livres', '[]');
         localStorage.setItem('brfutebol_transferencias', '[]');
 
+        // Carrega Times
         let timesDaLiga = [];
         if (window.Database && window.Database.brasil && window.Database.brasil[divisao]) {
             timesDaLiga = JSON.parse(JSON.stringify(window.Database.brasil[divisao]));
@@ -21,6 +44,7 @@ window.Engine = {
             timesDaLiga = this._gerarTimesGenericos(divisao);
         }
 
+        // Configura Jogadores
         const DATA_FIM = "31/12/2026";
         timesDaLiga.forEach(t => {
             if (!t.elenco) t.elenco = [];
@@ -32,9 +56,11 @@ window.Engine = {
             });
         });
 
+        // Gera Calendário
         const calendario = CalendarioSystem.gerarCampeonato(timesDaLiga);
         const classificacao = timesDaLiga.map(t => ({ nome: t.nome, escudo: t.escudo, pts:0, j:0, v:0, e:0, d:0, gp:0, gc:0, sg:0 }));
         
+        // Define Orçamento
         const meuTime = timesDaLiga.find(t => t.nome === nomeTimeSelecionado);
         let somaOvr = 0;
         if(meuTime && meuTime.elenco.length > 0) meuTime.elenco.forEach(j => somaOvr += j.forca);
@@ -46,6 +72,7 @@ window.Engine = {
         else if (mediaOvr > 70) orcamento = 6000000;
         else if (mediaOvr > 65) orcamento = 3500000;
 
+        // Cria Estado Inicial
         const estado = {
             info: { tecnico: localStorage.getItem('brfutebol_tecnico')||"Manager", time: nomeTimeSelecionado, escudo: localStorage.getItem('brfutebol_escudo'), divisao, dataInicio: new Date().getTime() },
             recursos: { dinheiro: orcamento, moral: 100, ultimaRodadaProcessada: 0 },
@@ -61,16 +88,33 @@ window.Engine = {
         };
 
         this.salvarJogo(estado);
-        if(this.Contratos) this.Contratos.enviarBoasVindas(estado);
+        
+        // --- CORREÇÃO DE ENVIO DE MENSAGEM (FORÇA BRUTA) ---
+        // Usa setTimeout para garantir que todos os arquivos JS foram lidos
+        // e acessa window.Engine explicitamente para evitar escopo perdido
+        setTimeout(() => {
+            console.log("Tentando enviar e-mail de boas vindas...");
+            if(window.Engine && window.Engine.Contratos) {
+                // Passa o estado recarregado para garantir integridade
+                const saveFresco = window.Engine.carregarJogo();
+                window.Engine.Contratos.enviarBoasVindas(saveFresco);
+                console.log("✅ E-mail enviado com sucesso!");
+            } else {
+                console.error("❌ ERRO CRÍTICO: Módulo 'Engine.Contratos' não encontrado. Verifique se o arquivo engine-contratos.js está na pasta e carregado no HTML.");
+                alert("Erro: Módulo de Contratos falhou ao carregar. Verifique o Console (F12).");
+            }
+        }, 500); // Espera 0.5 segundos (imperceptível, mas salva a lógica)
     },
 
-    // --- ATUALIZAÇÃO ---
+    // --- ATUALIZAÇÃO DE RODADA ---
     atualizarTabela: function(estado) {
         const tab = estado.classificacao;
         tab.forEach(t => { t.pts=0; t.j=0; t.v=0; t.e=0; t.d=0; t.gp=0; t.gc=0; t.sg=0; });
+        
         estado.calendario.forEach(rod => {
             rod.jogos.forEach(jogo => { if(jogo.jogado) this._computar(tab, jogo); });
         });
+        
         tab.sort((a,b) => b.pts - a.pts || b.sg - a.sg);
 
         const rIdx = estado.rodadaAtual - 1;
@@ -81,6 +125,7 @@ window.Engine = {
                 const mandante = jogo.mandante === estado.info.time;
                 const adv = mandante ? jogo.visitante : jogo.mandante;
                 
+                // Chama módulos apenas se existirem (Segurança)
                 if(this.Sistema) this.Sistema.processarFinancas(estado, mandante, adv);
                 if(this.Eventos) this.Eventos.processarEventosRodada(estado);
                 if(this.Mercado) {
@@ -88,11 +133,11 @@ window.Engine = {
                     this.Mercado.simularDispensasCPU(estado);
                 }
                 
-                // --- NOVO: PROCESSA VENCIMENTO DOS CONTRATOS ---
+                // Processa Vencimentos de Contratos
                 if(this.Contratos && this.Contratos.processarVencimentos) {
                     this.Contratos.processarVencimentos(estado);
                     
-                    // Se ficou sem contrato (patroEnviado virou false), dispara ofertas de novo
+                    // Dispara renovação se ficou sem
                     if (!estado.flags.patroEnviado && !estado.contratos.patrocinio) {
                         this.Contratos.liberarOfertasPatrocinio();
                     }
@@ -109,20 +154,36 @@ window.Engine = {
     },
 
     _computar: function(tab, jogo) {
-        const c = tab.find(t=>t.nome===jogo.mandante); const f = tab.find(t=>t.nome===jogo.visitante);
+        const c = tab.find(t=>t.nome===jogo.mandante); 
+        const f = tab.find(t=>t.nome===jogo.visitante);
         if(!c || !f) return;
-        const gc=parseInt(jogo.placarCasa); const gf=parseInt(jogo.placarFora);
+        
+        const gc=parseInt(jogo.placarCasa); 
+        const gf=parseInt(jogo.placarFora);
+        
         c.j++; f.j++; c.gp+=gc; f.gp+=gf; c.gc+=gf; f.gc+=gc; c.sg=c.gp-c.gc; f.sg=f.gp-f.gc;
         if(gc>gf){c.v++; c.pts+=3; f.d++;} else if(gf>gc){f.v++; f.pts+=3; c.d++;} else{c.e++; f.e++; c.pts++; f.pts++;}
     },
 
-    _gerarTimesGenericos: function(div) { let l=[]; for(let i=1;i<=20;i++) l.push({nome:`Time ${i}`, forca:50, elenco:[]}); return l; },
+    _gerarTimesGenericos: function(div) { 
+        let l=[]; 
+        for(let i=1;i<=20;i++) l.push({nome:`Time ${i}`, forca:50, elenco:[]}); 
+        return l; 
+    },
 
     Sistema: {
         novaMensagem: function(titulo, corpo, tipo, remetente="Sistema") {
             const game = window.Engine.carregarJogo();
             if(!game.mensagens) game.mensagens = [];
-            game.mensagens.unshift({ id: Date.now() + Math.random(), rodada: game.rodadaAtual, remetente: remetente, titulo: titulo, corpo: corpo, tipo: tipo, lida: false });
+            game.mensagens.unshift({
+                id: Date.now() + Math.random(),
+                rodada: game.rodadaAtual,
+                remetente: remetente,
+                titulo: titulo,
+                corpo: corpo,
+                tipo: tipo,
+                lida: false
+            });
             window.Engine.salvarJogo(game);
         },
         processarFinancas: function(g, mand, adv) {
@@ -132,7 +193,6 @@ window.Engine = {
                 g.financas.historico.push({texto:'Bilheteria', valor:r.rendaTotal, tipo:'entrada'});
             }
             if(g.rodadaAtual%4===0) {
-                // Só paga se tiver contrato ativo
                 if(g.contratos.patrocinio) {
                     g.recursos.dinheiro += g.contratos.patrocinio.mensal;
                     g.financas.historico.push({texto:'Patrocínio', valor:g.contratos.patrocinio.mensal, tipo:'entrada'});
@@ -151,5 +211,6 @@ window.Engine = {
             g.financas.historico.push({texto:'Custos Jogo', valor:-50000, tipo:'saida'});
         }
     },
+    
     data: { getDataAtual: function(r) { return `Rodada ${r}`; } }
 };
