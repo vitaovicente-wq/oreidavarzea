@@ -89,21 +89,18 @@ window.Engine = {
 
         this.salvarJogo(estado);
         
-        // --- CORREÇÃO DE ENVIO DE MENSAGEM (FORÇA BRUTA) ---
-        // Usa setTimeout para garantir que todos os arquivos JS foram lidos
-        // e acessa window.Engine explicitamente para evitar escopo perdido
+        // --- PROTEÇÃO DE ENVIO DE MENSAGEM ---
+        // Espera 100ms para garantir que o engine-contratos.js foi lido pelo navegador
         setTimeout(() => {
-            console.log("Tentando enviar e-mail de boas vindas...");
             if(window.Engine && window.Engine.Contratos) {
-                // Passa o estado recarregado para garantir integridade
-                const saveFresco = window.Engine.carregarJogo();
-                window.Engine.Contratos.enviarBoasVindas(saveFresco);
-                console.log("✅ E-mail enviado com sucesso!");
+                // Recarrega o jogo para garantir que estamos mexendo no save atualizado
+                const saveAtual = window.Engine.carregarJogo();
+                window.Engine.Contratos.enviarBoasVindas(saveAtual);
+                console.log("✅ E-mail de boas vindas enviado.");
             } else {
-                console.error("❌ ERRO CRÍTICO: Módulo 'Engine.Contratos' não encontrado. Verifique se o arquivo engine-contratos.js está na pasta e carregado no HTML.");
-                alert("Erro: Módulo de Contratos falhou ao carregar. Verifique o Console (F12).");
+                console.error("❌ ERRO: O módulo de Contratos não foi encontrado.");
             }
-        }, 500); // Espera 0.5 segundos (imperceptível, mas salva a lógica)
+        }, 100);
     },
 
     // --- ATUALIZAÇÃO DE RODADA ---
