@@ -3,306 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRFutebol - Finanças</title>
+    <title>Finanças - BRFutebol</title>
     <script src="database.js"></script>
     <script src="calendario.js"></script>
     <script src="engine-core.js"></script>
-    <script src="engine-contratos.js"></script>
-    <script src="engine-mercado.js"></script>
-    <script src="engine-eventos.js"></script>
     <script src="engine-match.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="engine-mercado.js"></script>
+    <script src="engine-contratos.js"></script>
+    <script src="engine-eventos.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root { --bg-dark: #0f1216; --card: #1e2329; --neon: #00ff88; --red: #ff4757; --orange: #ff9f43; --text: #fff; --border: #333; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-dark); color: var(--text); margin: 0; padding: 20px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        :root { --bg: #0f1216; --card: #1e2329; --green: #00ff88; --text: #fff; --red: #ff4757; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; margin: 0; }
+        .sidebar { width: 250px; background: #161b22; padding: 20px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid #30363d; }
+        .logo { font-family: 'Rajdhani'; font-size: 2rem; font-weight: 900; color: #fff; margin-bottom: 20px; }
+        .logo span { color: var(--green); }
+        .menu-btn { color: #8b949e; text-decoration: none; padding: 10px; border-radius: 6px; font-weight: 600; }
+        .menu-btn.active, .menu-btn:hover { background: rgba(0,255,136,0.1); color: var(--green); }
         
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
-        .title-group h1 { font-family: 'Rajdhani'; font-weight: 800; font-size: 2rem; text-transform: uppercase; margin: 0; line-height: 1; }
-        .title-group span { font-size: 0.9rem; color: #888; font-weight: 600; }
+        .main { flex: 1; padding: 30px; overflow-y: auto; }
+        .finance-header { background: var(--card); padding: 20px; border-radius: 10px; border: 1px solid #30363d; margin-bottom: 20px; }
+        .saldo-label { color: #888; font-size: 0.9rem; text-transform: uppercase; }
+        .saldo-value { font-family: 'Rajdhani'; font-size: 2.5rem; font-weight: 700; color: var(--green); }
         
-        .back-btn { text-decoration: none; color: #ccc; border: 1px solid #444; padding: 8px 20px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s; }
-        .back-btn:hover { border-color: var(--neon); color: var(--neon); }
+        .contracts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .contract-card { background: var(--card); padding: 20px; border-radius: 8px; border-left: 4px solid #444; }
+        .contract-card.active { border-color: var(--green); }
+        .contract-title { color: #888; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 5px; }
+        .contract-name { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
+        .contract-value { font-family: 'Rajdhani'; font-size: 1.1rem; }
 
-        .dashboard { display: grid; grid-template-columns: 320px 1fr; gap: 20px; flex: 1; overflow: hidden; }
-        
-        /* SIDEBAR DE RESUMO */
-        .summary-col { display: flex; flex-direction: column; gap: 15px; }
-        
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-        .card-label { font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; font-weight: 700; }
-        .card-value { font-family: 'Rajdhani'; font-weight: 900; font-size: 2rem; color: #fff; }
-        .card-value.pos { color: var(--neon); }
-        .card-value.neg { color: var(--red); }
-        .card-sub { font-size: 0.8rem; color: #666; margin-top: 5px; }
-
-        .list-container { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
-        .list-header { padding: 15px; background: rgba(0,0,0,0.2); font-family: 'Rajdhani'; font-weight: 700; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
-        .trans-list { overflow-y: auto; flex: 1; }
-        .trans-list::-webkit-scrollbar { width: 5px; } .trans-list::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-        
-        .trans-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; transition: 0.2s; }
-        .trans-item:hover { background: rgba(255,255,255,0.02); }
-        .t-left { display: flex; flex-direction: column; gap: 2px; }
-        .t-desc { color: #fff; font-weight: 600; }
-        .t-type { font-size: 0.7rem; color: #666; text-transform: uppercase; }
-        .t-val { font-weight: 700; font-family: 'Rajdhani'; font-size: 1rem; }
-        
-        /* ÁREA DO GRÁFICO */
-        .chart-col { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; }
-        .chart-wrapper { flex: 1; position: relative; min-height: 0; }
+        .history-list { background: var(--card); border-radius: 10px; padding: 20px; }
+        .history-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; }
+        .val-entrada { color: var(--green); }
+        .val-saida { color: var(--red); }
     </style>
 </head>
 <body>
+    <nav class="sidebar">
+        <div class="logo">BR<span>FUTEBOL</span></div>
+        <a class="menu-btn" href="dashboard.html">📊 Visão Geral</a>
+        <a class="menu-btn" href="escalacao.html">👕 Escalação</a>
+        <a class="menu-btn" href="mercado.html">🔄 Mercado</a>
+        <a class="menu-btn" href="calendario.html">📅 Calendário</a>
+        <a class="menu-btn active" href="financeiro.html">💰 Finanças</a>
+        <a class="menu-btn" href="mensagens.html">📩 Mensagens</a>
+        <a class="menu-btn" href="index.html">✖ Sair</a>
+    </nav>
 
-    <div class="header">
-        <div class="title-group">
-            <h1>Departamento Financeiro</h1>
-            <span id="header-date">Data: --/--/----</span>
-        </div>
-        <a href="dashboard.html" class="back-btn">❮ Voltar ao Menu</a>
-    </div>
-
-    <div class="dashboard">
-        <div class="summary-col">
-            <div class="card">
-                <div class="card-label">Saldo Disponível</div>
-                <div class="card-value" id="disp-saldo">R$ 0,00</div>
-                <div class="card-sub" id="disp-status">Situação: Estável</div>
-            </div>
-
-            <div class="card" style="padding: 15px; background: rgba(255, 71, 87, 0.05); border-color: rgba(255, 71, 87, 0.2);">
-                <div class="card-label" style="color: var(--red);">Despesa Mensal (Estimada)</div>
-                <div style="font-family: 'Rajdhani'; font-weight: 700; font-size: 1.4rem; color: var(--red);" id="disp-custo-mensal">R$ 0,00</div>
-                <div class="card-sub">Salários + Manutenção (4 Jogos)</div>
-            </div>
-            
-            <div class="list-container">
-                <div class="list-header"><span>Extrato Recente</span> <span style="font-size:0.8rem; color:#666;">Últimos 20</span></div>
-                <div class="trans-list" id="lista-transacoes">
-                    </div>
-            </div>
+    <div class="main">
+        <div class="finance-header">
+            <div class="saldo-label">Saldo em Caixa</div>
+            <div class="saldo-value" id="saldo-atual">R$ ---</div>
         </div>
 
-        <div class="chart-col">
-            <div class="card-label">Fluxo de Caixa (Por Semana de Jogo)</div>
-            <div class="chart-wrapper">
-                <canvas id="finChart"></canvas>
+        <div class="contracts-grid">
+            <div class="contract-card" id="card-patrocinio">
+                <div class="contract-title">Patrocínio Master</div>
+                <div class="contract-name" id="patro-nome">Nenhum Contrato</div>
+                <div class="contract-value" id="patro-val">---</div>
+                <div style="font-size:0.8rem; color:#666; margin-top:5px;" id="patro-tempo"></div>
             </div>
+
+            <div class="contract-card" id="card-tv">
+                <div class="contract-title">Direitos de TV</div>
+                <div class="contract-name" id="tv-nome">Nenhum Contrato</div>
+                <div class="contract-value" id="tv-val">---</div>
+                <div style="font-size:0.8rem; color:#666; margin-top:5px;" id="tv-tempo"></div>
+            </div>
+        </div>
+
+        <div class="history-list">
+            <h3 style="margin-top:0;">Histórico de Transações</h3>
+            <div id="lista-historico"></div>
         </div>
     </div>
 
     <script>
         window.onload = function() {
-            try {
-                if (typeof Engine === 'undefined') throw new Error("Engine não carregada.");
-                const game = Engine.carregarJogo();
-                if(!game) { window.location.href='index.html'; return; }
+            const game = Engine.carregarJogo();
+            if(!game) return;
 
-                // 1. DATA NO CABEÇALHO
-                if(Engine.data) {
-                    document.getElementById('header-date').innerText = "Data Atual: " + Engine.data.getDataAtual(game.rodadaAtual);
-                }
+            // 1. Saldo
+            document.getElementById('saldo-atual').innerText = game.recursos.dinheiro.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
 
-                // 2. ATUALIZA SALDO
-                const saldo = game.recursos.dinheiro;
-                const elSaldo = document.getElementById('disp-saldo');
-                elSaldo.innerText = saldo.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                elSaldo.className = `card-value ${saldo >= 0 ? 'pos' : 'neg'}`;
-                
-                const elStatus = document.getElementById('disp-status');
-                if(saldo < 0) { elStatus.innerText = "Situação: CRÍTICA (Dívida)"; elStatus.style.color = "var(--red)"; }
-                else if(saldo < 1000000) { elStatus.innerText = "Situação: Alerta"; elStatus.style.color = "var(--orange)"; }
-                else { elStatus.innerText = "Situação: Saudável"; elStatus.style.color = "var(--neon)"; }
-
-                // 3. CALCULA CUSTO MENSAL (Projeção)
-                // Pega salário de 1 rodada e multiplica por 4
-                let custoRodada = 0;
-                const meuTime = Engine.encontrarTime(game.info.time);
-                if(meuTime && meuTime.elenco) {
-                    meuTime.elenco.forEach(j => custoRodada += ((j.forca||60)*1500));
-                }
-                // Adiciona manutenção do estádio
-                if(Engine.estadios) {
-                    const est = Engine.estadios.getEstadio();
-                    custoRodada += Math.floor(est.cap * 5);
-                }
-                const custoMensal = custoRodada * 4;
-                document.getElementById('disp-custo-mensal').innerText = custoMensal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-                // 4. LISTA DE TRANSAÇÕES
-                const lista = document.getElementById('lista-transacoes');
-                const historico = game.financas ? game.financas.historico : [];
-                
-                // Mostra as últimas 20, invertidas
-                [...historico].reverse().slice(0, 20).forEach(t => {
-                    const div = document.createElement('div');
-                    div.className = 'trans-item';
-                    const cor = t.tipo === 'entrada' ? 'var(--neon)' : 'var(--red)';
-                    const sinal = t.tipo === 'entrada' ? '+' : '';
-                    
-                    // Ícone baseado no texto
-                    let tipoTexto = "Outros";
-                    if(t.texto.includes("Salários")) tipoTexto = "Despesa Operacional";
-                    else if(t.texto.includes("Manutenção")) tipoTexto = "Infraestrutura";
-                    else if(t.texto.includes("Bilheteria")) tipoTexto = "Receita de Jogo";
-                    else if(t.texto.includes("Investimento")) tipoTexto = "Aporte";
-                    else if(t.texto.includes("Venda")) tipoTexto = "Transferência";
-
-                    div.innerHTML = `
-                        <div class="t-left">
-                            <span class="t-desc">${t.texto}</span>
-                            <span class="t-type">${tipoTexto}</span>
-                        </div>
-                        <span class="t-val" style="color:${cor}">${sinal} ${t.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</span>
-                    `;
-                    lista.appendChild(div);
-                });
-
-                // 5. GRÁFICO COM DATAS
-                renderizarGrafico(historico, game.rodadaAtual);
-
-            } catch (err) {
-                console.error(err);
-                alert("Erro ao carregar finanças.");
+            // 2. Patrocínio
+            if (game.contratos.patrocinio) {
+                const p = game.contratos.patrocinio;
+                document.getElementById('card-patrocinio').classList.add('active');
+                document.getElementById('patro-nome').innerText = p.nome;
+                document.getElementById('patro-val').innerText = `Mensal: ${p.mensal.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}`;
+                document.getElementById('patro-tempo').innerText = `Expira em: ${p.duracao} Rodadas`;
             }
+
+            // 3. TV (Correção aqui: lê 'fixo' e 'emissora')
+            if (game.contratos.tv) {
+                const t = game.contratos.tv;
+                document.getElementById('card-tv').classList.add('active');
+                document.getElementById('tv-nome').innerText = t.emissora;
+                document.getElementById('tv-val').innerText = `Fixo: ${t.fixo.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}`;
+                document.getElementById('tv-tempo').innerText = `Expira em: ${t.duracao} Rodadas`;
+            }
+
+            // 4. Histórico
+            const list = document.getElementById('lista-historico');
+            // Pega os últimos 10
+            const ultimos = game.financas.historico.slice(-10).reverse();
+            
+            ultimos.forEach(h => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.innerHTML = `
+                    <span>${h.texto}</span>
+                    <span class="${h.valor >= 0 ? 'val-entrada' : 'val-saida'}">
+                        ${h.valor.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}
+                    </span>
+                `;
+                list.appendChild(div);
+            });
         };
-
-        function renderizarGrafico(historico, rodadaAtual) {
-            // Processa os dados para agrupar por "Rodada/Semana"
-            // Como o histórico não salva o ID da rodada em versões antigas, vamos inferir:
-            // Cada vez que aparece "Salários", consideramos que fechou uma semana.
-            
-            let labels = [];
-            let receitas = [];
-            let despesas = [];
-            
-            let tempRec = 0;
-            let tempDesp = 0;
-            
-            // O histórico está cronológico (antigo -> novo) no array original? Sim, push adiciona no final.
-            // Vamos iterar.
-            
-            let contadorSemanas = 0;
-            // Se tiver poucos dados, cria labels fixos
-            let hasData = false;
-
-            historico.forEach(h => {
-                if(h.tipo === 'entrada') tempRec += h.valor;
-                else tempDesp += Math.abs(h.valor);
-
-                // Gatilho de fim de semana: Pagamento de Salário
-                if(h.texto.includes("Salários")) {
-                    contadorSemanas++;
-                    hasData = true;
-                    
-                    // Gera Label de Data usando a Engine
-                    // Se estamos processando a semana 1, pegamos a data da rodada 1
-                    let dataLabel = `Semana ${contadorSemanas}`;
-                    if(Engine.data) {
-                        // Pega a data correspondente àquela rodada passada
-                        let dataStr = Engine.data.getDataAtual(contadorSemanas); 
-                        // Formata para "07/Jan"
-                        let partes = dataStr.split('/');
-                        let meses = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
-                        dataLabel = `${partes[0]}/${meses[parseInt(partes[1])-1]}`;
-                    }
-
-                    labels.push(dataLabel);
-                    receitas.push(tempRec);
-                    despesas.push(tempDesp);
-                    
-                    // Zera acumuladores para a próxima semana
-                    tempRec = 0; 
-                    tempDesp = 0;
-                }
-            });
-
-            // Se ainda não teve fechamento de semana (novo jogo), mostra vazio
-            if(!hasData) {
-                labels = ["Início"];
-                receitas = [historico[0]?.valor || 0];
-                despesas = [0];
-            }
-
-            const ctx = document.getElementById('finChart').getContext('2d');
-            
-            // Gradiente para Receitas
-            let gradGreen = ctx.createLinearGradient(0, 0, 0, 400);
-            gradGreen.addColorStop(0, 'rgba(0, 255, 136, 0.5)');
-            gradGreen.addColorStop(1, 'rgba(0, 255, 136, 0.0)');
-
-            // Gradiente para Despesas
-            let gradRed = ctx.createLinearGradient(0, 0, 0, 400);
-            gradRed.addColorStop(0, 'rgba(255, 71, 87, 0.5)');
-            gradRed.addColorStop(1, 'rgba(255, 71, 87, 0.0)');
-
-            new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Receitas Totais',
-                            data: receitas,
-                            borderColor: '#00ff88',
-                            backgroundColor: gradGreen,
-                            borderWidth: 2,
-                            tension: 0.3,
-                            fill: true,
-                            pointBackgroundColor: '#00ff88'
-                        },
-                        {
-                            label: 'Despesas Totais',
-                            data: despesas,
-                            borderColor: '#ff4757',
-                            backgroundColor: gradRed,
-                            borderWidth: 2,
-                            tension: 0.3,
-                            fill: true,
-                            pointBackgroundColor: '#ff4757'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: '#ccc', font: {family:'Inter'} } },
-                        tooltip: { 
-                            mode: 'index', 
-                            intersect: false,
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) { label += ': '; }
-                                    if (context.parsed.y !== null) {
-                                        label += context.parsed.y.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-                                    }
-                                    return label;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: { 
-                            beginAtZero: true, 
-                            grid: { color: '#333' },
-                            ticks: { color: '#888', callback: function(value) { return 'R$ ' + (value/1000000).toFixed(1) + 'M'; } } 
-                        },
-                        x: { 
-                            grid: { display: false },
-                            ticks: { color: '#ccc', font: {family:'Rajdhani', weight:'bold'} }
-                        }
-                    },
-                    interaction: {
-                        mode: 'nearest',
-                        axis: 'x',
-                        intersect: false
-                    }
-                }
-            });
-        }
     </script>
 </body>
 </html>
