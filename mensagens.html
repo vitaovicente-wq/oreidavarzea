@@ -10,7 +10,6 @@
     <style>
         :root { --bg-dark: #0f1216; --sidebar-bg: #161b22; --card-bg: #1e2329; --neon-green: #00ff88; --text-main: #ffffff; --text-muted: #8b949e; --border: #30363d; --red: #ff4757; }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        
         .sidebar { width: 250px; background: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
         .logo { font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 900; margin-bottom: 20px; color: #fff; text-transform: uppercase; }
         .logo span { color: var(--neon-green); }
@@ -19,30 +18,30 @@
         .menu-btn.logout { margin-top: auto; color: var(--red); }
         .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
 
-        /* Estilos de Mensagem */
         .msg-list { display: flex; flex-direction: column; gap: 10px; }
         .msg-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; transition: 0.2s; }
-        .msg-item:hover { border-color: var(--neon-green); }
         .msg-item.unread { border-left: 4px solid var(--neon-green); background: #262c33; }
         
-        .msg-header { padding: 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .msg-header { padding: 15px 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .msg-sender { font-size: 0.8rem; color: #aaa; text-transform: uppercase; margin-bottom: 3px; }
         .msg-title { font-weight: 700; font-size: 1.1rem; color: #fff; }
-        .msg-meta { font-size: 0.8rem; color: #888; display: flex; align-items: center; gap: 10px; }
-        .msg-type { font-size: 0.7rem; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: #333; }
+        .msg-meta { font-size: 0.8rem; color: #666; display: flex; gap: 10px; align-items: center; }
         
-        .msg-body { padding: 0 20px 20px 20px; font-size: 0.95rem; color: #ddd; line-height: 1.6; display: none; border-top: 1px solid #444; margin-top: 0; padding-top: 20px; animation: fadeIn 0.3s; }
+        .msg-body { padding: 20px; background: #161b22; display: none; border-top: 1px solid #444; }
         .msg-item.open .msg-body { display: block; }
-        .msg-item.open { background: #222; border-color: #555; }
 
-        /* Botão dentro do e-mail */
-        .btn-email { background: #3498db; color: #fff; border: none; padding: 12px 15px; cursor: pointer; width: 100%; margin-top: 15px; border-radius: 4px; font-weight: bold; transition:0.2s; font-size: 1rem; }
-        .btn-email:hover { background: #2980b9; transform: translateY(-2px); }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* Estilos do Conteúdo do E-mail */
+        .email-container { font-family: 'Georgia', serif; color: #ddd; line-height: 1.6; }
+        .email-header { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #444; color: #888; font-size: 0.9rem; }
+        .card-offer { background: #21262d; border-radius: 6px; padding: 15px; margin-bottom: 10px; }
+        .offer-header { font-family: 'Rajdhani'; font-weight: 700; font-size: 1.2rem; margin-bottom: 5px; }
+        .offer-details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.9rem; margin: 10px 0; }
+        
+        .btn-action { width: 100%; padding: 10px; border-radius: 4px; border: none; background: #333; color: #fff; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-action:hover { background: #fff; color: #000; }
     </style>
 </head>
 <body>
-
     <nav class="sidebar">
         <div class="logo">BR<span>FUTEBOL</span></div>
         <a class="menu-btn" href="dashboard.html">📊 Visão Geral</a>
@@ -57,138 +56,71 @@
     </nav>
 
     <main class="main-content">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="font-family:'Rajdhani'; margin:0;">Caixa de Entrada</h2>
-            <div id="status-box" style="font-size:0.9rem; color:#aaa;"></div>
-        </div>
+        <h2 style="font-family:'Rajdhani';">Caixa de Entrada</h2>
         <div id="lista-mensagens" class="msg-list"></div>
     </main>
 
     <script>
-        window.onload = function() {
-            // Verifica se o engine carregou
-            if(typeof Engine === 'undefined') {
-                document.getElementById('lista-mensagens').innerHTML = "<p>Erro: Engine não carregado.</p>";
-                return;
-            }
-            renderizarMensagens();
-        };
+        window.onload = function() { renderizar(); };
 
-        function renderizarMensagens() {
+        function renderizar() {
             const game = Engine.carregarJogo();
             const container = document.getElementById('lista-mensagens');
             container.innerHTML = "";
 
             if(!game.mensagens || game.mensagens.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding:40px; color:#666;"><h3>Caixa de Entrada Vazia</h3></div>`;
+                container.innerHTML = `<div style="text-align:center; padding:40px; color:#666;">Caixa Vazia</div>`;
                 return;
             }
 
             game.mensagens.forEach(msg => {
-                // Criação segura de elementos DOM (evita bugs de aspas no HTML)
-                const divItem = document.createElement('div');
-                divItem.className = `msg-item ${msg.lida ? '' : 'unread'}`;
-                divItem.id = `msg-${msg.id}`; // ID para manipular
-
-                // Header (Título e Data)
-                const divHeader = document.createElement('div');
-                divHeader.className = 'msg-header';
+                const item = document.createElement('div');
+                item.className = `msg-item ${msg.lida ? '' : 'unread'}`;
+                item.id = `msg-${msg.id}`;
                 
-                // Configura badges de cor
-                let corBadge = '#333';
-                let nomeBadge = 'Geral';
-                if(msg.tipo === 'boas_vindas') { corBadge = '#e74c3c'; nomeBadge = 'Diretoria'; }
-                if(msg.tipo === 'patrocinio_oferta') { corBadge = '#3498db'; nomeBadge = 'Comercial'; }
-                if(msg.tipo === 'tv_oferta') { corBadge = '#f1c40f'; nomeBadge = 'Mídia'; }
-                if(msg.tipo === 'dm') { corBadge = '#ff7675'; nomeBadge = 'DM'; }
-                if(msg.tipo === 'negociacao') { corBadge = '#00b894'; nomeBadge = 'Mercado'; }
-
-                divHeader.innerHTML = `
-                    <div class="msg-title">${msg.titulo}</div>
-                    <div class="msg-meta">
-                        <span class="msg-type" style="background:${corBadge}; color:#fff;">${nomeBadge}</span>
-                        <span>Rodada ${msg.rodada}</span>
+                item.innerHTML = `
+                    <div class="msg-header" onclick="ler(${msg.id})">
+                        <div>
+                            <div class="msg-sender">${msg.remetente || 'Sistema'}</div>
+                            <div class="msg-title">${msg.titulo}</div>
+                        </div>
+                        <div class="msg-meta">Rodada ${msg.rodada}</div>
                     </div>
+                    <div class="msg-body">${msg.corpo}</div>
                 `;
-
-                // Corpo da mensagem
-                const divBody = document.createElement('div');
-                divBody.className = 'msg-body';
-                divBody.innerHTML = msg.corpo; // Insere o HTML rico gerado pelo Engine
-
-                // Evento de Clique Seguro
-                divHeader.onclick = function() {
-                    abrirMensagem(msg.id, divItem);
-                };
-
-                divItem.appendChild(divHeader);
-                divItem.appendChild(divBody);
-                container.appendChild(divItem);
+                container.appendChild(item);
             });
         }
 
-        function abrirMensagem(id, divItem) {
-            // Fecha todos os outros
-            document.querySelectorAll('.msg-item').forEach(item => {
-                if(item !== divItem) item.classList.remove('open');
-            });
-
-            // Alterna o atual
-            const estavaAberto = divItem.classList.contains('open');
-            if(estavaAberto) {
-                divItem.classList.remove('open');
-            } else {
-                divItem.classList.add('open');
-                divItem.classList.remove('unread');
-                processarLeitura(id);
-            }
-        }
-
-        function processarLeitura(id) {
-            const game = Engine.carregarJogo();
-            // Compara IDs como string para garantir
-            const msg = game.mensagens.find(m => String(m.id) === String(id));
+        function ler(id) {
+            const el = document.getElementById(`msg-${id}`);
+            const wasOpen = el.classList.contains('open');
             
-            if(msg && !msg.lida) {
-                msg.lida = true;
+            // Fecha outros
+            document.querySelectorAll('.msg-item').forEach(d => d.classList.remove('open'));
+            
+            if(!wasOpen) {
+                el.classList.add('open');
+                el.classList.remove('unread');
                 
-                // LÓGICA DE GATILHOS (SEQUÊNCIA DE MENSAGENS)
-                let novidade = false;
+                // Lógica de Gatilho
+                const game = Engine.carregarJogo();
+                const msg = game.mensagens.find(m => m.id == id); // == para forçar type matching
+                
+                if(msg && !msg.lida) {
+                    msg.lida = true;
+                    Engine.salvarJogo(game); // Salva leitura
 
-                if (msg.tipo === 'boas_vindas') {
-                    Engine.Contratos.liberarOfertasPatrocinio();
-                    novidade = true;
-                    notificar("Nova proposta comercial recebida!");
-                } 
-                else if (msg.tipo === 'patrocinio_oferta') {
-                    Engine.Contratos.liberarOfertasTV();
-                    novidade = true;
-                    notificar("Emissoras de TV entraram em contato!");
+                    // Verifica gatilhos
+                    let novidade = false;
+                    if(msg.tipo === 'boas_vindas') { Engine.Contratos.liberarOfertasPatrocinio(); novidade = true; }
+                    else if(msg.tipo === 'patrocinio_oferta') { Engine.Contratos.liberarOfertasTV(); novidade = true; }
+
+                    if(novidade) {
+                        setTimeout(() => { renderizar(); document.getElementById(`msg-${id}`).classList.add('open'); }, 800);
+                    }
                 }
-
-                // Salva antes de recarregar
-                Engine.salvarJogo(game);
-
-                if (novidade) {
-                    // Pequeno delay para dar tempo de ler o título novo
-                    setTimeout(() => {
-                        renderizarMensagens();
-                        // Reabre a mensagem que estava lendo
-                        const novaDiv = document.getElementById(`msg-${id}`);
-                        if(novaDiv) novaDiv.classList.add('open');
-                    }, 1000);
-                }
-            } else {
-                // Apenas salva que leu se não tiver gatilho
-                Engine.salvarJogo(game);
             }
-        }
-
-        function notificar(texto) {
-            const box = document.getElementById('status-box');
-            box.innerText = texto;
-            box.style.color = "var(--neon-green)";
-            setTimeout(() => { box.innerText = ""; }, 4000);
         }
     </script>
 </body>
