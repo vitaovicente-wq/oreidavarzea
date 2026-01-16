@@ -90,21 +90,17 @@ window.Engine = {
         this.salvarJogo(estado);
         
         // --- PROTEÇÃO DE ENVIO DE MENSAGEM ---
-        // Espera 100ms para garantir que o engine-contratos.js foi lido pelo navegador
         setTimeout(() => {
             if(window.Engine && window.Engine.Contratos) {
-                // Recarrega o jogo para garantir que estamos mexendo no save atualizado
                 const saveAtual = window.Engine.carregarJogo();
                 window.Engine.Contratos.enviarBoasVindas(saveAtual);
-                console.log("✅ E-mail de boas vindas enviado.");
-            } else {
-                console.error("❌ ERRO: O módulo de Contratos não foi encontrado.");
             }
-        }, 100);
+        }, 200);
     },
 
-    // --- ATUALIZAÇÃO DE RODADA ---
+    // --- ATUALIZAÇÃO DE RODADA (A CORREÇÃO ESTÁ AQUI) ---
     atualizarTabela: function(estado) {
+        // 1. Recalcula a tabela inteira (sempre precisa fazer isso)
         const tab = estado.classificacao;
         tab.forEach(t => { t.pts=0; t.j=0; t.v=0; t.e=0; t.d=0; t.gp=0; t.gc=0; t.sg=0; });
         
@@ -114,27 +110,40 @@ window.Engine = {
         
         tab.sort((a,b) => b.pts - a.pts || b.sg - a.sg);
 
-        const rIdx = estado.rodadaAtual - 1;
-        if(estado.calendario[rIdx]) {
-            const jogo = estado.calendario[rIdx].jogos.find(j => j.mandante === estado.info.time || j.visitante === estado.info.time);
+        // 2. DETECÇÃO DE EVENTOS (Lógica Corrigida)
+        // A rodada "jogada" é sempre a anterior à atual, pois o Dashboard já incrementou +1
+        const rodadaJogada = estado.rodadaAtual - 1;
+
+        if(rodadaJogada > 0 && estado.recursos.ultimaRodadaProcessada < rodadaJogada) {
             
-            if(jogo && jogo.jogado && estado.recursos.ultimaRodadaProcessada !== estado.rodadaAtual) {
-                const mandante = jogo.mandante === estado.info.time;
-                const adv = mandante ? jogo.visitante : jogo.mandante;
+            // Encontra o jogo que acabou de acontecer para definir mandante/visitante
+            // (Usamos rodadaJogada - 1 porque array começa em 0)
+            const indexArray = rodadaJogada - 1;
+            
+            if(estado.calendario[indexArray]) {
+                const jogo = estado.calendario[indexArray].jogos.find(j => j.mandante === estado.info.time || j.visitante === estado.info.time);
                 
-                // Chama módulos apenas se existirem (Segurança)
-                if(this.Sistema) this.Sistema.processarFinancas(estado, mandante, adv);
+                // Dispara os sistemas
+                if(jogo) {
+                    const mandante = jogo.mandante === estado.info.time;
+                    const adv = mandante ? jogo.visitante : jogo.mandante;
+
+                    if(this.Sistema) this.Sistema.processarFinancas(estado, mandante, adv);
+                }
+
+                // EVENTOS ALEATÓRIOS (Lesões, Crises, etc)
                 if(this.Eventos) this.Eventos.processarEventosRodada(estado);
+                
+                // MERCADO
                 if(this.Mercado) {
                     this.Mercado.atualizarListaTransferencias(estado);
                     this.Mercado.simularDispensasCPU(estado);
                 }
                 
-                // Processa Vencimentos de Contratos
+                // CONTRATOS E VENCIMENTOS
                 if(this.Contratos && this.Contratos.processarVencimentos) {
                     this.Contratos.processarVencimentos(estado);
                     
-                    // Dispara renovação se ficou sem
                     if (!estado.flags.patroEnviado && !estado.contratos.patrocinio) {
                         this.Contratos.liberarOfertasPatrocinio();
                     }
@@ -143,9 +152,11 @@ window.Engine = {
                     }
                 }
 
-                estado.recursos.ultimaRodadaProcessada = estado.rodadaAtual;
+                // Marca como processada para não repetir na mesma rodada
+                estado.recursos.ultimaRodadaProcessada = rodadaJogada;
             }
         }
+
         this.salvarJogo(estado);
         return tab;
     },
