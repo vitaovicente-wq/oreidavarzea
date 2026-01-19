@@ -12,10 +12,7 @@
     <script src="engine-core.js"></script>
     <script src="engine-match.js"></script>
     <script src="engine-mercado.js"></script>
-    <script src="engine-contratos.js"></script>
-    <script src="engine-eventos.js"></script>
-    
-    <style>
+    <script src="engine-contratos.js"></script> <script src="engine-eventos.js"></script>   <style>
         :root {
             --bg-dark: #0f1216;
             --card-bg: #1e2329;
@@ -225,7 +222,6 @@
         const DEFAULT_SHIELD = "https://cdn-icons-png.flaticon.com/512/53/53283.png";
 
         window.onload = function() {
-            // Verificação de Segurança
             if (typeof Engine === 'undefined' || typeof CalendarioSystem === 'undefined') {
                 alert("ERRO: engine.js ou calendario.js não carregados.");
                 return;
@@ -239,11 +235,8 @@
         }
 
         function mudarAba(divisao, elementoBtn) {
-            // Atualiza visual dos botões
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             elementoBtn.classList.add('active');
-            
-            // Troca divisão
             divisaoAtual = divisao;
             timeSelecionadoObj = null;
             document.getElementById('footer-summary').classList.remove('visible');
@@ -253,26 +246,20 @@
         function carregarTimes(divisao) {
             const container = document.getElementById('teams-container');
             container.innerHTML = "";
-
             let lista = [];
 
-            // 1. Tenta pegar do Banco de Dados Real
             if (window.Database && window.Database.brasil && window.Database.brasil[divisao]) {
                 lista = window.Database.brasil[divisao];
             } else {
-                // 2. Se não tiver no DB, gera Genéricos para as ligas funcionarem
                 lista = gerarTimesGenericos(divisao);
             }
 
-            // Ordena
             lista.sort((a,b) => a.nome.localeCompare(b.nome));
 
-            // Renderiza
             lista.forEach(time => {
                 const card = document.createElement('div');
                 card.className = 'team-card';
                 card.onclick = () => selecionarTime(card, time);
-                
                 const escudo = time.escudo || DEFAULT_SHIELD;
                 const forca = time.forca || 60;
 
@@ -286,74 +273,34 @@
         }
 
         function selecionarTime(cardElement, timeObj) {
-            // Visual seleção
             document.querySelectorAll('.team-card').forEach(c => c.classList.remove('selected'));
             cardElement.classList.add('selected');
-            
             timeSelecionadoObj = timeObj;
-
-            // Preenche o Resumo (Footer)
             atualizarResumo(timeObj);
-            
-            // Mostra o Footer
             document.getElementById('footer-summary').classList.add('visible');
             validarFormulario();
         }
 
         function atualizarResumo(time) {
             const forca = time.forca || 60;
-            
-            // 1. Tenta pegar do objeto do time (se tiver no DB)
             let estadio = time.estadio;
 
-            // 2. Se não tiver, usa lista de estádios reais conhecidos
             if (!estadio) {
                 const estadiosReais = {
-                    "Corinthians": "Neo Química Arena",
-                    "Palmeiras": "Allianz Parque",
-                    "São Paulo": "Morumbi",
-                    "Santos": "Vila Belmiro",
-                    "Flamengo": "Maracanã",
-                    "Fluminense": "Maracanã",
-                    "Vasco": "São Januário",
-                    "Botafogo": "Nilton Santos",
-                    "Grêmio": "Arena do Grêmio",
-                    "Internacional": "Beira-Rio",
-                    "Atlético-MG": "Arena MRV",
-                    "Cruzeiro": "Mineirão",
-                    "Bahia": "Fonte Nova",
-                    "Vitória": "Barradão",
-                    "Fortaleza": "Castelão",
-                    "Ceará": "Castelão",
-                    "Athletico-PR": "Ligga Arena",
-                    "Coritiba": "Couto Pereira",
-                    "Sport": "Ilha do Retiro",
-                    "Santa Cruz": "Arruda",
-                    "Náutico": "Aflitos",
-                    "Goiás": "Serrinha",
-                    "Vila Nova": "OBA",
-                    "Paysandu": "Curuzu",
-                    "Remo": "Baenão"
+                    "Corinthians": "Neo Química Arena", "Palmeiras": "Allianz Parque", "São Paulo": "Morumbi",
+                    "Santos": "Vila Belmiro", "Flamengo": "Maracanã", "Fluminense": "Maracanã",
+                    "Vasco": "São Januário", "Botafogo": "Nilton Santos", "Grêmio": "Arena do Grêmio",
+                    "Internacional": "Beira-Rio", "Atlético-MG": "Arena MRV", "Cruzeiro": "Mineirão"
                 };
-                estadio = estadiosReais[time.nome] || null;
+                estadio = estadiosReais[time.nome] || (forca >= 80 ? "Arena Multiuso" : "Estádio Municipal");
             }
 
-            // 3. Fallback genérico se ainda não achou
-            if (!estadio) {
-                if (forca >= 80) estadio = "Arena Multiuso";
-                else if (forca >= 70) estadio = "Estádio Municipal";
-                else estadio = "Campo do Bairro";
-            }
-
-            // Define Objetivo e Orçamento
             let objetivo = "Permanência";
             let orcamento = 2.0;
-
             if (forca >= 82) { objetivo = "Título / Libertadores"; orcamento = 150.0; }
             else if (forca >= 76) { objetivo = "Vaga na Libertadores"; orcamento = 60.0; }
             else if (forca >= 72) { objetivo = "Vaga na Sul-Americana"; orcamento = 25.0; }
 
-            // Craque
             let craque = "---";
             if (time.elenco && time.elenco.length > 0) {
                 const melhor = time.elenco.reduce((p, c) => (p.forca > c.forca) ? p : c);
@@ -371,64 +318,54 @@
         function validarFormulario() {
             const nome = document.getElementById('manager-name').value.trim();
             const btn = document.getElementById('btn-start');
-            
-            // Lógica de desbloqueio explicativa
-            if (!timeSelecionadoObj) {
-                btn.disabled = true;
-                btn.innerText = "SELECIONE UM CLUBE";
-                return;
-            }
-
-            if (nome.length === 0) {
-                btn.disabled = true;
-                btn.innerText = "DIGITE SEU NOME";
-                return;
-            }
-
-            // Tudo OK
-            btn.disabled = false;
-            btn.innerText = "CONTRATAR";
+            if (!timeSelecionadoObj) { btn.disabled = true; btn.innerText = "SELECIONE UM CLUBE"; return; }
+            if (nome.length === 0) { btn.disabled = true; btn.innerText = "DIGITE SEU NOME"; return; }
+            btn.disabled = false; btn.innerText = "CONTRATAR";
         }
 
         function iniciarCampanha() {
             const nomeTreinador = document.getElementById('manager-name').value;
             const btn = document.getElementById('btn-start');
 
-            btn.innerText = "ASSINANDO CONTRATO...";
+            btn.innerText = "CRIANDO MUNDO...";
             btn.style.cursor = "wait";
+            btn.disabled = true;
 
             setTimeout(() => {
                 try {
                     localStorage.clear();
                     
-                    // Cria o jogo (Save + Calendário)
+                    // 1. Cria o Jogo Básico
                     Engine.novoJogo('Brasil', divisaoAtual, timeSelecionadoObj.nome);
                     
-                    // Salva técnico
+                    // 2. FORÇA A CRIAÇÃO DO E-MAIL AGORA (Antes de mudar de página)
+                    // Isso evita que o navegador feche antes do setTimeout do engine-core rodar
+                    if(Engine.Contratos) {
+                        console.log("Forçando e-mail no index...");
+                        let saveFresco = Engine.carregarJogo();
+                        Engine.Contratos.enviarBoasVindas(saveFresco);
+                    } else {
+                        console.error("Módulo Contratos não encontrado no Index.");
+                    }
+
+                    // 3. Salva o Nome do Técnico
                     let save = Engine.carregarJogo();
                     save.info.tecnico = nomeTreinador;
                     Engine.salvarJogo(save);
                     
+                    // 4. Redireciona
                     window.location.href = 'dashboard.html';
                 } catch (err) {
-                    alert("Erro ao iniciar: " + err.message);
+                    alert("Erro crítico: " + err.message);
                     console.error(err);
-                    btn.innerText = "ERRO";
+                    btn.innerText = "ERRO FATAL";
                 }
-            }, 500);
+            }, 200);
         }
 
-        // Função auxiliar para gerar times se não houver DB na série C/D
         function gerarTimesGenericos(divisao) {
             let lista = [];
-            for(let i=1; i<=20; i++) {
-                lista.push({ 
-                    nome: `Clube ${divisao.toUpperCase()} ${i}`, 
-                    escudo: DEFAULT_SHIELD, 
-                    forca: Math.floor(Math.random() * 20) + 50,
-                    elenco: [] 
-                });
-            }
+            for(let i=1; i<=20; i++) lista.push({ nome: `Clube ${divisao.toUpperCase()} ${i}`, escudo: DEFAULT_SHIELD, forca: Math.floor(Math.random() * 20) + 50, elenco: [] });
             return lista;
         }
     </script>
