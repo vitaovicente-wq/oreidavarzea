@@ -1,14 +1,15 @@
 // ARQUIVO: engine-core.js
-// Responsável por: Inicialização, Save/Load e Loop Principal
+// Base original mantida + Correção de Sincronização de Mensagens
 
 window.Engine = {
-    // --- SISTEMA (Movido para o topo para garantir prioridade de carregamento) ---
+    // --- SISTEMA (Movido para o topo para garantir prioridade, lógica MANTIDA) ---
     Sistema: {
         novaMensagem: function(titulo, corpo, tipo, remetente="Sistema") {
-            console.log(`📩 Tentando enviar mensagem: ${titulo}`); // Log de Debug
+            console.log(`📩 Enviando mensagem: ${titulo}`);
             
+            // Carrega do disco para não perder nada anterior
             const game = window.Engine.carregarJogo();
-            if(!game) return; // Segurança extra
+            if(!game) return; 
 
             if(!game.mensagens) game.mensagens = [];
             
@@ -23,10 +24,11 @@ window.Engine = {
             });
             
             window.Engine.salvarJogo(game);
-            console.log("✅ Mensagem salva com sucesso no banco de dados."); // Log de Sucesso
+            console.log("✅ Mensagem salva no disco.");
         },
         
         processarFinancas: function(g, mand, adv) {
+            // Lógica original de finanças mantida
             if(mand && window.Engine.Estadios) {
                 const r = window.Engine.Estadios.calcularBilheteria(adv);
                 g.recursos.dinheiro += r.rendaTotal;
@@ -52,7 +54,7 @@ window.Engine = {
         }
     },
 
-    // --- SAVE & LOAD ---
+    // --- SAVE & LOAD (MANTIDO) ---
     salvarJogo: function(estado) { 
         localStorage.setItem('brfutebol_save', JSON.stringify(estado)); 
     },
@@ -73,7 +75,7 @@ window.Engine = {
         return s ? this.encontrarTime(s.info.time) : null; 
     },
 
-    // --- INICIALIZAÇÃO DO NOVO JOGO ---
+    // --- INICIALIZAÇÃO DO NOVO JOGO (MANTIDO) ---
     novoJogo: function(pais, divisao, nomeTimeSelecionado) {
         console.log(`⚽ Iniciando Core: ${nomeTimeSelecionado}`);
         
@@ -139,7 +141,7 @@ window.Engine = {
 
         this.salvarJogo(estado);
         
-        // --- PROTEÇÃO DE ENVIO DE MENSAGEM ---
+        // Proteção de envio de mensagem inicial
         setTimeout(() => {
             if(window.Engine && window.Engine.Contratos) {
                 const saveAtual = window.Engine.carregarJogo();
@@ -148,9 +150,9 @@ window.Engine = {
         }, 200);
     },
 
-    // --- ATUALIZAÇÃO DE RODADA ---
+    // --- ATUALIZAÇÃO DE RODADA (Sua lógica + Correção) ---
     atualizarTabela: function(estado) {
-        // 1. Recalcula a tabela inteira (sempre precisa fazer isso)
+        // 1. Recalcula a tabela inteira (Lógica Original)
         const tab = estado.classificacao;
         tab.forEach(t => { t.pts=0; t.j=0; t.v=0; t.e=0; t.d=0; t.gp=0; t.gc=0; t.sg=0; });
         
@@ -160,13 +162,11 @@ window.Engine = {
         
         tab.sort((a,b) => b.pts - a.pts || b.sg - a.sg);
 
-        // 2. DETECÇÃO DE EVENTOS
-        // A rodada "jogada" é sempre a anterior à atual, pois o Dashboard já incrementou +1
+        // 2. Detecção de Eventos (Lógica Original Corrigida)
         const rodadaJogada = estado.rodadaAtual - 1;
 
         if(rodadaJogada > 0 && estado.recursos.ultimaRodadaProcessada < rodadaJogada) {
             
-            // Encontra o jogo que acabou de acontecer para definir mandante/visitante
             const indexArray = rodadaJogada - 1;
             
             if(estado.calendario[indexArray]) {
@@ -180,9 +180,9 @@ window.Engine = {
                     if(this.Sistema) this.Sistema.processarFinancas(estado, mandante, adv);
                 }
 
-                // EVENTOS ALEATÓRIOS (Lesões, Crises, etc)
+                // EVENTOS ALEATÓRIOS
                 if(this.Eventos) {
-                    console.log("Chamando Eventos..."); // Log para confirmar que chamou
+                    console.log("🎲 Processando Eventos...");
                     this.Eventos.processarEventosRodada(estado);
                 }
                 
@@ -192,7 +192,7 @@ window.Engine = {
                     this.Mercado.simularDispensasCPU(estado);
                 }
                 
-                // CONTRATOS E VENCIMENTOS
+                // CONTRATOS
                 if(this.Contratos && this.Contratos.processarVencimentos) {
                     this.Contratos.processarVencimentos(estado);
                     
@@ -204,10 +204,19 @@ window.Engine = {
                     }
                 }
 
-                // Marca como processada para não repetir na mesma rodada
                 estado.recursos.ultimaRodadaProcessada = rodadaJogada;
             }
         }
+
+        // --- AQUI ESTÁ A CORREÇÃO (ADICIONADO) ---
+        // Verifica se os Eventos salvaram algo novo no disco e "puxa" de volta
+        // para evitar que o "salvarJogo" abaixo apague a mensagem nova.
+        const versaoDisco = this.carregarJogo();
+        if(versaoDisco && versaoDisco.mensagens && versaoDisco.mensagens.length > estado.mensagens.length) {
+            console.log("🔄 Sincronizando mensagens do disco...");
+            estado.mensagens = versaoDisco.mensagens;
+        }
+        // ------------------------------------------
 
         this.salvarJogo(estado);
         return tab;
