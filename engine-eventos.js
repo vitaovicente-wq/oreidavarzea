@@ -3,7 +3,7 @@
 // Transferências: DESATIVADAS (Chance 0.0)
 
 Engine.Eventos = {
-    // Probabilidades Equilibradas (Para acontecerem com frequência saudável)
+    // Probabilidades Equilibradas
     chances: {
         lesao: 0.35,         // 35% de chance
         proposta: 0.0,       // 0% (DESATIVADO)
@@ -47,13 +47,11 @@ Engine.Eventos = {
             const lesao = this.db.lesoes[Math.floor(Math.random() * this.db.lesoes.length)];
             const tempo = lesao.gravidade;
 
-            // Aplica lesão
             const idx = time.elenco.findIndex(j => j.uid === alvo.uid);
             time.elenco[idx].status = "Lesionado";
             time.elenco[idx].rodadasFora = tempo;
             Engine.salvarJogo(game);
 
-            // HTML Rico
             const html = `
                 <div style="font-family:'Inter', sans-serif;">
                     <p>Boletim Médico Urgente:</p>
@@ -119,7 +117,6 @@ Engine.Eventos = {
         const idx = elenco.findIndex(j => j.uid === uid);
         
         if(idx !== -1) {
-            // 50% de chance
             if(Math.random() > 0.5) { 
                 elenco[idx].status = "Apto"; 
                 elenco[idx].rodadasFora = 0; 
