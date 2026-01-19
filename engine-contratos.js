@@ -1,5 +1,6 @@
 // ARQUIVO: engine-contratos.js
 // NARRATIVA: Profunda (Contexto de Time, Jogadores e Objetivos)
+// CORREÇÃO: Reload automático para destravar botões seguintes
 
 Engine.Contratos = {
     _processando: false,
@@ -22,21 +23,18 @@ Engine.Contratos = {
         
         if (div === 'serieA') {
             if (forcaMedia >= 80) {
-                // PERFIL: GIGANTE
                 tom.assunto = "Planejamento: Hegemonia Nacional";
                 tom.intro = "Não vou dourar a pílula: investimos milhões neste elenco. A imprensa diz que somos favoritos, e a torcida não aceita menos que taças.";
                 tom.meta = "🏆 <b>Obrigação:</b> Vaga direta na Libertadores ou Título.";
                 tom.elenco = `⭐ <b>Referência Técnica:</b> <b>${craque.nome}</b> é um dos melhores do país. O time deve jogar por ele, mas cobre liderança.`;
                 tom.aviso = "Se terminarmos fora do G4, considere sua posição em risco.";
             } else if (forcaMedia >= 74) {
-                // PERFIL: TRADIÇÃO / MEIO TABELA
                 tom.assunto = "Planejamento: Retomada de Confiança";
                 tom.intro = "Temos camisa, temos história, mas precisamos de regularidade. O clube viveu anos de oscilação e queremos estabilidade.";
                 tom.meta = "🌎 <b>Meta Realista:</b> Vaga na Sul-Americana (Top 12). Sonhar com Libertadores é possível, mas não perca o foco.";
                 tom.elenco = `🔄 <b>Gestão:</b> Temos bons nomes como <b>${craque.nome}</b>, mas o elenco é curto. Evite lesões.`;
                 tom.aviso = "Afastar o risco de rebaixamento cedo é crucial para a saúde financeira.";
             } else {
-                // PERFIL: LUTADOR (Z4)
                 tom.assunto = "Planejamento: Operação de Guerra";
                 tom.intro = "Serei brutalmente honesto: somos cotados para cair. O orçamento é curto e a pressão será insana. Precisamos de um milagreiro.";
                 tom.meta = "🛡️ <b>Meta Única:</b> 45 Pontos. Permanecer na Série A é o nosso título.";
@@ -44,7 +42,6 @@ Engine.Contratos = {
                 tom.aviso = "Cada ponto em casa vale ouro. Não invente moda tática.";
             }
         } else {
-            // PERFIL: SÉRIES B, C, D
             tom.assunto = "Planejamento: O Caminho do Acesso";
             tom.intro = "Nossa torcida não aguenta mais esta divisão. O lugar deste clube não é aqui. A cidade respira o acesso.";
             tom.meta = "📈 <b>Obrigação:</b> Subir de divisão (G4).";
@@ -63,10 +60,8 @@ Engine.Contratos = {
                     </div>
                     <div style="margin-top:10px; font-size:1.1rem; color:#fff; font-weight:bold;">${tom.assunto}</div>
                 </div>
-
                 <p>Prezado(a),</p>
                 <p>${tom.intro}</p>
-
                 <div style="background:#1a1d21; border-left:4px solid #3498db; padding:15px; margin:20px 0; border-radius:0 6px 6px 0;">
                     <h4 style="margin:0 0 10px 0; color:#3498db;">📋 DIRETRIZES ESTRATÉGICAS</h4>
                     <ul style="margin:0; padding-left:20px; list-style-type:circle;">
@@ -75,10 +70,8 @@ Engine.Contratos = {
                         <li>💰 <b>Finanças:</b> O caixa inicial é de <b>${game.recursos.dinheiro.toLocaleString('pt-BR',{style:'currency', currency:'BRL'})}</b>. Use para luvas ou salários, mas não estoure o teto.</li>
                     </ul>
                 </div>
-
                 <p>${tom.aviso}</p>
                 <p>O Diretor Comercial apresentará as propostas de patrocínio a seguir. Analise com a mentalidade de um gestor.</p>
-
                 <br>
                 <p style="font-style:italic; color:#888;">Atenciosamente,</p>
                 <p style="font-family:'Brush Script MT', cursive; font-size:1.5rem;">A Presidência</p>
@@ -113,7 +106,6 @@ Engine.Contratos = {
         
         props.forEach(p => {
             let cor = p.tipo==='bet'?'#e74c3c':(p.tipo==='financeiro'?'#2ecc71':(p.tipo==='tech'?'#9b59b6':'#444'));
-            
             html += `
             <div style="background:#15191d; border:1px solid #333; border-top:3px solid ${cor}; padding:15px; border-radius:8px; display:flex; flex-direction:column; justify-content:space-between;">
                 <div>
@@ -180,7 +172,7 @@ Engine.Contratos = {
         const g2 = Engine.carregarJogo(); g2.flags.tvEnviado = true; Engine.salvarJogo(g2);
     },
 
-    // --- AÇÕES ---
+    // --- AÇÕES COM RELOAD AUTOMÁTICO ---
     assinarPatrocinio: function(p, btn) {
         if(this._processando) return; this._processando = true;
         const g = Engine.carregarJogo();
@@ -189,12 +181,8 @@ Engine.Contratos = {
         g.financas.historico.push({texto:`Luvas (${p.nome})`, valor:p.luvas, tipo:'entrada'});
         Engine.salvarJogo(g); 
         
-        const todos = btn.closest('.email-container') ? btn.closest('.email-container').querySelectorAll('button') : document.querySelectorAll('.btn-action');
-        todos.forEach(b => { b.disabled=true; b.style.opacity=0.2; });
-        btn.parentElement.style.opacity=1; btn.style.opacity=1; btn.style.background="#2ecc71"; btn.innerHTML="✅ CONTRATO VIGENTE";
-        
         alert(`Sucesso! ${p.nome} é o novo patrocinador.`);
-        this._processando = false;
+        window.location.reload(); // <--- CORREÇÃO AQUI
     },
 
     assinarTV: function(t, btn) {
@@ -204,12 +192,8 @@ Engine.Contratos = {
         g.contratos.tv = t; 
         Engine.salvarJogo(g); 
         
-        const todos = btn.closest('.email-container') ? btn.closest('.email-container').querySelectorAll('button') : document.querySelectorAll('.btn-action');
-        todos.forEach(b => { b.disabled=true; b.style.opacity=0.2; });
-        btn.style.opacity=1; btn.style.background="#2ecc71"; btn.innerHTML="✅ DIREITOS VENDIDOS";
-        
         alert(`Direitos de TV fechados com ${t.emissora}.`);
-        this._processando = false;
+        window.location.reload(); // <--- CORREÇÃO AQUI
     },
 
     processarVencimentos: function(game) {
