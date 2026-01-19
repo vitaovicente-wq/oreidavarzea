@@ -4,125 +4,243 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finanças - BRFutebol</title>
-    <script src="database.js"></script>
-    <script src="calendario.js"></script>
-    <script src="engine-core.js"></script>
-    <script src="engine-match.js"></script>
-    <script src="engine-mercado.js"></script>
-    <script src="engine-contratos.js"></script>
-    <script src="engine-eventos.js"></script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root { --bg: #0f1216; --card: #1e2329; --green: #00ff88; --text: #fff; --red: #ff4757; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; margin: 0; }
-        .sidebar { width: 250px; background: #161b22; padding: 20px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid #30363d; }
-        .logo { font-family: 'Rajdhani'; font-size: 2rem; font-weight: 900; color: #fff; margin-bottom: 20px; }
-        .logo span { color: var(--green); }
-        .menu-btn { color: #8b949e; text-decoration: none; padding: 10px; border-radius: 6px; font-weight: 600; }
-        .menu-btn.active, .menu-btn:hover { background: rgba(0,255,136,0.1); color: var(--green); }
-        
-        .main { flex: 1; padding: 30px; overflow-y: auto; }
-        .finance-header { background: var(--card); padding: 20px; border-radius: 10px; border: 1px solid #30363d; margin-bottom: 20px; }
-        .saldo-label { color: #888; font-size: 0.9rem; text-transform: uppercase; }
-        .saldo-value { font-family: 'Rajdhani'; font-size: 2.5rem; font-weight: 700; color: var(--green); }
-        
-        .contracts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-        .contract-card { background: var(--card); padding: 20px; border-radius: 8px; border-left: 4px solid #444; }
-        .contract-card.active { border-color: var(--green); }
-        .contract-title { color: #888; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 5px; }
-        .contract-name { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
-        .contract-value { font-family: 'Rajdhani'; font-size: 1.1rem; }
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script src="engine-core.js"></script>
 
-        .history-list { background: var(--card); border-radius: 10px; padding: 20px; }
-        .history-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #333; }
-        .val-entrada { color: var(--green); }
-        .val-saida { color: var(--red); }
+    <style>
+        :root { 
+            --bg-dark: #0f1216; 
+            --sidebar-bg: #161b22; 
+            --card-bg: #1e2329; 
+            --neon-green: #00ff88; 
+            --neon-red: #ff4757;
+            --text-main: #ffffff; 
+            --text-muted: #8b949e; 
+            --border: #30363d; 
+        }
+        
+        * { box-sizing: border-box; }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-dark); 
+            color: var(--text-main); 
+            margin: 0; 
+            display: flex; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
+        
+        /* SIDEBAR */
+        .sidebar { width: 250px; background: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .logo { font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 900; margin-bottom: 20px; color: #fff; text-transform: uppercase; }
+        .logo span { color: var(--neon-green); }
+        .menu-btn { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .menu-btn:hover, .menu-btn.active { background: rgba(0, 255, 136, 0.1); color: var(--neon-green); }
+        .menu-btn.logout { margin-top: auto; color: var(--neon-red); }
+
+        /* MAIN CONTENT */
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 25px; }
+        
+        /* HEADER */
+        .page-header h2 { font-family: 'Rajdhani'; font-size: 2rem; margin: 0; }
+        .page-header p { color: var(--text-muted); margin: 5px 0 0 0; font-size: 0.9rem; }
+
+        /* KPI CARDS */
+        .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        
+        .kpi-card { 
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; 
+            display: flex; flex-direction: column; justify-content: space-between; height: 120px;
+            position: relative; overflow: hidden;
+        }
+        
+        .kpi-card.main { background: linear-gradient(135deg, #1e2329 0%, #162421 100%); border-color: var(--neon-green); }
+        
+        .kpi-label { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+        .kpi-value { font-family: 'Rajdhani'; font-size: 2rem; font-weight: 700; color: #fff; }
+        .kpi-value.pos { color: var(--neon-green); }
+        .kpi-value.neg { color: var(--neon-red); }
+
+        /* TABELA */
+        .table-container { 
+            background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .table-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .table-title { font-family: 'Rajdhani'; font-size: 1.2rem; font-weight: 700; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 15px 20px; color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; border-bottom: 1px solid var(--border); background: #15191d; }
+        td { padding: 15px 20px; border-bottom: 1px solid var(--border); color: #ddd; font-size: 0.95rem; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background: rgba(255,255,255,0.02); }
+
+        .tag { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+        .tag.entrada { background: rgba(0, 255, 136, 0.15); color: var(--neon-green); }
+        .tag.saida { background: rgba(255, 71, 87, 0.15); color: var(--neon-red); }
+
+        .money-val { font-family: 'Rajdhani'; font-weight: 700; letter-spacing: 0.5px; }
+
+        /* PROGRESS BAR DE SAÚDE */
+        .finance-health { margin-top: 10px; }
+        .progress-bg { width: 100%; height: 8px; background: #333; border-radius: 4px; overflow: hidden; display: flex; }
+        .progress-fill { height: 100%; transition: width 0.5s; }
+        .fill-green { background: var(--neon-green); }
+        .fill-red { background: var(--neon-red); }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
     </style>
 </head>
 <body>
+
     <nav class="sidebar">
         <div class="logo">BR<span>FUTEBOL</span></div>
         <a class="menu-btn" href="dashboard.html">📊 Visão Geral</a>
         <a class="menu-btn" href="escalacao.html">👕 Escalação</a>
         <a class="menu-btn" href="mercado.html">🔄 Mercado</a>
         <a class="menu-btn" href="calendario.html">📅 Calendário</a>
+        <a class="menu-btn" href="classificacao.html">🏆 Classificação</a>
+        <a class="menu-btn" href="estadio.html">🏟️ Estádio</a>
         <a class="menu-btn active" href="financeiro.html">💰 Finanças</a>
         <a class="menu-btn" href="mensagens.html">📩 Mensagens</a>
-        <a class="menu-btn" href="index.html">✖ Sair</a>
+        <a class="menu-btn logout" href="index.html" onclick="localStorage.clear()">✖ Sair</a>
     </nav>
 
-    <div class="main">
-        <div class="finance-header">
-            <div class="saldo-label">Saldo em Caixa</div>
-            <div class="saldo-value" id="saldo-atual">R$ ---</div>
+    <main class="main-content">
+        <div class="page-header">
+            <h2>Departamento Financeiro</h2>
+            <p>Gerencie o fluxo de caixa e garanta a solvência do clube.</p>
         </div>
 
-        <div class="contracts-grid">
-            <div class="contract-card" id="card-patrocinio">
-                <div class="contract-title">Patrocínio Master</div>
-                <div class="contract-name" id="patro-nome">Nenhum Contrato</div>
-                <div class="contract-value" id="patro-val">---</div>
-                <div style="font-size:0.8rem; color:#666; margin-top:5px;" id="patro-tempo"></div>
+        <div class="kpi-grid">
+            <div class="kpi-card main">
+                <span class="kpi-label">Saldo Atual</span>
+                <span class="kpi-value" id="saldo-atual">R$ ---</span>
+                <div class="finance-health">
+                    <div class="progress-bg">
+                        <div class="progress-fill fill-green" id="bar-receita" style="width: 50%"></div>
+                        <div class="progress-fill fill-red" id="bar-despesa" style="width: 50%"></div>
+                    </div>
+                    <small style="color:#666; font-size:0.7rem; margin-top:4px; display:block;">Receita vs Despesa (Temp)</small>
+                </div>
             </div>
-
-            <div class="contract-card" id="card-tv">
-                <div class="contract-title">Direitos de TV</div>
-                <div class="contract-name" id="tv-nome">Nenhum Contrato</div>
-                <div class="contract-value" id="tv-val">---</div>
-                <div style="font-size:0.8rem; color:#666; margin-top:5px;" id="tv-tempo"></div>
+            <div class="kpi-card">
+                <span class="kpi-label">Receita Total (Temp)</span>
+                <span class="kpi-value pos" id="receita-total">R$ 0,00</span>
+                <span style="font-size:1.5rem; position:absolute; right:20px; top:20px; opacity:0.2;">📈</span>
+            </div>
+            <div class="kpi-card">
+                <span class="kpi-label">Despesa Total (Temp)</span>
+                <span class="kpi-value neg" id="despesa-total">R$ 0,00</span>
+                <span style="font-size:1.5rem; position:absolute; right:20px; top:20px; opacity:0.2;">📉</span>
             </div>
         </div>
 
-        <div class="history-list">
-            <h3 style="margin-top:0;">Histórico de Transações</h3>
-            <div id="lista-historico"></div>
+        <div class="table-container">
+            <div class="table-header">
+                <span class="table-title">Extrato de Transações</span>
+                <span class="tag" style="background:#333; color:#aaa;">Últimos Lançamentos</span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th width="15%">Data</th>
+                        <th width="45%">Descrição</th>
+                        <th width="20%">Tipo</th>
+                        <th width="20%" style="text-align:right;">Valor</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-historico">
+                    </tbody>
+            </table>
         </div>
-    </div>
+    </main>
 
     <script>
         window.onload = function() {
-            const game = Engine.carregarJogo();
-            if(!game) return;
-
-            // 1. Saldo
-            document.getElementById('saldo-atual').innerText = game.recursos.dinheiro.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
-
-            // 2. Patrocínio
-            if (game.contratos.patrocinio) {
-                const p = game.contratos.patrocinio;
-                document.getElementById('card-patrocinio').classList.add('active');
-                document.getElementById('patro-nome').innerText = p.nome;
-                document.getElementById('patro-val').innerText = `Mensal: ${p.mensal.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}`;
-                document.getElementById('patro-tempo').innerText = `Expira em: ${p.duracao} Rodadas`;
+            if(typeof Engine === 'undefined') {
+                document.body.innerHTML = "<h2 style='color:white; padding:20px'>Erro: Engine não carregada.</h2>";
+                return;
             }
-
-            // 3. TV (Correção aqui: lê 'fixo' e 'emissora')
-            if (game.contratos.tv) {
-                const t = game.contratos.tv;
-                document.getElementById('card-tv').classList.add('active');
-                document.getElementById('tv-nome').innerText = t.emissora;
-                document.getElementById('tv-val').innerText = `Fixo: ${t.fixo.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}`;
-                document.getElementById('tv-tempo').innerText = `Expira em: ${t.duracao} Rodadas`;
-            }
-
-            // 4. Histórico
-            const list = document.getElementById('lista-historico');
-            // Pega os últimos 10
-            const ultimos = game.financas.historico.slice(-10).reverse();
-            
-            ultimos.forEach(h => {
-                const div = document.createElement('div');
-                div.className = 'history-item';
-                div.innerHTML = `
-                    <span>${h.texto}</span>
-                    <span class="${h.valor >= 0 ? 'val-entrada' : 'val-saida'}">
-                        ${h.valor.toLocaleString('pt-BR', {style:'currency', currency:'BRL'})}
-                    </span>
-                `;
-                list.appendChild(div);
-            });
+            renderizarFinanceiro();
         };
+
+        function renderizarFinanceiro() {
+            const game = Engine.carregarJogo();
+            const historico = game.financas.historico || [];
+            
+            // 1. Atualizar Saldo Principal
+            document.getElementById('saldo-atual').innerText = formatarDinheiro(game.recursos.dinheiro);
+            if(game.recursos.dinheiro < 0) document.getElementById('saldo-atual').classList.add('neg');
+
+            // 2. Calcular Totais da Temporada
+            let receita = 0;
+            let despesa = 0;
+
+            historico.forEach(h => {
+                if(h.valor > 0) receita += h.valor;
+                else despesa += Math.abs(h.valor);
+            });
+
+            document.getElementById('receita-total').innerText = formatarDinheiro(receita);
+            document.getElementById('despesa-total').innerText = formatarDinheiro(despesa);
+
+            // 3. Barra Visual (Proporção)
+            const totalMovimentado = receita + despesa;
+            if (totalMovimentado > 0) {
+                const pctReceita = (receita / totalMovimentado) * 100;
+                const pctDespesa = (despesa / totalMovimentado) * 100;
+                document.getElementById('bar-receita').style.width = pctReceita + "%";
+                document.getElementById('bar-despesa').style.width = pctDespesa + "%";
+            } else {
+                // Estado inicial
+                document.getElementById('bar-receita').style.width = "100%";
+                document.getElementById('bar-despesa').style.width = "0%";
+            }
+
+            // 4. Preencher Tabela (Invertida para mostrar mais recentes primeiro)
+            const tbody = document.getElementById('lista-historico');
+            tbody.innerHTML = "";
+
+            if (historico.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:30px; color:#666;">Nenhuma transação registrada ainda.</td></tr>`;
+                return;
+            }
+
+            // Copia array e inverte para pegar do último para o primeiro
+            const invertido = [...historico].reverse();
+
+            invertido.forEach(item => {
+                const tr = document.createElement('tr');
+                
+                // Data (Rodada)
+                // Se o item não tiver 'rodada' (historico antigo), mostramos um traço ou 'Pré-Temp'
+                const dataDisplay = item.rodada ? `Rodada ${item.rodada}` : "Pré-Temp";
+                
+                // Tipo Class
+                const tipoClass = item.valor >= 0 ? 'entrada' : 'saida';
+                const tipoLabel = item.valor >= 0 ? 'ENTRADA' : 'SAÍDA';
+                const sinal = item.valor >= 0 ? '+ ' : ''; // FormatarDinheiro já cuida do negativo
+
+                tr.innerHTML = `
+                    <td style="color:#8b949e; font-size:0.85rem;">${dataDisplay}</td>
+                    <td style="font-weight:600;">${item.texto}</td>
+                    <td><span class="tag ${tipoClass}">${tipoLabel}</span></td>
+                    <td style="text-align:right;" class="money-val ${item.valor >= 0 ? 'pos' : 'neg'}">
+                        ${sinal}${formatarDinheiro(item.valor)}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function formatarDinheiro(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
     </script>
 </body>
 </html>
