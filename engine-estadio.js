@@ -1,73 +1,119 @@
 // ARQUIVO: engine-estadio.js
-// Responsável por: Gerenciar preços, capacidade e cálculo de renda
+// ATUALIZADO: Nomes Reais + Correção de Cálculo
 
 Engine.Estadios = {
-    // Retorna os dados do estádio atual
+    // Lista de Estádios Reais para mapeamento automático
+    dbEstadios: {
+        "Corinthians": "Neo Química Arena", "Palmeiras": "Allianz Parque", "São Paulo": "Morumbi",
+        "Santos": "Vila Belmiro", "Flamengo": "Maracanã", "Fluminense": "Maracanã",
+        "Vasco": "São Januário", "Botafogo": "Nilton Santos", "Grêmio": "Arena do Grêmio",
+        "Internacional": "Beira-Rio", "Atlético-MG": "Arena MRV", "Cruzeiro": "Mineirão",
+        "Bahia": "Fonte Nova", "Vitória": "Barradão", "Fortaleza": "Castelão",
+        "Ceará": "Castelão", "Athletico-PR": "Ligga Arena", "Coritiba": "Couto Pereira",
+        "Sport": "Ilha do Retiro", "Santa Cruz": "Arruda", "Náutico": "Aflitos",
+        "Goiás": "Serrinha", "Vila Nova": "OBA", "Paysandu": "Curuzu", "Remo": "Baenão"
+    },
+
     getEstadio: function() {
         const game = Engine.carregarJogo();
-        const time = game.times.find(t => t.nome === game.info.time);
+        const timeNome = game.info.time;
         
-        // Se não tiver dados salvos, cria padrão
+        // Se não tiver estádio salvo, cria um novo
         if (!game.estadio) {
+            // Tenta achar o nome real na lista, senão usa genérico
+            const nomeReal = this.dbEstadios[timeNome] || "Estádio Municipal";
+            const timeObj = game.times.find(t => t.nome === timeNome);
+            const forca = timeObj ? timeObj.forca : 60;
+
             game.estadio = {
-                nome: time.estadio || "Estádio Municipal",
-                capacidade: this._definirCapacidade(time.forca),
-                precos: { geral: 40, cadeiras: 80, vip: 250 }, // Preços padrão
+                nome: nomeReal,
+                capacidade: this._definirCapacidade(forca),
+                precos: { geral: 40, cadeiras: 80, vip: 250, estacionamento: 30 },
                 nivel: 1
             };
             Engine.salvarJogo(game);
+        } else {
+            // CORREÇÃO RETROATIVA: Se já salvou com nome genérico, tenta corrigir agora
+            if(game.estadio.nome === "Estádio Municipal" && this.dbEstadios[timeNome]) {
+                game.estadio.nome = this.dbEstadios[timeNome];
+                Engine.salvarJogo(game);
+            }
         }
         return game.estadio;
     },
 
-    // Salva as alterações feitas na tela de Estádio
     salvarConfig: function(novosPrecos) {
         const game = Engine.carregarJogo();
-        if (!game.estadio) this.getEstadio(); // Garante que existe
+        if (!game.estadio) this.getEstadio(); 
 
         game.estadio.precos = novosPrecos;
         Engine.salvarJogo(game);
-        console.log("🏟️ Preços do estádio atualizados.");
+        console.log("🏟️ Configurações de estádio salvas.");
     },
 
-    // Chamado pelo engine-core.js para calcular quanto dinheiro entra
+    // AQUI ESTAVA O ERRO DA ESTIMATIVA
     calcularBilheteria: function(adversario) {
         const game = Engine.carregarJogo();
         const est = this.getEstadio();
-        const moral = game.recursos.moral;
+        const moral = game.recursos.moral || 50;
         
-        // Fator de Lotação (Baseado na Moral + Força do Adversário)
-        let interesse = (moral / 2) + (adversario.forca / 2); // 0 a 100
+        // Se for simulação de tela (objeto simples), usa força padrão
+        const forcaAdv = adversario.forca || 60; 
         
-        // Aleatoriedade do dia (Chuva, transito, etc)
-        interesse = interest * (0.8 + Math.random() * 0.4); 
+        // Fator de Interesse (0.1 a 1.2)
+        // Moral conta muito, Força do adversário conta também
+        let interesseBase = (moral * 0.6) + (forcaAdv * 0.4);
+        
+        // Fator Preço (Se estiver muito caro, público cai)
+        // Preço base de referência: 40 reais. Se for 80, interesse cai.
+        const fatorPreco = 40 / (est.precos.geral || 40); 
+        
+        let ocupacaoPercent = (interesseBase * fatorPreco) + (Math.random() * 10);
+        
+        // Trava entre 5% e 100%
+        if(ocupacaoPercent > 100) ocupacaoPercent = 100;
+        if(ocupacaoPercent < 5) ocupacaoPercent = 5;
 
-        // Limita entre 10% e 100% de ocupação
-        if (interesse > 100) interesse = 100;
-        if (interesse < 10) interesse = 10;
-
-        const publicoTotal = Math.floor(est.capacidade * (interesse / 100));
+        const publicoTotal = Math.floor(est.capacidade * (ocupacaoPercent / 100));
         
-        // Distribuição do Público (Geral enche mais)
+        // Distribuição Setorial
         const pGeral = Math.floor(publicoTotal * 0.60);
         const pCadeiras = Math.floor(publicoTotal * 0.35);
         const pVip = Math.floor(publicoTotal * 0.05);
+        const pCarros = Math.floor(publicoTotal * 0.20); // 20% vão de carro
 
         // Renda
         const renda = (pGeral * est.precos.geral) + 
                       (pCadeiras * est.precos.cadeiras) + 
-                      (pVip * est.precos.vip);
+                      (pVip * est.precos.vip) +
+                      (pCarros * est.precos.estacionamento);
 
         return {
-            publico: publicoTotal,
-            rendaTotal: renda
+            publicoTotal: publicoTotal, // <--- CORRIGIDO: O nome agora bate com o HTML
+            rendaTotal: renda,
+            ocupacao: Math.floor(ocupacaoPercent)
         };
     },
 
-    // Função interna para definir tamanho do estádio baseado na força do time
+    salvarPrecos: function(tempPrecos) {
+        // Função auxiliar para salvar temporariamente na memória para cálculo
+        // Não salva no disco, apenas para a Engine usar no cálculo imediato
+        this._tempPrecos = tempPrecos;
+    },
+
     _definirCapacidade: function(forca) {
-        if (forca >= 85) return 45000 + Math.floor(Math.random() * 10000); // GIGANTE
-        if (forca >= 75) return 30000 + Math.floor(Math.random() * 10000); // MÉDIO
-        return 10000 + Math.floor(Math.random() * 10000); // PEQUENO
+        if (forca >= 85) return 45000 + Math.floor(Math.random() * 5000); 
+        if (forca >= 75) return 30000 + Math.floor(Math.random() * 5000); 
+        return 10000 + Math.floor(Math.random() * 5000); 
     }
+};
+
+// Hack para usar preços temporários da tela de simulação
+const originalGetEstadio = Engine.Estadios.getEstadio;
+Engine.Estadios.getEstadio = function() {
+    const est = originalGetEstadio.call(Engine.Estadios);
+    if (Engine.Estadios._tempPrecos) {
+        return { ...est, precos: Engine.Estadios._tempPrecos };
+    }
+    return est;
 };
