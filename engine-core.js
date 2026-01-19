@@ -20,31 +20,45 @@ window.Engine = {
             window.Engine.salvarJogo(game);
         },
         
-        processarFinancas: function(g, mand, adv) {
-            if(mand && window.Engine.Estadios) {
-                const r = window.Engine.Estadios.calcularBilheteria(adv);
-                g.recursos.dinheiro += r.rendaTotal;
-                g.financas.historico.push({texto:'Bilheteria', valor:r.rendaTotal, tipo:'entrada'});
-            }
-            if(g.rodadaAtual%4===0) {
-                // Pagamentos (Salarios, Patrocinio, etc)
-                if(g.contratos.patrocinio) {
-                    g.recursos.dinheiro += g.contratos.patrocinio.mensal;
-                    g.financas.historico.push({texto:'Patrocínio', valor:g.contratos.patrocinio.mensal, tipo:'entrada'});
-                }
-                if(g.contratos.tv) {
-                    g.recursos.dinheiro += g.contratos.tv.fixo;
-                    g.financas.historico.push({texto:'Cota TV', valor:g.contratos.tv.fixo, tipo:'entrada'});
-                }
-                let folha = 0;
-                const time = g.times.find(t=>t.nome===g.info.time);
-                if(time) time.elenco.forEach(j=>folha+=j.salario);
-                g.recursos.dinheiro -= folha;
-                g.financas.historico.push({texto:'Salários', valor:-folha, tipo:'saida'});
-            }
-            g.recursos.dinheiro -= 50000;
-            g.financas.historico.push({texto:'Custos Jogo', valor:-50000, tipo:'saida'});
+        // DENTRO DE ENGINE-CORE.JS -> Sistema -> processarFinancas
+processarFinancas: function(g, mand, adv) {
+    // Função auxiliar para facilitar o push com DATA (Rodada)
+    const registrar = (txt, val, tp) => {
+        g.financas.historico.push({
+            texto: txt, 
+            valor: val, 
+            tipo: tp, 
+            rodada: g.rodadaAtual // <--- AQUI ESTÁ A DATA
+        });
+    };
+
+    if(mand && window.Engine.Estadios) {
+        const r = window.Engine.Estadios.calcularBilheteria(adv);
+        g.recursos.dinheiro += r.rendaTotal;
+        registrar('Bilheteria', r.rendaTotal, 'entrada');
+    }
+    
+    if(g.rodadaAtual % 4 === 0) {
+        if(g.contratos.patrocinio) {
+            g.recursos.dinheiro += g.contratos.patrocinio.mensal;
+            registrar('Patrocínio', g.contratos.patrocinio.mensal, 'entrada');
         }
+        if(g.contratos.tv) {
+            g.recursos.dinheiro += g.contratos.tv.fixo;
+            registrar('Cota TV', g.contratos.tv.fixo, 'entrada');
+        }
+        
+        let folha = 0;
+        const time = g.times.find(t => t.nome === g.info.time);
+        if(time) time.elenco.forEach(j => folha += (j.salario || 10000));
+        
+        g.recursos.dinheiro -= folha;
+        registrar('Salários', -folha, 'saida');
+    }
+    
+    g.recursos.dinheiro -= 50000;
+    registrar('Custos Operacionais', -50000, 'saida');
+}
     },
 
     salvarJogo: function(estado) { localStorage.setItem('brfutebol_save', JSON.stringify(estado)); },
@@ -125,7 +139,7 @@ window.Engine = {
                 if(jogo) {
                     const mandante = jogo.mandante === estado.info.time;
                     const adv = mandante ? jogo.visitante : jogo.mandante;
-                    if(this.Sistema) this.Sistema.processarFinancas(estado, mandante, adv);
+                    if(this.Sistema) this.Sistema.(estado, mandante, adv);
                 }
 
                 if(this.Eventos) this.Eventos.processarEventosRodada(estado);
