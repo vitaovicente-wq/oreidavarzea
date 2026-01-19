@@ -1,10 +1,303 @@
-function calcularProjecao() {
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRFutebol - Gestão de Estádio</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+    <script src="database.js"></script>
+    <script src="calendario.js"></script>
+    <script src="engine-core.js"></script>
+    <script src="engine-contratos.js"></script>
+    <script src="engine-mercado.js"></script>
+    <script src="engine-eventos.js"></script>
+    <script src="engine-match.js"></script>
+    <script src="engine-treino.js"></script>
+    
+    <script src="engine-estadio.js"></script>
+
+    <style>
+        :root { 
+            --bg-dark: #0f1216; 
+            --sidebar-bg: #161b22; 
+            --card-bg: #1e2329; 
+            --neon-green: #00ff88; 
+            --text-main: #ffffff; 
+            --text-muted: #8b949e; 
+            --border: #30363d; 
+        }
+        
+        * { box-sizing: border-box; }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg-dark); 
+            color: var(--text-main); 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
+        
+        /* HEADER */
+        .header { 
+            padding: 20px; 
+            border-bottom: 1px solid var(--border); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            background: #161b22; 
+        }
+        .title { font-family: 'Rajdhani'; font-weight: 800; font-size: 1.5rem; text-transform: uppercase; color: #fff; }
+        .back-btn { 
+            text-decoration: none; color: #ccc; border: 1px solid #444; 
+            padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s; 
+        }
+        .back-btn:hover { border-color: var(--neon-green); color: var(--neon-green); }
+
+        /* LAYOUT GRID */
+        .main-container { 
+            flex: 1; display: grid; grid-template-columns: 1fr 400px; gap: 20px; 
+            padding: 30px; overflow-y: auto; 
+        }
+
+        /* CARD DO ESTADIO (ESQUERDA) */
+        .stadium-view { 
+            background-color: #1e3c2f; 
+            background-image: 
+                linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.1)), 
+                url('https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Pacaembu_%282972423853%29.jpg/1920px-Pacaembu_%282972423853%29.jpg'); 
+            background-size: cover; 
+            background-position: center; 
+            border-radius: 12px; 
+            border: 1px solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: flex-end; 
+            padding: 40px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            min-height: 400px;
+        }
+
+        .stadium-info h1 { 
+            font-family: 'Rajdhani'; font-size: 4rem; margin: 0; line-height: 1; 
+            text-shadow: 0 4px 10px #000; letter-spacing: -1px; color: #fff;
+        }
+        .stadium-info p { 
+            margin: 10px 0 0 0; color: #ccc; font-size: 1.2rem; 
+            text-shadow: 0 2px 5px #000; font-weight: 500; 
+        }
+        .cap-badge { 
+            background: var(--neon-green); color: #000; padding: 6px 14px; 
+            border-radius: 4px; font-weight: 800; display: inline-block; 
+            margin-top: 20px; font-family: 'Rajdhani'; font-size: 1.1rem; 
+            box-shadow: 0 0 15px rgba(0,255,136,0.3); 
+        }
+
+        /* PAINEL DE CONTROLES (DIREITA) */
+        .controls-panel { 
+            background: var(--card-bg); border: 1px solid var(--border); 
+            border-radius: 12px; padding: 25px; display: flex; flex-direction: column; gap: 25px; 
+            box-shadow: -5px 0 30px rgba(0,0,0,0.2); 
+        }
+        .panel-title { 
+            font-family: 'Rajdhani'; font-weight: 700; font-size: 1.3rem; 
+            border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 5px; 
+            color: var(--neon-green); 
+        }
+        
+        .price-control { display: flex; flex-direction: column; gap: 10px; }
+        .pc-label { 
+            font-size: 0.9rem; color: #ccc; display: flex; justify-content: space-between; font-weight: 600; 
+        }
+        .pc-val-display { color: var(--neon-green); font-family: 'Rajdhani'; font-weight: 700; font-size: 1.1rem; }
+        
+        .pc-input-group { display: flex; align-items: center; gap: 10px; }
+        
+        /* SLIDERS CUSTOMIZADOS */
+        input[type=range] { 
+            flex: 1; height: 6px; background: #333; border-radius: 5px; 
+            outline: none; appearance: none; cursor: pointer; 
+        }
+        input[type=range]::-webkit-slider-thumb { 
+            appearance: none; width: 20px; height: 20px; border-radius: 50%; 
+            background: var(--neon-green); cursor: pointer; 
+            box-shadow: 0 0 10px rgba(0,255,136,0.5); 
+            transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        /* BOX DE PROJEÇÃO */
+        .projection-box { 
+            background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; 
+            border: 1px dashed #444; margin-top: auto; 
+        }
+        .proj-row { 
+            display: flex; justify-content: space-between; font-size: 0.9rem; 
+            margin-bottom: 8px; color: #aaa; 
+        }
+        .proj-total { 
+            display: flex; justify-content: space-between; font-size: 1.5rem; 
+            font-weight: 800; color: var(--neon-green); margin-top: 15px; 
+            border-top: 1px solid #444; padding-top: 15px; font-family: 'Rajdhani'; 
+            text-shadow: 0 0 10px rgba(0,255,136,0.2); 
+        }
+
+        /* BOTÃO SALVAR */
+        .save-btn { 
+            background: var(--neon-green); color: #000; border: none; padding: 16px; 
+            width: 100%; border-radius: 8px; font-weight: 800; font-family: 'Rajdhani'; 
+            font-size: 1.2rem; cursor: pointer; text-transform: uppercase; 
+            margin-top: 10px; transition: all 0.2s; 
+        }
+        .save-btn:hover { 
+            transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,255,136,0.3); 
+            filter: brightness(1.1);
+        }
+        .save-btn:active { transform: translateY(0); }
+
+        /* RESPONSIVO */
+        @media (max-width: 900px) {
+            .main-container { grid-template-columns: 1fr; }
+            .stadium-view { min-height: 250px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="title">Gestão de Arena</div>
+        <a href="dashboard.html" class="back-btn">❮ Voltar ao Dashboard</a>
+    </div>
+
+    <div class="main-container">
+        
+        <div class="stadium-view">
+            <div class="stadium-info">
+                <h1 id="std-name">Estádio Municipal</h1>
+                <p>Casa do <span id="team-name">Seu Time</span></p>
+                <div class="cap-badge">CAPACIDADE: <span id="std-cap">00.000</span></div>
+            </div>
+        </div>
+
+        <div class="controls-panel">
+            <div class="panel-title">Definição de Preços (Ingressos)</div>
+
+            <div class="price-control">
+                <div class="pc-label"><span>Arquibancada / Geral</span> <span id="val-geral" class="pc-val-display">R$ 40</span></div>
+                <div class="pc-input-group">
+                    <input type="range" min="10" max="150" value="40" id="range-geral" oninput="updateVal('geral')">
+                </div>
+            </div>
+
+            <div class="price-control">
+                <div class="pc-label"><span>Cadeiras Numeradas</span> <span id="val-cadeiras" class="pc-val-display">R$ 80</span></div>
+                <div class="pc-input-group">
+                    <input type="range" min="30" max="300" value="80" id="range-cadeiras" oninput="updateVal('cadeiras')">
+                </div>
+            </div>
+
+            <div class="price-control">
+                <div class="pc-label"><span>Camarote / VIP</span> <span id="val-vip" class="pc-val-display">R$ 250</span></div>
+                <div class="pc-input-group">
+                    <input type="range" min="100" max="800" value="250" id="range-vip" oninput="updateVal('vip')">
+                </div>
+            </div>
+            
+            <div class="price-control">
+                <div class="pc-label"><span>Estacionamento</span> <span id="val-park" class="pc-val-display">R$ 30</span></div>
+                <div class="pc-input-group">
+                    <input type="range" min="0" max="100" value="30" id="range-park" oninput="updateVal('park')">
+                </div>
+            </div>
+
+            <div class="projection-box">
+                <div class="panel-title" style="font-size:1rem; color:#888; border:none; margin:0; padding:0;">
+                    Estimativa (Próximo Jogo)
+                </div>
+                <div style="font-size:0.75rem; color:#555; margin-bottom:15px;">
+                    Baseado na moral atual e força média dos adversários.
+                </div>
+                
+                <div class="proj-row"><span>Público Estimado:</span> <span id="proj-pub">0</span></div>
+                <div class="proj-row"><span>Ocupação Prevista:</span> <span id="proj-ocup">0%</span></div>
+                <div class="proj-total"><span>Renda Prevista:</span> <span id="proj-money">R$ 0,00</span></div>
+            </div>
+
+            <button class="save-btn" onclick="salvarAlteracoes()">SALVAR PREÇOS</button>
+        </div>
+
+    </div>
+
+    <script>
+        // Variável global para armazenar dados carregados
+        let dadosEstadio = null;
+
+        window.onload = function() {
+            // 1. Verificação de Segurança
+            if (typeof Engine === 'undefined') {
+                alert("Erro Crítico: Engine Core não carregada.");
+                return;
+            }
+            if (typeof Engine.Estadios === 'undefined') {
+                alert("Erro Crítico: Módulo 'engine-estadio.js' não encontrado ou com erro. Verifique o console.");
+                return;
+            }
+
+            // 2. Carrega Jogo e Dados
+            const game = Engine.carregarJogo();
+            if(!game) {
+                alert("Nenhum jogo salvo encontrado. Redirecionando...");
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // 3. Preenche Interface com dados reais
+            document.getElementById('team-name').innerText = game.info.time;
+            
+            // Pega dados do módulo de estádio
+            dadosEstadio = Engine.Estadios.getEstadio();
+            
+            document.getElementById('std-name').innerText = dadosEstadio.nome;
+            document.getElementById('std-cap').innerText = dadosEstadio.capacidade.toLocaleString();
+
+            // 4. Seta os Sliders com os valores salvos
+            setSlider('geral', dadosEstadio.precos.geral);
+            setSlider('cadeiras', dadosEstadio.precos.cadeiras);
+            setSlider('vip', dadosEstadio.precos.vip);
+            setSlider('park', dadosEstadio.precos.estacionamento || 30); // Garante valor se não existir
+
+            // 5. Calcula projeção inicial
+            calcularProjecao();
+        };
+
+        // Atualiza visual do slider e texto
+        function setSlider(id, val) {
+            const el = document.getElementById('range-'+id);
+            if(el) {
+                el.value = val;
+                document.getElementById('val-'+id).innerText = "R$ " + val;
+            }
+        }
+
+        // Chamado quando o usuário move o slider
+        function updateVal(id) {
+            const val = document.getElementById('range-'+id).value;
+            document.getElementById('val-'+id).innerText = "R$ " + val;
+            calcularProjecao(); // Recalcula a renda em tempo real
+        }
+
+        // Lógica de Simulação Visual
+        function calcularProjecao() {
             // 1. Pega os valores da tela
             const precosTela = {
                 geral: parseInt(document.getElementById('range-geral').value),
                 cadeiras: parseInt(document.getElementById('range-cadeiras').value),
                 vip: parseInt(document.getElementById('range-vip').value),
-                estacionamento: parseInt(document.getElementById('range-park').value) // Adicionei Estacionamento
+                estacionamento: parseInt(document.getElementById('range-park').value)
             };
 
             // 2. Manda para a Engine temporariamente
@@ -24,11 +317,39 @@ function calcularProjecao() {
             const elOcup = document.getElementById('proj-ocup');
             elOcup.innerText = simulacao.ocupacao + "%";
             
-            // Cores dinâmicas
-            if(simulacao.ocupacao < 30) elOcup.style.color = "#ff4757"; // Ruim
-            else if(simulacao.ocupacao > 80) elOcup.style.color = "#00ff88"; // Bom
+            // Cores dinâmicas para ocupação
+            if(simulacao.ocupacao < 30) elOcup.style.color = "#ff4757"; // Vermelho
+            else if(simulacao.ocupacao > 85) elOcup.style.color = "#00ff88"; // Verde Neon
             else elOcup.style.color = "#fff";
 
             // Dinheiro
             document.getElementById('proj-money').innerText = simulacao.rendaTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
+
+        function salvarAlteracoes() {
+            const novosPrecos = {
+                geral: parseInt(document.getElementById('range-geral').value),
+                cadeiras: parseInt(document.getElementById('range-cadeiras').value),
+                vip: parseInt(document.getElementById('range-vip').value),
+                estacionamento: parseInt(document.getElementById('range-park').value)
+            };
+            
+            // Chama a Engine para salvar no disco
+            Engine.Estadios.salvarConfig(novosPrecos);
+            
+            // Feedback Visual no Botão
+            const btn = document.querySelector('.save-btn');
+            const textoOriginal = btn.innerText;
+            
+            btn.innerText = "ALTERAÇÕES SALVAS! ✓";
+            btn.style.background = "#fff";
+            btn.style.color = "#000";
+            
+            setTimeout(() => {
+                btn.innerText = textoOriginal;
+                btn.style.background = "var(--neon-green)";
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
