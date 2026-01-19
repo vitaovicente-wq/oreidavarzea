@@ -2,6 +2,56 @@
 // Responsável por: Inicialização, Save/Load e Loop Principal
 
 window.Engine = {
+    // --- SISTEMA (Movido para o topo para garantir prioridade de carregamento) ---
+    Sistema: {
+        novaMensagem: function(titulo, corpo, tipo, remetente="Sistema") {
+            console.log(`📩 Tentando enviar mensagem: ${titulo}`); // Log de Debug
+            
+            const game = window.Engine.carregarJogo();
+            if(!game) return; // Segurança extra
+
+            if(!game.mensagens) game.mensagens = [];
+            
+            game.mensagens.unshift({
+                id: Date.now() + Math.random(),
+                rodada: game.rodadaAtual,
+                remetente: remetente,
+                titulo: titulo,
+                corpo: corpo,
+                tipo: tipo,
+                lida: false
+            });
+            
+            window.Engine.salvarJogo(game);
+            console.log("✅ Mensagem salva com sucesso no banco de dados."); // Log de Sucesso
+        },
+        
+        processarFinancas: function(g, mand, adv) {
+            if(mand && window.Engine.Estadios) {
+                const r = window.Engine.Estadios.calcularBilheteria(adv);
+                g.recursos.dinheiro += r.rendaTotal;
+                g.financas.historico.push({texto:'Bilheteria', valor:r.rendaTotal, tipo:'entrada'});
+            }
+            if(g.rodadaAtual%4===0) {
+                if(g.contratos.patrocinio) {
+                    g.recursos.dinheiro += g.contratos.patrocinio.mensal;
+                    g.financas.historico.push({texto:'Patrocínio', valor:g.contratos.patrocinio.mensal, tipo:'entrada'});
+                }
+                if(g.contratos.tv) {
+                    g.recursos.dinheiro += g.contratos.tv.fixo;
+                    g.financas.historico.push({texto:'Cota TV', valor:g.contratos.tv.fixo, tipo:'entrada'});
+                }
+                let folha = 0;
+                const time = g.times.find(t=>t.nome===g.info.time);
+                if(time) time.elenco.forEach(j=>folha+=j.salario);
+                g.recursos.dinheiro -= folha;
+                g.financas.historico.push({texto:'Salários', valor:-folha, tipo:'saida'});
+            }
+            g.recursos.dinheiro -= 50000;
+            g.financas.historico.push({texto:'Custos Jogo', valor:-50000, tipo:'saida'});
+        }
+    },
+
     // --- SAVE & LOAD ---
     salvarJogo: function(estado) { 
         localStorage.setItem('brfutebol_save', JSON.stringify(estado)); 
@@ -98,7 +148,7 @@ window.Engine = {
         }, 200);
     },
 
-    // --- ATUALIZAÇÃO DE RODADA (A CORREÇÃO ESTÁ AQUI) ---
+    // --- ATUALIZAÇÃO DE RODADA ---
     atualizarTabela: function(estado) {
         // 1. Recalcula a tabela inteira (sempre precisa fazer isso)
         const tab = estado.classificacao;
@@ -110,14 +160,13 @@ window.Engine = {
         
         tab.sort((a,b) => b.pts - a.pts || b.sg - a.sg);
 
-        // 2. DETECÇÃO DE EVENTOS (Lógica Corrigida)
+        // 2. DETECÇÃO DE EVENTOS
         // A rodada "jogada" é sempre a anterior à atual, pois o Dashboard já incrementou +1
         const rodadaJogada = estado.rodadaAtual - 1;
 
         if(rodadaJogada > 0 && estado.recursos.ultimaRodadaProcessada < rodadaJogada) {
             
             // Encontra o jogo que acabou de acontecer para definir mandante/visitante
-            // (Usamos rodadaJogada - 1 porque array começa em 0)
             const indexArray = rodadaJogada - 1;
             
             if(estado.calendario[indexArray]) {
@@ -132,7 +181,10 @@ window.Engine = {
                 }
 
                 // EVENTOS ALEATÓRIOS (Lesões, Crises, etc)
-                if(this.Eventos) this.Eventos.processarEventosRodada(estado);
+                if(this.Eventos) {
+                    console.log("Chamando Eventos..."); // Log para confirmar que chamou
+                    this.Eventos.processarEventosRodada(estado);
+                }
                 
                 // MERCADO
                 if(this.Mercado) {
@@ -177,47 +229,6 @@ window.Engine = {
         let l=[]; 
         for(let i=1;i<=20;i++) l.push({nome:`Time ${i}`, forca:50, elenco:[]}); 
         return l; 
-    },
-
-    Sistema: {
-        novaMensagem: function(titulo, corpo, tipo, remetente="Sistema") {
-            const game = window.Engine.carregarJogo();
-            if(!game.mensagens) game.mensagens = [];
-            game.mensagens.unshift({
-                id: Date.now() + Math.random(),
-                rodada: game.rodadaAtual,
-                remetente: remetente,
-                titulo: titulo,
-                corpo: corpo,
-                tipo: tipo,
-                lida: false
-            });
-            window.Engine.salvarJogo(game);
-        },
-        processarFinancas: function(g, mand, adv) {
-            if(mand && window.Engine.Estadios) {
-                const r = window.Engine.Estadios.calcularBilheteria(adv);
-                g.recursos.dinheiro += r.rendaTotal;
-                g.financas.historico.push({texto:'Bilheteria', valor:r.rendaTotal, tipo:'entrada'});
-            }
-            if(g.rodadaAtual%4===0) {
-                if(g.contratos.patrocinio) {
-                    g.recursos.dinheiro += g.contratos.patrocinio.mensal;
-                    g.financas.historico.push({texto:'Patrocínio', valor:g.contratos.patrocinio.mensal, tipo:'entrada'});
-                }
-                if(g.contratos.tv) {
-                    g.recursos.dinheiro += g.contratos.tv.fixo;
-                    g.financas.historico.push({texto:'Cota TV', valor:g.contratos.tv.fixo, tipo:'entrada'});
-                }
-                let folha = 0;
-                const time = g.times.find(t=>t.nome===g.info.time);
-                if(time) time.elenco.forEach(j=>folha+=j.salario);
-                g.recursos.dinheiro -= folha;
-                g.financas.historico.push({texto:'Salários', valor:-folha, tipo:'saida'});
-            }
-            g.recursos.dinheiro -= 50000;
-            g.financas.historico.push({texto:'Custos Jogo', valor:-50000, tipo:'saida'});
-        }
     },
     
     data: { getDataAtual: function(r) { return `Rodada ${r}`; } }
