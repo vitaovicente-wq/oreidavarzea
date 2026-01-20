@@ -898,6 +898,49 @@ const database = {
             { id: "treze", nome: "Treze", escudo: "https://upload.wikimedia.org/wikipedia/commons/6/67/Treze_Futebol_Clube_logo.svg", forca: 66, elenco: [] },
             { id: "xvpiracicaba", nome: "XV de Piracicaba", escudo: "https://upload.wikimedia.org/wikipedia/commons/5/52/Esporte_Clube_XV_de_Novembro_%28Piracicaba%29_logo.png", forca: 65, elenco: [] }
         ]
+    },
+
+    inglaterra: {
+        "Premier League": [
+            { nome: "Man. City", forca: 92, escudo: "https://upload.wikimedia.org/wikipedia/en/e/eb/Manchester_City_FC_badge.svg" },
+            { nome: "Arsenal", forca: 89, escudo: "https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg" },
+            { nome: "Liverpool", forca: 88, escudo: "https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg" },
+            { nome: "Chelsea", forca: 84, escudo: "https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg" },
+            { nome: "Man. Utd", forca: 83, escudo: "https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg" },
+            { nome: "Tottenham", forca: 82, escudo: "https://upload.wikimedia.org/wikipedia/en/b/b4/Tottenham_Hotspur.svg" },
+            { nome: "Newcastle", forca: 81 }, { nome: "Aston Villa", forca: 80 }, { nome: "West Ham", forca: 78 }, { nome: "Brighton", forca: 78 },
+            { nome: "Wolves", forca: 76 }, { nome: "Fulham", forca: 76 }, { nome: "Crystal Palace", forca: 75 }, { nome: "Everton", forca: 75 },
+            { nome: "Brentford", forca: 74 }, { nome: "Nottm Forest", forca: 74 }, { nome: "Bournemouth", forca: 73 }, { nome: "Luton Town", forca: 71 },
+            { nome: "Burnley", forca: 71 }, { nome: "Sheff Utd", forca: 70 }
+        ],
+        "Championship": [
+            { nome: "Leicester", forca: 76 }, { nome: "Leeds", forca: 75 }, { nome: "Southampton", forca: 75 }, { nome: "Ipswich", forca: 72 },
+            { nome: "Norwich", forca: 71 }, { nome: "West Brom", forca: 71 }, { nome: "Hull City", forca: 70 }, { nome: "Coventry", forca: 70 },
+            { nome: "Middlesbrough", forca: 70 }, { nome: "Sunderland", forca: 69 }, { nome: "Watford", forca: 69 }, { nome: "Preston", forca: 68 },
+            { nome: "Bristol City", forca: 68 }, { nome: "Cardiff", forca: 68 }, { nome: "Millwall", forca: 67 }, { nome: "Swansea", forca: 67 },
+            { nome: "Stoke", forca: 67 }, { nome: "QPR", forca: 66 }, { nome: "Blackburn", forca: 66 }, { nome: "Sheffield Wed", forca: 65 }
+        ]
+    },
+    espanha: {
+        "La Liga": [
+            { nome: "Real Madrid", forca: 91, escudo: "https://upload.wikimedia.org/wikipedia/en/5/56/Real_Madrid_CF.svg" },
+            { nome: "Barcelona", forca: 89, escudo: "https://upload.wikimedia.org/wikipedia/en/4/47/FC_Barcelona_%28crest%29.svg" },
+            { nome: "Atlético Madrid", forca: 85, escudo: "https://upload.wikimedia.org/wikipedia/en/f/f4/Atletico_Madrid_2017_logo.svg" },
+            { nome: "Girona", forca: 82 }, { nome: "Athletic Bilbao", forca: 81 }, { nome: "Real Sociedad", forca: 80 }, { nome: "Betis", forca: 79 },
+            { nome: "Valencia", forca: 78 }, { nome: "Villarreal", forca: 78 }, { nome: "Getafe", forca: 76 }, { nome: "Osasuna", forca: 76 },
+            { nome: "Sevilla", forca: 76 }, { nome: "Alavés", forca: 74 }, { nome: "Las Palmas", forca: 74 }, { nome: "Mallorca", forca: 74 },
+            { nome: "Rayo Vallecano", forca: 73 }, { nome: "Celta Vigo", forca: 73 }, { nome: "Cádiz", forca: 71 }, { nome: "Granada", forca: 71 },
+            { nome: "Almería", forca: 70 }
+        ]
+    },
+    italia: {
+        "Serie A": [
+            { nome: "Inter de Milão", forca: 87 }, { nome: "Milan", forca: 85 }, { nome: "Juventus", forca: 84 }, { nome: "Napoli", forca: 83 },
+            { nome: "Roma", forca: 81 }, { nome: "Atalanta", forca: 80 }, { nome: "Lazio", forca: 79 }, { nome: "Fiorentina", forca: 78 },
+            { nome: "Torino", forca: 76 }, { nome: "Bologna", forca: 76 }, { nome: "Monza", forca: 74 }, { nome: "Genoa", forca: 74 },
+            { nome: "Lecce", forca: 72 }, { nome: "Udinese", forca: 72 }, { nome: "Empoli", forca: 71 }, { nome: "Verona", forca: 71 },
+            { nome: "Cagliari", forca: 70 }, { nome: "Sassuolo", forca: 70 }, { nome: "Frosinone", forca: 69 }, { nome: "Salernitana", forca: 68 }
+        ]
     }
 };
 
