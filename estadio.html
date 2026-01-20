@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRFutebol - Gestão de Estádio</title>
+    <title>BRFutebol - Infraestrutura</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
     <script src="database.js"></script>
     <script src="calendario.js"></script>
@@ -15,266 +15,320 @@
     <script src="engine-eventos.js"></script>
     <script src="engine-match.js"></script>
     <script src="engine-treino.js"></script>
-    
     <script src="engine-estadio.js"></script>
 
     <style>
         :root { 
-            --bg-dark: #0f1216; 
-            --sidebar-bg: #161b22; 
-            --card-bg: #1e2329; 
-            --neon-green: #00ff88; 
-            --text-main: #ffffff; 
-            --text-muted: #8b949e; 
-            --border: #30363d; 
+            --bg-dark: #121212; 
+            --panel-bg: #1e1e24;
+            --panel-border: #2d2d35;
+            --accent: #00ff88;
+            --accent-dim: rgba(0, 255, 136, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --danger: #ff4757;
+            --warning: #ffa502;
         }
         
         * { box-sizing: border-box; }
 
         body { 
             font-family: 'Inter', sans-serif; 
-            background: var(--bg-dark); 
-            color: var(--text-main); 
+            background-color: var(--bg-dark); 
+            color: var(--text-primary); 
             margin: 0; 
+            height: 100vh; 
             display: flex; 
             flex-direction: column; 
-            height: 100vh; 
+            overflow: hidden;
+        }
+        
+        /* --- HEADER --- */
+        .header { 
+            height: 70px; 
+            background: #16161a; 
+            border-bottom: 1px solid var(--panel-border); 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0 30px; 
+        }
+        .app-brand { font-family: 'Rajdhani'; font-weight: 700; font-size: 1.5rem; letter-spacing: 1px; }
+        .app-brand span { color: var(--accent); }
+        
+        .btn-back { 
+            background: transparent; border: 1px solid var(--panel-border); 
+            color: var(--text-secondary); padding: 8px 16px; border-radius: 4px; 
+            text-decoration: none; font-size: 0.85rem; transition: 0.2s; 
+        }
+        .btn-back:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* --- LAYOUT PRINCIPAL --- */
+        .dashboard-grid { 
+            flex: 1; 
+            display: grid; 
+            grid-template-columns: 1fr 400px; 
+            gap: 20px; 
+            padding: 20px; 
+            overflow-y: auto;
+        }
+
+        /* --- PAINEL VISUAL (ESQUERDA) --- */
+        .visual-panel { 
+            display: flex; flex-direction: column; gap: 20px; 
+        }
+
+        .hero-stadium { 
+            flex: 1; 
+            background: linear-gradient(0deg, #121212 0%, rgba(18,18,18,0.6) 50%, rgba(18,18,18,0.4) 100%), 
+                        url('https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Pacaembu_%282972423853%29.jpg/1920px-Pacaembu_%282972423853%29.jpg');
+            background-size: cover; background-position: center; 
+            border-radius: 12px; border: 1px solid var(--panel-border); 
+            position: relative; padding: 40px; 
+            display: flex; flex-direction: column; justify-content: flex-end;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .stadium-meta h1 { 
+            font-family: 'Rajdhani'; font-weight: 700; font-size: 3.5rem; 
+            margin: 0; line-height: 1; text-transform: uppercase; 
+            text-shadow: 0 4px 12px rgba(0,0,0,0.8);
+        }
+        .stadium-meta p { 
+            color: var(--text-secondary); font-size: 1.1rem; margin: 5px 0 0 0; font-weight: 500; 
+        }
+        
+        .capacity-tag { 
+            margin-top: 20px; display: inline-flex; align-items: center; gap: 10px;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); 
+            padding: 8px 16px; border-radius: 6px; border: 1px solid var(--panel-border);
+        }
+        .capacity-number { font-family: 'Rajdhani'; font-weight: 700; font-size: 1.2rem; color: var(--accent); }
+        .capacity-label { font-size: 0.8rem; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* GRID DE INFRAESTRUTURA */
+        .infra-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        .infra-card { 
+            background: var(--panel-bg); border: 1px solid var(--panel-border); 
+            padding: 15px; border-radius: 8px; display: flex; flex-direction: column; gap: 5px; 
+        }
+        .infra-label { font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 600; }
+        .infra-value { font-family: 'Rajdhani'; font-size: 1.2rem; font-weight: 600; color: #fff; }
+        .stars { color: #f1c40f; font-size: 0.8rem; }
+
+        /* --- PAINEL DE CONTROLE (DIREITA) --- */
+        .control-panel { 
+            background: var(--panel-bg); border: 1px solid var(--panel-border); 
+            border-radius: 12px; display: flex; flex-direction: column; 
             overflow: hidden; 
         }
-        
-        /* HEADER */
-        .header { 
-            padding: 20px; 
-            border-bottom: 1px solid var(--border); 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            background: #161b22; 
-        }
-        .title { font-family: 'Rajdhani'; font-weight: 800; font-size: 1.5rem; text-transform: uppercase; color: #fff; }
-        .back-btn { 
-            text-decoration: none; color: #ccc; border: 1px solid #444; 
-            padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; transition: 0.2s; 
-        }
-        .back-btn:hover { border-color: var(--neon-green); color: var(--neon-green); }
 
-        /* LAYOUT GRID */
-        .main-container { 
-            flex: 1; display: grid; grid-template-columns: 1fr 400px; gap: 20px; 
-            padding: 30px; overflow-y: auto; 
+        .panel-header { 
+            background: #23232a; padding: 20px; border-bottom: 1px solid var(--panel-border); 
         }
+        .panel-header h3 { margin: 0; font-family: 'Rajdhani'; font-weight: 600; font-size: 1.1rem; color: #fff; }
+        .panel-header span { font-size: 0.8rem; color: var(--text-secondary); }
 
-        /* CARD DO ESTADIO (ESQUERDA) */
-        .stadium-view { 
-            background-color: #1e3c2f; 
-            background-image: 
-                linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.1)), 
-                url('https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Pacaembu_%282972423853%29.jpg/1920px-Pacaembu_%282972423853%29.jpg'); 
-            background-size: cover; 
-            background-position: center; 
-            border-radius: 12px; 
-            border: 1px solid var(--border); 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: flex-end; 
-            padding: 40px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            min-height: 400px;
-        }
+        .panel-body { padding: 25px; display: flex; flex-direction: column; gap: 25px; flex: 1; overflow-y: auto; }
 
-        .stadium-info h1 { 
-            font-family: 'Rajdhani'; font-size: 4rem; margin: 0; line-height: 1; 
-            text-shadow: 0 4px 10px #000; letter-spacing: -1px; color: #fff;
-        }
-        .stadium-info p { 
-            margin: 10px 0 0 0; color: #ccc; font-size: 1.2rem; 
-            text-shadow: 0 2px 5px #000; font-weight: 500; 
-        }
-        .cap-badge { 
-            background: var(--neon-green); color: #000; padding: 6px 14px; 
-            border-radius: 4px; font-weight: 800; display: inline-block; 
-            margin-top: 20px; font-family: 'Rajdhani'; font-size: 1.1rem; 
-            box-shadow: 0 0 15px rgba(0,255,136,0.3); 
-        }
-
-        /* PAINEL DE CONTROLES (DIREITA) */
-        .controls-panel { 
-            background: var(--card-bg); border: 1px solid var(--border); 
-            border-radius: 12px; padding: 25px; display: flex; flex-direction: column; gap: 25px; 
-            box-shadow: -5px 0 30px rgba(0,0,0,0.2); 
-        }
-        .panel-title { 
-            font-family: 'Rajdhani'; font-weight: 700; font-size: 1.3rem; 
-            border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 5px; 
-            color: var(--neon-green); 
-        }
-        
-        .price-control { display: flex; flex-direction: column; gap: 10px; }
-        .pc-label { 
-            font-size: 0.9rem; color: #ccc; display: flex; justify-content: space-between; font-weight: 600; 
-        }
-        .pc-val-display { color: var(--neon-green); font-family: 'Rajdhani'; font-weight: 700; font-size: 1.1rem; }
-        
-        .pc-input-group { display: flex; align-items: center; gap: 10px; }
-        
         /* SLIDERS CUSTOMIZADOS */
-        input[type=range] { 
-            flex: 1; height: 6px; background: #333; border-radius: 5px; 
-            outline: none; appearance: none; cursor: pointer; 
+        .slider-group { display: flex; flex-direction: column; gap: 8px; }
+        .slider-header { display: flex; justify-content: space-between; align-items: center; }
+        .slider-label { font-size: 0.85rem; font-weight: 500; color: #ccc; }
+        .slider-value { 
+            font-family: 'Rajdhani'; font-weight: 700; color: var(--accent); 
+            background: var(--accent-dim); padding: 2px 8px; border-radius: 4px; font-size: 0.9rem;
         }
-        input[type=range]::-webkit-slider-thumb { 
-            appearance: none; width: 20px; height: 20px; border-radius: 50%; 
-            background: var(--neon-green); cursor: pointer; 
-            box-shadow: 0 0 10px rgba(0,255,136,0.5); 
-            transition: transform 0.1s;
+
+        input[type=range] { 
+            -webkit-appearance: none; width: 100%; background: transparent; cursor: pointer; 
+        }
+        input[type=range]:focus { outline: none; }
+        
+        /* Trilha do Slider */
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 6px; background: #333; border-radius: 3px; border: none;
+        }
+        /* Bolinha do Slider */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%;
+            background: var(--accent); margin-top: -5px; box-shadow: 0 0 10px rgba(0,255,136,0.4);
+            border: 2px solid #1e1e24; transition: transform 0.1s;
         }
         input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
 
-        /* BOX DE PROJEÇÃO */
-        .projection-box { 
-            background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; 
-            border: 1px dashed #444; margin-top: auto; 
+        /* PROJEÇÃO FINANCEIRA */
+        .forecast-box { 
+            margin-top: auto; background: #18181c; border-radius: 8px; border: 1px dashed #333; padding: 15px; 
         }
-        .proj-row { 
-            display: flex; justify-content: space-between; font-size: 0.9rem; 
-            margin-bottom: 8px; color: #aaa; 
+        .forecast-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 1px; font-weight: 700; margin-bottom: 10px; display: block; }
+        
+        .forecast-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem; color: #bbb; }
+        .forecast-total { 
+            display: flex; justify-content: space-between; align-items: center;
+            border-top: 1px solid #333; margin-top: 10px; padding-top: 10px; 
         }
-        .proj-total { 
-            display: flex; justify-content: space-between; font-size: 1.5rem; 
-            font-weight: 800; color: var(--neon-green); margin-top: 15px; 
-            border-top: 1px solid #444; padding-top: 15px; font-family: 'Rajdhani'; 
-            text-shadow: 0 0 10px rgba(0,255,136,0.2); 
-        }
+        .money-display { font-family: 'Rajdhani'; font-size: 1.6rem; font-weight: 700; color: var(--accent); }
 
-        /* BOTÃO SALVAR */
-        .save-btn { 
-            background: var(--neon-green); color: #000; border: none; padding: 16px; 
-            width: 100%; border-radius: 8px; font-weight: 800; font-family: 'Rajdhani'; 
-            font-size: 1.2rem; cursor: pointer; text-transform: uppercase; 
-            margin-top: 10px; transition: all 0.2s; 
-        }
-        .save-btn:hover { 
-            transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,255,136,0.3); 
-            filter: brightness(1.1);
-        }
-        .save-btn:active { transform: translateY(0); }
+        /* BARRA DE OCUPAÇÃO */
+        .occupancy-bar-bg { width: 100%; height: 6px; background: #333; border-radius: 3px; margin-top: 5px; overflow: hidden; }
+        .occupancy-fill { height: 100%; transition: width 0.3s ease, background-color 0.3s ease; }
 
-        /* RESPONSIVO */
+        .btn-save { 
+            background: var(--accent); color: #000; border: none; width: 100%; padding: 15px; 
+            font-family: 'Rajdhani'; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; 
+            cursor: pointer; transition: 0.2s; 
+        }
+        .btn-save:hover { filter: brightness(1.1); }
+
         @media (max-width: 900px) {
-            .main-container { grid-template-columns: 1fr; }
-            .stadium-view { min-height: 250px; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .hero-stadium { min-height: 250px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="title">Gestão de Arena</div>
-        <a href="dashboard.html" class="back-btn">❮ Voltar ao Dashboard</a>
-    </div>
+    <header class="header">
+        <div class="app-brand">BR<span>FUTEBOL</span></div>
+        <a href="dashboard.html" class="btn-back">← Voltar ao Dashboard</a>
+    </header>
 
-    <div class="main-container">
+    <div class="dashboard-grid">
         
-        <div class="stadium-view">
-            <div class="stadium-info">
-                <h1 id="std-name">Estádio Municipal</h1>
-                <p>Casa do <span id="team-name">Seu Time</span></p>
-                <div class="cap-badge">CAPACIDADE: <span id="std-cap">00.000</span></div>
+        <div class="visual-panel">
+            <div class="hero-stadium">
+                <div class="stadium-meta">
+                    <h1 id="std-name">Arena Modelo</h1>
+                    <p>Mando de Campo: <span id="team-name">...</span></p>
+                    
+                    <div class="capacity-tag">
+                        <span class="capacity-label">Capacidade Oficial</span>
+                        <div class="capacity-separator" style="width:1px; height:15px; background:#444;"></div>
+                        <span class="capacity-number" id="std-cap">00.000</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="infra-grid">
+                <div class="infra-card">
+                    <span class="infra-label">Estado do Gramado</span>
+                    <span class="infra-value">Perfeito</span>
+                    <div class="stars">★★★★★</div>
+                </div>
+                <div class="infra-card">
+                    <span class="infra-label">Instalações</span>
+                    <span class="infra-value">Modernas</span>
+                    <div class="stars">★★★★☆</div>
+                </div>
+                <div class="infra-card">
+                    <span class="infra-label">Média de Público</span>
+                    <span class="infra-value" id="avg-attendance">--</span>
+                </div>
             </div>
         </div>
 
-        <div class="controls-panel">
-            <div class="panel-title">Definição de Preços (Ingressos)</div>
+        <div class="control-panel">
+            <div class="panel-header">
+                <h3>Bilheteria & Receitas</h3>
+                <span>Ajuste os preços para o próximo jogo em casa</span>
+            </div>
 
-            <div class="price-control">
-                <div class="pc-label"><span>Arquibancada / Geral</span> <span id="val-geral" class="pc-val-display">R$ 40</span></div>
-                <div class="pc-input-group">
+            <div class="panel-body">
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">Geral / Arquibancada</span>
+                        <span class="slider-value" id="val-geral">R$ 40</span>
+                    </div>
                     <input type="range" min="10" max="150" value="40" id="range-geral" oninput="updateVal('geral')">
                 </div>
-            </div>
 
-            <div class="price-control">
-                <div class="pc-label"><span>Cadeiras Numeradas</span> <span id="val-cadeiras" class="pc-val-display">R$ 80</span></div>
-                <div class="pc-input-group">
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">Cadeiras Superiores</span>
+                        <span class="slider-value" id="val-cadeiras">R$ 80</span>
+                    </div>
                     <input type="range" min="30" max="300" value="80" id="range-cadeiras" oninput="updateVal('cadeiras')">
                 </div>
-            </div>
 
-            <div class="price-control">
-                <div class="pc-label"><span>Camarote / VIP</span> <span id="val-vip" class="pc-val-display">R$ 250</span></div>
-                <div class="pc-input-group">
-                    <input type="range" min="100" max="800" value="250" id="range-vip" oninput="updateVal('vip')">
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">Camarotes / VIP</span>
+                        <span class="slider-value" id="val-vip">R$ 250</span>
+                    </div>
+                    <input type="range" min="100" max="1000" value="250" id="range-vip" oninput="updateVal('vip')">
                 </div>
-            </div>
-            
-            <div class="price-control">
-                <div class="pc-label"><span>Estacionamento</span> <span id="val-park" class="pc-val-display">R$ 30</span></div>
-                <div class="pc-input-group">
+
+                <div class="slider-group">
+                    <div class="slider-header">
+                        <span class="slider-label">Estacionamento</span>
+                        <span class="slider-value" id="val-park">R$ 30</span>
+                    </div>
                     <input type="range" min="0" max="100" value="30" id="range-park" oninput="updateVal('park')">
                 </div>
+
+                <div class="forecast-box">
+                    <span class="forecast-title">Projeção de Matchday</span>
+                    
+                    <div class="forecast-row">
+                        <span>Público Estimado</span>
+                        <span style="color:#fff; font-weight:600;" id="proj-pub">0</span>
+                    </div>
+                    
+                    <div class="forecast-row">
+                        <span>Taxa de Ocupação</span>
+                        <span id="proj-ocup-text">0%</span>
+                    </div>
+                    
+                    <div class="occupancy-bar-bg">
+                        <div class="occupancy-fill" id="occupancy-bar" style="width: 0%; background: #ff4757;"></div>
+                    </div>
+
+                    <div class="forecast-total">
+                        <span style="font-size:0.8rem; color:#888;">RENDA BRUTA</span>
+                        <span class="money-display" id="proj-money">R$ 0,00</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="projection-box">
-                <div class="panel-title" style="font-size:1rem; color:#888; border:none; margin:0; padding:0;">
-                    Estimativa (Próximo Jogo)
-                </div>
-                <div style="font-size:0.75rem; color:#555; margin-bottom:15px;">
-                    Baseado na moral atual e força média dos adversários.
-                </div>
-                
-                <div class="proj-row"><span>Público Estimado:</span> <span id="proj-pub">0</span></div>
-                <div class="proj-row"><span>Ocupação Prevista:</span> <span id="proj-ocup">0%</span></div>
-                <div class="proj-total"><span>Renda Prevista:</span> <span id="proj-money">R$ 0,00</span></div>
-            </div>
-
-            <button class="save-btn" onclick="salvarAlteracoes()">SALVAR PREÇOS</button>
+            <button class="btn-save" onclick="salvarAlteracoes()">Confirmar Preços</button>
         </div>
 
     </div>
 
     <script>
-        // Variável global para armazenar dados carregados
         let dadosEstadio = null;
 
         window.onload = function() {
-            // 1. Verificação de Segurança
-            if (typeof Engine === 'undefined') {
-                alert("Erro Crítico: Engine Core não carregada.");
-                return;
-            }
-            if (typeof Engine.Estadios === 'undefined') {
-                alert("Erro Crítico: Módulo 'engine-estadio.js' não encontrado ou com erro. Verifique o console.");
-                return;
+            if (typeof Engine === 'undefined' || typeof Engine.Estadios === 'undefined') {
+                alert("Erro: Engine não carregada."); return;
             }
 
-            // 2. Carrega Jogo e Dados
             const game = Engine.carregarJogo();
-            if(!game) {
-                alert("Nenhum jogo salvo encontrado. Redirecionando...");
-                window.location.href = 'index.html';
-                return;
-            }
+            if(!game) { window.location.href = 'index.html'; return; }
 
-            // 3. Preenche Interface com dados reais
+            // Preenche Header
             document.getElementById('team-name').innerText = game.info.time;
             
-            // Pega dados do módulo de estádio
+            // Carrega Estádio
             dadosEstadio = Engine.Estadios.getEstadio();
             
             document.getElementById('std-name').innerText = dadosEstadio.nome;
             document.getElementById('std-cap').innerText = dadosEstadio.capacidade.toLocaleString();
 
-            // 4. Seta os Sliders com os valores salvos
+            // Média de Público (Simulada visualmente baseada na moral)
+            const mediaFake = Math.floor(dadosEstadio.capacidade * (0.4 + (game.recursos.moral/200))).toLocaleString();
+            document.getElementById('avg-attendance').innerText = mediaFake;
+
+            // Seta Sliders
             setSlider('geral', dadosEstadio.precos.geral);
             setSlider('cadeiras', dadosEstadio.precos.cadeiras);
             setSlider('vip', dadosEstadio.precos.vip);
-            setSlider('park', dadosEstadio.precos.estacionamento || 30); // Garante valor se não existir
+            setSlider('park', dadosEstadio.precos.estacionamento || 30);
 
-            // 5. Calcula projeção inicial
             calcularProjecao();
         };
 
-        // Atualiza visual do slider e texto
         function setSlider(id, val) {
             const el = document.getElementById('range-'+id);
             if(el) {
@@ -283,16 +337,13 @@
             }
         }
 
-        // Chamado quando o usuário move o slider
         function updateVal(id) {
             const val = document.getElementById('range-'+id).value;
             document.getElementById('val-'+id).innerText = "R$ " + val;
-            calcularProjecao(); // Recalcula a renda em tempo real
+            calcularProjecao();
         }
 
-        // Lógica de Simulação Visual
         function calcularProjecao() {
-            // 1. Pega os valores da tela
             const precosTela = {
                 geral: parseInt(document.getElementById('range-geral').value),
                 cadeiras: parseInt(document.getElementById('range-cadeiras').value),
@@ -300,30 +351,32 @@
                 estacionamento: parseInt(document.getElementById('range-park').value)
             };
 
-            // 2. Manda para a Engine temporariamente
             Engine.Estadios.salvarPrecos(precosTela);
-
-            // 3. Simula contra um time "Padrão" (Força 70)
             const simulacao = Engine.Estadios.calcularBilheteria({ forca: 70 });
-
-            // 4. Limpa o temporário
             Engine.Estadios._tempPrecos = null;
 
-            // 5. Atualiza a tela
-            // Público
-            document.getElementById('proj-pub').innerText = simulacao.publicoTotal.toLocaleString() + " pagantes";
-            
-            // Ocupação
-            const elOcup = document.getElementById('proj-ocup');
-            elOcup.innerText = simulacao.ocupacao + "%";
-            
-            // Cores dinâmicas para ocupação
-            if(simulacao.ocupacao < 30) elOcup.style.color = "#ff4757"; // Vermelho
-            else if(simulacao.ocupacao > 85) elOcup.style.color = "#00ff88"; // Verde Neon
-            else elOcup.style.color = "#fff";
-
-            // Dinheiro
+            // Atualiza Textos
+            document.getElementById('proj-pub').innerText = simulacao.publicoTotal.toLocaleString();
             document.getElementById('proj-money').innerText = simulacao.rendaTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            
+            // Atualiza Barra e Cores
+            const ocupacao = simulacao.ocupacao;
+            document.getElementById('proj-ocup-text').innerText = ocupacao + "%";
+            
+            const bar = document.getElementById('occupancy-bar');
+            bar.style.width = ocupacao + "%";
+
+            // Lógica de Cores Semáforo (Vermelho -> Amarelo -> Verde)
+            if(ocupacao < 40) {
+                bar.style.background = "#ff4757"; // Ruim
+                document.getElementById('proj-ocup-text').style.color = "#ff4757";
+            } else if (ocupacao < 75) {
+                bar.style.background = "#ffa502"; // Médio
+                document.getElementById('proj-ocup-text').style.color = "#ffa502";
+            } else {
+                bar.style.background = "#00ff88"; // Ótimo
+                document.getElementById('proj-ocup-text').style.color = "#00ff88";
+            }
         }
 
         function salvarAlteracoes() {
@@ -334,21 +387,18 @@
                 estacionamento: parseInt(document.getElementById('range-park').value)
             };
             
-            // Chama a Engine para salvar no disco
             Engine.Estadios.salvarConfig(novosPrecos);
             
-            // Feedback Visual no Botão
-            const btn = document.querySelector('.save-btn');
+            const btn = document.querySelector('.btn-save');
             const textoOriginal = btn.innerText;
             
-            btn.innerText = "ALTERAÇÕES SALVAS! ✓";
+            btn.innerText = "PREÇOS DEFINIDOS";
             btn.style.background = "#fff";
-            btn.style.color = "#000";
             
             setTimeout(() => {
                 btn.innerText = textoOriginal;
-                btn.style.background = "var(--neon-green)";
-            }, 2000);
+                btn.style.background = "var(--accent)";
+            }, 1500);
         }
     </script>
 </body>
