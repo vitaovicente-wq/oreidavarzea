@@ -4,228 +4,236 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BRFutebol - Classificação</title>
-    <script src="database.js"></script>
-    <script src="calendario.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
     <script src="engine-core.js"></script>
-    <script src="engine-contratos.js"></script>
-    <script src="engine-mercado.js"></script>
-    <script src="engine-eventos.js"></script>
-    <script src="engine-match.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
     <style>
-        /* (MANTIVE O MESMO ESTILO PERFEITO DE ANTES) */
-        :root { --bg-dark: #0f1216; --sidebar-bg: #161b22; --card-bg: #1e2329; --neon-green: #00ff88; --text-main: #ffffff; --text-muted: #8b949e; --border: #30363d; --gold: #f1c40f; --red: #ff4757; --blue: #3498db; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
-        .sidebar { width: 250px; background: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
-        .logo { font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 900; margin-bottom: 20px; color: #fff; } .logo span { color: var(--neon-green); }
-        .menu-btn { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-weight: 600; transition: 0.2s; cursor: pointer; }
-        .menu-btn:hover, .menu-btn.active { background: rgba(0, 255, 136, 0.1); color: var(--neon-green); }
-        .menu-btn.logout { margin-top: auto; color: var(--red); }
-        .main-content { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid var(--border); }
-        .page-title { font-family: 'Rajdhani'; font-size: 2rem; font-weight: 800; text-transform: uppercase; color: #fff; }
-        .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        .table-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-        table { width: 100%; border-collapse: collapse; }
-        th { background: rgba(0,0,0,0.3); color: var(--text-muted); text-align: center; padding: 12px 8px; font-size: 0.8rem; text-transform: uppercase; font-weight: 700; }
-        th.th-left { text-align: left; padding-left: 15px; }
-        td { padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; text-align: center; vertical-align: middle; }
-        td.td-left { text-align: left; padding-left: 15px; display: flex; align-items: center; gap: 10px; }
-        tr:hover { background: rgba(255,255,255,0.03); }
-        .pos-num { width: 25px; height: 25px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.8rem; margin-right: 5px; }
-        .zone-liberta { background: rgba(46, 204, 113, 0.2); color: #2ecc71; } .zone-sula { background: rgba(241, 196, 15, 0.2); color: #f1c40f; } .zone-z4 { background: rgba(231, 76, 60, 0.2); color: #e74c3c; } .zone-mid { background: rgba(255,255,255,0.05); color: #888; }
-        .my-team-row { background: rgba(0, 255, 136, 0.08) !important; border-left: 3px solid var(--neon-green); }
-        .team-logo-small { width: 30px; height: 30px; object-fit: contain; }
-        .team-name { font-weight: 600; color: #fff; }
-        .stats-column { display: flex; flex-direction: column; gap: 20px; }
-        .stat-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-        .stat-title { font-family: 'Rajdhani'; font-weight: 700; text-transform: uppercase; color: var(--neon-green); border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; }
-        .stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.9rem; }
-        .stat-val { font-weight: 700; color: var(--gold); }
-        .legend-box { display: flex; gap: 15px; margin-top: 15px; font-size: 0.75rem; color: #888; } .legend-item { display: flex; align-items: center; gap: 5px; } .dot { width: 10px; height: 10px; border-radius: 50%; }
-        @media (max-width: 900px) { .content-grid { grid-template-columns: 1fr; } .hide-mobile { display: none; } }
+        :root { 
+            --bg-dark: #121212; 
+            --panel-bg: #1e1e24;
+            --border: #2d2d35;
+            --accent: #00ff88;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            
+            /* Cores de Zona */
+            --liberta: #2ecc71;
+            --pre-liberta: #3498db;
+            --sula: #f1c40f;
+            --z4: #e74c3c;
+        }
+        
+        * { box-sizing: border-box; }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-dark); 
+            color: var(--text-primary); 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            overflow: hidden;
+        }
+        
+        /* HEADER */
+        .header { 
+            height: 70px; 
+            background: #16161a; 
+            border-bottom: 1px solid var(--border); 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0 25px; 
+            flex-shrink: 0;
+        }
+        .app-brand { font-family: 'Rajdhani'; font-weight: 700; font-size: 1.5rem; letter-spacing: 1px; }
+        .app-brand span { color: var(--accent); }
+        
+        .btn-back { 
+            background: transparent; border: 1px solid var(--border); 
+            color: var(--text-secondary); padding: 8px 16px; border-radius: 4px; 
+            text-decoration: none; font-size: 0.85rem; transition: 0.2s; 
+        }
+        .btn-back:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* CONTEÚDO PRINCIPAL */
+        .main-content { 
+            flex: 1; 
+            padding: 20px; 
+            overflow-y: auto; 
+            display: flex; 
+            justify-content: center;
+        }
+
+        .table-container {
+            width: 100%;
+            max-width: 1000px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        /* TABELA */
+        table { width: 100%; border-collapse: collapse; text-align: center; }
+        
+        thead { background: #111; border-bottom: 2px solid var(--border); }
+        th { 
+            padding: 15px 10px; 
+            font-size: 0.8rem; 
+            color: var(--text-secondary); 
+            text-transform: uppercase; 
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Coluna Clube alinhada a esquerda */
+        th:nth-child(2), td:nth-child(2) { text-align: left; }
+
+        td { padding: 12px 10px; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+        tr:last-child td { border-bottom: none; }
+
+        /* Destaques de Coluna */
+        .col-pts { font-weight: 700; color: #fff; background: rgba(255,255,255,0.03); }
+        .col-sg { color: var(--text-secondary); font-size: 0.85rem; }
+
+        /* Linhas Especiais */
+        tr.meu-time { background: rgba(0, 255, 136, 0.15) !important; border-left: 4px solid var(--accent); }
+        
+        /* Indicadores de Zona (Bolinha colorida) */
+        .zone-indicator {
+            width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px;
+        }
+
+        /* LEGENDA */
+        .legenda {
+            padding: 15px;
+            background: #111;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .legenda-item { display: flex; align-items: center; gap: 5px; }
+        .dot { width: 10px; height: 10px; border-radius: 2px; }
+
+        /* RESPONSIVO */
+        @media (max-width: 768px) {
+            .hide-mobile { display: none; }
+            th, td { padding: 10px 5px; font-size: 0.85rem; }
+            .col-club { max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        }
     </style>
 </head>
 <body>
 
-    <nav class="sidebar">
-        <div class="logo">BR<span>FUTEBOL</span></div>
-        <a class="menu-btn" href="dashboard.html">📊 Visão Geral</a>
-        <a class="menu-btn" href="escalacao.html">👕 Escalação</a>
-        <a class="menu-btn" href="calendario.html">📅 Calendário</a>
-        <a class="menu-btn active">🏆 Classificação</a>
-        <a class="menu-btn logout" onclick="sair()">✖ Sair</a>
-    </nav>
+    <header class="header">
+        <div class="app-brand">BR<span>FUTEBOL</span></div>
+        <a href="dashboard.html" class="btn-back">← Voltar</a>
+    </header>
 
-    <main class="main-content">
-        <div class="page-header">
-            <div class="page-title">Brasileirão Série A</div>
-            <div style="color:#888; font-family:'Rajdhani'; font-weight:700;">TEMPORADA 2026</div>
-        </div>
+    <div class="main-content">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th width="50">Pos</th>
+                        <th>Clube</th>
+                        <th width="50" title="Pontos">PTS</th>
+                        <th width="40" title="Jogos">J</th>
+                        <th width="40" title="Vitórias">V</th>
+                        <th width="40" title="Empates">E</th>
+                        <th width="40" title="Derrotas">D</th>
+                        <th width="40" class="hide-mobile" title="Gols Pró">GP</th>
+                        <th width="40" class="hide-mobile" title="Gols Contra">GC</th>
+                        <th width="40" title="Saldo de Gols">SG</th>
+                        <th width="50" class="hide-mobile" title="Aproveitamento">%</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-corpo">
+                    </tbody>
+            </table>
 
-        <div class="content-grid">
-            <div class="table-card">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width:50px">Pos</th>
-                            <th class="th-left">Clube</th>
-                            <th title="Pontos">PTS</th>
-                            <th title="Jogos">J</th>
-                            <th title="Vitórias" class="hide-mobile">V</th>
-                            <th title="Empates" class="hide-mobile">E</th>
-                            <th title="Derrotas" class="hide-mobile">D</th>
-                            <th title="Gols Pró" class="hide-mobile">GP</th>
-                            <th title="Saldo de Gols">SG</th>
-                            <th title="Aproveitamento">%</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabela-body"></tbody>
-                </table>
-                <div style="padding:15px;">
-                    <div class="legend-box">
-                        <div class="legend-item"><div class="dot" style="background:#2ecc71"></div>Libertadores</div>
-                        <div class="legend-item"><div class="dot" style="background:#f1c40f"></div>Sul-Americana</div>
-                        <div class="legend-item"><div class="dot" style="background:#e74c3c"></div>Rebaixamento</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="stats-column">
-                <div class="stat-card">
-                    <div class="stat-title">🔥 Melhores Ataques</div>
-                    <div id="stats-attack">Carregando...</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-title">🛡️ Melhores Defesas</div>
-                    <div id="stats-defense">Carregando...</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-title">👟 Artilharia Real</div>
-                    <div id="stats-scorers">Carregando...</div>
-                </div>
+            <div class="legenda">
+                <div class="legenda-item"><div class="dot" style="background:var(--liberta)"></div> Libertadores</div>
+                <div class="legenda-item"><div class="dot" style="background:var(--pre-liberta)"></div> Pré-Liberta</div>
+                <div class="legenda-item"><div class="dot" style="background:var(--sula)"></div> Sul-Americana</div>
+                <div class="legenda-item"><div class="dot" style="background:var(--z4)"></div> Rebaixamento</div>
             </div>
         </div>
-    </main>
+    </div>
 
     <script>
-        const DEFAULT_SHIELD = "https://cdn-icons-png.flaticon.com/512/53/53283.png";
-
         window.onload = function() {
-            const game = Engine.carregarJogo();
-            if (!game || !game.classificacao) {
-                alert("Dados não encontrados. Inicie um novo jogo.");
-                window.location.href = 'index.html';
+            if (typeof Engine === 'undefined') {
+                alert("Erro: Engine não carregada.");
                 return;
             }
-            renderizarTabela(game);
-            renderizarStats(game);
+            renderizarClassificacao();
         };
 
-        function renderizarTabela(game) {
-            const tbody = document.getElementById('tabela-body');
-            tbody.innerHTML = "";
-            
-            game.classificacao.sort((a,b) => {
+        function renderizarClassificacao() {
+            const game = Engine.carregarJogo();
+            if(!game) { window.location.href = 'index.html'; return; }
+
+            // Pega a tabela e garante ordenação correta
+            // Critérios: Pontos > Vitórias > Saldo > Gols Pró
+            let tabela = game.classificacao.sort((a, b) => {
                 if (b.pts !== a.pts) return b.pts - a.pts;
                 if (b.v !== a.v) return b.v - a.v;
                 if (b.sg !== a.sg) return b.sg - a.sg;
                 return b.gp - a.gp;
             });
 
-            game.classificacao.forEach((time, index) => {
-                const pos = index + 1;
-                let zoneClass = "zone-mid";
-                if (pos <= 6) zoneClass = "zone-liberta";
-                else if (pos <= 12) zoneClass = "zone-sula";
-                else if (pos >= 17) zoneClass = "zone-z4";
+            const tbody = document.getElementById('tabela-corpo');
+            tbody.innerHTML = "";
 
-                const timeObj = Engine.encontrarTime(time.nome) || { escudo: DEFAULT_SHIELD };
-                const isMyTeam = (time.nome === game.info.time) ? "my-team-row" : "";
+            tabela.forEach((time, index) => {
+                const pos = index + 1;
+                const tr = document.createElement('tr');
+                
+                // Verifica se é o time do jogador
+                if (time.nome === game.info.time) {
+                    tr.classList.add('meu-time');
+                }
+
+                // Lógica de Cores da Zona (Série A Padrão)
+                let zoneColor = "transparent";
+                if (pos <= 4) zoneColor = "var(--liberta)";
+                else if (pos <= 6) zoneColor = "var(--pre-liberta)";
+                else if (pos <= 12) zoneColor = "var(--sula)";
+                else if (pos >= 17) zoneColor = "var(--z4)";
+
+                // Cálculo de Aproveitamento
                 const aproveitamento = time.j > 0 ? Math.round((time.pts / (time.j * 3)) * 100) : 0;
 
-                const tr = `
-                    <tr class="${isMyTeam}">
-                        <td><div class="pos-num ${zoneClass}">${pos}</div></td>
-                        <td class="td-left">
-                            <img src="${timeObj.escudo || DEFAULT_SHIELD}" class="team-logo-small" onerror="this.src='${DEFAULT_SHIELD}'">
-                            <span class="team-name">${time.nome}</span>
-                        </td>
-                        <td style="font-weight:700; color:#fff; font-size:1rem;">${time.pts}</td>
-                        <td style="color:#ddd;">${time.j}</td>
-                        <td class="hide-mobile">${time.v}</td>
-                        <td class="hide-mobile">${time.e}</td>
-                        <td class="hide-mobile">${time.d}</td>
-                        <td class="hide-mobile">${time.gp}</td>
-                        <td style="font-weight:700;">${time.sg}</td>
-                        <td style="color:#888; font-size:0.8rem;">${aproveitamento}%</td>
-                    </tr>
+                // Escudo Fallback
+                const escudoUrl = time.escudo || "https://cdn-icons-png.flaticon.com/512/53/53283.png";
+
+                tr.innerHTML = `
+                    <td style="font-weight:700; border-left: 4px solid ${zoneColor};">${pos}º</td>
+                    <td class="col-club" style="display:flex; align-items:center; gap:10px;">
+                        <img src="${escudoUrl}" width="24" height="24" onerror="this.src='https://cdn-icons-png.flaticon.com/512/53/53283.png'">
+                        <span style="font-weight:600; color:#fff;">${time.nome}</span>
+                    </td>
+                    <td class="col-pts">${time.pts}</td>
+                    <td style="color:#fff;">${time.j}</td>
+                    <td style="color:#ccc;">${time.v}</td>
+                    <td style="color:#ccc;">${time.e}</td>
+                    <td style="color:#ccc;">${time.d}</td>
+                    <td class="hide-mobile" style="color:#888;">${time.gp}</td>
+                    <td class="hide-mobile" style="color:#888;">${time.gc}</td>
+                    <td class="col-sg">${time.sg}</td>
+                    <td class="hide-mobile" style="font-size:0.8rem; color:#666;">${aproveitamento}%</td>
                 `;
-                tbody.innerHTML += tr;
+
+                tbody.appendChild(tr);
             });
-        }
-
-        function renderizarStats(game) {
-            // Melhores Ataques
-            const ataques = [...game.classificacao].sort((a,b) => b.gp - a.gp).slice(0, 3);
-            document.getElementById('stats-attack').innerHTML = ataques.map(t => 
-                `<div class="stat-row"><span>${t.nome}</span><span class="stat-val" style="color:var(--neon-green)">${t.gp} Gols</span></div>`
-            ).join('');
-
-            // Melhores Defesas
-            const defesas = [...game.classificacao].filter(t => t.j > 0).sort((a,b) => a.gc - b.gc).slice(0, 3);
-            const divDef = document.getElementById('stats-defense');
-            if(defesas.length === 0) divDef.innerHTML = "<div class='stat-row'><span>Sem dados</span></div>";
-            else divDef.innerHTML = defesas.map(t => `<div class="stat-row"><span>${t.nome}</span><span class="stat-val" style="color:var(--blue)">${t.gc} Gols</span></div>`).join('');
-
-            // --- ARTILHARIA REAL (AGORA LÊ DO CALENDÁRIO) ---
-            let mapaGols = {}; // { "Pedro|Flamengo": 5 }
-
-            if(game.calendario) {
-                game.calendario.forEach(rodada => {
-                    rodada.jogos.forEach(jogo => {
-                        // Só conta jogos que já aconteceram E que têm eventos salvos
-                        if(jogo.jogado && jogo.eventos && Array.isArray(jogo.eventos)) {
-                            jogo.eventos.forEach(ev => {
-                                if(ev.tipo === 'gol') {
-                                    // Chave única: Nome + Time (pra não confundir dois "Pedro")
-                                    const chave = ev.jogador + "|" + ev.time;
-                                    if(!mapaGols[chave]) mapaGols[chave] = 0;
-                                    mapaGols[chave]++;
-                                }
-                            });
-                        }
-                    });
-                });
-            }
-
-            // Converte mapa para array e ordena
-            let artilheiros = Object.keys(mapaGols).map(chave => {
-                const [nome, time] = chave.split('|');
-                return { nome, time, gols: mapaGols[chave] };
-            });
-
-            artilheiros.sort((a,b) => b.gols - a.gols);
-            const top5 = artilheiros.slice(0, 5);
-            
-            const divArt = document.getElementById('stats-scorers');
-            if(top5.length === 0) divArt.innerHTML = "<div class='stat-row'><span>Sem gols ainda</span></div>";
-            else {
-                divArt.innerHTML = top5.map((j, i) => 
-                    `<div class="stat-row">
-                        <span style="display:flex; gap:5px;">
-                            <span style="color:#666; width:15px;">${i+1}.</span> 
-                            ${j.nome} <span style="color:#444; font-size:0.7rem; margin-top:2px;">(${j.time})</span>
-                        </span>
-                        <span class="stat-val">${j.gols}</span>
-                    </div>`
-                ).join('');
-            }
-        }
-
-        function sair() {
-            if(confirm("Voltar ao menu inicial?")) window.location.href = 'index.html';
         }
     </script>
 </body>
