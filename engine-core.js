@@ -1,5 +1,5 @@
 // ARQUIVO: engine-core.js
-// VERSÃO: WORLD SIMULATION (Universo Expandido Real + Artilharia + Finanças + Lesão)
+// VERSÃO: WORLD SYSTEM (Mundo Real + Artilharia + Finanças + Correções)
 
 window.Engine = {
     // --- SISTEMA ---
@@ -38,10 +38,11 @@ window.Engine = {
                     g.recursos.dinheiro += g.contratos.tv.fixo;
                     registrar('Cota TV', g.contratos.tv.fixo, 'entrada');
                 }
-                // Salários (busca o elenco no mundo)
+                
+                // Salários (Pega do elenco atual)
                 let folha = 0;
-                const meuTime = window.Engine._getMeuTimeDoMundo(g);
-                if(meuTime) meuTime.elenco.forEach(j => folha += (j.salario || 10000));
+                const meuTime = window.Engine.encontrarTime(g.info.time);
+                if(meuTime && meuTime.elenco) meuTime.elenco.forEach(j => folha += (j.salario || 10000));
                 
                 g.recursos.dinheiro -= folha;
                 registrar('Salários', -folha, 'saida');
@@ -56,41 +57,58 @@ window.Engine = {
     salvarJogo: function(estado) { localStorage.setItem('brfutebol_save', JSON.stringify(estado)); },
     carregarJogo: function() { const s = localStorage.getItem('brfutebol_save'); return s ? JSON.parse(s) : null; },
     
-    // Auxiliar para achar o time do jogador dentro da estrutura gigante do mundo
-    _getMeuTimeDoMundo: function(estado) {
-        const p = estado.info.pais;
-        const d = estado.info.divisao;
-        if(estado.mundo[p] && estado.mundo[p][d]) {
-            return estado.mundo[p][d].times.find(t => t.nome === estado.info.time);
+    // Busca time em qualquer lugar (compatibilidade)
+    encontrarTime: function(nome) { 
+        const s = this.carregarJogo(); 
+        if (!s) return { nome: nome, elenco: [] };
+        
+        // Tenta na liga atual primeiro (mais rápido)
+        if (s.times) {
+            const t = s.times.find(x => x.nome === nome);
+            if (t) return t;
         }
-        return null;
+        
+        // Se tiver mundo expandido, procura lá
+        if (s.mundo) {
+            for(let p in s.mundo) {
+                for(let d in s.mundo[p]) {
+                    const t = s.mundo[p][d].times.find(x => x.nome === nome);
+                    if(t) return t;
+                }
+            }
+        }
+        return { nome: nome, elenco: [] }; 
+    },
+    
+    getMeuTime: function() { 
+        const s = this.carregarJogo(); 
+        return s ? this.encontrarTime(s.info.time) : null; 
     },
 
-    // --- INICIALIZAÇÃO (CARREGA O MUNDO TODO) ---
+    // --- INICIALIZAÇÃO (NOVO JOGO GLOBAL) ---
     novoJogo: function(paisSelecionado, divisaoSelecionada, nomeTimeSelecionado) {
-        console.log(`🌍 Iniciando Universo Global...`);
+        console.log(`🌍 Iniciando Universo Global: ${nomeTimeSelecionado} [${paisSelecionado}]`);
         
-        if (typeof CalendarioSystem === 'undefined') { alert("Erro: calendario.js"); return; }
+        if (typeof CalendarioSystem === 'undefined') { alert("Erro: calendario.js ausente"); return; }
 
         localStorage.setItem('brfutebol_livres', '[]');
         localStorage.setItem('brfutebol_transferencias', '[]');
 
-        // ESTRUTURA DO MUNDO
-        // estado.mundo['brasil']['serieA'] = { times: [], calendario: [], tabela: [] }
+        // 1. ESTRUTURA DO MUNDO
         const mundo = {};
 
-        // 1. Varre o Database e cria todas as ligas
+        // Varre o Database e cria todas as ligas reais
         for (const p in window.Database) {
             mundo[p] = {};
             for (const div in window.Database[p]) {
-                // Clona os times
+                // Clona os times do DB
                 const timesRaw = JSON.parse(JSON.stringify(window.Database[p][div]));
                 
-                // Inicializa jogadores de todos os times
+                // Inicializa jogadores
                 timesRaw.forEach(t => {
                     if (!t.elenco) t.elenco = [];
                     t.elenco.forEach((j, i) => {
-                        if (!j.uid) j.uid = `${p}_${div}_${t.nome.substring(0,3)}_${i}`;
+                        if (!j.uid) j.uid = `${p}_${div}_${t.nome.substring(0,3)}_${i}_${Date.now()}`;
                         j.contrato = "31/12/2026";
                         if (!j.salario) j.salario = (j.forca || 60) * 1500;
                         j.jogos=0; j.gols=0; j.status="Apto"; j.rodadasFora=0;
@@ -109,15 +127,24 @@ window.Engine = {
                     calendario: calendario,
                     tabela: tabela
                 };
-                console.log(`✅ Liga Carregada: ${p} - ${div}`);
             }
         }
 
-        // Configuração Inicial do Jogador
-        // Encontra o time escolhido para definir orçamento
-        const ligaJogada = mundo[paisSelecionado][divisaoSelecionada];
-        const meuTime = ligaJogada.times.find(t => t.nome === nomeTimeSelecionado);
+        // 2. Configura o Jogador
+        // Pega a liga escolhida
+        if (!mundo[paisSelecionado] || !mundo[paisSelecionado][divisaoSelecionada]) {
+            alert("Erro Fatal: Liga não encontrada no Database. Verifique o arquivo database.js");
+            return;
+        }
+
+        const ligaDoJogador = mundo[paisSelecionado][divisaoSelecionada];
+        const meuTime = ligaDoJogador.times.find(t => t.nome === nomeTimeSelecionado);
         
+        if (!meuTime) {
+            alert("Erro Fatal: Time não encontrado na liga.");
+            return;
+        }
+
         // Cálculo de Orçamento
         let somaOvr = 0;
         if(meuTime.elenco.length > 0) meuTime.elenco.forEach(j => somaOvr += j.forca);
@@ -144,7 +171,12 @@ window.Engine = {
             flags: { boasVindasLida: false, patroEnviado: false, tvEnviado: false, treinoAtual: 'balanceado' },
             financas: { saldo: orcamento, historico: [{ texto: "Aporte Inicial", valor: orcamento, tipo: "entrada", rodada: 0 }] },
             rodadaAtual: 1,
-            mundo: mundo, // O GRANDE OBJETO GLOBAL
+            
+            mundo: mundo, // O UNIVERSO INTEIRO
+            times: ligaDoJogador.times, // ATALHO para a liga atual (evita quebrar outras telas)
+            calendario: ligaDoJogador.calendario, // ATALHO calendário atual
+            classificacao: ligaDoJogador.tabela, // ATALHO tabela atual
+            
             jogadoresStatus: {},
             mensagens: [] 
         };
@@ -158,7 +190,7 @@ window.Engine = {
         }, 200);
     },
 
-    // --- ATUALIZAÇÃO GLOBAL (PROCESSA O MUNDO) ---
+    // --- ATUALIZAÇÃO GLOBAL (SIMULA O MUNDO) ---
     atualizarTabela: function(estado) {
         // Varre TODOS os países e TODAS as divisões
         for (const p in estado.mundo) {
@@ -174,22 +206,17 @@ window.Engine = {
                 liga.calendario.forEach((rod, idxRodada) => {
                     const numeroRodada = idxRodada + 1;
                     
-                    // Só processa se a rodada já aconteceu ou é a atual
-                    // Mas para a Engine Match, ela processa o jogo atual quando o user clica
-                    // Aqui vamos simular APENAS se o jogo já tiver flag de 'jogado' OU se for CPU x CPU da rodada atual que precisa ser simulado agora
-                    
                     rod.jogos.forEach(jogo => {
-                        // Se é jogo do usuário, ele é jogado manualmente na tela de match
-                        // Se é CPU vs CPU da rodada atual e ainda não foi jogado, simula agora
+                        // Se for jogo do usuário, só conta se já foi jogado
                         const timeUser = estado.info.time;
                         const ehJogoUser = (jogo.mandante === timeUser || jogo.visitante === timeUser);
                         
-                        // Simula CPU x CPU da rodada atual (ou passadas que falharam)
+                        // SIMULAÇÃO: Se for CPU x CPU de uma rodada que JÁ PASSOU ou é AGORA, simula
                         if (!jogo.jogado && !ehJogoUser && numeroRodada <= estado.rodadaAtual) {
                             this._simularJogoCPU(liga, jogo);
                         }
 
-                        // Se já foi jogado (pelo user ou pela CPU acima), computa na tabela
+                        // Computa pontos e gols
                         if (jogo.jogado) {
                             this._computarPontos(liga.tabela, jogo);
                             this._processarArtilharia(liga.times, jogo);
@@ -202,24 +229,20 @@ window.Engine = {
             }
         }
 
-        // --- EVENTOS DO JOGADOR (SÓ NA LIGA DELE) ---
+        // --- EVENTOS DA EQUIPE DO JOGADOR ---
         const rodadaJogada = estado.rodadaAtual - 1;
         if(rodadaJogada > 0 && estado.recursos.ultimaRodadaProcessada < rodadaJogada) {
             
-            // Finanças e Eventos só rodam para o time do usuário
-            const ligaUser = estado.mundo[estado.info.pais][estado.info.divisao];
-            const jogoUser = ligaUser.calendario[rodadaJogada-1].jogos.find(j => j.mandante === estado.info.time || j.visitante === estado.info.time);
-            
+            // Finanças (apenas jogos do usuário)
+            const jogoUser = estado.calendario[rodadaJogada-1].jogos.find(j => j.mandante === estado.info.time || j.visitante === estado.info.time);
             if(jogoUser) {
                 const mandante = jogoUser.mandante === estado.info.time;
                 const adv = mandante ? jogoUser.visitante : jogoUser.mandante;
-                
-                // Para calcular bilheteria, precisamos do objeto 'time' do adversário pra ver força
-                const timeAdv = ligaUser.times.find(t => t.nome === adv) || {forca:60};
+                const timeAdv = estado.times.find(t => t.nome === adv) || {forca:60};
                 if(this.Sistema) this.Sistema.processarFinancas(estado, mandante, timeAdv);
             }
 
-            this._processarRecuperacaoElencos(estado); // Só recupera lesão do time do user por enquanto pra economizar loop
+            this._processarRecuperacaoElencos(estado); // Lesões
             
             if(this.Eventos) this.Eventos.processarEventosRodada(estado);
             if(this.Mercado) {
@@ -235,9 +258,15 @@ window.Engine = {
             estado.recursos.ultimaRodadaProcessada = rodadaJogada;
         }
 
+        // Sincroniza Atalhos (Garante que estado.classificacao = estado.mundo[pais][div].tabela)
+        const p = estado.info.pais; 
+        const d = estado.info.divisao;
+        estado.classificacao = estado.mundo[p][d].tabela;
+        estado.calendario = estado.mundo[p][d].calendario;
+        estado.times = estado.mundo[p][d].times;
+
         this.salvarJogo(estado);
-        // Retorna a tabela da liga do usuário para compatibilidade
-        return estado.mundo[estado.info.pais][estado.info.divisao].tabela;
+        return estado.classificacao;
     },
 
     // SIMULAÇÃO RÁPIDA (CPU vs CPU)
@@ -246,30 +275,28 @@ window.Engine = {
         const timeF = liga.times.find(t => t.nome === jogo.visitante) || {forca:60};
 
         // Fator Casa + Aleatório + Diferença de Força
-        const forcaC = timeC.forca + 5 + (Math.random() * 10);
-        const forcaF = timeF.forca + (Math.random() * 10);
+        const forcaC = (timeC.forca || 60) + 5 + (Math.random() * 10);
+        const forcaF = (timeF.forca || 60) + (Math.random() * 10);
 
         let gc = 0, gf = 0;
-        
-        // Lógica simples de placar baseada na diferença
         const diff = forcaC - forcaF;
         
         if (diff > 15) { gc = Math.floor(Math.random()*4)+1; gf = Math.floor(Math.random()*1); }
         else if (diff > 5) { gc = Math.floor(Math.random()*3)+1; gf = Math.floor(Math.random()*2); }
         else if (diff < -15) { gc = Math.floor(Math.random()*1); gf = Math.floor(Math.random()*4)+1; }
         else if (diff < -5) { gc = Math.floor(Math.random()*2); gf = Math.floor(Math.random()*3)+1; }
-        else { gc = Math.floor(Math.random()*3); gf = Math.floor(Math.random()*3); } // Empate provável
+        else { gc = Math.floor(Math.random()*3); gf = Math.floor(Math.random()*3); } 
 
         jogo.placarCasa = gc;
         jogo.placarFora = gf;
         jogo.jogado = true;
     },
 
-    // COMPUTAR PONTOS NA TABELA
+    // COMPUTAR PONTOS
     _computarPontos: function(tabela, jogo) {
         const c = tabela.find(t=>t.nome===jogo.mandante); 
         const f = tabela.find(t=>t.nome===jogo.visitante);
-        if(!c || !f) return; // Erro de integridade
+        if(!c || !f) return; 
         
         const gc=parseInt(jogo.placarCasa); 
         const gf=parseInt(jogo.placarFora);
@@ -278,23 +305,31 @@ window.Engine = {
         if(gc>gf){c.v++; c.pts+=3; f.d++;} else if(gf>gc){f.v++; f.pts+=3; c.d++;} else{c.e++; f.e++; c.pts++; f.pts++;}
     },
 
-    // DISTRIBUIR GOLS (ARTILHARIA GLOBAL)
+    // ARTILHARIA
     _processarArtilharia: function(listaTimes, jogo) {
         if(jogo.artilhariaComputada) return;
 
         const distribuir = (nomeTime, qtdGols) => {
             if(qtdGols <= 0) return;
             const time = listaTimes.find(t => t.nome === nomeTime);
-            if(!time || !time.elenco.length) return; // Times sem elenco (genéricos) não contam artilharia individual
+            if(!time || !time.elenco || !time.elenco.length) return; 
 
-            // Filtrar apenas atacantes e meias para terem mais chance
-            const ofensivos = time.elenco.filter(j => j.pos === 'ATA' || j.pos === 'MEI');
-            const pool = ofensivos.length > 0 ? ofensivos : time.elenco;
+            const aptos = time.elenco.filter(j => j.status !== 'Lesionado');
+            if(aptos.length === 0) return;
 
-            for(let i=0; i<qtdGols; i++) {
-                // Sorteio ponderado pela força
-                const chutador = pool[Math.floor(Math.random() * pool.length)];
-                chutador.gols = (chutador.gols || 0) + 1;
+            for(let i=0; i < qtdGols; i++) {
+                // Sorteio ponderado pela Força (Craques fazem mais gols)
+                let totalForca = 0;
+                aptos.forEach(j => totalForca += (j.forca || 50));
+                let random = Math.random() * totalForca;
+                let cursor = 0;
+                let artilheiro = aptos[0];
+
+                for(const j of aptos) {
+                    cursor += (j.forca || 50);
+                    if(cursor >= random) { artilheiro = j; break; }
+                }
+                artilheiro.gols = (artilheiro.gols || 0) + 1;
             }
         };
 
@@ -303,9 +338,9 @@ window.Engine = {
         jogo.artilhariaComputada = true;
     },
 
-    // Recuperação de Lesões (Apenas time do usuário para performance)
+    // RECUPERAÇÃO DE LESÃO (Apenas elenco do usuário para performance)
     _processarRecuperacaoElencos: function(estado) {
-        const timeUser = this._getMeuTimeDoMundo(estado);
+        const timeUser = estado.times.find(t => t.nome === estado.info.time);
         if(!timeUser) return;
 
         timeUser.elenco.forEach(jogador => {
@@ -318,14 +353,8 @@ window.Engine = {
             }
         });
     },
-    
-    // Atalhos para compatibilidade com outros arquivos
-    getMeuTime: function() { 
-        const s = this.carregarJogo(); 
-        return s ? this._getMeuTimeDoMundo(s) : null; 
-    },
-    
-    // Método para a tela de classificação pegar qualquer tabela
+
+    // MÉTODOS DE ACESSO GLOBAL (Para a tela de Classificação)
     getTabelaLiga: function(pais, divisao) {
         const s = this.carregarJogo();
         if(s && s.mundo && s.mundo[pais] && s.mundo[pais][divisao]) {
@@ -334,10 +363,9 @@ window.Engine = {
         return [];
     },
 
-    // Método para pegar artilharia de uma liga
     getArtilhariaLiga: function(pais, divisao) {
         const s = this.carregarJogo();
-        if(!s || !s.mundo[pais] || !s.mundo[pais][divisao]) return [];
+        if(!s || !s.mundo || !s.mundo[pais] || !s.mundo[pais][divisao]) return [];
         
         let lista = [];
         s.mundo[pais][divisao].times.forEach(t => {
@@ -346,19 +374,6 @@ window.Engine = {
             });
         });
         return lista;
-    },
-
-    // Atalhos antigos que outros arquivos chamam (wrapper)
-    encontrarTime: function(nome) {
-        const s = this.carregarJogo();
-        // Procura no mundo todo (custoso, mas necessário pra compatibilidade)
-        for(let p in s.mundo) {
-            for(let d in s.mundo[p]) {
-                const t = s.mundo[p][d].times.find(x => x.nome === nome);
-                if(t) return t;
-            }
-        }
-        return { nome: nome, elenco: [] };
     },
 
     data: { getDataAtual: function(r) { return `Rodada ${r}`; } }
