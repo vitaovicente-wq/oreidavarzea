@@ -3,23 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRFutebol - Classificação</title>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>BRFutebol - Classificação & Estatísticas</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
     <script src="engine-core.js"></script>
 
     <style>
         :root { 
-            --bg-dark: #121212; 
-            --panel-bg: #1e1e24;
-            --border: #2d2d35;
-            --accent: #00ff88;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0b0;
+            --bg-dark: #0f1216; 
+            --sidebar-bg: #161b22; 
+            --panel-bg: #1e2329; 
+            --border: #30363d; 
+            --accent: #00ff88; 
+            --text-main: #ffffff; 
+            --text-muted: #8b949e; 
             
-            /* Cores de Zona */
+            /* Zonas */
             --liberta: #2ecc71;
-            --pre-liberta: #3498db;
+            --pre: #3498db;
             --sula: #f1c40f;
             --z4: #e74c3c;
         }
@@ -29,211 +31,267 @@
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: var(--bg-dark); 
-            color: var(--text-primary); 
+            color: var(--text-main); 
             margin: 0; 
             display: flex; 
-            flex-direction: column; 
             height: 100vh; 
-            overflow: hidden;
+            overflow: hidden; 
         }
-        
-        /* HEADER */
-        .header { 
-            height: 70px; 
-            background: #16161a; 
-            border-bottom: 1px solid var(--border); 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 0 25px; 
-            flex-shrink: 0;
-        }
-        .app-brand { font-family: 'Rajdhani'; font-weight: 700; font-size: 1.5rem; letter-spacing: 1px; }
-        .app-brand span { color: var(--accent); }
-        
-        .btn-back { 
-            background: transparent; border: 1px solid var(--border); 
-            color: var(--text-secondary); padding: 8px 16px; border-radius: 4px; 
-            text-decoration: none; font-size: 0.85rem; transition: 0.2s; 
-        }
-        .btn-back:hover { border-color: var(--accent); color: var(--accent); }
 
-        /* CONTEÚDO PRINCIPAL */
+        /* SIDEBAR */
+        .sidebar { width: 250px; background: var(--sidebar-bg); border-right: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
+        .logo { font-family: 'Rajdhani', sans-serif; font-size: 2rem; font-weight: 900; margin-bottom: 20px; color: #fff; text-transform: uppercase; }
+        .logo span { color: var(--accent); }
+        .menu-btn { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .menu-btn:hover, .menu-btn.active { background: rgba(0, 255, 136, 0.1); color: var(--accent); }
+        .menu-btn.logout { margin-top: auto; color: var(--z4); }
+
+        /* MAIN CONTENT */
         .main-content { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+        }
+
+        .page-header { 
+            padding: 20px 30px; 
+            border-bottom: 1px solid var(--border); 
+            background: #16161a;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .page-title h2 { margin: 0; font-family: 'Rajdhani'; text-transform: uppercase; }
+        .page-title p { margin: 5px 0 0 0; color: var(--text-muted); font-size: 0.9rem; }
+
+        /* GRID LAYOUT */
+        .stats-grid { 
             flex: 1; 
             padding: 20px; 
             overflow-y: auto; 
-            display: flex; 
-            justify-content: center;
+            display: grid; 
+            grid-template-columns: 1fr 350px; /* Tabela Grande | Artilharia Pequena */
+            gap: 20px;
         }
 
-        .table-container {
-            width: 100%;
-            max-width: 1000px;
-            background: var(--panel-bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        /* PAINEIS */
+        .panel { 
+            background: var(--panel-bg); 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            overflow: hidden; 
+            display: flex; flex-direction: column;
+        }
+        .panel-header-box { 
+            padding: 15px; 
+            background: #151518; 
+            border-bottom: 1px solid var(--border); 
+            font-family: 'Rajdhani'; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
         }
 
-        /* TABELA */
+        /* TABELA CLASSIFICAÇÃO */
         table { width: 100%; border-collapse: collapse; text-align: center; }
+        thead { background: #111; }
+        th { padding: 12px 8px; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+        th:nth-child(2), td:nth-child(2) { text-align: left; } /* Alinha Nome Clube */
         
-        thead { background: #111; border-bottom: 2px solid var(--border); }
-        th { 
-            padding: 15px 10px; 
-            font-size: 0.8rem; 
-            color: var(--text-secondary); 
-            text-transform: uppercase; 
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-        
-        /* Coluna Clube alinhada a esquerda */
-        th:nth-child(2), td:nth-child(2) { text-align: left; }
-
-        td { padding: 12px 10px; border-bottom: 1px solid var(--border); font-size: 0.95rem; }
+        td { padding: 10px 8px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
         tr:last-child td { border-bottom: none; }
-
-        /* Destaques de Coluna */
-        .col-pts { font-weight: 700; color: #fff; background: rgba(255,255,255,0.03); }
-        .col-sg { color: var(--text-secondary); font-size: 0.85rem; }
-
-        /* Linhas Especiais */
-        tr.meu-time { background: rgba(0, 255, 136, 0.15) !important; border-left: 4px solid var(--accent); }
         
-        /* Indicadores de Zona (Bolinha colorida) */
-        .zone-indicator {
-            width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px;
+        .col-club { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+        .meu-time { background: rgba(0, 255, 136, 0.1); border-left: 3px solid var(--accent); }
+        .pos-num { font-weight: 700; width: 20px; display: inline-block; }
+
+        /* CORES ZONA */
+        .z-lib { color: var(--liberta); }
+        .z-pre { color: var(--pre); }
+        .z-sul { color: var(--sula); }
+        .z-reb { color: var(--z4); }
+
+        /* LISTA ARTILHARIA */
+        .scorer-list { padding: 0; margin: 0; list-style: none; overflow-y: auto; }
+        .scorer-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 12px 15px; border-bottom: 1px solid var(--border); 
+        }
+        .scorer-item:last-child { border-bottom: none; }
+        
+        .scorer-info { display: flex; flex-direction: column; }
+        .scorer-name { font-weight: 700; color: #fff; }
+        .scorer-team { font-size: 0.8rem; color: var(--text-muted); }
+        .scorer-goals { 
+            background: #111; border: 1px solid #333; color: var(--accent); 
+            padding: 4px 10px; border-radius: 4px; font-family: 'Rajdhani'; font-weight: 700; 
         }
 
         /* LEGENDA */
-        .legenda {
-            padding: 15px;
-            background: #111;
-            border-top: 1px solid var(--border);
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-        .legenda-item { display: flex; align-items: center; gap: 5px; }
-        .dot { width: 10px; height: 10px; border-radius: 2px; }
+        .legenda { display: flex; gap: 15px; padding: 15px; font-size: 0.8rem; background: #111; border-top: 1px solid var(--border); justify-content: center; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
 
-        /* RESPONSIVO */
-        @media (max-width: 768px) {
-            .hide-mobile { display: none; }
-            th, td { padding: 10px 5px; font-size: 0.85rem; }
-            .col-club { max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        @media (max-width: 900px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .sidebar { display: none; } /* Em mobile teria que ter menu hamburger, mas simplificamos aqui */
         }
     </style>
 </head>
 <body>
 
-    <header class="header">
-        <div class="app-brand">BR<span>FUTEBOL</span></div>
-        <a href="dashboard.html" class="btn-back">← Voltar</a>
-    </header>
+    <nav class="sidebar">
+        <div class="logo">BR<span>FUTEBOL</span></div>
+        <a class="menu-btn" href="dashboard.html">📊 Visão Geral</a>
+        <a class="menu-btn" href="escalacao.html">👕 Escalação</a>
+        <a class="menu-btn" href="mercado.html">🔄 Mercado</a>
+        <a class="menu-btn" href="calendario.html">📅 Calendário</a>
+        <a class="menu-btn active" href="classificacao.html">🏆 Classificação</a>
+        <a class="menu-btn" href="estadio.html">🏟️ Estádio</a>
+        <a class="menu-btn" href="financeiro.html">💰 Finanças</a>
+        <a class="menu-btn logout" href="index.html" onclick="localStorage.clear()">✖ Sair</a>
+    </nav>
 
-    <div class="main-content">
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th width="50">Pos</th>
-                        <th>Clube</th>
-                        <th width="50" title="Pontos">PTS</th>
-                        <th width="40" title="Jogos">J</th>
-                        <th width="40" title="Vitórias">V</th>
-                        <th width="40" title="Empates">E</th>
-                        <th width="40" title="Derrotas">D</th>
-                        <th width="40" class="hide-mobile" title="Gols Pró">GP</th>
-                        <th width="40" class="hide-mobile" title="Gols Contra">GC</th>
-                        <th width="40" title="Saldo de Gols">SG</th>
-                        <th width="50" class="hide-mobile" title="Aproveitamento">%</th>
-                    </tr>
-                </thead>
-                <tbody id="tabela-corpo">
-                    </tbody>
-            </table>
-
-            <div class="legenda">
-                <div class="legenda-item"><div class="dot" style="background:var(--liberta)"></div> Libertadores</div>
-                <div class="legenda-item"><div class="dot" style="background:var(--pre-liberta)"></div> Pré-Liberta</div>
-                <div class="legenda-item"><div class="dot" style="background:var(--sula)"></div> Sul-Americana</div>
-                <div class="legenda-item"><div class="dot" style="background:var(--z4)"></div> Rebaixamento</div>
+    <main class="main-content">
+        <header class="page-header">
+            <div class="page-title">
+                <h2>Tabela & Estatísticas</h2>
+                <p>Acompanhe a corrida pelo título e artilharia.</p>
             </div>
+            <div style="font-family:'Rajdhani'; font-weight:bold; color:var(--accent);">
+                Temporada 2026
+            </div>
+        </header>
+
+        <div class="stats-grid">
+            
+            <div class="panel">
+                <div class="panel-header-box">Série A - Classificação</div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th width="50">Pos</th>
+                                <th>Clube</th>
+                                <th width="40">P</th>
+                                <th width="40">J</th>
+                                <th width="40">V</th>
+                                <th width="40">E</th>
+                                <th width="40">D</th>
+                                <th width="40">SG</th>
+                                <th width="45">%</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tb-classificacao">
+                            </tbody>
+                    </table>
+                </div>
+                <div class="legenda">
+                    <span style="color:var(--liberta)">● Libertadores</span>
+                    <span style="color:var(--pre)">● Pré-Liberta</span>
+                    <span style="color:var(--sula)">● Sula</span>
+                    <span style="color:var(--z4)">● Z4</span>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header-box">🔥 Artilheiros</div>
+                <ul class="scorer-list" id="lista-artilharia">
+                    <li style="padding:20px; text-align:center; color:#666;">Carregando dados...</li>
+                </ul>
+            </div>
+
         </div>
-    </div>
+    </main>
 
     <script>
         window.onload = function() {
-            if (typeof Engine === 'undefined') {
-                alert("Erro: Engine não carregada.");
-                return;
-            }
-            renderizarClassificacao();
+            if (typeof Engine === 'undefined') return;
+            renderizarTela();
         };
 
-        function renderizarClassificacao() {
+        function renderizarTela() {
             const game = Engine.carregarJogo();
             if(!game) { window.location.href = 'index.html'; return; }
 
-            // Pega a tabela e garante ordenação correta
-            // Critérios: Pontos > Vitórias > Saldo > Gols Pró
+            // --- 1. CLASSIFICAÇÃO ---
+            const tbody = document.getElementById('tb-classificacao');
+            tbody.innerHTML = "";
+
+            // Ordena
             let tabela = game.classificacao.sort((a, b) => {
                 if (b.pts !== a.pts) return b.pts - a.pts;
                 if (b.v !== a.v) return b.v - a.v;
-                if (b.sg !== a.sg) return b.sg - a.sg;
-                return b.gp - a.gp;
+                return b.sg - a.sg;
             });
 
-            const tbody = document.getElementById('tabela-corpo');
-            tbody.innerHTML = "";
-
-            tabela.forEach((time, index) => {
-                const pos = index + 1;
+            tabela.forEach((time, i) => {
+                const pos = i + 1;
                 const tr = document.createElement('tr');
-                
-                // Verifica se é o time do jogador
-                if (time.nome === game.info.time) {
-                    tr.classList.add('meu-time');
-                }
+                if(time.nome === game.info.time) tr.classList.add('meu-time');
 
-                // Lógica de Cores da Zona (Série A Padrão)
-                let zoneColor = "transparent";
-                if (pos <= 4) zoneColor = "var(--liberta)";
-                else if (pos <= 6) zoneColor = "var(--pre-liberta)";
-                else if (pos <= 12) zoneColor = "var(--sula)";
-                else if (pos >= 17) zoneColor = "var(--z4)";
+                // Cor da Posição
+                let colorClass = "";
+                if(pos <= 4) colorClass = "z-lib";
+                else if(pos <= 6) colorClass = "z-pre";
+                else if(pos <= 12) colorClass = "z-sul";
+                else if(pos >= 17) colorClass = "z-reb";
 
-                // Cálculo de Aproveitamento
-                const aproveitamento = time.j > 0 ? Math.round((time.pts / (time.j * 3)) * 100) : 0;
-
-                // Escudo Fallback
-                const escudoUrl = time.escudo || "https://cdn-icons-png.flaticon.com/512/53/53283.png";
+                const aprov = time.j > 0 ? Math.round((time.pts/(time.j*3))*100) : 0;
 
                 tr.innerHTML = `
-                    <td style="font-weight:700; border-left: 4px solid ${zoneColor};">${pos}º</td>
-                    <td class="col-club" style="display:flex; align-items:center; gap:10px;">
-                        <img src="${escudoUrl}" width="24" height="24" onerror="this.src='https://cdn-icons-png.flaticon.com/512/53/53283.png'">
-                        <span style="font-weight:600; color:#fff;">${time.nome}</span>
-                    </td>
-                    <td class="col-pts">${time.pts}</td>
-                    <td style="color:#fff;">${time.j}</td>
-                    <td style="color:#ccc;">${time.v}</td>
-                    <td style="color:#ccc;">${time.e}</td>
-                    <td style="color:#ccc;">${time.d}</td>
-                    <td class="hide-mobile" style="color:#888;">${time.gp}</td>
-                    <td class="hide-mobile" style="color:#888;">${time.gc}</td>
-                    <td class="col-sg">${time.sg}</td>
-                    <td class="hide-mobile" style="font-size:0.8rem; color:#666;">${aproveitamento}%</td>
+                    <td class="${colorClass}"><span class="pos-num">${pos}</span></td>
+                    <td><div class="col-club">${time.nome}</div></td>
+                    <td style="font-weight:bold; color:#fff;">${time.pts}</td>
+                    <td>${time.j}</td>
+                    <td>${time.v}</td>
+                    <td>${time.e}</td>
+                    <td>${time.d}</td>
+                    <td>${time.sg}</td>
+                    <td style="color:#666; font-size:0.8rem;">${aprov}%</td>
                 `;
-
                 tbody.appendChild(tr);
             });
+
+            // --- 2. ARTILHARIA (Busca em todos os times) ---
+            const listaArt = document.getElementById('lista-artilharia');
+            listaArt.innerHTML = "";
+            
+            let todosJogadores = [];
+
+            // Varre todos os times do jogo para achar os jogadores
+            game.times.forEach(time => {
+                if(time.elenco) {
+                    time.elenco.forEach(jogador => {
+                        // Só pega se tiver gol
+                        if(jogador.gols > 0) {
+                            todosJogadores.push({
+                                nome: jogador.nome,
+                                time: time.nome,
+                                gols: jogador.gols
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Ordena por gols
+            todosJogadores.sort((a,b) => b.gols - a.gols);
+
+            // Pega Top 10
+            const top10 = todosJogadores.slice(0, 10);
+
+            if(top10.length === 0) {
+                listaArt.innerHTML = `<li style="padding:30px; text-align:center; color:#666;">Nenhum gol marcado no campeonato ainda.</li>`;
+            } else {
+                top10.forEach(j => {
+                    const li = document.createElement('li');
+                    li.className = 'scorer-item';
+                    li.innerHTML = `
+                        <div class="scorer-info">
+                            <span class="scorer-name">${j.nome}</span>
+                            <span class="scorer-team">${j.time}</span>
+                        </div>
+                        <div class="scorer-goals">${j.gols}</div>
+                    `;
+                    listaArt.appendChild(li);
+                });
+            }
         }
     </script>
 </body>
