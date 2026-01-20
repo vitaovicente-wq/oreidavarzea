@@ -1,5 +1,5 @@
 // ARQUIVO: engine-estadio.js
-// ATUALIZADO: Reformas, Setores, Aluguéis e Estádios Neutros
+// ATUALIZADO: Aluguel por Temporada/Jogos + Abas Independentes
 
 Engine.Estadios = {
     // Estádios Reais (Clubes)
@@ -21,33 +21,29 @@ Engine.Estadios = {
         "Athletico-PR": { nome: "Ligga Arena", cap: 42372 }
     },
 
-    // Estádios Neutros (Municipais/Governo) - Mais baratos
+    // Estádios Neutros
     dbNeutros: [
         { id: 'pacaembu', nome: "Estádio do Pacaembu", cap: 37730, aluguel: 150000, infra: "Média" },
         { id: 'barueri', nome: "Arena Barueri", cap: 31452, aluguel: 80000, infra: "Baixa" },
-        { id: 'manegarrincha', nome: "Mané Garrincha", cap: 72788, aluguel: 250000, infra: "Alta" }
+        { id: 'manegarrincha', nome: "Mané Garrincha", cap: 72788, aluguel: 250000, infra: "Alta" },
+        { id: 'kleberandrade', nome: "Kleber Andrade", cap: 21000, aluguel: 50000, infra: "Média" }
     ],
 
     getEstadio: function() {
         const game = Engine.carregarJogo();
         const timeNome = game.info.time;
         
-        // 1. Inicialização / Migração
         if (!game.estadio) {
             this._criarEstadioInicial(game, timeNome);
         } else if (!game.estadio.setores) {
-            // Migração: Se tem capacidade total mas não tem setores, divide agora
-            console.log("🛠️ Migrando estádio para sistema de setores...");
+            // Migração legado
             const cap = game.estadio.capacidade;
             game.estadio.setores = {
                 geral: Math.floor(cap * 0.60),
                 cadeiras: Math.floor(cap * 0.35),
                 vip: Math.floor(cap * 0.05),
-                estacionamento: Math.floor(cap * 0.10) // Extra
+                estacionamento: Math.floor(cap * 0.10)
             };
-            // Zera status de obra
-            game.estadio.emObras = false;
-            game.estadio.alugado = null; // Se estiver alugando outro
             Engine.salvarJogo(game);
         }
 
@@ -75,20 +71,17 @@ Engine.Estadios = {
         Engine.salvarJogo(game);
     },
 
-    // --- SISTEMA DE REFORMA ---
-    
-    // Calcula custo: 1000 reais por assento
+    // --- REFORMA ---
     calcularOrcamento: function(adicoes) {
         const custoAssento = 1000; 
-        const custoVaga = 500; // Estacionamento é mais barato
+        const custoVaga = 500;
 
         let custoTotal = 
             (adicoes.geral * custoAssento) +
-            (adicoes.cadeiras * custoAssento * 1.5) + // Cadeira é mais cara
-            (adicoes.vip * custoAssento * 3.0) +      // VIP é muito caro
+            (adicoes.cadeiras * custoAssento * 1.5) +
+            (adicoes.vip * custoAssento * 3.0) +
             (adicoes.estacionamento * custoVaga);
 
-        // Tempo: 1 rodada a cada 2.000 lugares adicionados (mínimo 4 rodadas)
         let totalLugares = adicoes.geral + adicoes.cadeiras + adicoes.vip + adicoes.estacionamento;
         let tempo = Math.max(4, Math.ceil(totalLugares / 2000));
 
@@ -103,64 +96,55 @@ Engine.Estadios = {
             return { sucesso: false, msg: "Dinheiro insuficiente." };
         }
 
-        // Paga a obra
         game.recursos.dinheiro -= orcamento.custo;
         game.financas.historico.push({
-            texto: "Reforma do Estádio",
+            texto: "Obras no Estádio",
             valor: -orcamento.custo,
             tipo: "saida",
             rodada: game.rodadaAtual
         });
 
-        // Atualiza Capacidades
+        // Aplica expansão
         game.estadio.setores.geral += parseInt(adicoes.geral);
         game.estadio.setores.cadeiras += parseInt(adicoes.cadeiras);
         game.estadio.setores.vip += parseInt(adicoes.vip);
         game.estadio.setores.estacionamento += parseInt(adicoes.estacionamento);
         
-        // Recalcula total
         game.estadio.capacidade = game.estadio.setores.geral + game.estadio.setores.cadeiras + game.estadio.setores.vip;
 
-        // Trava o estádio
+        // Inicia Obras
         game.estadio.emObras = true;
         game.estadio.rodadasObras = orcamento.tempo;
         
-        // Força aluguel automático se não tiver
-        game.estadio.alugado = { nome: "Campo de Treino (Provisório)", cap: 5000, custo: 0 }; 
+        // Se não tiver aluguel, avisa para alugar
+        if(!game.estadio.alugado) {
+            game.estadio.alugado = { nome: "Campo de Treino (Improvisado)", capacidade: 2000, custoPorJogo: 0, jogosRestantes: orcamento.tempo };
+        }
 
         Engine.salvarJogo(game);
-        return { sucesso: true, msg: `Obras iniciadas! Fica pronto em ${orcamento.tempo} rodadas.` };
+        return { sucesso: true, msg: `Reforma iniciada! Duração: ${orcamento.tempo} rodadas.` };
     },
 
-    // --- SISTEMA DE ALUGUEL ---
-
+    // --- ALUGUEL ---
     listarEstadiosDisponiveis: function() {
         const game = Engine.carregarJogo();
-        const rodadaAtual = game.rodadaAtual;
-        
         let disponiveis = [];
 
-        // 1. Adiciona Neutros
+        // 1. Neutros
         this.dbNeutros.forEach(n => {
-            disponiveis.push({
-                ...n,
-                tipo: 'neutro',
-                dono: 'Governo'
-            });
+            disponiveis.push({ ...n, tipo: 'neutro', dono: 'Governo' });
         });
 
-        // 2. Adiciona Clubes (Lógica simplificada: Cobra caro)
-        // Em um sistema v2, checaríamos se o time joga em casa na rodada
-        const timesGrandes = ["Corinthians", "Palmeiras", "São Paulo", "Flamengo"];
-        
+        // 2. Clubes (Simplificado)
+        const timesGrandes = ["Corinthians", "Palmeiras", "São Paulo", "Flamengo", "Maracanã"];
         timesGrandes.forEach(t => {
             if (t !== game.info.time && this.dbEstadios[t]) {
                 const dados = this.dbEstadios[t];
                 disponiveis.push({
-                    id: t.toLowerCase(),
+                    id: t.toLowerCase().replace(/ /g,''),
                     nome: dados.nome,
                     cap: dados.cap,
-                    aluguel: 400000, // Clubes cobram caro
+                    aluguel: 350000, 
                     tipo: 'clube',
                     dono: t,
                     infra: "Alta"
@@ -171,71 +155,74 @@ Engine.Estadios = {
         return disponiveis;
     },
 
-    assinarAluguel: function(estadioAlvo) {
+    assinarAluguel: function(estadioAlvo, duracaoJogos) {
         const game = Engine.carregarJogo();
         
-        // Cobra aluguel antecipado de 1 jogo
-        if (game.recursos.dinheiro < estadioAlvo.aluguel) {
-            return { sucesso: false, msg: "Sem dinheiro para o aluguel." };
+        // Taxa de assinatura (10% do valor total do contrato)
+        const valorContrato = estadioAlvo.aluguel * duracaoJogos;
+        const taxaAssinatura = Math.floor(valorContrato * 0.10);
+
+        if (game.recursos.dinheiro < taxaAssinatura) {
+            return { sucesso: false, msg: `Precisa de R$ ${taxaAssinatura.toLocaleString()} para taxa de assinatura.` };
         }
+
+        // Paga Taxa
+        game.recursos.dinheiro -= taxaAssinatura;
+        game.financas.historico.push({ texto: "Taxa Aluguel Estádio", valor: -taxaAssinatura, tipo: "saida", rodada: game.rodadaAtual });
 
         game.estadio.alugado = {
             nome: estadioAlvo.nome,
             capacidade: estadioAlvo.cap,
-            custoPorJogo: estadioAlvo.aluguel
+            custoPorJogo: estadioAlvo.aluguel,
+            jogosRestantes: parseInt(duracaoJogos)
         };
 
         Engine.salvarJogo(game);
-        return { sucesso: true, msg: `Contrato assinado com ${estadioAlvo.nome}.` };
+        return { sucesso: true, msg: `Alugado: ${estadioAlvo.nome} por ${duracaoJogos} jogos em casa.` };
     },
 
-    // --- BILHETERIA (MODIFICADO PARA USAR SETORES E ALUGUEL) ---
+    // --- BILHETERIA COM LÓGICA DE CONTRATO ---
     calcularBilheteria: function(adversario) {
         const game = Engine.carregarJogo();
-        const est = this.getEstadio(); // Pega estádio ou o alugado
+        const est = this.getEstadio(); 
         
-        // Se estiver em obra, usa os dados do ALUGADO
+        // Verifica qual estádio usar
         let capacidadeUso = est.capacidade;
         let custoAluguel = 0;
         let nomeEstadioUso = est.nome;
+        let isAlugado = false;
 
-        if (est.emObras && est.alugado) {
+        // Se estiver em obras OU tiver contrato ativo, joga fora
+        if (est.alugado) {
             capacidadeUso = est.alugado.capacidade;
             custoAluguel = est.alugado.custoPorJogo || 0;
             nomeEstadioUso = est.alugado.nome;
+            isAlugado = true;
         }
 
         // Lógica de Lotação
         const moral = game.recursos.moral || 50;
         const forcaAdv = adversario.forca || 60; 
-        
         let interesseBase = (moral * 0.6) + (forcaAdv * 0.4);
         const fatorPreco = 40 / (est.precos.geral || 40); 
         let ocupacaoPercent = (interesseBase * fatorPreco) + (Math.random() * 10);
-        
         if(ocupacaoPercent > 100) ocupacaoPercent = 100;
         if(ocupacaoPercent < 5) ocupacaoPercent = 5;
 
-        // Limita pela capacidade do estádio (seja o próprio ou alugado)
         const publicoTotal = Math.floor(capacidadeUso * (ocupacaoPercent / 100));
         
-        // Distribuição Fixa (Simplificada para estádios alugados que não temos os setores exatos)
         const pGeral = Math.floor(publicoTotal * 0.60);
         const pCadeiras = Math.floor(publicoTotal * 0.35);
         const pVip = Math.floor(publicoTotal * 0.05);
-        const pCarros = Math.floor(publicoTotal * 0.15); // Estacionamento menor em aluguel
+        const pCarros = Math.floor(publicoTotal * 0.20); 
 
-        // Renda Bruta
         const rendaBruta = (pGeral * est.precos.geral) + 
                            (pCadeiras * est.precos.cadeiras) + 
                            (pVip * est.precos.vip) +
                            (pCarros * est.precos.estacionamento);
 
-        // Desconta Aluguel na hora do jogo
-        const rendaLiquida = rendaBruta - custoAluguel;
-        
-        // Se pagou aluguel, registra no histórico
-        if(custoAluguel > 0) {
+        // Processa Pagamento do Aluguel e Fim de Contrato
+        if(isAlugado && custoAluguel > 0) {
             game.recursos.dinheiro -= custoAluguel;
             game.financas.historico.push({
                 texto: `Aluguel (${nomeEstadioUso})`,
@@ -243,22 +230,42 @@ Engine.Estadios = {
                 tipo: "saida",
                 rodada: game.rodadaAtual
             });
+
+            // Desconta 1 jogo do contrato
+            game.estadio.alugado.jogosRestantes--;
+            
+            // Se acabou o contrato
+            if(game.estadio.alugado.jogosRestantes <= 0) {
+                // Se ainda está em obra, renova num campo podre automaticamente
+                if(game.estadio.emObras) {
+                    game.estadio.alugado = { nome: "Campo de Treino", capacidade: 2000, custoPorJogo: 0, jogosRestantes: 5 };
+                    if(window.Engine.Sistema) window.Engine.Sistema.novaMensagem("Contrato Encerrado", `O aluguel do ${nomeEstadioUso} acabou, mas seu estádio ainda está em obras. Jogaremos no CT.`, "alerta", "Logística");
+                } else {
+                    // Se não está em obra, volta pra casa
+                    game.estadio.alugado = null;
+                    if(window.Engine.Sistema) window.Engine.Sistema.novaMensagem("Volta pra Casa", `O aluguel acabou. Voltamos a mandar jogos no nosso estádio!`, "info", "Logística");
+                }
+            }
             Engine.salvarJogo(game);
         }
 
         return {
             publicoTotal: publicoTotal,
-            rendaTotal: rendaBruta, // Retorna bruta para exibir, o desconto foi interno
+            rendaTotal: rendaBruta,
             ocupacao: Math.floor(ocupacaoPercent),
             estadioUsado: nomeEstadioUso
         };
     },
 
-    salvarConfig: function(novosPrecos) {
-        const game = Engine.carregarJogo();
-        game.estadio.precos = novosPrecos;
-        Engine.salvarJogo(game);
+    salvarConfig: function(p) { 
+        const g = Engine.carregarJogo(); g.estadio.precos = p; Engine.salvarJogo(g); 
     },
-    
     salvarPrecos: function(t) { this._tempPrecos = t; }
+};
+
+const originalGetEstadio = Engine.Estadios.getEstadio;
+Engine.Estadios.getEstadio = function() {
+    const est = originalGetEstadio.call(Engine.Estadios);
+    if (Engine.Estadios._tempPrecos) return { ...est, precos: Engine.Estadios._tempPrecos };
+    return est;
 };
