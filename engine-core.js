@@ -80,37 +80,46 @@ window.Engine = {
     },
 
     // =========================================================================
-    // 2. SAVE & LOAD (PERSISTÊNCIA)
+    // 2. SAVE & LOAD (COM RECONEXÃO DE REFERÊNCIAS)
     // =========================================================================
     salvarJogo: function(estado) { 
         try {
-            localStorage.setItem('brfutebol_save', JSON.stringify(estado)); 
+            // 1. Cria uma cópia leve para salvar
+            // Removemos os atalhos para não salvar dados duplicados e economizar memória
+            const saveState = { ...estado };
+            delete saveState.times;
+            delete saveState.calendario;
+            delete saveState.classificacao;
+
+            localStorage.setItem('brfutebol_save', JSON.stringify(saveState)); 
         } catch (e) {
-            console.error("Erro ao salvar (Quota excedida?):", e);
-            alert("Erro crítico: Não foi possível salvar. Espaço cheio.");
+            console.error("Erro ao salvar:", e);
+            alert("Erro crítico: Não foi possível salvar. Espaço cheio?");
         }
     },
 
     carregarJogo: function() { 
         const s = localStorage.getItem('brfutebol_save'); 
-        return s ? JSON.parse(s) : null; 
-    },
-    
-    // Busca universal (Essencial para transferências globais)
-    encontrarTime: function(nomeBusca) { 
-        const s = this.carregarJogo(); 
-        if (!s || !s.mundo) return { nome: nomeBusca, elenco: [] };
-        
-        // Varredura profunda no objeto Mundo
-        for(let p in s.mundo) {
-            for(let d in s.mundo[p]) {
-                const t = s.mundo[p][d].times.find(x => x.nome === nomeBusca);
-                if(t) return t;
+        if (!s) return null;
+
+        const game = JSON.parse(s);
+
+        // --- RECONEXÃO CRÍTICA (O FIX DO PROBLEMA) ---
+        // Reconecta os atalhos (calendario/times) de volta ao objeto Mundo Real
+        if (game.mundo && game.info) {
+            const p = game.info.pais;
+            const d = game.info.divisao;
+            
+            if (game.mundo[p] && game.mundo[p][d]) {
+                game.times = game.mundo[p][d].times;
+                game.calendario = game.mundo[p][d].calendario;
+                game.classificacao = game.mundo[p][d].tabela;
             }
         }
-        return { nome: nomeBusca, elenco: [] }; // Retorno seguro se não achar
-    },
 
+        return game; 
+    },
+    
     // =========================================================================
     // 3. INICIALIZAÇÃO (NOVO JOGO)
     // =========================================================================
