@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRFutebol - Infraestrutura</title>
+    <title>BRFutebol - Estádio</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
     <script src="database.js"></script>
@@ -17,354 +17,246 @@
     <script src="engine-estadio.js"></script>
 
     <style>
-        :root { 
-            --bg-dark: #121212; --panel-bg: #1e1e24; --panel-border: #2d2d35;
-            --accent: #00ff88; --text-primary: #ffffff; --text-secondary: #a0a0b0;
-            --danger: #ff4757; --warning: #ffa502;
-        }
+        :root { --bg: #121212; --card: #1e1e24; --accent: #00ff88; --text: #fff; --border: #333; }
         * { box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-dark); color: var(--text-primary); margin: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; height: 100vh; display: flex; flex-direction: column; }
         
-        .header { height: 70px; background: #16161a; border-bottom: 1px solid var(--panel-border); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; }
-        .app-brand { font-family: 'Rajdhani'; font-weight: 700; font-size: 1.5rem; } .app-brand span { color: var(--accent); }
-        .btn-back { background: transparent; border: 1px solid var(--panel-border); color: var(--text-secondary); padding: 8px 16px; border-radius: 4px; text-decoration: none; font-size: 0.85rem; }
+        .header { height: 60px; background: #16161a; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+        .back-btn { color: #ccc; text-decoration: none; border: 1px solid #444; padding: 5px 10px; border-radius: 4px; font-size: 0.9rem; }
         
-        .dashboard-grid { flex: 1; display: grid; grid-template-columns: 1fr 450px; gap: 20px; padding: 20px; overflow-y: auto; }
-
-        /* ESTÁDIO VISUAL */
-        .visual-panel { display: flex; flex-direction: column; gap: 20px; }
-        .hero-stadium { 
-            flex: 1; background: linear-gradient(0deg, #121212 0%, rgba(18,18,18,0.4) 100%), url('https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Pacaembu_%282972423853%29.jpg/1920px-Pacaembu_%282972423853%29.jpg');
-            background-size: cover; background-position: center; border-radius: 12px; border: 1px solid var(--panel-border); 
-            padding: 40px; display: flex; flex-direction: column; justify-content: flex-end; position: relative;
+        .container { flex: 1; display: grid; grid-template-columns: 1fr 450px; gap: 20px; padding: 20px; overflow: hidden; }
+        
+        /* VISUAL (ESQUERDA) */
+        .visual-col { display: flex; flex-direction: column; gap: 20px; overflow-y: auto; }
+        .hero { 
+            height: 300px; background-size: cover; background-position: center; border-radius: 12px; position: relative; 
+            display: flex; flex-direction: column; justify-content: flex-end; padding: 30px; border: 1px solid var(--border);
+            background-image: linear-gradient(0deg, #121212 0%, rgba(0,0,0,0.3) 100%), url('https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Pacaembu_%282972423853%29.jpg/1920px-Pacaembu_%282972423853%29.jpg');
         }
-        .obras-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); backdrop-filter: blur(5px);
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            border-radius: 12px; z-index: 10;
-        }
-        .obras-badge { background: var(--warning); color: #000; padding: 10px 20px; font-weight: 800; font-family: 'Rajdhani'; font-size: 2rem; transform: rotate(-5deg); border: 4px solid #fff; }
-
-        .stadium-meta h1 { font-family: 'Rajdhani'; font-weight: 700; font-size: 3rem; margin: 0; line-height: 1; text-transform: uppercase; }
-        .capacity-tag { margin-top: 20px; display: inline-flex; align-items: center; gap: 10px; background: rgba(0,0,0,0.6); padding: 8px 16px; border-radius: 6px; border: 1px solid var(--panel-border); }
-        .capacity-number { font-family: 'Rajdhani'; font-weight: 700; font-size: 1.2rem; color: var(--accent); }
-
-        /* ABAS E CONTROLES */
-        .control-panel { background: var(--panel-bg); border: 1px solid var(--panel-border); border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; }
-        .tabs { display: flex; border-bottom: 1px solid var(--panel-border); }
-        .tab-btn { flex: 1; background: transparent; border: none; padding: 20px; color: var(--text-secondary); cursor: pointer; font-family: 'Rajdhani'; font-weight: 700; font-size: 1rem; border-bottom: 2px solid transparent; }
-        .tab-btn.active { color: #fff; border-bottom-color: var(--accent); background: rgba(255,255,255,0.02); }
+        .hero h1 { margin: 0; font-family: 'Rajdhani'; font-size: 3rem; line-height: 1; text-transform: uppercase; text-shadow: 0 4px 10px #000; }
         
-        .tab-content { padding: 25px; display: none; flex-direction: column; gap: 20px; flex: 1; overflow-y: auto; }
-        .tab-content.visible { display: flex; }
+        .status-badge { position: absolute; top: 20px; right: 20px; background: var(--accent); color: #000; padding: 5px 15px; font-weight: bold; border-radius: 4px; font-family: 'Rajdhani'; }
+        .status-badge.obra { background: #ffa502; }
+        .status-badge.aluguel { background: #3498db; color: #fff; }
 
-        /* INPUTS E SLIDERS */
-        .input-group { display: flex; justify-content: space-between; align-items: center; background: #121212; padding: 15px; border-radius: 8px; border: 1px solid #333; }
-        .input-label { font-size: 0.9rem; color: #ccc; }
-        .input-control { width: 100px; background: #222; border: 1px solid #444; color: #fff; padding: 5px; border-radius: 4px; text-align: center; }
+        .sector-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .sector-card { background: var(--card); padding: 15px; border-radius: 8px; border: 1px solid var(--border); }
+        .sector-card span { display: block; font-size: 0.8rem; color: #888; }
+        .sector-card strong { font-size: 1.2rem; font-family: 'Rajdhani'; }
+
+        /* CONTROLES (DIREITA) */
+        .control-col { background: var(--card); border-left: 1px solid var(--border); display: flex; flex-direction: column; }
         
-        .btn-action { background: var(--accent); color: #000; border: none; width: 100%; padding: 15px; font-family: 'Rajdhani'; font-weight: 700; font-size: 1.1rem; text-transform: uppercase; cursor: pointer; margin-top: auto; }
-        .btn-action.disabled { background: #444; color: #888; cursor: not-allowed; }
+        .tabs { display: flex; border-bottom: 1px solid var(--border); }
+        .tab { flex: 1; background: transparent; border: none; padding: 15px; color: #888; cursor: pointer; font-weight: bold; border-bottom: 3px solid transparent; }
+        .tab.active { color: #fff; border-bottom-color: var(--accent); background: rgba(255,255,255,0.02); }
 
-        /* LISTA DE ALUGUEL */
-        .rent-item { background: #121212; border: 1px solid #333; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .rent-info div { font-weight: bold; }
-        .rent-info small { color: #888; }
-        .btn-rent { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 5px 15px; border-radius: 4px; cursor: pointer; font-weight: 700; }
+        .content { padding: 20px; flex: 1; overflow-y: auto; display: none; }
+        .content.active { display: block; }
+
+        /* INPUTS */
+        .field { margin-bottom: 15px; }
+        .field label { display: block; font-size: 0.85rem; color: #ccc; margin-bottom: 5px; }
+        input[type=number], select { width: 100%; background: #111; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 4px; }
+        
+        .rent-item { background: #111; padding: 15px; border: 1px solid #333; border-radius: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .btn-rent { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 5px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; }
         .btn-rent:hover { background: var(--accent); color: #000; }
 
-        .current-rent { background: rgba(255, 165, 2, 0.1); border: 1px solid var(--warning); padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
+        .btn-main { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; font-weight: 800; cursor: pointer; text-transform: uppercase; font-family: 'Rajdhani'; font-size: 1.1rem; margin-top: 20px; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <header class="header">
-        <div class="app-brand">BR<span>FUTEBOL</span></div>
-        <a href="dashboard.html" class="btn-back">← Voltar</a>
-    </header>
+    <div class="header">
+        <div style="font-family:'Rajdhani'; font-size:1.5rem; font-weight:bold;">BR<span>FUTEBOL</span></div>
+        <a href="dashboard.html" class="back-btn">Voltar</a>
+    </div>
 
-    <div class="dashboard-grid">
-        
-        <div class="visual-panel">
-            <div class="hero-stadium">
-                <div id="overlay-obras" class="obras-overlay" style="display: none;">
-                    <div class="obras-badge">EM REFORMA</div>
-                    <p style="margin-top:10px; color:#fff;">Previsão: <span id="rodadas-obras">0</span> rodadas</p>
-                    <small>Mando de campo indisponível</small>
-                </div>
-
-                <div class="stadium-meta">
-                    <h1 id="std-name">...</h1>
-                    <p id="mando-atual">Mando: Seu Time</p>
-                    <div class="capacity-tag">
-                        <span class="capacity-label">Total</span>
-                        <div style="width:1px; height:15px; background:#444; margin:0 10px;"></div>
-                        <span class="capacity-number" id="std-cap">0</span>
-                    </div>
-                </div>
+    <div class="container">
+        <div class="visual-col">
+            <div class="hero">
+                <div id="status-display" class="status-badge" style="display:none;"></div>
+                <h1 id="std-name">...</h1>
+                <p id="std-desc" style="color:#ccc;">Casa do Clube</p>
+                <div style="margin-top:10px; font-weight:bold; color:var(--accent);">CAPACIDADE: <span id="std-cap">0</span></div>
             </div>
-            
-            <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px;">
-                <div class="input-group" style="flex-direction:column; align-items:flex-start;">
-                    <span style="font-size:0.7rem; color:#888;">GERAL</span>
-                    <span id="show-geral" style="font-weight:700;">0</span>
-                </div>
-                <div class="input-group" style="flex-direction:column; align-items:flex-start;">
-                    <span style="font-size:0.7rem; color:#888;">CADEIRAS</span>
-                    <span id="show-cadeiras" style="font-weight:700;">0</span>
-                </div>
-                <div class="input-group" style="flex-direction:column; align-items:flex-start;">
-                    <span style="font-size:0.7rem; color:#888;">VIP</span>
-                    <span id="show-vip" style="font-weight:700;">0</span>
-                </div>
-                <div class="input-group" style="flex-direction:column; align-items:flex-start;">
-                    <span style="font-size:0.7rem; color:#888;">PARKING</span>
-                    <span id="show-park" style="font-weight:700;">0</span>
-                </div>
+
+            <div class="sector-grid">
+                <div class="sector-card"><span>Geral</span><strong id="sec-geral">0</strong></div>
+                <div class="sector-card"><span>Cadeiras</span><strong id="sec-cad">0</strong></div>
+                <div class="sector-card"><span>VIP</span><strong id="sec-vip">0</strong></div>
+                <div class="sector-card"><span>Vagas</span><strong id="sec-park">0</strong></div>
             </div>
         </div>
 
-        <div class="control-panel">
+        <div class="control-col">
             <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('ingressos')">Ingressos</button>
-                <button class="tab-btn" onclick="switchTab('reforma')">Expansão & Aluguel</button>
+                <button class="tab active" onclick="setTab('ingressos')">Ingressos</button>
+                <button class="tab" onclick="setTab('reforma')">Expansão</button>
+                <button class="tab" onclick="setTab('aluguel')">Aluguel</button>
             </div>
 
-            <div id="tab-ingressos" class="tab-content visible">
-                <p style="color:#888; font-size:0.9rem;">Defina os preços para jogos em casa.</p>
+            <div id="tab-ingressos" class="content active">
+                <div class="field"><label>Geral (R$)</label><input type="number" id="p-geral"></div>
+                <div class="field"><label>Cadeiras (R$)</label><input type="number" id="p-cadeiras"></div>
+                <div class="field"><label>VIP (R$)</label><input type="number" id="p-vip"></div>
+                <div class="field"><label>Estacionamento (R$)</label><input type="number" id="p-park"></div>
                 
-                <div class="input-group">
-                    <span class="input-label">Geral (R$)</span>
-                    <input type="number" id="price-geral" class="input-control" value="40">
+                <div style="background:#111; padding:15px; border:1px dashed #444; margin-top:20px;">
+                    <small>Renda Estimada</small>
+                    <div style="font-size:1.5rem; color:var(--accent); font-weight:bold;" id="proj-renda">R$ 0,00</div>
                 </div>
-                <div class="input-group">
-                    <span class="input-label">Cadeiras (R$)</span>
-                    <input type="number" id="price-cadeiras" class="input-control" value="80">
-                </div>
-                <div class="input-group">
-                    <span class="input-label">VIP (R$)</span>
-                    <input type="number" id="price-vip" class="input-control" value="250">
-                </div>
-                <div class="input-group">
-                    <span class="input-label">Estacionamento (R$)</span>
-                    <input type="number" id="price-park" class="input-control" value="30">
-                </div>
-
-                <div style="margin-top:auto; padding:15px; background:#111; border:1px dashed #333; border-radius:8px;">
-                    <span style="font-size:0.8rem; color:#888;">PROJEÇÃO DE RENDA</span>
-                    <div style="font-size:1.5rem; color:var(--accent); font-weight:700;" id="proj-money">R$ 0,00</div>
-                </div>
-                
-                <button class="btn-action" onclick="salvarPrecos()">Atualizar Preços</button>
+                <button class="btn-main" onclick="salvarPrecos()">Atualizar Preços</button>
             </div>
 
-            <div id="tab-reforma" class="tab-content">
+            <div id="tab-reforma" class="content">
+                <p style="color:#aaa; font-size:0.9rem;">Amplie setores. Custo aprox: R$ 1 Mi a cada 1.000 lugares.</p>
+                <div class="field"><label>+ Lugares Geral</label><select id="add-geral" onchange="calcObra()"><option value="0">0</option><option value="1000">+1.000</option><option value="5000">+5.000</option></select></div>
+                <div class="field"><label>+ Lugares Cadeiras</label><select id="add-cadeiras" onchange="calcObra()"><option value="0">0</option><option value="1000">+1.000</option><option value="5000">+5.000</option></select></div>
                 
-                <div id="rent-status" class="current-rent" style="display:none;">
-                    <span style="color:var(--warning); font-weight:bold;">🏟️ JOGANDO EM CAMPO ALUGADO</span><br>
-                    <span id="rent-name" style="color:#fff;">...</span><br>
-                    <small>Custo por jogo: <span id="rent-cost">R$ 0</span></small>
+                <div style="background:#111; padding:15px; border-left:4px solid #ffa502;">
+                    <div style="display:flex; justify-content:space-between;"><span>Custo:</span><strong id="obra-custo" style="color:#fff;">R$ 0</strong></div>
+                    <div style="display:flex; justify-content:space-between;"><span>Tempo:</span><strong id="obra-tempo" style="color:#fff;">0 Rodadas</strong></div>
+                </div>
+                <button class="btn-main" style="background:#ffa502;" onclick="iniciarObra()">Iniciar Obras</button>
+            </div>
+
+            <div id="tab-aluguel" class="content">
+                
+                <div style="background:#222; padding:15px; border-radius:6px; margin-bottom:20px;">
+                    <label style="color:#accent; font-weight:bold; display:block; margin-bottom:5px;">Duração do Contrato</label>
+                    <select id="rent-duration" style="background:#000; border:1px solid #444; color:#fff; font-weight:bold;">
+                        <option value="1">1 Jogo em Casa (Emergência)</option>
+                        <option value="3">3 Jogos em Casa (Curto)</option>
+                        <option value="5">5 Jogos em Casa (Médio)</option>
+                        <option value="10">10 Jogos em Casa (Temporada)</option>
+                    </select>
+                    <small style="color:#888; display:block; margin-top:5px;">O valor do aluguel é pago por jogo realizado.</small>
                 </div>
 
-                <div id="form-reforma">
-                    <h3 style="margin:0 0 10px 0;">Planejar Expansão</h3>
-                    <p style="font-size:0.8rem; color:#aaa;">Custo aprox: R$ 1 Mi a cada 1.000 lugares.</p>
-
-                    <div class="input-group">
-                        <span class="input-label">+ Lugares Geral</span>
-                        <select id="add-geral" class="input-control" onchange="calcOrcamento()">
-                            <option value="0">0</option>
-                            <option value="1000">+1.000</option>
-                            <option value="5000">+5.000</option>
-                            <option value="10000">+10.000</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <span class="input-label">+ Lugares Cadeiras</span>
-                        <select id="add-cadeiras" class="input-control" onchange="calcOrcamento()">
-                            <option value="0">0</option>
-                            <option value="1000">+1.000</option>
-                            <option value="5000">+5.000</option>
-                        </select>
-                    </div>
-                    <div class="input-group">
-                        <span class="input-label">+ Lugares VIP</span>
-                        <select id="add-vip" class="input-control" onchange="calcOrcamento()">
-                            <option value="0">0</option>
-                            <option value="100">+100</option>
-                            <option value="500">+500</option>
-                        </select>
-                    </div>
-
-                    <div style="margin-top:20px; padding:15px; background:#111; border-left:4px solid var(--warning);">
-                        <div style="display:flex; justify-content:space-between;">
-                            <span>Custo Estimado:</span>
-                            <span id="orcamento-custo" style="color:#fff; font-weight:bold;">R$ 0</span>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; margin-top:5px;">
-                            <span>Tempo de Obra:</span>
-                            <span id="orcamento-tempo" style="color:#fff; font-weight:bold;">0 Rodadas</span>
-                        </div>
-                        <small style="color:var(--danger); display:block; margin-top:10px;">* Estádio ficará indisponível durante a obra.</small>
-                    </div>
-
-                    <button class="btn-action" onclick="iniciarObras()" style="background:var(--warning); color:#000; margin-top:10px;">INICIAR REFORMA</button>
-                </div>
-
-                <div style="margin-top:30px;">
-                    <h3 style="border-bottom:1px solid #333; padding-bottom:10px;">Negociar Aluguel</h3>
-                    <div id="lista-aluguel">
-                        </div>
-                </div>
-
+                <div id="lista-aluguel"></div>
             </div>
         </div>
-
     </div>
 
     <script>
         let dados = null;
 
         window.onload = function() {
-            if (typeof Engine === 'undefined') return;
+            if(typeof Engine === 'undefined') return;
             const game = Engine.carregarJogo();
-            
-            // Carrega e atualiza interface
             dados = Engine.Estadios.getEstadio();
-            
-            // Preenche Header e Infos
+
+            // Renderiza Infos
             document.getElementById('std-name').innerText = dados.nome;
             document.getElementById('std-cap').innerText = dados.capacidade.toLocaleString();
-            
-            // Setores
-            document.getElementById('show-geral').innerText = dados.setores.geral.toLocaleString();
-            document.getElementById('show-cadeiras').innerText = dados.setores.cadeiras.toLocaleString();
-            document.getElementById('show-vip').innerText = dados.setores.vip.toLocaleString();
-            document.getElementById('show-park').innerText = dados.setores.estacionamento.toLocaleString();
+            document.getElementById('sec-geral').innerText = dados.setores.geral.toLocaleString();
+            document.getElementById('sec-cad').innerText = dados.setores.cadeiras.toLocaleString();
+            document.getElementById('sec-vip').innerText = dados.setores.vip.toLocaleString();
+            document.getElementById('sec-park').innerText = dados.setores.estacionamento.toLocaleString();
 
-            // Preços
-            document.getElementById('price-geral').value = dados.precos.geral;
-            document.getElementById('price-cadeiras').value = dados.precos.cadeiras;
-            document.getElementById('price-vip').value = dados.precos.vip;
-            document.getElementById('price-park').value = dados.precos.estacionamento;
-
-            // Verifica Status de Obra
+            // Status Badge
+            const badge = document.getElementById('status-display');
             if(dados.emObras) {
-                document.getElementById('overlay-obras').style.display = 'flex';
-                document.getElementById('rodadas-obras').innerText = dados.rodadasObras;
-                document.getElementById('form-reforma').style.display = 'none'; // Esconde form se ja ta em obra
+                badge.style.display = 'block'; badge.className = 'status-badge obra'; badge.innerText = `EM OBRAS (${dados.rodadasObras} rod)`;
+            } else if(dados.alugado) {
+                badge.style.display = 'block'; badge.className = 'status-badge aluguel'; 
+                badge.innerHTML = `ALUGADO: ${dados.alugado.nome}<br><small>Restam ${dados.alugado.jogosRestantes} jogos</small>`;
+                document.getElementById('std-name').innerText = dados.alugado.nome + " (Alugado)";
             }
 
-            // Verifica Aluguel
-            if(dados.alugado) {
-                document.getElementById('rent-status').style.display = 'block';
-                document.getElementById('rent-name').innerText = dados.alugado.nome;
-                document.getElementById('rent-cost').innerText = formatMoney(dados.alugado.custoPorJogo);
-                document.getElementById('mando-atual').innerText = "Mandando em: " + dados.alugado.nome;
-                document.getElementById('mando-atual').style.color = "var(--warning)";
-            }
+            // Inputs Preços
+            document.getElementById('p-geral').value = dados.precos.geral;
+            document.getElementById('p-cadeiras').value = dados.precos.cadeiras;
+            document.getElementById('p-vip').value = dados.precos.vip;
+            document.getElementById('p-park').value = dados.precos.estacionamento;
 
-            // Gera Lista de Aluguel
-            renderizarAlugueis();
-            calcProjecaoSimples();
-        };
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('visible'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            
-            document.getElementById('tab-'+tabId).classList.add('visible');
-            event.target.classList.add('active');
-        }
-
-        function calcOrcamento() {
-            const adicoes = {
-                geral: parseInt(document.getElementById('add-geral').value),
-                cadeiras: parseInt(document.getElementById('add-cadeiras').value),
-                vip: parseInt(document.getElementById('add-vip').value),
-                estacionamento: 0
-            };
-            
-            const orc = Engine.Estadios.calcularOrcamento(adicoes);
-            document.getElementById('orcamento-custo').innerText = formatMoney(orc.custo);
-            document.getElementById('orcamento-tempo').innerText = orc.tempo + " Rodadas";
-        }
-
-        function iniciarObras() {
-            if(!confirm("Tem certeza? Isso vai gastar dinheiro e fechar o estádio.")) return;
-
-            const adicoes = {
-                geral: parseInt(document.getElementById('add-geral').value),
-                cadeiras: parseInt(document.getElementById('add-cadeiras').value),
-                vip: parseInt(document.getElementById('add-vip').value),
-                estacionamento: 0
-            };
-
-            const res = Engine.Estadios.iniciarReforma(adicoes);
-            alert(res.msg);
-            if(res.sucesso) window.location.reload();
-        }
-
-        function renderizarAlugueis() {
+            // Lista Aluguel
             const lista = Engine.Estadios.listarEstadiosDisponiveis();
-            const container = document.getElementById('lista-aluguel');
-            container.innerHTML = "";
-
-            lista.forEach(est => {
-                const div = document.createElement('div');
-                div.className = 'rent-item';
-                div.innerHTML = `
-                    <div class="rent-info">
-                        <div>${est.nome}</div>
-                        <small>Cap: ${est.cap.toLocaleString()} | ${est.infra}</small>
-                    </div>
-                    <div style="text-align:right;">
-                        <div style="font-weight:bold; color:var(--accent);">${formatMoney(est.aluguel)}/jogo</div>
-                        <button class="btn-rent" onclick="alugar('${est.id}')">Negociar</button>
+            const divLista = document.getElementById('lista-aluguel');
+            lista.forEach(e => {
+                divLista.innerHTML += `
+                    <div class="rent-item">
+                        <div>
+                            <div style="font-weight:bold;">${e.nome}</div>
+                            <small>Cap: ${e.cap.toLocaleString()} | ${formatMoney(e.aluguel)}/jogo</small>
+                        </div>
+                        <button class="btn-rent" onclick="alugar('${e.id}')">ASSINAR</button>
                     </div>
                 `;
-                container.appendChild(div);
             });
-        }
 
-        function alugar(id) {
-            const lista = Engine.Estadios.listarEstadiosDisponiveis(); // Recarrega lista completa
-            // Busca manual já que find pode falhar se ID for numero
-            const alvo = lista.find(e => e.id == id); // == para garantir
+            calcRenda();
+        };
 
-            if(alvo) {
-                const res = Engine.Estadios.assinarAluguel(alvo);
-                alert(res.msg);
-                if(res.sucesso) window.location.reload();
-            }
+        function setTab(id) {
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-'+id).classList.add('active');
+            event.target.classList.add('active');
         }
 
         function formatMoney(v) { return v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'}); }
 
-        function salvarPrecos() {
-            const novos = {
-                geral: parseInt(document.getElementById('price-geral').value),
-                cadeiras: parseInt(document.getElementById('price-cadeiras').value),
-                vip: parseInt(document.getElementById('price-vip').value),
-                estacionamento: parseInt(document.getElementById('price-park').value)
+        // --- LÓGICA DE INTERFACE ---
+        function calcRenda() {
+            const p = {
+                geral: parseInt(document.getElementById('p-geral').value),
+                cadeiras: parseInt(document.getElementById('p-cadeiras').value),
+                vip: parseInt(document.getElementById('p-vip').value),
+                estacionamento: parseInt(document.getElementById('p-park').value)
             };
-            Engine.Estadios.salvarConfig(novos);
-            alert("Preços atualizados!");
-            calcProjecaoSimples();
-        }
-        
-        function calcProjecaoSimples() {
-             const precosTela = {
-                geral: parseInt(document.getElementById('price-geral').value),
-                cadeiras: parseInt(document.getElementById('price-cadeiras').value),
-                vip: parseInt(document.getElementById('price-vip').value),
-                estacionamento: parseInt(document.getElementById('price-park').value)
-            };
-            Engine.Estadios.salvarPrecos(precosTela);
+            Engine.Estadios.salvarPrecos(p);
             const sim = Engine.Estadios.calcularBilheteria({forca:70});
             Engine.Estadios._tempPrecos = null;
-            document.getElementById('proj-money').innerText = formatMoney(sim.rendaTotal);
+            document.getElementById('proj-renda').innerText = formatMoney(sim.rendaTotal);
+        }
+
+        function salvarPrecos() {
+            const p = {
+                geral: parseInt(document.getElementById('p-geral').value),
+                cadeiras: parseInt(document.getElementById('p-cadeiras').value),
+                vip: parseInt(document.getElementById('p-vip').value),
+                estacionamento: parseInt(document.getElementById('p-park').value)
+            };
+            Engine.Estadios.salvarConfig(p);
+            alert("Preços Salvos!");
+        }
+
+        function calcObra() {
+            const add = {
+                geral: parseInt(document.getElementById('add-geral').value),
+                cadeiras: parseInt(document.getElementById('add-cadeiras').value),
+                vip: 0, estacionamento: 0
+            };
+            const orc = Engine.Estadios.calcularOrcamento(add);
+            document.getElementById('obra-custo').innerText = formatMoney(orc.custo);
+            document.getElementById('obra-tempo').innerText = orc.tempo + " Rodadas";
+        }
+
+        function iniciarObra() {
+            if(!confirm("Iniciar obra? O estádio ficará fechado.")) return;
+            const add = {
+                geral: parseInt(document.getElementById('add-geral').value),
+                cadeiras: parseInt(document.getElementById('add-cadeiras').value),
+                vip: 0, estacionamento: 0
+            };
+            const res = Engine.Estadios.iniciarReforma(add);
+            alert(res.msg);
+            if(res.sucesso) window.location.reload();
+        }
+
+        function alugar(id) {
+            const lista = Engine.Estadios.listarEstadiosDisponiveis();
+            const alvo = lista.find(e => e.id == id); // == flexível pra string/num
+            const duracao = document.getElementById('rent-duration').value;
+
+            if(confirm(`Alugar ${alvo.nome} por ${duracao} jogos em casa?`)) {
+                const res = Engine.Estadios.assinarAluguel(alvo, duracao);
+                alert(res.msg);
+                if(res.sucesso) window.location.reload();
+            }
         }
     </script>
 </body>
