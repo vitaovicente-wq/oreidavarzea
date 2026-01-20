@@ -137,8 +137,19 @@
         let div = 'serieA';
 
         window.onload = function() {
-            if(typeof Engine !== 'undefined') jogo = Engine.carregarJogo();
-            if(jogo) { pais = jogo.info.pais || 'brasil'; div = jogo.info.divisao || 'serieA'; }
+            if (typeof Engine === 'undefined') return;
+            jogoSalvo = Engine.carregarJogo();
+            
+            if(jogoSalvo) { 
+                pais = jogoSalvo.info.pais || 'brasil'; 
+                div = jogoSalvo.info.divisao || 'serieA'; 
+                
+                // --- FORÇA A ATUALIZAÇÃO DOS DADOS AGORA ---
+                // Isso garante que se o jogo acabou de acontecer, os pontos são somados
+                Engine.atualizarTabela(jogoSalvo); 
+                // Recarrega o jogo salvo com os dados atualizados
+                jogoSalvo = Engine.carregarJogo();
+            }
             
             const sel = document.getElementById('sel-pais');
             if(sel.querySelector(`option[value="${pais}"]`)) sel.value = pais;
