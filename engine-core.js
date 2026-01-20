@@ -228,7 +228,7 @@ window.Engine = {
                         
                         // SIMULAÇÃO DA CPU:
                         // Se não foi jogado, não é jogo do usuário, e a rodada já passou ou é agora
-                        if (!jogo.jogado && !ehJogoUser && numeroRodada <= estado.rodadaAtual) {
+                        if (!jogo.jogado && !ehJogoUser && numeroRodada < estado.rodadaAtual) {
                             this._simularJogoCPU(liga, jogo);
                         }
 
