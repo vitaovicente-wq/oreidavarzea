@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRFutebol - Mundo</title>
+    <title>BRFutebol - Estatísticas Globais</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
-    <script src="database.js"></script> <script src="engine-core.js"></script>
+    <script src="database.js"></script>
+    <script src="engine-core.js"></script>
 
     <style>
         :root { 
@@ -54,71 +55,71 @@
             overflow: hidden; 
         }
 
+        /* HEADER COM FILTROS */
         .page-header { 
-            padding: 15px 30px; 
+            padding: 15px 25px; 
             border-bottom: 1px solid var(--border); 
             background: #16161a;
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; flex-direction: column; gap: 15px;
         }
 
-        /* FILTROS (PAÍS E LIGA) */
-        .filter-bar { display: flex; gap: 20px; align-items: center; }
+        .filter-row { display: flex; justify-content: space-between; align-items: center; }
         
-        select {
+        .country-select {
             background: #111; color: #fff; border: 1px solid var(--border); 
-            padding: 8px 15px; border-radius: 6px; font-family: 'Rajdhani'; font-weight: 700; font-size: 1rem;
-            cursor: pointer; outline: none;
+            padding: 8px 15px; border-radius: 6px; font-family: 'Rajdhani'; font-weight: 700; font-size: 1.1rem;
+            cursor: pointer; outline: none; width: 200px;
         }
-        select:hover { border-color: var(--accent); }
 
-        .league-tabs { display: flex; gap: 5px; }
+        .tabs-row { display: flex; gap: 5px; overflow-x: auto; }
         .tab-btn {
             background: transparent; border: 1px solid transparent; color: var(--text-muted);
-            padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 0.9rem;
-            transition: 0.2s;
+            padding: 6px 15px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 0.9rem;
+            white-space: nowrap; transition: 0.2s;
         }
         .tab-btn:hover { color: #fff; background: rgba(255,255,255,0.05); }
         .tab-btn.active { background: var(--accent); color: #000; box-shadow: 0 0 10px rgba(0,255,136,0.3); }
 
-        /* TABELA */
-        .table-wrapper { flex: 1; padding: 20px; overflow-y: auto; display: flex; gap: 20px; }
-        
-        .panel { 
-            flex: 1;
-            background: var(--panel-bg); 
-            border: 1px solid var(--border); 
-            border-radius: 8px; 
-            overflow: hidden; 
-            display: flex; flex-direction: column;
+        /* GRID DE ESTATÍSTICAS */
+        .stats-grid { 
+            flex: 1; padding: 20px; overflow-y: auto; 
+            display: grid; grid-template-columns: 1fr 350px; gap: 20px; 
         }
 
-        table { width: 100%; border-collapse: collapse; text-align: center; }
-        thead { background: #111; position: sticky; top: 0; z-index: 10; }
-        th { padding: 12px 8px; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; border-bottom: 1px solid var(--border); }
-        th:nth-child(2), td:nth-child(2) { text-align: left; } 
-        
-        td { padding: 10px 8px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-        tr:hover { background: rgba(255,255,255,0.02); }
-        
-        .col-club { display: flex; align-items: center; gap: 8px; font-weight: 600; }
-        .meu-time { background: rgba(0, 255, 136, 0.15) !important; border-left: 3px solid var(--accent); }
-        .pos-num { font-weight: 700; width: 20px; display: inline-block; }
+        .panel { 
+            background: var(--panel-bg); border: 1px solid var(--border); border-radius: 8px; 
+            overflow: hidden; display: flex; flex-direction: column; 
+        }
+        .panel-header-box { 
+            padding: 12px 15px; background: #151518; border-bottom: 1px solid var(--border); 
+            font-family: 'Rajdhani'; font-weight: 700; text-transform: uppercase; color: var(--accent);
+            display: flex; justify-content: space-between;
+        }
 
-        /* Zonas */
+        /* TABELA */
+        table { width: 100%; border-collapse: collapse; text-align: center; }
+        thead { background: #111; position: sticky; top: 0; }
+        th { padding: 10px 5px; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; }
+        th:nth-child(2), td:nth-child(2) { text-align: left; }
+        
+        td { padding: 8px 5px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+        .meu-time { background: rgba(0, 255, 136, 0.15); border-left: 3px solid var(--accent); }
         .z-lib { border-left: 3px solid var(--liberta); }
-        .z-pre { border-left: 3px solid var(--pre); }
-        .z-sul { border-left: 3px solid var(--sula); }
         .z-reb { border-left: 3px solid var(--z4); }
 
-        .simulated-badge {
-            background: #333; color: #aaa; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-left: auto;
+        /* ARTILHARIA */
+        .scorer-list { list-style: none; padding: 0; margin: 0; overflow-y: auto; }
+        .scorer-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 10px 15px; border-bottom: 1px solid var(--border); font-size: 0.9rem;
         }
+        .scorer-name { font-weight: 700; color: #fff; display: block; }
+        .scorer-team { font-size: 0.75rem; color: var(--text-muted); }
+        .scorer-goals { font-family: 'Rajdhani'; font-weight: 700; color: var(--accent); background: #111; padding: 2px 8px; border-radius: 4px; }
 
-        @media (max-width: 900px) {
+        @media (max-width: 1000px) {
             .sidebar { display: none; }
-            .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
-            .filter-bar { flex-direction: column; width: 100%; }
-            .league-tabs { overflow-x: auto; width: 100%; padding-bottom: 5px; }
+            .stats-grid { grid-template-columns: 1fr; } /* Em mobile, artilharia vai pra baixo */
         }
     </style>
 </head>
@@ -137,56 +138,59 @@
     </nav>
 
     <main class="main-content">
-        <header class="page-header">
-            <div class="filter-bar">
-                <select id="select-pais" onchange="mudarPais()">
+        <div class="page-header">
+            <div class="filter-row">
+                <select class="country-select" id="select-pais" onchange="mudarPais()">
                     <option value="brasil">🇧🇷 Brasil</option>
                     <option value="inglaterra">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra</option>
                     <option value="espanha">🇪🇸 Espanha</option>
                     <option value="italia">🇮🇹 Itália</option>
                 </select>
-
-                <div class="league-tabs" id="tabs-container">
-                    </div>
+                <div id="status-badge" style="font-size:0.8rem; font-weight:bold; color:#666;">DADOS REAIS</div>
             </div>
-            
-            <div id="status-indicator" style="font-size:0.8rem; color:#666;">
-                DADOS REAIS
-            </div>
-        </header>
+            <div class="tabs-row" id="tabs-container">
+                </div>
+        </div>
 
-        <div class="table-wrapper">
+        <div class="stats-grid">
             <div class="panel">
-                <table>
-                    <thead>
-                        <tr>
-                            <th width="50">#</th>
-                            <th>Clube</th>
-                            <th width="40">P</th>
-                            <th width="40">J</th>
-                            <th width="40">V</th>
-                            <th width="40">E</th>
-                            <th width="40">D</th>
-                            <th width="40">SG</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tb-classificacao">
-                        </tbody>
-                </table>
+                <div class="panel-header-box">
+                    <span>Tabela de Classificação</span>
+                    <span style="font-size:0.8rem; color:#666;">PTS</span>
+                </div>
+                <div style="flex:1; overflow-y:auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th width="40">#</th>
+                                <th>Clube</th>
+                                <th width="30">P</th>
+                                <th width="30">J</th>
+                                <th width="30">V</th>
+                                <th width="30">E</th>
+                                <th width="30">D</th>
+                                <th width="30">SG</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tb-classificacao"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header-box">
+                    <span>🔥 Top Artilheiros</span>
+                    <span style="font-size:0.8rem; color:#666;">GOLS</span>
+                </div>
+                <ul class="scorer-list" id="lista-artilharia"></ul>
             </div>
         </div>
     </main>
 
     <script>
-        // Configuração das Ligas
         const configLigas = {
-            brasil: [
-                { id: 'serieA', nome: 'Série A' }, { id: 'serieB', nome: 'Série B' },
-                { id: 'serieC', nome: 'Série C' }, { id: 'serieD', nome: 'Série D' }
-            ],
-            inglaterra: [
-                { id: 'Premier League', nome: 'Premier League' }, { id: 'Championship', nome: 'EFL Champ' }
-            ],
+            brasil: [ { id: 'serieA', nome: 'Série A' }, { id: 'serieB', nome: 'Série B' }, { id: 'serieC', nome: 'Série C' }, { id: 'serieD', nome: 'Série D' } ],
+            inglaterra: [ { id: 'Premier League', nome: 'Premier League' }, { id: 'Championship', nome: 'Championship' } ],
             espanha: [ { id: 'La Liga', nome: 'La Liga' } ],
             italia: [ { id: 'Serie A', nome: 'Serie A' } ]
         };
@@ -199,42 +203,50 @@
             if (typeof Engine === 'undefined') return;
             jogoSalvo = Engine.carregarJogo();
             
-            // Tenta detectar onde o jogador está
             if(jogoSalvo) {
                 paisAtual = jogoSalvo.info.pais || 'brasil';
                 divisaoAtual = jogoSalvo.info.divisao || 'serieA';
                 
-                // Atualiza o select para o país do jogador
-                const select = document.getElementById('select-pais');
-                if(select.querySelector(`option[value="${paisAtual}"]`)) {
-                    select.value = paisAtual;
-                }
+                const sel = document.getElementById('select-pais');
+                if(sel.querySelector(`option[value="${paisAtual}"]`)) sel.value = paisAtual;
             }
-
-            renderizarAbas();
-            renderizarTabela();
+            atualizarTela();
         };
 
         function mudarPais() {
             paisAtual = document.getElementById('select-pais').value;
-            // Pega a 1ª divisão do novo país como padrão
             divisaoAtual = configLigas[paisAtual][0].id;
-            renderizarAbas();
-            renderizarTabela();
+            atualizarTela();
         }
 
         function mudarLiga(id) {
             divisaoAtual = id;
+            atualizarTela();
+        }
+
+        function atualizarTela() {
             renderizarAbas();
-            renderizarTabela();
+            
+            const isLigaReal = (jogoSalvo && (jogoSalvo.info.pais||'brasil') === paisAtual && jogoSalvo.info.divisao === divisaoAtual);
+            
+            // Atualiza Badge
+            const badge = document.getElementById('status-badge');
+            if(isLigaReal) { badge.innerText = "● COMPETIÇÃO ATIVA"; badge.style.color = "var(--accent)"; }
+            else { badge.innerText = "● DADOS SIMULADOS"; badge.style.color = "#666"; }
+
+            if(isLigaReal) {
+                renderizarTabelaReal();
+                renderizarArtilhariaReal();
+            } else {
+                renderizarTabelaSimulada();
+                renderizarArtilhariaSimulada();
+            }
         }
 
         function renderizarAbas() {
             const container = document.getElementById('tabs-container');
             container.innerHTML = "";
-            
-            const ligas = configLigas[paisAtual] || [];
-            ligas.forEach(l => {
+            configLigas[paisAtual].forEach(l => {
                 const btn = document.createElement('button');
                 btn.className = `tab-btn ${l.id === divisaoAtual ? 'active' : ''}`;
                 btn.innerText = l.nome;
@@ -243,96 +255,152 @@
             });
         }
 
-        function renderizarTabela() {
+        // --- DADOS REAIS ---
+        function renderizarTabelaReal() {
             const tbody = document.getElementById('tb-classificacao');
-            const indicator = document.getElementById('status-indicator');
             tbody.innerHTML = "";
-
-            let dadosTabela = [];
-            let isReal = false;
-
-            // VERIFICAÇÃO: É a liga que o jogador está jogando?
-            if (jogoSalvo && 
-                (jogoSalvo.info.pais || 'brasil') === paisAtual && 
-                jogoSalvo.info.divisao === divisaoAtual) {
-                
-                // SIM: Mostra dados reais do save
-                dadosTabela = jogoSalvo.classificacao;
-                isReal = true;
-                indicator.innerHTML = `<span style="color:var(--accent)">● COMPETIÇÃO ATIVA (DADOS REAIS)</span>`;
             
-            } else {
-                // NÃO: Simula uma tabela baseada no Database
-                dadosTabela = simularTabelaFicticia(paisAtual, divisaoAtual);
-                isReal = false;
-                indicator.innerHTML = `<span style="color:#666">● CLASSIFICAÇÃO PROJETADA (SIMULAÇÃO)</span>`;
-            }
-
-            // Ordenação
-            dadosTabela.sort((a, b) => b.pts - a.pts || b.sg - a.sg);
-
-            dadosTabela.forEach((time, i) => {
+            const tabela = jogoSalvo.classificacao.sort((a,b) => b.pts - a.pts || b.sg - a.sg);
+            
+            tabela.forEach((t, i) => {
                 const pos = i + 1;
                 const tr = document.createElement('tr');
+                if(t.nome === jogoSalvo.info.time) tr.classList.add('meu-time');
                 
-                // Destaca meu time se for real
-                if (isReal && time.nome === jogoSalvo.info.time) {
-                    tr.classList.add('meu-time');
-                }
-
-                // Cores de Zona (Apenas visual genérico para todas as ligas)
-                let classeZona = "";
-                if (pos <= 4) classeZona = "z-lib";
-                else if (pos >= dadosTabela.length - 3) classeZona = "z-reb";
+                // Zona visual simples
+                let cls = "";
+                if(pos <= 4) cls = "z-lib";
+                else if(pos >= tabela.length - 3) cls = "z-reb";
 
                 tr.innerHTML = `
-                    <td class="${classeZona}"><span class="pos-num">${pos}º</span></td>
-                    <td>
-                        <div class="col-club">
-                            <span style="font-weight:600; color:#fff;">${time.nome}</span>
-                        </div>
-                    </td>
-                    <td style="font-weight:700; color:#fff;">${time.pts}</td>
-                    <td>${time.j}</td>
-                    <td>${time.v}</td>
-                    <td>${time.e}</td>
-                    <td>${time.d}</td>
-                    <td>${time.sg}</td>
+                    <td class="${cls}"><span style="font-weight:700;">${pos}º</span></td>
+                    <td><div class="col-club"><span style="font-weight:600; color:#fff;">${t.nome}</span></div></td>
+                    <td style="font-weight:700; color:#fff;">${t.pts}</td>
+                    <td>${t.j}</td>
+                    <td>${t.v}</td>
+                    <td>${t.e}</td>
+                    <td>${t.d}</td>
+                    <td>${t.sg}</td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // Função para gerar uma tabela "fake" mas coerente para ligas estrangeiras
-        function simularTabelaFicticia(pais, divisao) {
-            // Pega times do Database
-            let times = [];
-            if (window.Database && window.Database[pais] && window.Database[pais][divisao]) {
-                times = window.Database[pais][divisao];
-            } else {
-                // Fallback se não tiver no DB
-                return [];
+        function renderizarArtilhariaReal() {
+            const ul = document.getElementById('lista-artilharia');
+            ul.innerHTML = "";
+            let jogadores = [];
+
+            jogoSalvo.times.forEach(t => {
+                if(t.elenco) t.elenco.forEach(j => {
+                    if(j.gols > 0) jogadores.push({ nome: j.nome, time: t.nome, gols: j.gols });
+                });
+            });
+
+            jogadores.sort((a,b) => b.gols - a.gols);
+            const top10 = jogadores.slice(0, 15);
+
+            if(top10.length === 0) {
+                ul.innerHTML = `<li style="padding:20px; text-align:center; color:#666;">Nenhum gol marcado.</li>`;
+                return;
             }
 
-            // Gera estatísticas baseadas na FORÇA do time
-            // Simula como se estivessem na rodada atual do jogador
-            const rodada = jogoSalvo ? jogoSalvo.rodadaAtual : 1;
+            top10.forEach(j => {
+                ul.innerHTML += `
+                    <li class="scorer-item">
+                        <div>
+                            <span class="scorer-name">${j.nome}</span>
+                            <span class="scorer-team">${j.time}</span>
+                        </div>
+                        <span class="scorer-goals">${j.gols}</span>
+                    </li>
+                `;
+            });
+        }
+
+        // --- DADOS SIMULADOS (PARA LIGAS ESTRANGEIRAS) ---
+        function renderizarTabelaSimulada() {
+            const tbody = document.getElementById('tb-classificacao');
+            tbody.innerHTML = "";
             
-            return times.map(t => {
-                // Times fortes pontuam mais
-                const fatorForca = (t.forca || 60) / 100; 
-                const ptsEstimados = Math.floor(rodada * 2.8 * fatorForca) + Math.floor(Math.random() * 5);
-                const v = Math.floor(ptsEstimados / 3);
-                const e = Math.floor((rodada - v) * 0.3);
-                const d = Math.max(0, rodada - v - e);
-                
-                return {
-                    nome: t.nome,
-                    pts: ptsEstimados,
-                    j: rodada,
-                    v: v, e: e, d: d,
-                    sg: Math.floor((v * 1.5) - d)
-                };
+            // Pega times do DB
+            let times = [];
+            if(window.Database && window.Database[paisAtual] && window.Database[paisAtual][divisaoAtual]) {
+                times = window.Database[paisAtual][divisaoAtual];
+            } else {
+                tbody.innerHTML = "<tr><td colspan='8'>Liga não encontrada no Database</td></tr>";
+                return;
+            }
+
+            // Simula Pontos baseados na força
+            const rodada = jogoSalvo ? jogoSalvo.rodadaAtual : 5;
+            const dadosSimulados = times.map(t => {
+                const forca = t.forca || 60;
+                const pts = Math.floor(rodada * 2.5 * (forca/100)) + Math.floor(Math.random()*3);
+                return { nome: t.nome, pts: pts, j: rodada };
+            }).sort((a,b) => b.pts - a.pts);
+
+            dadosSimulados.forEach((t, i) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${i+1}º</td>
+                        <td style="text-align:left; font-weight:600; color:#ddd;">${t.nome}</td>
+                        <td style="color:#fff; font-weight:bold;">${t.pts}</td>
+                        <td>${t.j}</td>
+                        <td>-</td><td>-</td><td>-</td><td>-</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderizarArtilhariaSimulada() {
+            const ul = document.getElementById('lista-artilharia');
+            ul.innerHTML = "";
+            
+            // Tenta pegar craques reais do database para dar imersão
+            let candidatos = [];
+            const times = window.Database[paisAtual] ? window.Database[paisAtual][divisaoAtual] : [];
+            const rodada = jogoSalvo ? jogoSalvo.rodadaAtual : 5;
+
+            // Se não tiver times no DB, gera genéricos
+            if(!times || times.length === 0) {
+                ul.innerHTML = `<li style="padding:15px; color:#666; text-align:center;">Dados indisponíveis.</li>`;
+                return;
+            }
+
+            // Gera lista de "Estrelas"
+            times.forEach(t => {
+                // Se o time tiver "destaque" no DB, usa ele
+                if(t.destaque) {
+                    // Gols simulados: 0.8 por jogo se for craque
+                    const gols = Math.floor(rodada * (0.5 + Math.random()*0.5));
+                    candidatos.push({ nome: t.destaque, time: t.nome, gols: gols });
+                } else if(t.elenco && t.elenco.length > 0) {
+                    // Pega o melhor atacante
+                    const craque = t.elenco.find(j => j.pos === 'ATA') || t.elenco[0];
+                    const gols = Math.floor(rodada * (0.4 + Math.random()*0.4));
+                    candidatos.push({ nome: craque.nome, time: t.nome, gols: gols });
+                }
+            });
+
+            // Se não tiver elenco no DB (times só com nome e força), cria nomes fakes
+            if(candidatos.length < 5) {
+                candidatos.push({nome: "Artilheiro Local", time: times[0].nome, gols: Math.floor(rodada*0.9)});
+                candidatos.push({nome: "Goleador", time: times[1].nome, gols: Math.floor(rodada*0.7)});
+            }
+
+            candidatos.sort((a,b) => b.gols - a.gols);
+            
+            candidatos.slice(0, 10).forEach(j => {
+                ul.innerHTML += `
+                    <li class="scorer-item">
+                        <div>
+                            <span class="scorer-name">${j.nome}</span>
+                            <span class="scorer-team">${j.time}</span>
+                        </div>
+                        <span class="scorer-goals">${j.gols}</span>
+                    </li>
+                `;
             });
         }
     </script>
