@@ -7,10 +7,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
     <script src="database.js"></script>
+    <script src="calendario.js"></script>
     <script src="engine-core.js"></script>
 
     <style>
-        /* (MANTENHA O MESMO CSS DO ANTERIOR, ESTÁ PERFEITO) */
         :root { 
             --bg: #0f1216; --panel: #1e2329; --border: #30363d; --text: #fff; --muted: #8b949e;
             --liberta: #2ecc71; --pre: #3498db; --sula: #f1c40f; --z4: #e74c3c; --acesso: #00ff88;
@@ -137,18 +137,21 @@
         let div = 'serieA';
 
         window.onload = function() {
-            if (typeof Engine === 'undefined') return;
-            jogoSalvo = Engine.carregarJogo();
+            if (typeof Engine === 'undefined') {
+                console.error("Engine não carregado.");
+                return;
+            }
             
-            if(jogoSalvo) { 
-                pais = jogoSalvo.info.pais || 'brasil'; 
-                div = jogoSalvo.info.divisao || 'serieA'; 
+            // Carrega o jogo na variável global 'jogo'
+            jogo = Engine.carregarJogo();
+            
+            if(jogo) { 
+                pais = jogo.info.pais || 'brasil'; 
+                div = jogo.info.divisao || 'serieA'; 
                 
-                // --- FORÇA A ATUALIZAÇÃO DOS DADOS AGORA ---
-                // Isso garante que se o jogo acabou de acontecer, os pontos são somados
-                Engine.atualizarTabela(jogoSalvo); 
-                // Recarrega o jogo salvo com os dados atualizados
-                jogoSalvo = Engine.carregarJogo();
+                // Força atualização dos dados
+                Engine.atualizarTabela(jogo); 
+                jogo = Engine.carregarJogo();
             }
             
             const sel = document.getElementById('sel-pais');
@@ -165,7 +168,7 @@
 
         function renderTela() {
             renderAbas();
-            // AGORA PEGA SEMPRE DADOS REAIS DO ENGINE
+            // Busca dados do Engine V2
             const dadosTabela = Engine.getTabelaLiga(pais, div);
             const dadosArtilharia = Engine.getArtilhariaLiga(pais, div);
             
@@ -217,7 +220,8 @@
                 }
 
                 const tr = document.createElement('tr');
-                if(t.nome === jogo.info.time) tr.className = "meu-time";
+                // Verifica se é o time do usuário (usa a variável 'jogo' corrigida)
+                if(jogo && t.nome === jogo.info.time) tr.className = "meu-time";
 
                 tr.innerHTML = `
                     <td class="zone-cell" style="border-left: 4px solid ${cor};">${pos}º</td>
