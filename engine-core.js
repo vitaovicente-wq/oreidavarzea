@@ -1,5 +1,5 @@
 // ARQUIVO: engine-core.js
-// VERSÃO FINAL: Finanças (c/ Data) + Treino + Recuperação + Correção de Save
+// VERSÃO: COMPLETA (Finanças + Treino + Lesão + CORREÇÃO ARTILHARIA)
 
 window.Engine = {
     // --- SISTEMA (Prioridade Alta) ---
@@ -27,22 +27,22 @@ window.Engine = {
         },
         
         processarFinancas: function(g, mand, adv) {
-            // Função auxiliar para registrar com DATA (Rodada)
+            // Registrar com DATA (Rodada)
             const registrar = (txt, val, tp) => {
                 g.financas.historico.push({
                     texto: txt, 
                     valor: val, 
                     tipo: tp, 
-                    rodada: g.rodadaAtual // <--- DATA DA TRANSAÇÃO
+                    rodada: g.rodadaAtual
                 });
             };
 
-            // Bilheteria
+            // Bilheteria (Se houver módulo de estádio)
             if(mand && window.Engine.Estadios) {
                 const r = window.Engine.Estadios.calcularBilheteria(adv);
                 g.recursos.dinheiro += r.rendaTotal;
                 registrar('Bilheteria', r.rendaTotal, 'entrada');
-            }
+            } 
             
             // Custos Mensais (A cada 4 rodadas)
             if(g.rodadaAtual % 4 === 0) {
@@ -170,8 +170,15 @@ window.Engine = {
         const tab = estado.classificacao;
         tab.forEach(t => { t.pts=0; t.j=0; t.v=0; t.e=0; t.d=0; t.gp=0; t.gc=0; t.sg=0; });
         
+        // Processa todos os jogos jogados
         estado.calendario.forEach(rod => {
-            rod.jogos.forEach(jogo => { if(jogo.jogado) this._computar(tab, jogo); });
+            rod.jogos.forEach(jogo => { 
+                if(jogo.jogado) {
+                    this._computar(tab, jogo); 
+                    // NOVO: Distribui os gols para os jogadores (CORREÇÃO AQUI)
+                    this._processarArtilharia(estado, jogo);
+                }
+            });
         });
         
         tab.sort((a,b) => b.pts - a.pts || b.sg - a.sg);
@@ -193,7 +200,7 @@ window.Engine = {
                     const mandante = jogo.mandante === estado.info.time;
                     const adv = mandante ? jogo.visitante : jogo.mandante;
                     
-                    // B. Finanças (CORRIGIDO AQUI)
+                    // B. Finanças
                     if(this.Sistema) this.Sistema.processarFinancas(estado, mandante, adv);
                 }
 
@@ -217,7 +224,7 @@ window.Engine = {
             }
         }
 
-        // 3. Sincronização de Mensagens (Correção do Bug de Save)
+        // 3. Sincronização de Mensagens
         const versaoDisco = this.carregarJogo();
         if(versaoDisco && versaoDisco.mensagens && versaoDisco.mensagens.length > estado.mensagens.length) {
             console.log("🔄 Sincronizando mensagens do disco...");
@@ -228,7 +235,50 @@ window.Engine = {
         return tab;
     },
 
-    // Função interna: Recupera jogadores lesionados
+    // NOVA FUNÇÃO: Distribui gols para os jogadores
+    _processarArtilharia: function(estado, jogo) {
+        // Se já processou a artilharia deste jogo, ignora
+        if(jogo.artilhariaComputada) return;
+
+        const distribuir = (nomeTime, qtdGols) => {
+            if(qtdGols <= 0) return;
+            const time = estado.times.find(t => t.nome === nomeTime);
+            if(!time) return;
+
+            // Pega jogadores aptos
+            const aptos = time.elenco.filter(j => j.status !== 'Lesionado');
+            if(aptos.length === 0) return;
+
+            for(let i=0; i < qtdGols; i++) {
+                // Sorteio ponderado pela Força
+                let totalForca = 0;
+                aptos.forEach(j => totalForca += (j.forca || 50));
+                
+                let random = Math.random() * totalForca;
+                let cursor = 0;
+                let artilheiro = aptos[0];
+
+                for(const j of aptos) {
+                    cursor += (j.forca || 50);
+                    if(cursor >= random) {
+                        artilheiro = j;
+                        break;
+                    }
+                }
+                
+                // Adiciona o gol
+                artilheiro.gols = (artilheiro.gols || 0) + 1;
+            }
+        };
+
+        distribuir(jogo.mandante, parseInt(jogo.placarCasa));
+        distribuir(jogo.visitante, parseInt(jogo.placarFora));
+
+        // Marca como computada para não repetir
+        jogo.artilhariaComputada = true;
+    },
+
+    // Recuperação de Lesões (Mantida)
     _processarRecuperacaoElencos: function(estado) {
         estado.times.forEach(time => {
             time.elenco.forEach(jogador => {
@@ -237,13 +287,8 @@ window.Engine = {
                     if (jogador.rodadasFora <= 0) {
                         jogador.status = "Apto";
                         jogador.rodadasFora = 0;
-                        
                         if (time.nome === estado.info.time && this.Sistema) {
-                            this.Sistema.novaMensagem(
-                                "Alta Médica", 
-                                `<p>O jogador <b>${jogador.nome}</b> recebeu alta do Dr. Tairo e está liberado.</p>`, 
-                                "dm", "DM"
-                            );
+                            this.Sistema.novaMensagem("Alta Médica", `<p>O jogador <b>${jogador.nome}</b> recebeu alta.</p>`, "dm", "DM");
                         }
                     }
                 }
@@ -251,6 +296,7 @@ window.Engine = {
         });
     },
 
+    // Computar Tabela (Mantida)
     _computar: function(tab, jogo) {
         const c = tab.find(t=>t.nome===jogo.mandante); 
         const f = tab.find(t=>t.nome===jogo.visitante);
