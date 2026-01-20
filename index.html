@@ -12,7 +12,12 @@
     <script src="engine-core.js"></script>
     <script src="engine-match.js"></script>
     <script src="engine-mercado.js"></script>
-    <script src="engine-contratos.js"></script> <script src="engine-eventos.js"></script>   <style>
+    <script src="engine-contratos.js"></script>
+    <script src="engine-eventos.js"></script>
+    <script src="engine-treino.js"></script>
+    <script src="engine-estadio.js"></script>
+
+    <style>
         :root {
             --bg-dark: #0f1216;
             --card-bg: #1e2329;
@@ -45,7 +50,7 @@
         /* CONTAINER */
         .container {
             width: 95%; max-width: 1000px;
-            display: flex; flex-direction: column; gap: 20px; padding-bottom: 180px; /* Espaço para o footer fixo */
+            display: flex; flex-direction: column; gap: 20px; padding-bottom: 180px;
         }
 
         /* GRID DE CONFIGURAÇÃO (PAÍS E NOME) */
@@ -62,6 +67,9 @@
             border-radius: 6px; color: #fff; font-size: 1rem; outline: none; height: 45px;
         }
         input[type="text"]:focus, select:focus { border-color: var(--neon-green); }
+        
+        /* Estilo para options desabilitados */
+        option:disabled { color: #555; }
 
         /* SELETOR DE DIVISÕES (ABAS) */
         .league-tabs {
@@ -69,15 +77,16 @@
         }
         .tab-btn {
             background: var(--card-bg); border: 1px solid var(--border); color: #888;
-            padding: 20px 10px; border-radius: 8px; cursor: pointer;
-            font-family: 'Rajdhani'; font-weight: 800; font-size: 1.2rem; text-transform: uppercase;
-            transition: 0.2s; text-align: center;
+            padding: 15px 10px; border-radius: 8px; cursor: pointer;
+            font-family: 'Rajdhani'; font-weight: 800; font-size: 1.1rem; text-transform: uppercase;
+            transition: 0.2s; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center;
         }
         .tab-btn:hover { background: #252b33; color: #fff; }
         .tab-btn.active {
             background: rgba(46, 204, 113, 0.15); color: var(--neon-green); border-color: var(--neon-green);
             box-shadow: 0 0 15px rgba(0, 255, 136, 0.1);
         }
+        .tab-btn.hidden { display: none; } 
         .tab-sub { display: block; font-size: 0.7rem; font-family: 'Inter'; font-weight: 400; opacity: 0.7; margin-top: 5px; text-transform: none; }
 
         /* GRID DE TIMES */
@@ -156,10 +165,11 @@
         <div class="config-grid">
             <div class="input-box">
                 <label>País da Liga</label>
-                <select id="country-select" onchange="resetarLiga()">
-                    <option value="brasil">🇧🇷 Brasil</option>
-                    <option value="inglaterra" disabled>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra (Em breve)</option>
-                    <option value="espanha" disabled>🇪🇸 Espanha (Em breve)</option>
+                <select id="country-select" onchange="alterarPais()">
+                    <option value="brasil" selected>🇧🇷 Brasil</option>
+                    <option value="inglaterra" disabled>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra (Em Breve)</option>
+                    <option value="espanha" disabled>🇪🇸 Espanha (Em Breve)</option>
+                    <option value="italia" disabled>🇮🇹 Itália (Em Breve)</option>
                 </select>
             </div>
             <div class="input-box">
@@ -168,24 +178,8 @@
             </div>
         </div>
 
-        <div class="league-tabs">
-            <div class="tab-btn active" onclick="mudarAba('serieA', this)">
-                Série A
-                <span class="tab-sub">Elite Nacional</span>
+        <div class="league-tabs" id="tabs-container">
             </div>
-            <div class="tab-btn" onclick="mudarAba('serieB', this)">
-                Série B
-                <span class="tab-sub">Acesso</span>
-            </div>
-            <div class="tab-btn" onclick="mudarAba('serieC', this)">
-                Série C
-                <span class="tab-sub">Regional</span>
-            </div>
-            <div class="tab-btn" onclick="mudarAba('serieD', this)">
-                Série D
-                <span class="tab-sub">Base</span>
-            </div>
-        </div>
 
         <div class="teams-grid" id="teams-container">
             <p style="padding:20px; color:#666; width:100%; text-align:center;">Carregando dados...</p>
@@ -217,39 +211,87 @@
     </div>
 
     <script>
+        // CONFIGURAÇÃO DOS PAÍSES (Mantida para uso futuro)
+        const configPaises = {
+            brasil: [
+                { id: 'serieA', nome: 'Série A', desc: 'Elite Nacional' },
+                { id: 'serieB', nome: 'Série B', desc: 'Acesso' },
+                { id: 'serieC', nome: 'Série C', desc: 'Regional' },
+                { id: 'serieD', nome: 'Série D', desc: 'Base' }
+            ],
+            inglaterra: [
+                { id: 'Premier League', nome: 'Premier League', desc: '1ª Divisão' },
+                { id: 'Championship', nome: 'Championship', desc: '2ª Divisão' }
+            ],
+            espanha: [
+                { id: 'La Liga', nome: 'La Liga', desc: '1ª Divisão' }
+            ],
+            italia: [
+                { id: 'Serie A', nome: 'Serie A', desc: 'Calcio' }
+            ]
+        };
+
+        let paisAtual = 'brasil';
         let divisaoAtual = 'serieA';
         let timeSelecionadoObj = null;
         const DEFAULT_SHIELD = "https://cdn-icons-png.flaticon.com/512/53/53283.png";
 
         window.onload = function() {
-            if (typeof Engine === 'undefined' || typeof CalendarioSystem === 'undefined') {
-                alert("ERRO: engine.js ou calendario.js não carregados.");
+            if (typeof Engine === 'undefined') {
+                alert("ERRO: engine.js não carregado.");
                 return;
             }
-            carregarTimes(divisaoAtual);
+            gerarAbas(paisAtual);
+            carregarTimes(paisAtual, divisaoAtual);
         };
 
-        function resetarLiga() {
-            alert("Apenas a liga Brasileira está disponível nesta versão.");
-            document.getElementById('country-select').value = 'brasil';
-        }
-
-        function mudarAba(divisao, elementoBtn) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            elementoBtn.classList.add('active');
-            divisaoAtual = divisao;
+        function alterarPais() {
+            const select = document.getElementById('country-select');
+            paisAtual = select.value;
+            
+            if(configPaises[paisAtual]) {
+                divisaoAtual = configPaises[paisAtual][0].id;
+            }
+            
             timeSelecionadoObj = null;
             document.getElementById('footer-summary').classList.remove('visible');
-            carregarTimes(divisao);
+            
+            gerarAbas(paisAtual);
+            carregarTimes(paisAtual, divisaoAtual);
         }
 
-        function carregarTimes(divisao) {
+        function gerarAbas(pais) {
+            const container = document.getElementById('tabs-container');
+            container.innerHTML = "";
+            const ligas = configPaises[pais] || [];
+
+            ligas.forEach(liga => {
+                const div = document.createElement('div');
+                div.className = `tab-btn ${liga.id === divisaoAtual ? 'active' : ''}`;
+                div.innerHTML = `${liga.nome}<span class="tab-sub">${liga.desc}</span>`;
+                div.onclick = () => mudarAba(liga.id, div);
+                container.appendChild(div);
+            });
+        }
+
+        function mudarAba(novaDivisao, elementoBtn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            elementoBtn.classList.add('active');
+            divisaoAtual = novaDivisao;
+            
+            timeSelecionadoObj = null;
+            document.getElementById('footer-summary').classList.remove('visible');
+            
+            carregarTimes(paisAtual, novaDivisao);
+        }
+
+        function carregarTimes(pais, divisao) {
             const container = document.getElementById('teams-container');
             container.innerHTML = "";
             let lista = [];
 
-            if (window.Database && window.Database.brasil && window.Database.brasil[divisao]) {
-                lista = window.Database.brasil[divisao];
+            if (window.Database && window.Database[pais] && window.Database[pais][divisao]) {
+                lista = window.Database[pais][divisao];
             } else {
                 lista = gerarTimesGenericos(divisao);
             }
@@ -286,29 +328,47 @@
             let estadio = time.estadio;
 
             if (!estadio) {
-                const estadiosReais = {
-                    "Corinthians": "Neo Química Arena", "Palmeiras": "Allianz Parque", "São Paulo": "Morumbi",
-                    "Santos": "Vila Belmiro", "Flamengo": "Maracanã", "Fluminense": "Maracanã",
-                    "Vasco": "São Januário", "Botafogo": "Nilton Santos", "Grêmio": "Arena do Grêmio",
-                    "Internacional": "Beira-Rio", "Atlético-MG": "Arena MRV", "Cruzeiro": "Mineirão"
-                };
-                estadio = estadiosReais[time.nome] || (forca >= 80 ? "Arena Multiuso" : "Estádio Municipal");
+                if(paisAtual === 'brasil') {
+                    const estadiosReais = {
+                        "Corinthians": "Neo Química Arena", "Palmeiras": "Allianz Parque", 
+                        "São Paulo": "Morumbi", "Flamengo": "Maracanã"
+                    };
+                    estadio = estadiosReais[time.nome] || "Estádio Municipal";
+                } else {
+                    estadio = "Arena Local";
+                }
             }
 
             let objetivo = "Permanência";
-            let orcamento = 2.0;
-            if (forca >= 82) { objetivo = "Título / Libertadores"; orcamento = 150.0; }
-            else if (forca >= 76) { objetivo = "Vaga na Libertadores"; orcamento = 60.0; }
-            else if (forca >= 72) { objetivo = "Vaga na Sul-Americana"; orcamento = 25.0; }
+            let orcamento = 5.0;
+
+            const fatorMoeda = (paisAtual === 'brasil') ? 1 : 5;
+
+            if (forca >= 85) { 
+                objetivo = "Título da Liga"; 
+                orcamento = 200.0 * fatorMoeda; 
+            } else if (forca >= 80) { 
+                objetivo = "G4 / Continental"; 
+                orcamento = 100.0 * fatorMoeda; 
+            } else if (forca >= 75) { 
+                objetivo = "Meio de Tabela"; 
+                orcamento = 40.0 * fatorMoeda; 
+            }
 
             let craque = "---";
             if (time.elenco && time.elenco.length > 0) {
                 const melhor = time.elenco.reduce((p, c) => (p.forca > c.forca) ? p : c);
                 craque = melhor.nome;
+            } else if (time.destaque) {
+                craque = time.destaque;
             }
 
             document.getElementById('resumo-obj').innerText = objetivo;
-            document.getElementById('resumo-orcamento').innerText = `R$ ${orcamento} Mi`;
+            let moeda = "R$";
+            if(paisAtual === 'inglaterra') moeda = "£";
+            if(paisAtual === 'espanha' || paisAtual === 'italia') moeda = "€";
+            
+            document.getElementById('resumo-orcamento').innerText = `${moeda} ${orcamento} Mi`;
             document.getElementById('resumo-estadio').innerText = estadio;
             document.getElementById('resumo-craque').innerText = craque;
         }
@@ -320,7 +380,7 @@
             const btn = document.getElementById('btn-start');
             if (!timeSelecionadoObj) { btn.disabled = true; btn.innerText = "SELECIONE UM CLUBE"; return; }
             if (nome.length === 0) { btn.disabled = true; btn.innerText = "DIGITE SEU NOME"; return; }
-            btn.disabled = false; btn.innerText = "CONTRATAR";
+            btn.disabled = false; btn.innerText = "ASSINAR CONTRATO";
         }
 
         function iniciarCampanha() {
@@ -335,25 +395,17 @@
                 try {
                     localStorage.clear();
                     
-                    // 1. Cria o Jogo Básico
-                    Engine.novoJogo('Brasil', divisaoAtual, timeSelecionadoObj.nome);
+                    Engine.novoJogo(paisAtual, divisaoAtual, timeSelecionadoObj.nome);
                     
-                    // 2. FORÇA A CRIAÇÃO DO E-MAIL AGORA (Antes de mudar de página)
-                    // Isso evita que o navegador feche antes do setTimeout do engine-core rodar
                     if(Engine.Contratos) {
-                        console.log("Forçando e-mail no index...");
                         let saveFresco = Engine.carregarJogo();
                         Engine.Contratos.enviarBoasVindas(saveFresco);
-                    } else {
-                        console.error("Módulo Contratos não encontrado no Index.");
                     }
 
-                    // 3. Salva o Nome do Técnico
                     let save = Engine.carregarJogo();
                     save.info.tecnico = nomeTreinador;
                     Engine.salvarJogo(save);
                     
-                    // 4. Redireciona
                     window.location.href = 'dashboard.html';
                 } catch (err) {
                     alert("Erro crítico: " + err.message);
@@ -365,7 +417,7 @@
 
         function gerarTimesGenericos(divisao) {
             let lista = [];
-            for(let i=1; i<=20; i++) lista.push({ nome: `Clube ${divisao.toUpperCase()} ${i}`, escudo: DEFAULT_SHIELD, forca: Math.floor(Math.random() * 20) + 50, elenco: [] });
+            for(let i=1; i<=20; i++) lista.push({ nome: `Clube ${divisao} ${i}`, escudo: DEFAULT_SHIELD, forca: 60, elenco: [] });
             return lista;
         }
     </script>
