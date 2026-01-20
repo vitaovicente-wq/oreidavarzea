@@ -1,5 +1,5 @@
 // ARQUIVO: engine-core.js
-// VERSÃO: WORLD SYSTEM V2 (Final Stable)
+// VERSÃO: WORLD SYSTEM V2 (Final Stable + Fix Dashboard)
 // DESCRIÇÃO: Núcleo lógico que gerencia o mundo, simulação, finanças e saves.
 
 window.Engine = {
@@ -104,7 +104,7 @@ window.Engine = {
 
         const game = JSON.parse(s);
 
-        // --- RECONEXÃO CRÍTICA (O FIX DO PROBLEMA) ---
+        // --- RECONEXÃO CRÍTICA (O FIX DO PROBLEMA DE SYNC) ---
         // Reconecta os atalhos (calendario/times) de volta ao objeto Mundo Real
         if (game.mundo && game.info) {
             const p = game.info.pais;
@@ -118,6 +118,21 @@ window.Engine = {
         }
 
         return game; 
+    },
+
+    // --- CORREÇÃO AQUI: FUNÇÃO QUE FALTAVA PARA O DASHBOARD ---
+    encontrarTime: function(nomeBusca) { 
+        const s = this.carregarJogo(); 
+        if (!s || !s.mundo) return { nome: nomeBusca, elenco: [] };
+        
+        // Varredura profunda no objeto Mundo para achar qualquer time
+        for(let p in s.mundo) {
+            for(let d in s.mundo[p]) {
+                const t = s.mundo[p][d].times.find(x => x.nome === nomeBusca);
+                if(t) return t;
+            }
+        }
+        return { nome: nomeBusca, elenco: [] }; // Retorno seguro se não achar
     },
     
     // =========================================================================
@@ -236,7 +251,7 @@ window.Engine = {
                         const ehJogoUser = (jogo.mandante === timeUser || jogo.visitante === timeUser);
                         
                         // SIMULAÇÃO DA CPU:
-                        // Se não foi jogado, não é jogo do usuário, e a rodada já passou ou é agora
+                        // Se não foi jogado, não é jogo do usuário, e a rodada ANTERIOR à atual
                         if (!jogo.jogado && !ehJogoUser && numeroRodada < estado.rodadaAtual) {
                             this._simularJogoCPU(liga, jogo);
                         }
