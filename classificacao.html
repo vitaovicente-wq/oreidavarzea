@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BRFutebol - Classificação & Estatísticas</title>
+    <title>BRFutebol - Mundo</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
 
-    <script src="engine-core.js"></script>
+    <script src="database.js"></script> <script src="engine-core.js"></script>
 
     <style>
         :root { 
@@ -55,81 +55,70 @@
         }
 
         .page-header { 
-            padding: 20px 30px; 
+            padding: 15px 30px; 
             border-bottom: 1px solid var(--border); 
             background: #16161a;
             display: flex; justify-content: space-between; align-items: center;
         }
-        .page-title h2 { margin: 0; font-family: 'Rajdhani'; text-transform: uppercase; }
-        .page-title p { margin: 5px 0 0 0; color: var(--text-muted); font-size: 0.9rem; }
 
-        /* GRID LAYOUT */
-        .stats-grid { 
-            flex: 1; 
-            padding: 20px; 
-            overflow-y: auto; 
-            display: grid; 
-            grid-template-columns: 1fr 350px; /* Tabela Grande | Artilharia Pequena */
-            gap: 20px;
+        /* FILTROS (PAÍS E LIGA) */
+        .filter-bar { display: flex; gap: 20px; align-items: center; }
+        
+        select {
+            background: #111; color: #fff; border: 1px solid var(--border); 
+            padding: 8px 15px; border-radius: 6px; font-family: 'Rajdhani'; font-weight: 700; font-size: 1rem;
+            cursor: pointer; outline: none;
         }
+        select:hover { border-color: var(--accent); }
 
-        /* PAINEIS */
+        .league-tabs { display: flex; gap: 5px; }
+        .tab-btn {
+            background: transparent; border: 1px solid transparent; color: var(--text-muted);
+            padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: 700; font-size: 0.9rem;
+            transition: 0.2s;
+        }
+        .tab-btn:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .tab-btn.active { background: var(--accent); color: #000; box-shadow: 0 0 10px rgba(0,255,136,0.3); }
+
+        /* TABELA */
+        .table-wrapper { flex: 1; padding: 20px; overflow-y: auto; display: flex; gap: 20px; }
+        
         .panel { 
+            flex: 1;
             background: var(--panel-bg); 
             border: 1px solid var(--border); 
             border-radius: 8px; 
             overflow: hidden; 
             display: flex; flex-direction: column;
         }
-        .panel-header-box { 
-            padding: 15px; 
-            background: #151518; 
-            border-bottom: 1px solid var(--border); 
-            font-family: 'Rajdhani'; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
-        }
 
-        /* TABELA CLASSIFICAÇÃO */
         table { width: 100%; border-collapse: collapse; text-align: center; }
-        thead { background: #111; }
-        th { padding: 12px 8px; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
-        th:nth-child(2), td:nth-child(2) { text-align: left; } /* Alinha Nome Clube */
+        thead { background: #111; position: sticky; top: 0; z-index: 10; }
+        th { padding: 12px 8px; font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; border-bottom: 1px solid var(--border); }
+        th:nth-child(2), td:nth-child(2) { text-align: left; } 
         
         td { padding: 10px 8px; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-        tr:last-child td { border-bottom: none; }
+        tr:hover { background: rgba(255,255,255,0.02); }
         
         .col-club { display: flex; align-items: center; gap: 8px; font-weight: 600; }
-        .meu-time { background: rgba(0, 255, 136, 0.1); border-left: 3px solid var(--accent); }
+        .meu-time { background: rgba(0, 255, 136, 0.15) !important; border-left: 3px solid var(--accent); }
         .pos-num { font-weight: 700; width: 20px; display: inline-block; }
 
-        /* CORES ZONA */
-        .z-lib { color: var(--liberta); }
-        .z-pre { color: var(--pre); }
-        .z-sul { color: var(--sula); }
-        .z-reb { color: var(--z4); }
+        /* Zonas */
+        .z-lib { border-left: 3px solid var(--liberta); }
+        .z-pre { border-left: 3px solid var(--pre); }
+        .z-sul { border-left: 3px solid var(--sula); }
+        .z-reb { border-left: 3px solid var(--z4); }
 
-        /* LISTA ARTILHARIA */
-        .scorer-list { padding: 0; margin: 0; list-style: none; overflow-y: auto; }
-        .scorer-item { 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding: 12px 15px; border-bottom: 1px solid var(--border); 
+        .simulated-badge {
+            background: #333; color: #aaa; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; margin-left: auto;
         }
-        .scorer-item:last-child { border-bottom: none; }
-        
-        .scorer-info { display: flex; flex-direction: column; }
-        .scorer-name { font-weight: 700; color: #fff; }
-        .scorer-team { font-size: 0.8rem; color: var(--text-muted); }
-        .scorer-goals { 
-            background: #111; border: 1px solid #333; color: var(--accent); 
-            padding: 4px 10px; border-radius: 4px; font-family: 'Rajdhani'; font-weight: 700; 
-        }
-
-        /* LEGENDA */
-        .legenda { display: flex; gap: 15px; padding: 15px; font-size: 0.8rem; background: #111; border-top: 1px solid var(--border); justify-content: center; }
-        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
 
         @media (max-width: 900px) {
-            .stats-grid { grid-template-columns: 1fr; }
-            .sidebar { display: none; } /* Em mobile teria que ter menu hamburger, mas simplificamos aqui */
+            .sidebar { display: none; }
+            .page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .filter-bar { flex-direction: column; width: 100%; }
+            .league-tabs { overflow-x: auto; width: 100%; padding-bottom: 5px; }
         }
     </style>
 </head>
@@ -149,149 +138,202 @@
 
     <main class="main-content">
         <header class="page-header">
-            <div class="page-title">
-                <h2>Tabela & Estatísticas</h2>
-                <p>Acompanhe a corrida pelo título e artilharia.</p>
+            <div class="filter-bar">
+                <select id="select-pais" onchange="mudarPais()">
+                    <option value="brasil">🇧🇷 Brasil</option>
+                    <option value="inglaterra">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Inglaterra</option>
+                    <option value="espanha">🇪🇸 Espanha</option>
+                    <option value="italia">🇮🇹 Itália</option>
+                </select>
+
+                <div class="league-tabs" id="tabs-container">
+                    </div>
             </div>
-            <div style="font-family:'Rajdhani'; font-weight:bold; color:var(--accent);">
-                Temporada 2026
+            
+            <div id="status-indicator" style="font-size:0.8rem; color:#666;">
+                DADOS REAIS
             </div>
         </header>
 
-        <div class="stats-grid">
-            
+        <div class="table-wrapper">
             <div class="panel">
-                <div class="panel-header-box">Série A - Classificação</div>
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th width="50">Pos</th>
-                                <th>Clube</th>
-                                <th width="40">P</th>
-                                <th width="40">J</th>
-                                <th width="40">V</th>
-                                <th width="40">E</th>
-                                <th width="40">D</th>
-                                <th width="40">SG</th>
-                                <th width="45">%</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tb-classificacao">
-                            </tbody>
-                    </table>
-                </div>
-                <div class="legenda">
-                    <span style="color:var(--liberta)">● Libertadores</span>
-                    <span style="color:var(--pre)">● Pré-Liberta</span>
-                    <span style="color:var(--sula)">● Sula</span>
-                    <span style="color:var(--z4)">● Z4</span>
-                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th width="50">#</th>
+                            <th>Clube</th>
+                            <th width="40">P</th>
+                            <th width="40">J</th>
+                            <th width="40">V</th>
+                            <th width="40">E</th>
+                            <th width="40">D</th>
+                            <th width="40">SG</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tb-classificacao">
+                        </tbody>
+                </table>
             </div>
-
-            <div class="panel">
-                <div class="panel-header-box">🔥 Artilheiros</div>
-                <ul class="scorer-list" id="lista-artilharia">
-                    <li style="padding:20px; text-align:center; color:#666;">Carregando dados...</li>
-                </ul>
-            </div>
-
         </div>
     </main>
 
     <script>
-        window.onload = function() {
-            if (typeof Engine === 'undefined') return;
-            renderizarTela();
+        // Configuração das Ligas
+        const configLigas = {
+            brasil: [
+                { id: 'serieA', nome: 'Série A' }, { id: 'serieB', nome: 'Série B' },
+                { id: 'serieC', nome: 'Série C' }, { id: 'serieD', nome: 'Série D' }
+            ],
+            inglaterra: [
+                { id: 'Premier League', nome: 'Premier League' }, { id: 'Championship', nome: 'EFL Champ' }
+            ],
+            espanha: [ { id: 'La Liga', nome: 'La Liga' } ],
+            italia: [ { id: 'Serie A', nome: 'Serie A' } ]
         };
 
-        function renderizarTela() {
-            const game = Engine.carregarJogo();
-            if(!game) { window.location.href = 'index.html'; return; }
+        let jogoSalvo = null;
+        let paisAtual = 'brasil';
+        let divisaoAtual = 'serieA';
 
-            // --- 1. CLASSIFICAÇÃO ---
+        window.onload = function() {
+            if (typeof Engine === 'undefined') return;
+            jogoSalvo = Engine.carregarJogo();
+            
+            // Tenta detectar onde o jogador está
+            if(jogoSalvo) {
+                paisAtual = jogoSalvo.info.pais || 'brasil';
+                divisaoAtual = jogoSalvo.info.divisao || 'serieA';
+                
+                // Atualiza o select para o país do jogador
+                const select = document.getElementById('select-pais');
+                if(select.querySelector(`option[value="${paisAtual}"]`)) {
+                    select.value = paisAtual;
+                }
+            }
+
+            renderizarAbas();
+            renderizarTabela();
+        };
+
+        function mudarPais() {
+            paisAtual = document.getElementById('select-pais').value;
+            // Pega a 1ª divisão do novo país como padrão
+            divisaoAtual = configLigas[paisAtual][0].id;
+            renderizarAbas();
+            renderizarTabela();
+        }
+
+        function mudarLiga(id) {
+            divisaoAtual = id;
+            renderizarAbas();
+            renderizarTabela();
+        }
+
+        function renderizarAbas() {
+            const container = document.getElementById('tabs-container');
+            container.innerHTML = "";
+            
+            const ligas = configLigas[paisAtual] || [];
+            ligas.forEach(l => {
+                const btn = document.createElement('button');
+                btn.className = `tab-btn ${l.id === divisaoAtual ? 'active' : ''}`;
+                btn.innerText = l.nome;
+                btn.onclick = () => mudarLiga(l.id);
+                container.appendChild(btn);
+            });
+        }
+
+        function renderizarTabela() {
             const tbody = document.getElementById('tb-classificacao');
+            const indicator = document.getElementById('status-indicator');
             tbody.innerHTML = "";
 
-            // Ordena
-            let tabela = game.classificacao.sort((a, b) => {
-                if (b.pts !== a.pts) return b.pts - a.pts;
-                if (b.v !== a.v) return b.v - a.v;
-                return b.sg - a.sg;
-            });
+            let dadosTabela = [];
+            let isReal = false;
 
-            tabela.forEach((time, i) => {
+            // VERIFICAÇÃO: É a liga que o jogador está jogando?
+            if (jogoSalvo && 
+                (jogoSalvo.info.pais || 'brasil') === paisAtual && 
+                jogoSalvo.info.divisao === divisaoAtual) {
+                
+                // SIM: Mostra dados reais do save
+                dadosTabela = jogoSalvo.classificacao;
+                isReal = true;
+                indicator.innerHTML = `<span style="color:var(--accent)">● COMPETIÇÃO ATIVA (DADOS REAIS)</span>`;
+            
+            } else {
+                // NÃO: Simula uma tabela baseada no Database
+                dadosTabela = simularTabelaFicticia(paisAtual, divisaoAtual);
+                isReal = false;
+                indicator.innerHTML = `<span style="color:#666">● CLASSIFICAÇÃO PROJETADA (SIMULAÇÃO)</span>`;
+            }
+
+            // Ordenação
+            dadosTabela.sort((a, b) => b.pts - a.pts || b.sg - a.sg);
+
+            dadosTabela.forEach((time, i) => {
                 const pos = i + 1;
                 const tr = document.createElement('tr');
-                if(time.nome === game.info.time) tr.classList.add('meu-time');
+                
+                // Destaca meu time se for real
+                if (isReal && time.nome === jogoSalvo.info.time) {
+                    tr.classList.add('meu-time');
+                }
 
-                // Cor da Posição
-                let colorClass = "";
-                if(pos <= 4) colorClass = "z-lib";
-                else if(pos <= 6) colorClass = "z-pre";
-                else if(pos <= 12) colorClass = "z-sul";
-                else if(pos >= 17) colorClass = "z-reb";
-
-                const aprov = time.j > 0 ? Math.round((time.pts/(time.j*3))*100) : 0;
+                // Cores de Zona (Apenas visual genérico para todas as ligas)
+                let classeZona = "";
+                if (pos <= 4) classeZona = "z-lib";
+                else if (pos >= dadosTabela.length - 3) classeZona = "z-reb";
 
                 tr.innerHTML = `
-                    <td class="${colorClass}"><span class="pos-num">${pos}</span></td>
-                    <td><div class="col-club">${time.nome}</div></td>
-                    <td style="font-weight:bold; color:#fff;">${time.pts}</td>
+                    <td class="${classeZona}"><span class="pos-num">${pos}º</span></td>
+                    <td>
+                        <div class="col-club">
+                            <span style="font-weight:600; color:#fff;">${time.nome}</span>
+                        </div>
+                    </td>
+                    <td style="font-weight:700; color:#fff;">${time.pts}</td>
                     <td>${time.j}</td>
                     <td>${time.v}</td>
                     <td>${time.e}</td>
                     <td>${time.d}</td>
                     <td>${time.sg}</td>
-                    <td style="color:#666; font-size:0.8rem;">${aprov}%</td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
 
-            // --- 2. ARTILHARIA (Busca em todos os times) ---
-            const listaArt = document.getElementById('lista-artilharia');
-            listaArt.innerHTML = "";
-            
-            let todosJogadores = [];
-
-            // Varre todos os times do jogo para achar os jogadores
-            game.times.forEach(time => {
-                if(time.elenco) {
-                    time.elenco.forEach(jogador => {
-                        // Só pega se tiver gol
-                        if(jogador.gols > 0) {
-                            todosJogadores.push({
-                                nome: jogador.nome,
-                                time: time.nome,
-                                gols: jogador.gols
-                            });
-                        }
-                    });
-                }
-            });
-
-            // Ordena por gols
-            todosJogadores.sort((a,b) => b.gols - a.gols);
-
-            // Pega Top 10
-            const top10 = todosJogadores.slice(0, 10);
-
-            if(top10.length === 0) {
-                listaArt.innerHTML = `<li style="padding:30px; text-align:center; color:#666;">Nenhum gol marcado no campeonato ainda.</li>`;
+        // Função para gerar uma tabela "fake" mas coerente para ligas estrangeiras
+        function simularTabelaFicticia(pais, divisao) {
+            // Pega times do Database
+            let times = [];
+            if (window.Database && window.Database[pais] && window.Database[pais][divisao]) {
+                times = window.Database[pais][divisao];
             } else {
-                top10.forEach(j => {
-                    const li = document.createElement('li');
-                    li.className = 'scorer-item';
-                    li.innerHTML = `
-                        <div class="scorer-info">
-                            <span class="scorer-name">${j.nome}</span>
-                            <span class="scorer-team">${j.time}</span>
-                        </div>
-                        <div class="scorer-goals">${j.gols}</div>
-                    `;
-                    listaArt.appendChild(li);
-                });
+                // Fallback se não tiver no DB
+                return [];
             }
+
+            // Gera estatísticas baseadas na FORÇA do time
+            // Simula como se estivessem na rodada atual do jogador
+            const rodada = jogoSalvo ? jogoSalvo.rodadaAtual : 1;
+            
+            return times.map(t => {
+                // Times fortes pontuam mais
+                const fatorForca = (t.forca || 60) / 100; 
+                const ptsEstimados = Math.floor(rodada * 2.8 * fatorForca) + Math.floor(Math.random() * 5);
+                const v = Math.floor(ptsEstimados / 3);
+                const e = Math.floor((rodada - v) * 0.3);
+                const d = Math.max(0, rodada - v - e);
+                
+                return {
+                    nome: t.nome,
+                    pts: ptsEstimados,
+                    j: rodada,
+                    v: v, e: e, d: d,
+                    sg: Math.floor((v * 1.5) - d)
+                };
+            });
         }
     </script>
 </body>
