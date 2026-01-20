@@ -1,5 +1,5 @@
 // ARQUIVO: engine-core.js
-// VERSÃO: COMPLETA (Finanças + Treino + Lesão + CORREÇÃO ARTILHARIA)
+// VERSÃO: COMPLETA (Finanças + Treino + Lesão + Artilharia + PAÍSES)
 
 window.Engine = {
     // --- SISTEMA (Prioridade Alta) ---
@@ -90,9 +90,9 @@ window.Engine = {
         return s ? this.encontrarTime(s.info.time) : null; 
     },
 
-    // --- INICIALIZAÇÃO ---
+    // --- INICIALIZAÇÃO (ATUALIZADA COM PAÍS) ---
     novoJogo: function(pais, divisao, nomeTimeSelecionado) {
-        console.log(`⚽ Iniciando Core: ${nomeTimeSelecionado}`);
+        console.log(`⚽ Iniciando Core: ${nomeTimeSelecionado} [${pais}]`);
         
         if (typeof CalendarioSystem === 'undefined') { 
             alert("ERRO CRÍTICO: calendario.js não carregado."); 
@@ -102,11 +102,13 @@ window.Engine = {
         localStorage.setItem('brfutebol_livres', '[]');
         localStorage.setItem('brfutebol_transferencias', '[]');
 
-        // Carrega Times
+        // Carrega Times do PAÍS CORRETO
         let timesDaLiga = [];
-        if (window.Database && window.Database.brasil && window.Database.brasil[divisao]) {
-            timesDaLiga = JSON.parse(JSON.stringify(window.Database.brasil[divisao]));
+        if (window.Database && window.Database[pais] && window.Database[pais][divisao]) {
+            // Clona para não alterar o original
+            timesDaLiga = JSON.parse(JSON.stringify(window.Database[pais][divisao]));
         } else {
+            console.warn("Liga não encontrada, gerando genéricos...");
             timesDaLiga = this._gerarTimesGenericos(divisao);
         }
 
@@ -132,15 +134,25 @@ window.Engine = {
         if(meuTime && meuTime.elenco.length > 0) meuTime.elenco.forEach(j => somaOvr += j.forca);
         const mediaOvr = meuTime.elenco.length > 0 ? Math.floor(somaOvr / meuTime.elenco.length) : 60;
         
+        // Ajuste de Orçamento por País (Europa é mais rica)
+        const fatorMoeda = (pais === 'brasil') ? 1 : 5;
         let orcamento = 2000000;
-        if (mediaOvr > 90) orcamento = 15000000;
-        else if (mediaOvr > 80) orcamento = 10000000;
-        else if (mediaOvr > 70) orcamento = 6000000;
-        else if (mediaOvr > 65) orcamento = 3500000;
+        
+        if (mediaOvr > 90) orcamento = 15000000 * fatorMoeda;
+        else if (mediaOvr > 80) orcamento = 10000000 * fatorMoeda;
+        else if (mediaOvr > 70) orcamento = 6000000 * fatorMoeda;
+        else if (mediaOvr > 65) orcamento = 3500000 * fatorMoeda;
 
         // Estado Inicial
         const estado = {
-            info: { tecnico: localStorage.getItem('brfutebol_tecnico')||"Manager", time: nomeTimeSelecionado, escudo: localStorage.getItem('brfutebol_escudo'), divisao, dataInicio: new Date().getTime() },
+            info: { 
+                tecnico: localStorage.getItem('brfutebol_tecnico')||"Manager", 
+                time: nomeTimeSelecionado, 
+                escudo: localStorage.getItem('brfutebol_escudo'), 
+                pais: pais, // Salva o país
+                divisao: divisao, 
+                dataInicio: new Date().getTime() 
+            },
             recursos: { dinheiro: orcamento, moral: 100, ultimaRodadaProcessada: 0 },
             contratos: { patrocinio: null, tv: null },
             flags: { boasVindasLida: false, patroEnviado: false, tvEnviado: false, treinoAtual: 'balanceado' },
@@ -175,7 +187,7 @@ window.Engine = {
             rod.jogos.forEach(jogo => { 
                 if(jogo.jogado) {
                     this._computar(tab, jogo); 
-                    // NOVO: Distribui os gols para os jogadores (CORREÇÃO AQUI)
+                    // Distribui os gols para os jogadores
                     this._processarArtilharia(estado, jogo);
                 }
             });
@@ -235,9 +247,8 @@ window.Engine = {
         return tab;
     },
 
-    // NOVA FUNÇÃO: Distribui gols para os jogadores
+    // Distribui gols para os jogadores
     _processarArtilharia: function(estado, jogo) {
-        // Se já processou a artilharia deste jogo, ignora
         if(jogo.artilhariaComputada) return;
 
         const distribuir = (nomeTime, qtdGols) => {
@@ -245,12 +256,10 @@ window.Engine = {
             const time = estado.times.find(t => t.nome === nomeTime);
             if(!time) return;
 
-            // Pega jogadores aptos
             const aptos = time.elenco.filter(j => j.status !== 'Lesionado');
             if(aptos.length === 0) return;
 
             for(let i=0; i < qtdGols; i++) {
-                // Sorteio ponderado pela Força
                 let totalForca = 0;
                 aptos.forEach(j => totalForca += (j.forca || 50));
                 
@@ -265,8 +274,6 @@ window.Engine = {
                         break;
                     }
                 }
-                
-                // Adiciona o gol
                 artilheiro.gols = (artilheiro.gols || 0) + 1;
             }
         };
@@ -274,11 +281,10 @@ window.Engine = {
         distribuir(jogo.mandante, parseInt(jogo.placarCasa));
         distribuir(jogo.visitante, parseInt(jogo.placarFora));
 
-        // Marca como computada para não repetir
         jogo.artilhariaComputada = true;
     },
 
-    // Recuperação de Lesões (Mantida)
+    // Recuperação de Lesões
     _processarRecuperacaoElencos: function(estado) {
         estado.times.forEach(time => {
             time.elenco.forEach(jogador => {
@@ -288,7 +294,7 @@ window.Engine = {
                         jogador.status = "Apto";
                         jogador.rodadasFora = 0;
                         if (time.nome === estado.info.time && this.Sistema) {
-                            this.Sistema.novaMensagem("Alta Médica", `<p>O jogador <b>${jogador.nome}</b> recebeu alta.</p>`, "dm", "DM");
+                            this.Sistema.novaMensagem("Alta Médica", `<p>O jogador <b>${jogador.nome}</b> recebeu alta do Dr. Tairo.</p>`, "dm", "DM");
                         }
                     }
                 }
@@ -296,7 +302,6 @@ window.Engine = {
         });
     },
 
-    // Computar Tabela (Mantida)
     _computar: function(tab, jogo) {
         const c = tab.find(t=>t.nome===jogo.mandante); 
         const f = tab.find(t=>t.nome===jogo.visitante);
