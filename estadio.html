@@ -112,8 +112,45 @@
 
             <div id="tab-reforma" class="content">
                 <p style="color:#aaa; font-size:0.9rem;">Amplie setores. Custo aprox: R$ 1 Mi a cada 1.000 lugares.</p>
-                <div class="field"><label>+ Lugares Geral</label><select id="add-geral" onchange="calcObra()"><option value="0">0</option><option value="1000">+1.000</option><option value="5000">+5.000</option></select></div>
-                <div class="field"><label>+ Lugares Cadeiras</label><select id="add-cadeiras" onchange="calcObra()"><option value="0">0</option><option value="1000">+1.000</option><option value="5000">+5.000</option></select></div>
+                
+                <div class="field">
+                    <label>+ Lugares Geral</label>
+                    <select id="add-geral" onchange="calcObra()">
+                        <option value="0">0</option>
+                        <option value="1000">+1.000</option>
+                        <option value="5000">+5.000</option>
+                        <option value="10000">+10.000</option>
+                    </select>
+                </div>
+                
+                <div class="field">
+                    <label>+ Lugares Cadeiras</label>
+                    <select id="add-cadeiras" onchange="calcObra()">
+                        <option value="0">0</option>
+                        <option value="1000">+1.000</option>
+                        <option value="5000">+5.000</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>+ Lugares VIP</label>
+                    <select id="add-vip" onchange="calcObra()">
+                        <option value="0">0</option>
+                        <option value="100">+100</option>
+                        <option value="500">+500</option>
+                        <option value="1000">+1.000</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>+ Vagas Estacionamento</label>
+                    <select id="add-park" onchange="calcObra()">
+                        <option value="0">0</option>
+                        <option value="100">+100</option>
+                        <option value="500">+500</option>
+                        <option value="1000">+1.000</option>
+                    </select>
+                </div>
                 
                 <div style="background:#111; padding:15px; border-left:4px solid #ffa502;">
                     <div style="display:flex; justify-content:space-between;"><span>Custo:</span><strong id="obra-custo" style="color:#fff;">R$ 0</strong></div>
@@ -125,7 +162,7 @@
             <div id="tab-aluguel" class="content">
                 
                 <div style="background:#222; padding:15px; border-radius:6px; margin-bottom:20px;">
-                    <label style="color:#accent; font-weight:bold; display:block; margin-bottom:5px;">Duração do Contrato</label>
+                    <label style="color:var(--accent); font-weight:bold; display:block; margin-bottom:5px;">Duração do Contrato</label>
                     <select id="rent-duration" style="background:#000; border:1px solid #444; color:#fff; font-weight:bold;">
                         <option value="1">1 Jogo em Casa (Emergência)</option>
                         <option value="3">3 Jogos em Casa (Curto)</option>
@@ -228,7 +265,8 @@
             const add = {
                 geral: parseInt(document.getElementById('add-geral').value),
                 cadeiras: parseInt(document.getElementById('add-cadeiras').value),
-                vip: 0, estacionamento: 0
+                vip: parseInt(document.getElementById('add-vip').value),
+                estacionamento: parseInt(document.getElementById('add-park').value)
             };
             const orc = Engine.Estadios.calcularOrcamento(add);
             document.getElementById('obra-custo').innerText = formatMoney(orc.custo);
@@ -240,7 +278,8 @@
             const add = {
                 geral: parseInt(document.getElementById('add-geral').value),
                 cadeiras: parseInt(document.getElementById('add-cadeiras').value),
-                vip: 0, estacionamento: 0
+                vip: parseInt(document.getElementById('add-vip').value),
+                estacionamento: parseInt(document.getElementById('add-park').value)
             };
             const res = Engine.Estadios.iniciarReforma(add);
             alert(res.msg);
@@ -249,7 +288,7 @@
 
         function alugar(id) {
             const lista = Engine.Estadios.listarEstadiosDisponiveis();
-            const alvo = lista.find(e => e.id == id); // == flexível pra string/num
+            const alvo = lista.find(e => e.id == id);
             const duracao = document.getElementById('rent-duration').value;
 
             if(confirm(`Alugar ${alvo.nome} por ${duracao} jogos em casa?`)) {
