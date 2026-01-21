@@ -1,6 +1,6 @@
 // ARQUIVO: engine-core.js
-// VERSÃO: WORLD SYSTEM V2.1 (Fix Artilheiros Persistentes)
-// DESCRIÇÃO: Núcleo lógico que gerencia o mundo, simulação, finanças e saves.
+// VERSÃO: WORLD SYSTEM V3.0 (Auto-Repair + Artilharia Fix)
+// DESCRIÇÃO: Núcleo com sistema de autocorreção para saves antigos.
 
 window.Engine = {
     // =========================================================================
@@ -10,7 +10,6 @@ window.Engine = {
         novaMensagem: function(titulo, corpo, tipo, remetente="Diretoria") {
             const game = window.Engine.carregarJogo();
             if(!game) return; 
-            
             if(!game.mensagens) game.mensagens = [];
             
             game.mensagens.unshift({
@@ -72,7 +71,6 @@ window.Engine = {
             localStorage.setItem('brfutebol_save', JSON.stringify(saveState)); 
         } catch (e) {
             console.error("Erro ao salvar:", e);
-            alert("Erro crítico: Espaço cheio.");
         }
     },
 
@@ -164,15 +162,24 @@ window.Engine = {
     },
 
     // =========================================================================
-    // 4. ATUALIZAÇÃO (SIMULAÇÃO)
+    // 4. ATUALIZAÇÃO E AUTO-REPAIR
     // =========================================================================
     atualizarTabela: function(estado) {
         if(!estado) estado = this.carregarJogo();
+
+        // Limpa a artilharia global dos jogadores para recalcular do zero
+        // Isso evita que gols sejam somados duplicados
+        for (const p in estado.mundo) {
+            for (const d in estado.mundo[p]) {
+                estado.mundo[p][d].times.forEach(t => t.elenco.forEach(j => j.gols = 0));
+            }
+        }
 
         for (const p in estado.mundo) {
             for (const d in estado.mundo[p]) {
                 const liga = estado.mundo[p][d];
                 
+                // Zera tabela
                 liga.tabela.forEach(t => { t.pts=0; t.j=0; t.v=0; t.e=0; t.d=0; t.gp=0; t.gc=0; t.sg=0; });
 
                 liga.calendario.forEach((rod, idx) => {
@@ -182,11 +189,26 @@ window.Engine = {
                         const timeUser = estado.info.time;
                         const ehJogoUser = (jogo.mandante === timeUser || jogo.visitante === timeUser);
                         
-                        // SIMULAÇÃO CPU (Se ainda não foi jogado e a rodada já passou)
+                        // 1. Simula quem ainda não jogou
                         if (!jogo.jogado && !ehJogoUser && numeroRodada < estado.rodadaAtual) {
                             this._simularJogoCPU(liga, jogo);
                         }
 
+                        // 2. AUTO-REPAIR: Se já jogou mas não tem registro de gols (Save Antigo)
+                        if (jogo.jogado && (!jogo.eventos || jogo.eventos.length === 0)) {
+                            // Verifica se houve gols no placar para gerar
+                            const gc = parseInt(jogo.placarCasa);
+                            const gf = parseInt(jogo.placarFora);
+                            if (gc > 0 || gf > 0) {
+                                jogo.eventos = [];
+                                const tC = liga.times.find(t => t.nome === jogo.mandante);
+                                const tF = liga.times.find(t => t.nome === jogo.visitante);
+                                if(tC) this._gerarGolsDaPartida(tC, gc, jogo, 'casa');
+                                if(tF) this._gerarGolsDaPartida(tF, gf, jogo, 'fora');
+                            }
+                        }
+
+                        // 3. Computa Tabela e Artilharia
                         if (jogo.jogado) {
                             this._computarTabela(liga.tabela, jogo);
                             this._computarArtilharia(liga.times, jogo);
@@ -243,38 +265,46 @@ window.Engine = {
         jogo.placarCasa = gc; 
         jogo.placarFora = gf; 
         
-        // --- NOVO: Gera e SALVA os gols agora, para sempre ---
         jogo.eventos = [];
         this._gerarGolsDaPartida(tC, gc, jogo, 'casa');
         this._gerarGolsDaPartida(tF, gf, jogo, 'fora');
-        
-        // Ordena eventos por minuto
         jogo.eventos.sort((a,b) => a.minuto - b.minuto);
 
         jogo.jogado = true;
     },
 
-    // Função auxiliar para criar os gols
     _gerarGolsDaPartida: function(timeObj, qtdGols, jogoObj, lado) {
-        if(qtdGols <= 0 || !timeObj.elenco || timeObj.elenco.length === 0) return;
-
-        // Pool de artilheiros (Atacantes tem mais chance)
+        if(qtdGols <= 0) return;
+        
+        // Proteção contra time sem elenco (Evita o "Nome Atacante" vazio)
         let pool = [];
-        timeObj.elenco.forEach(j => {
-            if(j.pos === 'ATA') { pool.push(j); pool.push(j); pool.push(j); } // 3x chance
-            else if(j.pos === 'MEI') { pool.push(j); pool.push(j); } // 2x chance
-            else { pool.push(j); } // Zagueiro/Goleiro 1x chance
-        });
+        if(timeObj && timeObj.elenco && timeObj.elenco.length > 0) {
+            timeObj.elenco.forEach(j => {
+                if(j.pos === 'ATA') { pool.push(j); pool.push(j); pool.push(j); }
+                else if(j.pos === 'MEI') { pool.push(j); pool.push(j); }
+                else { pool.push(j); }
+            });
+        }
 
         for(let i=0; i < qtdGols; i++) {
-            const autor = pool[Math.floor(Math.random() * pool.length)];
+            let nomeAutor = "";
+            
+            if(pool.length > 0) {
+                // Sorteia jogador real
+                const sortudo = pool[Math.floor(Math.random() * pool.length)];
+                nomeAutor = sortudo.nome;
+            } else {
+                // Fallback robusto se não tiver elenco carregado
+                nomeAutor = `Atacante ${timeObj.nome || ''}`; 
+            }
+
             const minuto = Math.floor(Math.random() * 90) + 1;
             
             jogoObj.eventos.push({
                 minuto: minuto,
-                autor: autor.nome,
-                time: timeObj.nome,
-                lado: lado, // 'casa' ou 'fora'
+                autor: nomeAutor,
+                time: timeObj.nome || "Time",
+                lado: lado,
                 tipo: 'gol'
             });
         }
@@ -293,23 +323,19 @@ window.Engine = {
     },
 
     _computarArtilharia: function(times, jogo) {
-        if(jogo.artilhariaComputada) return;
+        if(!jogo.eventos) return;
         
-        // Agora lê dos eventos SALVOS, não sorteia de novo
-        if(jogo.eventos && jogo.eventos.length > 0) {
-            jogo.eventos.forEach(evento => {
-                if(evento.tipo === 'gol') {
-                    const time = times.find(t => t.nome === evento.time);
-                    if(time) {
-                        const jogador = time.elenco.find(j => j.nome === evento.autor);
-                        if(jogador) {
-                            jogador.gols = (jogador.gols || 0) + 1;
-                        }
+        jogo.eventos.forEach(evento => {
+            if(evento.tipo === 'gol') {
+                const time = times.find(t => t.nome === evento.time);
+                if(time && time.elenco) {
+                    const jogador = time.elenco.find(j => j.nome === evento.autor);
+                    if(jogador) {
+                        jogador.gols = (jogador.gols || 0) + 1;
                     }
                 }
-            });
-        }
-        jogo.artilhariaComputada = true;
+            }
+        });
     },
 
     _processarRecuperacaoElencos: function(estado) {
