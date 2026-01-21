@@ -1,22 +1,8 @@
 // ARQUIVO: engine-core.js
-// VERSÃO: WORLD SYSTEM V5.0 (Database Sync + Auto-Repair)
-// DESCRIÇÃO: Prioriza os jogadores do database.js antes de gerar aleatórios.
+// VERSÃO: WORLD SYSTEM V6 (Force Sync & Rewrite)
+// DESCRIÇÃO: Força o uso do database.js e reescreve eventos passados para nomes reais.
 
 window.Engine = {
-    // =========================================================================
-    // BANCO DE NOMES (Fallback apenas se o Database falhar)
-    // =========================================================================
-    NomesDB: {
-        nomes: ["Gabriel", "Lucas", "Matheus", "Pedro", "Leonardo", "Felipe", "Bruno", "Daniel", "Thiago", "Rafael"],
-        sobrenomes: ["Silva", "Santos", "Oliveira", "Souza", "Rodrigues", "Ferreira", "Alves", "Pereira", "Lima", "Gomes"]
-    },
-
-    _gerarNomeAleatorio: function() {
-        const n = this.NomesDB.nomes[Math.floor(Math.random() * this.NomesDB.nomes.length)];
-        const s = this.NomesDB.sobrenomes[Math.floor(Math.random() * this.NomesDB.sobrenomes.length)];
-        return `${n} ${s}`;
-    },
-
     // =========================================================================
     // 1. SISTEMA DE MENSAGENS E FINANÇAS
     // =========================================================================
@@ -117,7 +103,7 @@ window.Engine = {
         return { nome: nomeBusca, elenco: [] }; 
     },
 
-    // Busca o time original no arquivo database.js (para restaurar elencos perdidos)
+    // Função vital: Busca os dados originais do arquivo database.js
     _buscarTimeOriginal: function(nomeBusca) {
         if(typeof window.Database === 'undefined') return null;
         for(let p in window.Database) {
@@ -128,7 +114,7 @@ window.Engine = {
         }
         return null;
     },
-    
+
     // =========================================================================
     // 3. INICIALIZAÇÃO
     // =========================================================================
@@ -148,14 +134,14 @@ window.Engine = {
             for (const div in window.Database[p]) {
                 const timesRaw = JSON.parse(JSON.stringify(window.Database[p][div]));
                 
+                // Inicializa jogadores
                 timesRaw.forEach(t => {
                     if (!t.elenco) t.elenco = [];
-                    // Processa inicialização
                     t.elenco.forEach((j, i) => {
                         j.uid = `${p}_${div}_${t.nome.substring(0,3).toUpperCase()}_${i}`;
                         j.contrato = "31/12/2026";
                         if(!j.salario) j.salario = Math.floor((j.forca || 60) * 1250); 
-                        j.jogos=0; j.gols=0; j.assist=0; j.status="Apto"; j.rodadasFora=0; j.moral = 100;
+                        j.jogos=0; j.gols=0; j.status="Apto"; j.rodadasFora=0; j.moral = 100;
                     });
                 });
 
@@ -189,69 +175,48 @@ window.Engine = {
     },
 
     // =========================================================================
-    // 4. ATUALIZAÇÃO E AUTO-REPAIR (SYNC COM DATABASE)
+    // 4. ATUALIZAÇÃO E SINCRONIZAÇÃO
     // =========================================================================
     atualizarTabela: function(estado) {
         if(!estado) estado = this.carregarJogo();
 
-        // 1. LIMPEZA E IMPORTAÇÃO DO DATABASE REAL (Auto-Fix)
+        // 1. SINCRONIA FORÇADA: Garante que os elencos do save sejam os do database
         for (const p in estado.mundo) {
             for (const d in estado.mundo[p]) {
                 const times = estado.mundo[p][d].times;
-                
                 times.forEach(t => {
-                    // SE O TIME ESTIVER VAZIO OU COM GENÉRICOS
-                    // Tenta buscar no DATABASE ORIGINAL
-                    const precisaFix = (!t.elenco || t.elenco.length === 0 || t.elenco.some(j => j.nome.includes("Atacante") || j.nome.includes("Genérico")));
-                    
-                    if(precisaFix) {
-                        const original = this._buscarTimeOriginal(t.nome);
-                        
-                        // Achou no Database real? Importa!
-                        if(original && original.elenco && original.elenco.length > 0) {
-                            // Clona o elenco original para o save
-                            t.elenco = JSON.parse(JSON.stringify(original.elenco));
-                            
-                            // Re-aplica atributos de jogo
-                            t.elenco.forEach((j, i) => {
-                                j.uid = `${t.nome.substring(0,3).toUpperCase()}_${i}`;
-                                j.contrato = "31/12/2026";
-                                if(!j.salario) j.salario = Math.floor((j.forca || 60) * 1250); 
-                                j.gols = 0; // Zera stats para não bugar
-                                j.status = "Apto";
-                            });
-                        } 
-                        // Se NÃO achou no database (realmente vazio), aí sim usa gerador
-                        else if (!t.elenco || t.elenco.length === 0) {
-                            t.elenco = [];
-                            for(let k=0; k<15; k++) {
-                                t.elenco.push({
-                                    nome: this._gerarNomeAleatorio(),
-                                    pos: k < 2 ? "GOL" : k < 6 ? "DEF" : k < 11 ? "MEI" : "ATA",
-                                    forca: Math.floor(Math.random() * 20) + 60,
-                                    salario: 10000,
-                                    gols: 0
-                                });
-                            }
-                        }
+                    // Se o elenco estiver vazio ou corrompido, busca do original
+                    if (!t.elenco || t.elenco.length === 0 || t.elenco[0].nome.includes("Atacante ")) {
+                         const original = this._buscarTimeOriginal(t.nome);
+                         if(original && original.elenco && original.elenco.length > 0) {
+                             // Preserva status de gols/jogos se possível, mas importa nomes
+                             const statsMap = {};
+                             if(t.elenco) t.elenco.forEach(old => statsMap[old.nome] = {gols: old.gols});
+                             
+                             // Sobrescreve elenco com o real
+                             t.elenco = JSON.parse(JSON.stringify(original.elenco));
+                             
+                             // Restaura ou inicializa
+                             t.elenco.forEach(novo => {
+                                 novo.gols = 0; // Zera para recalcular corretamente
+                                 novo.jogos = 0;
+                                 novo.status = "Apto";
+                             });
+                         }
+                    } else {
+                        // Se o elenco já existe, zera gols para recalcular limpo
+                        t.elenco.forEach(j => j.gols = 0);
                     }
                 });
             }
         }
 
-        // Zera artilharia global antes de recalcular
-        for (const p in estado.mundo) {
-            for (const d in estado.mundo[p]) {
-                estado.mundo[p][d].times.forEach(t => {
-                    if(t.elenco) t.elenco.forEach(j => j.gols = 0);
-                });
-            }
-        }
-
+        // 2. PROCESSAMENTO
         for (const p in estado.mundo) {
             for (const d in estado.mundo[p]) {
                 const liga = estado.mundo[p][d];
                 
+                // Zera tabela
                 liga.tabela.forEach(t => { t.pts=0; t.j=0; t.v=0; t.e=0; t.d=0; t.gp=0; t.gc=0; t.sg=0; });
 
                 liga.calendario.forEach((rod, idx) => {
@@ -261,22 +226,22 @@ window.Engine = {
                         const timeUser = estado.info.time;
                         const ehJogoUser = (jogo.mandante === timeUser || jogo.visitante === timeUser);
                         
-                        // Simula quem ainda não jogou
+                        // Simulação
                         if (!jogo.jogado && !ehJogoUser && numeroRodada < estado.rodadaAtual) {
                             this._simularJogoCPU(liga, jogo);
                         }
 
-                        // AUTO-REPAIR DE GOLS
+                        // Repair de Gols Vazios
                         if (jogo.jogado && (!jogo.eventos || jogo.eventos.length === 0)) {
-                            const gc = parseInt(jogo.placarCasa);
-                            const gf = parseInt(jogo.placarFora);
-                            if (gc > 0 || gf > 0) {
-                                jogo.eventos = [];
-                                const tC = liga.times.find(t => t.nome === jogo.mandante);
-                                const tF = liga.times.find(t => t.nome === jogo.visitante);
-                                if(tC) this._gerarGolsDaPartida(tC, gc, jogo, 'casa');
-                                if(tF) this._gerarGolsDaPartida(tF, gf, jogo, 'fora');
-                            }
+                             const gc = parseInt(jogo.placarCasa);
+                             const gf = parseInt(jogo.placarFora);
+                             if (gc > 0 || gf > 0) {
+                                 jogo.eventos = [];
+                                 const tC = liga.times.find(t => t.nome === jogo.mandante);
+                                 const tF = liga.times.find(t => t.nome === jogo.visitante);
+                                 if(tC) this._gerarGolsDaPartida(tC, gc, jogo, 'casa');
+                                 if(tF) this._gerarGolsDaPartida(tF, gf, jogo, 'fora');
+                             }
                         }
 
                         // Computa
@@ -290,6 +255,7 @@ window.Engine = {
             }
         }
 
+        // Finalização padrão...
         const p = estado.info.pais;
         const d = estado.info.divisao;
         estado.classificacao = estado.mundo[p][d].tabela;
@@ -297,7 +263,6 @@ window.Engine = {
 
         const rodadaJogada = estado.rodadaAtual - 1;
         if(rodadaJogada > 0 && estado.recursos.ultimaRodadaProcessada < rodadaJogada) {
-            this._processarRecuperacaoElencos(estado);
             const jogoUser = estado.calendario[rodadaJogada-1].jogos.find(j => j.mandante === estado.info.time || j.visitante === estado.info.time);
             if(jogoUser) {
                 const souMandante = jogoUser.mandante === estado.info.time;
@@ -346,6 +311,7 @@ window.Engine = {
     _gerarGolsDaPartida: function(timeObj, qtdGols, jogoObj, lado) {
         if(qtdGols <= 0) return;
         
+        // Pega jogadores do time (do save)
         let pool = [];
         if(timeObj && timeObj.elenco && timeObj.elenco.length > 0) {
             timeObj.elenco.forEach(j => {
@@ -356,22 +322,17 @@ window.Engine = {
         }
 
         for(let i=0; i < qtdGols; i++) {
-            let nomeAutor = "";
+            let nomeAutor = "Jogador Desconhecido";
             
             if(pool.length > 0) {
                 const sortudo = pool[Math.floor(Math.random() * pool.length)];
                 nomeAutor = sortudo.nome;
-            } else {
-                // Último caso: Se o database falhar e o time estiver vazio
-                nomeAutor = `Atacante ${timeObj.nome.split(' ')[0]}`; 
-            }
-
-            const minuto = Math.floor(Math.random() * 90) + 1;
+            } 
             
             jogoObj.eventos.push({
-                minuto: minuto,
+                minuto: Math.floor(Math.random() * 90) + 1,
                 autor: nomeAutor,
-                time: timeObj.nome || "Time",
+                time: timeObj.nome,
                 lado: lado,
                 tipo: 'gol'
             });
@@ -396,23 +357,24 @@ window.Engine = {
         jogo.eventos.forEach(evento => {
             if(evento.tipo === 'gol') {
                 const time = times.find(t => t.nome === evento.time);
-                if(time) {
-                    if(!time.elenco) time.elenco = [];
+                if(time && time.elenco) {
                     
+                    // 1. Tenta achar o autor do gol no elenco
                     let jogador = time.elenco.find(j => j.nome === evento.autor);
                     
-                    // Se não achou (ex: bug antigo), tenta criar, mas prioriza o database
-                    if(!jogador) {
-                        // Tenta achar no database primeiro
-                        const original = window.Engine._buscarTimeOriginal(time.nome);
-                        if(original && original.elenco) {
-                             const real = original.elenco.find(r => r.nome === evento.autor);
-                             if(real) {
-                                 // Importa o real
-                                 jogador = JSON.parse(JSON.stringify(real));
-                                 time.elenco.push(jogador);
-                             }
-                        }
+                    // 2. CORREÇÃO MÁGICA:
+                    // Se o gol foi marcado por alguém que não existe no elenco atual (ex: Nome Genérico antigo),
+                    // Atribui o gol para um jogador REAL do time e CORRIGE o evento histórico.
+                    if (!jogador && time.elenco.length > 0) {
+                        // Escolhe um atacante real para "herdar" o gol
+                        const atacantes = time.elenco.filter(j => j.pos === 'ATA' || j.pos === 'MEI');
+                        const herdeiro = atacantes.length > 0 
+                            ? atacantes[Math.floor(Math.random() * atacantes.length)] 
+                            : time.elenco[0];
+                        
+                        // Atualiza a história para o futuro
+                        evento.autor = herdeiro.nome;
+                        jogador = herdeiro;
                     }
 
                     if(jogador) {
@@ -421,21 +383,6 @@ window.Engine = {
                 }
             }
         });
-    },
-
-    _processarRecuperacaoElencos: function(estado) {
-        const timeUser = estado.times.find(t => t.nome === estado.info.time);
-        if(timeUser) {
-            timeUser.elenco.forEach(j => {
-                if(j.status === 'Lesionado' && j.rodadasFora > 0) {
-                    j.rodadasFora--;
-                    if(j.rodadasFora <= 0) {
-                        j.status = 'Apto';
-                        this.Sistema.novaMensagem("DM", `${j.nome} recuperado.`, "dm");
-                    }
-                }
-            });
-        }
     },
 
     getTabelaLiga: function(p, d) {
