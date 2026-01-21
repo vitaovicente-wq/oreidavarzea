@@ -1,8 +1,22 @@
 // ARQUIVO: engine-core.js
-// VERSÃO: WORLD SYSTEM V3.1 (Fix Artilharia Fantasma)
-// DESCRIÇÃO: Garante que jogadores genéricos ou criados apareçam na artilharia.
+// VERSÃO: WORLD SYSTEM V5.0 (Database Sync + Auto-Repair)
+// DESCRIÇÃO: Prioriza os jogadores do database.js antes de gerar aleatórios.
 
 window.Engine = {
+    // =========================================================================
+    // BANCO DE NOMES (Fallback apenas se o Database falhar)
+    // =========================================================================
+    NomesDB: {
+        nomes: ["Gabriel", "Lucas", "Matheus", "Pedro", "Leonardo", "Felipe", "Bruno", "Daniel", "Thiago", "Rafael"],
+        sobrenomes: ["Silva", "Santos", "Oliveira", "Souza", "Rodrigues", "Ferreira", "Alves", "Pereira", "Lima", "Gomes"]
+    },
+
+    _gerarNomeAleatorio: function() {
+        const n = this.NomesDB.nomes[Math.floor(Math.random() * this.NomesDB.nomes.length)];
+        const s = this.NomesDB.sobrenomes[Math.floor(Math.random() * this.NomesDB.sobrenomes.length)];
+        return `${n} ${s}`;
+    },
+
     // =========================================================================
     // 1. SISTEMA DE MENSAGENS E FINANÇAS
     // =========================================================================
@@ -102,6 +116,18 @@ window.Engine = {
         }
         return { nome: nomeBusca, elenco: [] }; 
     },
+
+    // Busca o time original no arquivo database.js (para restaurar elencos perdidos)
+    _buscarTimeOriginal: function(nomeBusca) {
+        if(typeof window.Database === 'undefined') return null;
+        for(let p in window.Database) {
+            for(let d in window.Database[p]) {
+                const t = window.Database[p][d].find(x => x.nome === nomeBusca);
+                if(t) return t;
+            }
+        }
+        return null;
+    },
     
     // =========================================================================
     // 3. INICIALIZAÇÃO
@@ -124,6 +150,7 @@ window.Engine = {
                 
                 timesRaw.forEach(t => {
                     if (!t.elenco) t.elenco = [];
+                    // Processa inicialização
                     t.elenco.forEach((j, i) => {
                         j.uid = `${p}_${div}_${t.nome.substring(0,3).toUpperCase()}_${i}`;
                         j.contrato = "31/12/2026";
@@ -162,12 +189,57 @@ window.Engine = {
     },
 
     // =========================================================================
-    // 4. ATUALIZAÇÃO E AUTO-REPAIR
+    // 4. ATUALIZAÇÃO E AUTO-REPAIR (SYNC COM DATABASE)
     // =========================================================================
     atualizarTabela: function(estado) {
         if(!estado) estado = this.carregarJogo();
 
-        // Limpa a artilharia global dos jogadores para recalcular do zero
+        // 1. LIMPEZA E IMPORTAÇÃO DO DATABASE REAL (Auto-Fix)
+        for (const p in estado.mundo) {
+            for (const d in estado.mundo[p]) {
+                const times = estado.mundo[p][d].times;
+                
+                times.forEach(t => {
+                    // SE O TIME ESTIVER VAZIO OU COM GENÉRICOS
+                    // Tenta buscar no DATABASE ORIGINAL
+                    const precisaFix = (!t.elenco || t.elenco.length === 0 || t.elenco.some(j => j.nome.includes("Atacante") || j.nome.includes("Genérico")));
+                    
+                    if(precisaFix) {
+                        const original = this._buscarTimeOriginal(t.nome);
+                        
+                        // Achou no Database real? Importa!
+                        if(original && original.elenco && original.elenco.length > 0) {
+                            // Clona o elenco original para o save
+                            t.elenco = JSON.parse(JSON.stringify(original.elenco));
+                            
+                            // Re-aplica atributos de jogo
+                            t.elenco.forEach((j, i) => {
+                                j.uid = `${t.nome.substring(0,3).toUpperCase()}_${i}`;
+                                j.contrato = "31/12/2026";
+                                if(!j.salario) j.salario = Math.floor((j.forca || 60) * 1250); 
+                                j.gols = 0; // Zera stats para não bugar
+                                j.status = "Apto";
+                            });
+                        } 
+                        // Se NÃO achou no database (realmente vazio), aí sim usa gerador
+                        else if (!t.elenco || t.elenco.length === 0) {
+                            t.elenco = [];
+                            for(let k=0; k<15; k++) {
+                                t.elenco.push({
+                                    nome: this._gerarNomeAleatorio(),
+                                    pos: k < 2 ? "GOL" : k < 6 ? "DEF" : k < 11 ? "MEI" : "ATA",
+                                    forca: Math.floor(Math.random() * 20) + 60,
+                                    salario: 10000,
+                                    gols: 0
+                                });
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Zera artilharia global antes de recalcular
         for (const p in estado.mundo) {
             for (const d in estado.mundo[p]) {
                 estado.mundo[p][d].times.forEach(t => {
@@ -180,7 +252,6 @@ window.Engine = {
             for (const d in estado.mundo[p]) {
                 const liga = estado.mundo[p][d];
                 
-                // Zera tabela
                 liga.tabela.forEach(t => { t.pts=0; t.j=0; t.v=0; t.e=0; t.d=0; t.gp=0; t.gc=0; t.sg=0; });
 
                 liga.calendario.forEach((rod, idx) => {
@@ -190,12 +261,12 @@ window.Engine = {
                         const timeUser = estado.info.time;
                         const ehJogoUser = (jogo.mandante === timeUser || jogo.visitante === timeUser);
                         
-                        // 1. Simula quem ainda não jogou
+                        // Simula quem ainda não jogou
                         if (!jogo.jogado && !ehJogoUser && numeroRodada < estado.rodadaAtual) {
                             this._simularJogoCPU(liga, jogo);
                         }
 
-                        // 2. AUTO-REPAIR: Se já jogou mas não tem registro de gols
+                        // AUTO-REPAIR DE GOLS
                         if (jogo.jogado && (!jogo.eventos || jogo.eventos.length === 0)) {
                             const gc = parseInt(jogo.placarCasa);
                             const gf = parseInt(jogo.placarFora);
@@ -208,7 +279,7 @@ window.Engine = {
                             }
                         }
 
-                        // 3. Computa Tabela e Artilharia
+                        // Computa
                         if (jogo.jogado) {
                             this._computarTabela(liga.tabela, jogo);
                             this._computarArtilharia(liga.times, jogo);
@@ -224,7 +295,6 @@ window.Engine = {
         estado.classificacao = estado.mundo[p][d].tabela;
         estado.times = estado.mundo[p][d].times;
 
-        // Fim de rodada
         const rodadaJogada = estado.rodadaAtual - 1;
         if(rodadaJogada > 0 && estado.recursos.ultimaRodadaProcessada < rodadaJogada) {
             this._processarRecuperacaoElencos(estado);
@@ -292,8 +362,7 @@ window.Engine = {
                 const sortudo = pool[Math.floor(Math.random() * pool.length)];
                 nomeAutor = sortudo.nome;
             } else {
-                // Se não tem jogadores reais, cria um nome genérico
-                // Ex: "Atacante Bahia"
+                // Último caso: Se o database falhar e o time estiver vazio
                 nomeAutor = `Atacante ${timeObj.nome.split(' ')[0]}`; 
             }
 
@@ -330,26 +399,25 @@ window.Engine = {
                 if(time) {
                     if(!time.elenco) time.elenco = [];
                     
-                    // Tenta achar o jogador
                     let jogador = time.elenco.find(j => j.nome === evento.autor);
                     
-                    // CORREÇÃO: Se o jogador não existir (é genérico ou novo), CRIA ele agora
+                    // Se não achou (ex: bug antigo), tenta criar, mas prioriza o database
                     if(!jogador) {
-                        jogador = {
-                            nome: evento.autor,
-                            pos: "ATA", // Assume atacante
-                            forca: 65,
-                            gols: 0,
-                            jogos: 0,
-                            contrato: "31/12/2026",
-                            salario: 10000,
-                            status: "Apto"
-                        };
-                        time.elenco.push(jogador);
+                        // Tenta achar no database primeiro
+                        const original = window.Engine._buscarTimeOriginal(time.nome);
+                        if(original && original.elenco) {
+                             const real = original.elenco.find(r => r.nome === evento.autor);
+                             if(real) {
+                                 // Importa o real
+                                 jogador = JSON.parse(JSON.stringify(real));
+                                 time.elenco.push(jogador);
+                             }
+                        }
                     }
-                    
-                    // Agora computa o gol com segurança
-                    jogador.gols = (jogador.gols || 0) + 1;
+
+                    if(jogador) {
+                        jogador.gols = (jogador.gols || 0) + 1;
+                    }
                 }
             }
         });
@@ -370,9 +438,6 @@ window.Engine = {
         }
     },
 
-    // =========================================================================
-    // 6. GETTERS
-    // =========================================================================
     getTabelaLiga: function(p, d) {
         const s = this.carregarJogo();
         return (s && s.mundo && s.mundo[p]) ? s.mundo[p][d].tabela : [];
@@ -383,7 +448,6 @@ window.Engine = {
         if(!s || !s.mundo[p]) return [];
         let lista = [];
         
-        // Agora varre com segurança
         s.mundo[p][d].times.forEach(t => {
             if(t.elenco) {
                 t.elenco.forEach(j => {
