@@ -1,6 +1,6 @@
 // ARQUIVO: engine-core.js
-// VERSÃO: WORLD SYSTEM V3.0 (Auto-Repair + Artilharia Fix)
-// DESCRIÇÃO: Núcleo com sistema de autocorreção para saves antigos.
+// VERSÃO: WORLD SYSTEM V3.1 (Fix Artilharia Fantasma)
+// DESCRIÇÃO: Garante que jogadores genéricos ou criados apareçam na artilharia.
 
 window.Engine = {
     // =========================================================================
@@ -168,10 +168,11 @@ window.Engine = {
         if(!estado) estado = this.carregarJogo();
 
         // Limpa a artilharia global dos jogadores para recalcular do zero
-        // Isso evita que gols sejam somados duplicados
         for (const p in estado.mundo) {
             for (const d in estado.mundo[p]) {
-                estado.mundo[p][d].times.forEach(t => t.elenco.forEach(j => j.gols = 0));
+                estado.mundo[p][d].times.forEach(t => {
+                    if(t.elenco) t.elenco.forEach(j => j.gols = 0);
+                });
             }
         }
 
@@ -194,9 +195,8 @@ window.Engine = {
                             this._simularJogoCPU(liga, jogo);
                         }
 
-                        // 2. AUTO-REPAIR: Se já jogou mas não tem registro de gols (Save Antigo)
+                        // 2. AUTO-REPAIR: Se já jogou mas não tem registro de gols
                         if (jogo.jogado && (!jogo.eventos || jogo.eventos.length === 0)) {
-                            // Verifica se houve gols no placar para gerar
                             const gc = parseInt(jogo.placarCasa);
                             const gf = parseInt(jogo.placarFora);
                             if (gc > 0 || gf > 0) {
@@ -276,7 +276,6 @@ window.Engine = {
     _gerarGolsDaPartida: function(timeObj, qtdGols, jogoObj, lado) {
         if(qtdGols <= 0) return;
         
-        // Proteção contra time sem elenco (Evita o "Nome Atacante" vazio)
         let pool = [];
         if(timeObj && timeObj.elenco && timeObj.elenco.length > 0) {
             timeObj.elenco.forEach(j => {
@@ -290,12 +289,12 @@ window.Engine = {
             let nomeAutor = "";
             
             if(pool.length > 0) {
-                // Sorteia jogador real
                 const sortudo = pool[Math.floor(Math.random() * pool.length)];
                 nomeAutor = sortudo.nome;
             } else {
-                // Fallback robusto se não tiver elenco carregado
-                nomeAutor = `Atacante ${timeObj.nome || ''}`; 
+                // Se não tem jogadores reais, cria um nome genérico
+                // Ex: "Atacante Bahia"
+                nomeAutor = `Atacante ${timeObj.nome.split(' ')[0]}`; 
             }
 
             const minuto = Math.floor(Math.random() * 90) + 1;
@@ -328,11 +327,29 @@ window.Engine = {
         jogo.eventos.forEach(evento => {
             if(evento.tipo === 'gol') {
                 const time = times.find(t => t.nome === evento.time);
-                if(time && time.elenco) {
-                    const jogador = time.elenco.find(j => j.nome === evento.autor);
-                    if(jogador) {
-                        jogador.gols = (jogador.gols || 0) + 1;
+                if(time) {
+                    if(!time.elenco) time.elenco = [];
+                    
+                    // Tenta achar o jogador
+                    let jogador = time.elenco.find(j => j.nome === evento.autor);
+                    
+                    // CORREÇÃO: Se o jogador não existir (é genérico ou novo), CRIA ele agora
+                    if(!jogador) {
+                        jogador = {
+                            nome: evento.autor,
+                            pos: "ATA", // Assume atacante
+                            forca: 65,
+                            gols: 0,
+                            jogos: 0,
+                            contrato: "31/12/2026",
+                            salario: 10000,
+                            status: "Apto"
+                        };
+                        time.elenco.push(jogador);
                     }
+                    
+                    // Agora computa o gol com segurança
+                    jogador.gols = (jogador.gols || 0) + 1;
                 }
             }
         });
@@ -365,10 +382,14 @@ window.Engine = {
         const s = this.carregarJogo();
         if(!s || !s.mundo[p]) return [];
         let lista = [];
+        
+        // Agora varre com segurança
         s.mundo[p][d].times.forEach(t => {
-            t.elenco.forEach(j => {
-                if(j.gols > 0) lista.push({ nome: j.nome, time: t.nome, gols: j.gols, pos: j.pos, forca: j.forca }); 
-            });
+            if(t.elenco) {
+                t.elenco.forEach(j => {
+                    if(j.gols > 0) lista.push({ nome: j.nome, time: t.nome, gols: j.gols, pos: j.pos, forca: j.forca }); 
+                });
+            }
         });
         return lista.sort((a,b) => b.gols - a.gols).slice(0, 20); 
     }
