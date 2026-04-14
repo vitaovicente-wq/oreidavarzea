@@ -298,17 +298,17 @@
                     }
                 }
 
-                if(Engine.estadios) {
+                if(Engine.Estadios) {
                     if (isMandante) {
                         // JOGANDO EM CASA: Usa cálculo real da Engine
-                        const bilheteria = Engine.estadios.calcularBilheteria(nomeAdversarioReal);
+                        const bilheteria = Engine.Estadios.calcularBilheteria(nomeAdversarioReal);
                         document.getElementById('disp-publico').innerText = bilheteria.publico.toLocaleString();
                         document.getElementById('disp-renda').innerText = bilheteria.rendaTotal.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
                     } else {
                         // JOGANDO FORA: Simulação baseada na capacidade do adversário
                         let capOponente = 20000;
-                        if(Engine.estadios.db[nomeAdversarioReal]) capOponente = Engine.estadios.db[nomeAdversarioReal].cap;
-                        else if(Engine.estadios.db["Padrao"]) capOponente = Engine.estadios.db["Padrao"].cap;
+                        if(Engine.Estadios.db[nomeAdversarioReal]) capOponente = Engine.Estadios.db[nomeAdversarioReal].cap;
+                        else if(Engine.Estadios.db["Padrao"]) capOponente = Engine.Estadios.db["Padrao"].cap;
 
                         // Ocupação realista para fora de casa (40% a 95% do estádio do rival)
                         const fakePub = Math.floor(capOponente * (0.4 + Math.random() * 0.55));
@@ -410,7 +410,7 @@
             pausarJogo();
             const autor = v[Math.floor(Math.random()*v.length)];
             if(isH) placar.home++; else placar.away++;
-            gameEvents.push({min:tempo+(etapa===2?45:0), time:isH?homeTeam.nome:awayTeam.nome, jogador:autor.nome, tipo:'gol'});
+            gameEvents.push({min:tempo+(etapa===2?45:0), time:isH?homeTeam.nome:awayTeam.nome, autor:autor.nome, tipo:'gol'});
             document.getElementById('score-home').innerText=placar.home; document.getElementById('score-away').innerText=placar.away;
             document.getElementById('goal-scorer-name').innerText=autor.nome; 
             const sb = document.getElementById('score-'+(isH?'home':'away'));
