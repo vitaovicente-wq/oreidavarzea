@@ -48,7 +48,7 @@ Engine.simularJogoCPU = function(jogo) {
     if(Math.random() > 0.6) jogo.placarCasa++;
     if(Math.random() > 0.7) jogo.placarFora++;
     // Gera eventos falsos para log
-    jogo.eventos = [];
-    for(let i=0; i<jogo.placarCasa; i++) jogo.eventos.push({min:10+i*10, tipo:'gol', time:jogo.mandante, jogador:'Atacante'});
-    for(let i=0; i<jogo.placarFora; i++) jogo.eventos.push({min:15+i*10, tipo:'gol', time:jogo.visitante, jogador:'Atacante'});
+   jogo.eventos = [];
+for(let i=0; i<jogo.placarCasa; i++) jogo.eventos.push({min:10+i*10, tipo:'gol', time:jogo.mandante, autor:'Atacante'});
+for(let i=0; i<jogo.placarFora; i++) jogo.eventos.push({min:15+i*10, tipo:'gol', time:jogo.visitante, autor:'Atacante'});
 };
