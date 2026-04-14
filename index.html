@@ -396,11 +396,6 @@
                     localStorage.clear();
                     
                     Engine.novoJogo(paisAtual, divisaoAtual, timeSelecionadoObj.nome);
-                    
-                    if(Engine.Contratos) {
-                        let saveFresco = Engine.carregarJogo();
-                        Engine.Contratos.enviarBoasVindas(saveFresco);
-                    }
 
                     let save = Engine.carregarJogo();
                     save.info.tecnico = nomeTreinador;
