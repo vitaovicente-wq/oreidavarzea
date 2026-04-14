@@ -173,29 +173,33 @@ Engine.Contratos = {
     },
 
     // --- AÇÕES COM RELOAD AUTOMÁTICO ---
-    assinarPatrocinio: function(p, btn) {
-        if(this._processando) return; this._processando = true;
-        const g = Engine.carregarJogo();
-        if(g.contratos.patrocinio) { alert("Já existe um contrato ativo!"); this._processando=false; return; }
-        g.contratos.patrocinio = p; g.recursos.dinheiro += p.luvas;
-        g.financas.historico.push({texto:`Luvas (${p.nome})`, valor:p.luvas, tipo:'entrada'});
-        Engine.salvarJogo(g); 
-        
-        alert(`Sucesso! ${p.nome} é o novo patrocinador.`);
-        window.location.reload(); // <--- CORREÇÃO AQUI
-    },
+   assinarPatrocinio: function(p, btn) {
+    if(this._processando) return; this._processando = true;
+    const g = Engine.carregarJogo();
+    if(g.contratos.patrocinio) { alert("Já existe um contrato ativo!"); this._processando=false; return; }
+    if(!g.financas) g.financas = { historico: [] };
+    if(!g.financas.historico) g.financas.historico = [];
+    g.contratos.patrocinio = p;
+    g.recursos.dinheiro += p.luvas;
+    g.financas.historico.push({ texto: `Luvas - ${p.nome}`, valor: p.luvas, tipo: 'entrada', rodada: g.rodadaAtual });
+    Engine.salvarJogo(g);
+    alert(`Sucesso! ${p.nome} é o novo patrocinador.`);
+    window.location.reload();
+},
 
     assinarTV: function(t, btn) {
-        if(this._processando) return; this._processando = true;
-        const g = Engine.carregarJogo();
-        if(g.contratos.tv) { alert("Já existe contrato de TV!"); this._processando=false; return; }
-        g.contratos.tv = t; 
-        Engine.salvarJogo(g); 
-        
-        alert(`Direitos de TV fechados com ${t.emissora}.`);
-        window.location.reload(); // <--- CORREÇÃO AQUI
-    },
-
+    if(this._processando) return; this._processando = true;
+    const g = Engine.carregarJogo();
+    if(g.contratos.tv) { alert("Já existe contrato de TV!"); this._processando=false; return; }
+    if(!g.financas) g.financas = { historico: [] };
+    if(!g.financas.historico) g.financas.historico = [];
+    g.contratos.tv = t;
+    g.financas.historico.push({ texto: `Contrato TV - ${t.emissora}`, valor: t.fixo, tipo: 'entrada', rodada: g.rodadaAtual });
+    g.recursos.dinheiro += t.fixo;
+    Engine.salvarJogo(g);
+    alert(`Direitos de TV fechados com ${t.emissora}.`);
+    window.location.reload();
+},
     processarVencimentos: function(game) {
         let mudou = false;
         if (game.contratos.patrocinio) {
